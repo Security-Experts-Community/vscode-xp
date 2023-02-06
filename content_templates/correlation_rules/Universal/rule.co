@@ -1,0 +1,107 @@
+event EventName:
+    key:
+        event_src.host
+    filter {
+        filter::NotFromCorrelator()
+
+        and filter::CheckWL_Specific_Only("Universal", )
+    }
+
+rule Universal: EventName
+
+    init {
+        $labels = "w_auto"
+    }
+
+    on EventName {
+        $subject.account.name = subject.account.name
+        $subject.account.domain = subject.account.domain
+        $subject.account.session_id = subject.account.session_id
+        $subject.account.id = subject.account.id
+        $subject.account.privileges = subject.account.privileges
+
+        $subject.process.id = subject.process.id
+        $subject.process.name = subject.process.name
+        $subject.process.path = subject.process.path
+        $subject.process.fullpath = subject.process.fullpath
+        
+        $object.account.session_id = object.account.session_id
+        $object.account.name = object.account.name
+        $object.account.domain = object.account.domain
+        $object.account.id = object.account.id
+
+        $object.process.id = object.process.id
+        $object.process.name = object.process.name
+        $object.process.path = object.process.path
+        $object.process.fullpath = object.process.fullpath
+        $object.process.hash = object.process.hash
+        $object.process.version = object.process.version
+        $object.process.cmdline = object.process.cmdline
+        $object.process.guid = object.process.guid
+        $object.process.meta = object.process.meta
+        $object.process.original_name = object.process.original_name
+        $object.process.cwd = object.process.cwd
+        
+        $object.process.parent.id = object.process.parent.id
+        $object.process.parent.name = object.process.parent.name
+        $object.process.parent.path = object.process.parent.path
+        $object.process.parent.fullpath = object.process.parent.fullpath
+        $object.process.parent.guid = object.process.parent.guid
+        $object.process.parent.cmdline = object.process.parent.cmdline
+        
+        $datafield10 = datafield10  # цепочка имен процессов
+
+        # src
+        $src.host = src.host
+        $src.hostname = src.hostname
+        $src.ip = src.ip
+        $src.asset = src.asset
+        $src.port = src.port
+        $labels = $labels + "|src_to_related_assets"
+
+        # dst
+        $dst.host = dst.host
+        $dst.hostname = dst.hostname
+        $dst.ip = dst.ip
+        $dst.asset = dst.asset
+        $dst.port = dst.port
+        $labels = $labels + "|dst_to_attacking_assets"
+
+        # event src host
+        $event_src.host = event_src.host
+        $event_src.fqdn = event_src.fqdn
+        $event_src.hostname = event_src.hostname
+        $event_src.ip = event_src.ip
+        $event_src.asset = event_src.asset
+        $event_src.vendor = event_src.vendor
+        $event_src.title = event_src.title
+        $event_src.subsys = event_src.subsys
+        $event_src.category = event_src.category
+
+        # other
+        $alert.key = 
+        $alert.context = 
+        $reason = reason
+    }
+
+emit {
+    $correlation_type = ""
+    $importance = ""
+
+    $labels = $labels + "|subject_account_to_attacking_assets"
+    $labels = $labels + "|event_source_to_related_assets"
+
+    $subject = ""
+    $action = ""
+    $object = ""
+    $status = ""
+
+    $category.generic = ""
+    $category.high = ""
+    $category.low = ""
+
+    $incident.aggregation.key = join([$correlation_name, lower($event_src.host), lower($subject.account.id)], "|")
+    $incident.severity = "high"
+    $incident.category = "Undefined"
+    $incident.aggregation.timeout = 2h
+}

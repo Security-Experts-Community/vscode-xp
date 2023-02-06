@@ -1,0 +1,28 @@
+Created: 24.02.2022
+Updated: 03.03.2022
+Name: MSSQL_user_password_brute
+EventDescriptions:
+- Criteria: correlation_name = "MSSQL_user_password_brute" and src.ip != null
+  LocalizationId: corrname_MSSQL_user_password_brute_1
+- Criteria: correlation_name = "MSSQL_user_password_brute" and src.ip == null
+  LocalizationId: corrname_MSSQL_user_password_brute_2
+- Criteria: correlation_name = "MSSQL_user_password_brute" and subject.account.name == null
+  LocalizationId: corrname_MSSQL_user_password_brute_3
+Origin: Local
+ObjectId: LOC-CR-3719791405
+KnowledgeHolders:
+- John Doe
+Usecases: []
+Falsepositives: []
+Tags: []
+References:
+- https://docs.microsoft.com/en-us/sql/relational-databases/errors-events/mssqlserver-18452-database-engine-error?view=sql-server-ver15
+Improvements: []
+ATTACK:
+  lateral_movement:
+  - T1110.001
+  - T1110.003
+DataSources:
+- Provider: MSSQLSERVER
+  EventID:
+  - 184456

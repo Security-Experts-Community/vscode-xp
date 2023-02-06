@@ -1,0 +1,21 @@
+event Artifactory_Brute:
+    key:
+        event_src.host, event_src.title, src.host, subject.account.name
+    filter {
+        lower(correlation_name) == "subrule_application_password_brute"
+        and event_src.title == "artifactory"
+        and filter::CheckWL_Specific_Only("ESC_Artifactory_Password_Brute", lower(alert.key))
+    }
+    
+rule ESC_Artifactory_Password_Brute: Artifactory_Brute
+
+    init {
+        $labels = "w_auto"
+    }
+    
+    on Artifactory_Brute {
+        $alert.key = alert.key
+    }
+    
+emit {
+}

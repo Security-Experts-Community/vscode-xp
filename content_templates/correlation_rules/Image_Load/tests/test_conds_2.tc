@@ -1,0 +1,5 @@
+# Вайтлистинг
+table_list default
+table_list {"Common_whitelist_auto": [{"rule": "Image_Load", "specific_value": ""}]}
+
+expect not {"correlation_name": "Image_Load"}

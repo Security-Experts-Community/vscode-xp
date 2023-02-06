@@ -1,0 +1,23 @@
+Created: 28.03.2021
+Updated: 29.03.2021
+Name: Active_Directory_Snapshot
+Origin: Local
+ObjectId: LOC-CR-2539352345
+KnowledgeHolders:
+- Ivan Ivanov
+Usecases:
+- LDAP-запросы для выгрузки полной структуры AD генерируемый инструментом AdExplorer при создании снепшота
+Falsepositives: []
+Tags: []
+References:
+- https://techcommunity.microsoft.com/t5/sysinternals/create-snapshots-with-active-directory-explorer-ad-explorer-from/m-p/2232412
+ATTACK:
+  initial_access:
+  - T1078.002
+  - T1078.003
+  credential_access:
+  - T1110
+DataSources:
+- Provider: Microsoft-Windows-Security-Auditing
+  EventID:
+  - 1644

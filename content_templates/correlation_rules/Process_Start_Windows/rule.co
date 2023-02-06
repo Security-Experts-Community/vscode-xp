@@ -1,0 +1,101 @@
+event Process_Start:
+    key:
+        event_src.host
+    filter {
+        filter::NotFromCorrelator()
+        and filter::ProcessStart_Windows_any()
+        # and filter::and filter::ProcessStart_Windows_commandline("process_name", "regex_value")
+        # and filter::ProcessStart_Windows("prcoess_name")
+        and filter::CheckWL_Process_Creation("Process_Start_Windows", )
+    }
+
+rule Process_Start_Windows: Process_Start
+
+    init {
+        $labels = "w_auto|CheckWL_Process_Creation"
+    }
+
+    on Process_Start {
+        $subject.account.name = subject.account.name
+        $subject.account.domain = subject.account.domain
+        $subject.account.fullname = subject.account.fullname
+        $subject.account.session_id = subject.account.session_id
+        $subject.account.id = subject.account.id
+        $subject.account.privileges = subject.account.privileges
+
+        $object.account.session_id = object.account.session_id
+        $object.account.name = object.account.name
+        $object.account.domain = object.account.domain
+        $object.account.fullname = object.account.fullname
+        $object.account.id = object.account.id
+
+        $object.process.id = object.process.id
+        $object.process.name = object.process.name
+        $object.process.path = object.process.path
+        $object.process.fullpath = object.process.fullpath
+        $object.process.hash = object.process.hash
+        $object.process.version = object.process.version
+        $object.process.cmdline = object.process.cmdline
+        $object.process.guid = object.process.guid
+        $object.process.meta = object.process.meta
+        $object.process.original_name = object.process.original_name
+        $object.process.cwd = object.process.cwd
+
+        $object.process.parent.id = object.process.parent.id
+        $object.process.parent.name = object.process.parent.name
+        $object.process.parent.path = object.process.parent.path
+        $object.process.parent.fullpath = object.process.parent.fullpath
+        $object.process.parent.guid = object.process.parent.guid
+        $object.process.parent.cmdline = object.process.parent.cmdline
+
+        # FOR LOLBIN
+        #if ($object.process.parent.name == "services.exe" or $object.process.parent.name == "svchost.exe") then
+        #    $reason = join([$reason, "Service execution"], "|")
+        #elif $object.process.parent.name == "scheduler.exe" then
+        #    $reason = join([$reason, "Task execution"], "|")
+        #else
+        #    $reason = join([$reason, "User execution"], "|")
+        #endif
+        
+        $datafield6 = datafield6    # Идентификатор сессии в формате UUID
+        $datafield10 = datafield10  # цепочка имен процессов
+
+        $event_src.ip = event_src.ip
+        $event_src.hostname = event_src.hostname
+        $event_src.fqdn = event_src.fqdn
+        $event_src.host = event_src.host
+        $event_src.asset = event_src.asset
+        $event_src.vendor = event_src.vendor
+        $event_src.title = event_src.title
+        $event_src.subsys = event_src.subsys
+        $event_src.rule = event_src.rule
+        
+        $alert.key = 
+        $alert.context = # join([$alert.context, "regex_match: " + regex(lower(object.process.cmdline), "regex_from_filter", 0)], "|")
+    }
+
+emit {
+    $correlation_type = ""
+
+    $subject = "account"
+    $action = "start"
+    $object = "process"
+    $status = "success"
+
+    if $subject.account.name != null and $subject.account.name != $object.account.name then
+        $labels = $labels + "|subject_account_to_compromised_assets"
+    endif
+    $labels = $labels + "|object_account_to_compromised_assets"
+    $labels = $labels + "|event_source_to_compromised_assets"
+
+    $importance = ""
+
+    $category.generic = "Attack"
+    $category.high = ""
+    $category.low = ""
+
+    $incident.aggregation.key = join([$correlation_name, lower($event_src.host), lower($subject.account.id)], "|")
+    $incident.severity = $importance
+    $incident.category = "Undefined"
+    $incident.aggregation.timeout = 2h
+}

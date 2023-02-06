@@ -1,0 +1,4 @@
+table_list default
+
+expect table_list {"":[{"":""}]}
+expect 1 {}

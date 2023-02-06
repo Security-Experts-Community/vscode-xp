@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+
+	<!--
+		Use a content security policy to only allow loading images from https or from our extension directory,
+		and only allow scripts that have a specific nonce.
+	-->
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/main.css">
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/localization.css">
+	<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
+	
+	<title>Локализация</title>
+
+</head>
+	<body>
+
+		<div id="header">
+			<div class="common" id="navigation">
+				<input id="build_loc"  class="run" type="button" value="&#9654;   Проверить локализацию  ">
+			</div>
+			<input id="save_loc" class="save" type="button" value="Сохранить">
+		</div>
+
+		<div id="main-body">
+			<div id="loc-results" class="common">
+				
+				<div class="language">
+					{{#LocalizationResult}}
+					<br />
+					<p>{{RuLocText}}</p>
+					<p><b>alert.key:</b> {{AlertKey}}</p>
+					<p><b>alert.context:</b> {{AlertContext}}</p>
+					{{/LocalizationResult}}
+				</div>
+				
+				<div class="language">
+					{{#LocalizationResult}}
+					<br />
+					<p>{{EnLocText}}</p>
+					<p><b>alert.key:</b> {{AlertKey}}</p>
+					<p><b>alert.context:</b> {{AlertContext}}</p>
+					{{/LocalizationResult}}
+				</div>
+				
+
+				<!-- <div class="language">
+					<br />
+					<p>Пользователь anonymous успешно запустил тест правил корреляции для случайного события с узла random10.testlab.esc</p>
+					<p><b>alert.key:</b> anonymous|random10.testlab.esc</p>
+					<p><b>alert.context:</b> anonymous|random10.testlab.esc</p>
+
+					<br />
+					<p>Пользователь anonymous успешно запустил тест правил корреляции для случайного события с узла random10.testlab.esc</p>
+					<p><b>alert.key:</b> anonymous|random10.testlab.esc</p>
+					<p><b>alert.context:</b> anonymous|random10.testlab.esc</p>
+				</div>
+				
+				<div class="language">
+					<br />
+					<p>User anonymous has successfully run tests for random event from random10.testlab.esc</p>
+					<p><b>alert.key:</b> anonymous|random10.testlab.esc</p>
+					<p><b>alert.context:</b> anonymous|random10.testlab.esc</p>
+
+					<br />
+					<p>User anonymous has successfully run tests for random event from random10.testlab.esc</p>
+					<p><b>alert.key:</b> anonymous|random10.testlab.esc</p>
+					<p><b>alert.context:</b> anonymous|random10.testlab.esc</p>
+				</div> -->
+	 
+			</div>
+			<h2>Описание:</h2>
+			<hr />
+	
+			<div class="language">
+				<h3>RU: </h3>
+				<label for="ruDescription">Описание:</label>
+				<textarea id="ruDescription" rows="3">{{RuDescription}}</textarea>
+			</div>
+			<div class="language">
+				<h3>EN: </h3>
+				<label for="enDescription">Description:</label>
+				<textarea id="enDescription" rows="3">{{EnDescription}}</textarea>
+			</div>
+			<h2>Локализации:</h2>
+			<hr />
+			
+			<div id="localizations">
+			{{#Localizations}}
+			<div class="common">	
+				<div class="common">
+					<input class="delete_value" type="button" value="-" onclick="deleteLoc(this)">
+					<label for="criteria">Критерий:</label>
+					<textarea rows="1" name="criteria" class="criteria">{{Criteria}}</textarea>
+					<input type="hidden" name="localizationId" value="{{LocalizationId}}">
+				</div>	
+	
+				<div class="language">
+					<label for="ruLocalization">Локализация:</label>
+					<br />
+					<textarea rows="5" name="ruLocalization">{{RuLocalization}}</textarea>
+				</div>
+	
+				<div class="language">
+					<label for="enLocalization">Localization:</label>
+					<br />
+					<textarea rows="5" name="enLocalization">{{EnLocalization}}</textarea>
+				</div>
+			</div>
+			{{/Localizations}}
+			</div>
+	
+			<div class="common">
+				<input id="add" class="add_value" type="button" value="+" onclick="addLoc(this)">
+			</div>	
+
+			<div id="loc-template" hidden>
+				<div class="common">	
+					<div class="common">
+						<input class="delete_value" type="button" value="-" onclick="deleteLoc(this)">
+						<label for="criteria">Критерий:</label>
+						<textarea rows="1" class="criteria">correlation_name = ""</textarea>
+						<input type="hidden" value="{{LocalizationId}}">
+					</div>	
+		
+					<div class="language">
+						<label for="ruLocalization">Локализация:</label>
+						<br />
+						<textarea rows="5"></textarea>
+					</div>
+		
+					<div class="language">
+						<label for="enLocalization">Localization:</label>
+						<br />
+						<textarea rows="5"></textarea>
+					</div>
+				</div>
+			</div>
+		</div>	
+
+		<script>
+			const vscode = acquireVsCodeApi();
+
+			$(document).ready(function() {
+				// Грязный хак, позволяющий убрать ошибку двойного копирование по сочетаниям Ctrl+C и Ctrl+V.
+				var ctrlDown = false,
+				ctrlKey = 17,
+				cmdKey = 91,
+				vKey = 86,
+				cKey = 67;
+
+				$(document).keydown(function(e) {
+					if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
+				}).keyup(function(e) {
+					if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
+				});
+
+				// Document Ctrl + C/V 
+				$(document).keydown(function(e) {
+					if (ctrlDown && (e.keyCode == vKey)) {
+						e.preventDefault();
+					}
+				});
+			});
+
+			// Нажатие на кнопку проверки локализаций.
+			const buildLocalizationsButton = document.getElementById("build_loc");
+			buildLocalizationsButton.addEventListener("click", function () {
+				vscode.postMessage({
+					command: 'buildLocalizations'
+				});
+			});
+
+			// Нажатие на кнопку сохранить.
+			const saveLocalizationsButton = document.getElementById("save_loc");
+			saveLocalizationsButton.addEventListener("click", saveLocalizations);
+
+			function saveLocalizations() {
+				
+				const ruDescription = document.getElementById("ruDescription").value;
+				const enDescription = document.getElementById("enDescription").value;
+
+				const criteria = nameToValuesArray("criteria");
+				const rulocalizations = nameToValuesArray("ruLocalization");
+				const enlocalizations = nameToValuesArray("enLocalization");
+				const localizationIds = nameToValuesArray("localizationId");
+
+				vscode.postMessage({
+					command: 'saveLocalizations',
+					localization: {
+						'RuDescription' : ruDescription,
+						'EnDescription' : enDescription,
+
+						'Criteria' : criteria,
+						'RuLocalizations' : rulocalizations,
+						'EnLocalizations' : enlocalizations,
+						'LocalizationIds' : localizationIds
+					}
+				});
+			}
+
+			function nameToValuesArray(name) {
+				const elements = [...document.getElementsByName(name)];
+				return elements.map( u => u.value);
+			}
+			
+			function addLoc(button) {
+				// Копируем элемент
+				toCopy = document.getElementById('loc-template');
+				coppied = toCopy.cloneNode(true);
+				coppied.removeAttribute('id');
+				
+				// Задаем имена для TextArea
+				coppied.children[0].children[0].children[3].name = "localizationId";
+				coppied.children[0].children[0].children[2].name = "criteria";
+				coppied.children[0].children[1].children[2].name = "ruLocalization";
+				coppied.children[0].children[2].children[2].name = "enLocalization";
+
+				// Показываем элемент
+				coppied.hidden = false;
+				
+				// Вставляем и переводим фокус на критерий
+				button.parentElement.parentElement.insertBefore(coppied,button.parentElement);
+				coppied.children[0].children[1].focus();
+			}
+
+
+			function deleteLoc(button) {
+				var index = Array.from(button.parentElement.parentElement.parentElement.children).indexOf(button.parentElement.parentElement);
+				button.parentElement.parentElement.remove();			
+			}
+		</script>
+	</body>
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+
+	<!--
+		Use a content security policy to only allow loading images from https or from our extension directory,
+		and only allow scripts that have a specific nonce.
+	-->
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/meta.css">
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/main.css">
+
+
+	<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
+
+	<title>Метаданные</title>
+	
+</head>
+	<body>
+		<div id="header">
+			<div id="navigation">
+				<input id="name" type="text" value="{{Name}}" title="{{Name}}" pattern="[A-Z][a-zA-Z0-9_]+">
+				<p>Cоздано: {{Created}} </p>
+				<p>Обновлено: {{Updated}} </p>
+				<p>ID: {{ObjectId}} </p>
+			</div>
+				
+			<input class="save" name="saveMetainfo" onclick="saveMetaInfo()" type="button" value="Сохранить">
+		</div>
+
+		<div id="main-body">
+			<table id="Metadata">
+				<!-- <tr>
+					<td class="labels">Название</td>
+					<td>
+						<input id="Name" type="text" value="{{Name}}" title="{{Name}}" pattern="[A-Z][a-zA-Z0-9_]+">
+					</td>
+				</tr>
+	
+				<tr>
+					<td class="labels"> Идентификатор</td>
+					<td>
+						<input id="ObjectId" type="text" value="{{ObjectId}}" title="{{ObjectId}}">
+					</td>
+				</tr> -->
+	
+				<tr>
+					<td class="labels">Авторы</td>
+					<td>
+						{{#KnowledgeHolders}}
+						<div>			
+							<input name="knowledgeHolder"  type="text" value="{{.}}" title="{{.}}" required>
+							<input class="delete" type="button" value="-" title="-" onclick="deleteValue(this)">
+						</div>
+						{{/KnowledgeHolders}}
+						<input class="add_value" type="button" value="+" onclick="addValue(this, 'knowledgeHolder')">
+					</td>
+				</tr>
+			
+				<tr class="service">
+					<td class="labels">Создано</td>
+					<td>
+						<input id="Created" readonly type="text" value="{{Created}}" title="{{Created}}">
+					</td>
+				</tr>
+	
+				<tr class="service">
+					<td class="labels">Обновлено</td>
+					<td>
+						<input id="Updated" readonly type="text" value="{{Updated}}" title="{{Updated}}">
+					</td>
+				</tr>
+	
+				<tr class="service">
+					<td class="labels">Origin</td>
+					<td>
+						<input id="Origin" type="text" value="{{Origin}}" title="{{Origin}}">
+					</td>
+				</tr>
+			
+				<tr>
+					<td class="labels">Сценарий использования</td>
+					<td>
+						{{#Usecases}}
+						<div>			
+							<input name="usecase"  type="text" value="{{.}}" title="{{.}}" required>
+							<input class="delete" type="button" value="-" title="-" onclick="deleteValue(this)">
+						</div>
+						{{/Usecases}}
+						<input class="add_value" type="button" value="+" onclick="addValue(this, 'usecase')">
+					</td>
+				</tr>
+				
+				
+				<tr>
+					<td class="labels">Ложноположительная сработка</td>
+					<td>
+						{{#Falsepositives}}
+						<div>			
+							<input name="falsepositive"  type="text" value="{{.}}" title="{{.}}" required>
+							<input class="delete" type="button" value="-" title="-" onclick="deleteValue(this)">
+						</div>
+						{{/Falsepositives}}
+						<input class="add_value" type="button" value="+" onclick="addValue(this, 'falsepositive')">
+					</td>
+				</tr>
+				
+				<tr>
+					<td class="labels">Улучшения</td>
+					<td>
+						{{#Improvements}}
+						<div>			
+							<input name="improvement"  type="text" value="{{.}}" title="{{.}}" required>
+							<input class="delete" type="button" value="-" title="-" onclick="deleteValue(this)">
+						</div>
+						{{/Improvements}}
+						<input class="add_value" type="button" value="+" onclick="addValue(this, 'improvement')">
+					</td>
+				</tr>
+					
+				<tr>
+					<td class="labels">Ссылки</td>
+					<td>
+						{{#References}}
+						<div>			
+							<input name="reference"  type="url" value="{{.}}" title="{{.}}" required>
+							<input class="delete" type="button" value="-" title="-" onclick="deleteValue(this)">
+						</div>
+						{{/References}}
+						<input class="add_value" type="button" value="+" onclick="addValue(this, 'reference')">
+					</td>
+				</tr>
+	
+				<tr>
+					<datalist id="providers">
+						<option>Microsoft-Windows-Security-Auditing</option>
+						<option>Microsoft-Windows-Sysmon</option>
+						<option>Microsoft-Windows-PowerShell</option>
+					</datalist>
+					
+					<td class="labels">Источники данных</td>
+					<td>
+						{{#DataSources}}
+						<div name='dataSource' class="complex">
+							<input name="provider" type="text" value="{{Provider}}" list="providers" required/>
+							<input name="eventID" type="text" value="{{EventID}}" title="{{EventID}}" required>
+	
+							<input class="delete" type="button" value="-" title="-" onclick="deleteValue(this)">
+						</div>
+						{{/DataSources}}
+						<input class="add_value" type="button" value="+" onclick="addDataSourceComplexValue(this)">
+					</td>	
+				</tr>
+	
+				<tr>
+					<datalist id="tactics">
+						<option>initial_access</option>
+						<option>execution</option>
+						<option>persistence</option>
+						<option>privilege_escalation</option>
+						<option>defense_evasion</option>
+						<option>credential_access</option>
+						<option>discovery</option>
+						<option>lateral_movement</option>
+						<option>command_and_control</option>
+						<option>impact</option>
+					</datalist>
+					
+					<td class="labels">MITRE</td>
+					<td>
+						{{#ATTACK}}
+						<div name='attack' class="complex">
+							<input name="tactic" type="text" value="{{Tactic}}" list="tactics" required/>
+							<input name="techniques" type="text" value="{{Techniques}}" title="{{Techniques}}" required>
+	
+							<input class="delete" type="button" value="-" title="-" onclick="deleteValue(this)">
+						</div>
+						{{/ATTACK}}
+						<input class="add_value" type="button" value="+" onclick="addAttackComplexValue(this)">
+					</td>	
+				</tr>
+				
+				<tr class="service">
+					<td class="labels">Тег {{tagsIndex}}</td>
+					<td>
+						{{#Tags}}
+						<input name="tag" type="text" value="{{.}}" title="{{.}}">
+						{{/Tags}}
+					</td>
+				</tr>	
+			</table>
+		</div>
+
+		<script>
+			const vscode = acquireVsCodeApi();
+
+			$(document).ready(function() {
+				// Грязный хак, позволяющий убрать ошибку двойного копирование по сочетаниям Ctrl+C и Ctrl+V.
+				var ctrlDown = false,
+				ctrlKey = 17,
+				cmdKey = 91,
+				vKey = 86,
+				cKey = 67;
+
+				$(document).keydown(function(e) {
+					if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
+				}).keyup(function(e) {
+					if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
+				});
+
+				// Document Ctrl + C/V 
+				$(document).keydown(function(e) {
+					if (ctrlDown && (e.keyCode == vKey)) {
+						e.preventDefault();
+					}
+				});
+			});
+
+			$(document).on("change",'input[name=tactic]', function () {
+				self = $(this);
+				siblings = $('input[name=tactic]');				
+				siblings.splice($.inArray($(this), siblings), 1);				
+				invalid = false;				
+				$.each(siblings, function (i, key) {
+					if ($(key).val() == self.val()) {
+						invalid = true;
+					}
+				});
+
+				if (invalid == true) {
+					self[0].setCustomValidity("Тактика уже опередена. Для указания нескольких техник, необходимо перечислить их через запятую");
+				} else {
+					self[0].setCustomValidity("");
+				}
+			});
+
+			document.querySelector("body").addEventListener("keyup", event => {
+				if(event.key !== "Enter") return;
+				saveMetaInfo();
+				event.preventDefault();
+			});
+
+			function saveMetaInfo() {
+
+				const newName = document.getElementById("name")?.value;
+				const newObjectId = document.getElementById("ObjectId")?.value;
+				const newCreated = document.getElementById("Created")?.value;
+				const newUpdated = document.getElementById("Updated")?.value;
+				const newOrigin = document.getElementById("Origin")?.value;
+
+				const usecases = inputsNameToArray("usecase");
+				const knowledgeHolders = inputsNameToArray("knowledgeHolder");
+				const falsepositives = inputsNameToArray("falsepositive");
+				const improvements = inputsNameToArray("improvement");
+				
+				const references = inputsNameToArray("reference");
+				const tags = inputsNameToArray("tag");
+
+				// Получаем источники данных
+				const dataSourceElements = Array.from(document.getElementsByName('dataSource'));
+
+				const dataSources = dataSourceElements.map( ds => {
+					const providerElement = ds.querySelector("[name='provider']");
+					if(!providerElement) {
+						console.log("Ошибка получения провайдера.")
+						return;
+					}
+					const providerName = providerElement.value;
+
+					const eventIdsElement = ds.querySelector("[name='eventID']");
+					if(!eventIdsElement) {
+						console.log("Ошибка получения списка EventID.")
+						return;
+					}
+					const eventIdString = eventIdsElement.value;
+					const eventIds = eventIdString.split(',').map(eid => eid.trim());
+					
+					return {"Provider" : providerName, "EventID" :eventIds};
+				});
+
+				// Преобразум атаки по MITRE.
+				const attackElements = Array.from(document.getElementsByName('attack'));
+
+				const attacks = attackElements.map( ds => {
+					const tacticElement = ds.querySelector("[name='tactic']");
+					if(!tacticElement) {
+						console.log("Ошибка получения провайдера.")
+						return;
+					}
+					const tacticName = tacticElement.value;
+
+					const techniquesIdsElement = ds.querySelector("[name='techniques']");
+					if(!techniquesIdsElement) {
+						console.log("Ошибка получения списка EventID.")
+						return;
+					}
+					const techniquesIdsString = techniquesIdsElement.value;
+					const techniques = techniquesIdsString.split(',').map(eid => eid.trim());
+					
+					return {"Tactic" : tacticName, "Techniques" :techniques};
+				});
+
+
+				vscode.postMessage({
+					command: 'saveMetaInfo',
+					metainfo: {
+						'Name' : newName,
+						'ObjectId' : newObjectId,
+						'Created' : newCreated,
+						'Updated' : newUpdated,
+						'Origin' : newOrigin,
+
+						'Usecases' : usecases,
+						'KnowledgeHolders' : knowledgeHolders,
+						'Falsepositives': falsepositives,
+						'Improvements': improvements,
+						'References' : references,
+						'Tags' : tags,
+
+						'DataSources' : dataSources,
+						'ATTACK' : attacks
+					}
+				});
+			}
+
+			function inputsNameToArray(name) {
+				const elements = [...document.getElementsByName(name)];
+				return elements.map( u => u.value);
+			}
+			
+			function addValue(button, name) {
+				const newDiv = document.createElement('div');
+
+				const newField = document.createElement('input');
+				if (name == "reference") {
+					newField.type = 'url';
+				} else {
+					newField.type = 'text';
+				}
+				newField.name = name;
+				newField.required = true;
+
+				const deleteButton = document.createElement('input');
+				deleteButton.type = 'button';
+				deleteButton.value = '-';
+				deleteButton.classList.add("delete");
+				deleteButton.onclick = function() {
+					deleteButton.parentNode.remove()
+				}
+
+				newDiv.appendChild(newField)
+				newDiv.appendChild(deleteButton)
+				
+				button.parentNode.insertBefore(newDiv, button);
+				newField.focus();
+			}
+
+			function addAttackComplexValue(button) {
+				const newDiv = document.createElement('div');
+				newDiv.classList.add("complex");
+				newDiv.setAttribute("name", 'attack'); 
+
+				const newField1 = document.createElement('input');
+				newField1.type = 'text';
+				newField1.required = true;
+				newField1.name = 'tactic';
+				newField1.setAttribute('list', 'tactics');
+
+				const newField2 = document.createElement('input');
+				newField2.required = true;
+				newField2.type = 'text';
+				newField2.name = 'techniques';
+
+				const deleteButton = document.createElement('input');
+				deleteButton.type = 'button';
+				deleteButton.value = '-';
+				deleteButton.classList.add("delete");
+				deleteButton.onclick = function() {
+					deleteButton.parentNode.remove()
+				}
+
+				newDiv.appendChild(newField1);
+				newDiv.appendChild(newField2);
+				newDiv.appendChild(deleteButton);
+
+				button.parentElement.insertBefore(newDiv,button)
+				newField1.focus();
+			}
+
+			function addDataSourceComplexValue(button) {
+				const newDiv = document.createElement('div');
+				newDiv.classList.add("complex");
+				newDiv.setAttribute("name", 'dataSource'); 
+
+				const newField1 = document.createElement('input');
+				newField1.type = 'text';
+				newField1.required = true;
+				newField1.name = 'provider';
+				newField1.setAttribute('list', 'providers');
+
+				const newField2 = document.createElement('input');
+				newField2.type = 'text';
+				newField2.required = true;
+				newField2.name = 'eventID';
+
+				const deleteButton = document.createElement('input');
+				deleteButton.type = 'button';
+				deleteButton.value = '-';
+				deleteButton.classList.add("delete");
+				deleteButton.onclick = function() {
+					deleteButton.parentNode.remove()
+				}
+
+				newDiv.appendChild(newField1);
+				newDiv.appendChild(newField2);
+				newDiv.appendChild(deleteButton);
+
+				button.parentElement.insertBefore(newDiv,button)
+				newField1.focus();
+			}
+
+			function deleteValue(button) {
+				button.parentNode.remove()
+			}
+		</script>
+	</body>
+</html>

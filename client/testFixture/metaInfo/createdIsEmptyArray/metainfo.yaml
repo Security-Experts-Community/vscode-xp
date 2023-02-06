@@ -1,0 +1,27 @@
+EventDescriptions:
+    - Criteria: correlation_name = "DNS_Zone_Transfer_To_Untrusted_Host" and status = "failure"
+      LocalizationId: corrname_DNS_Zone_Transfer_To_Untrusted_Host_failure
+    - Criteria: correlation_name = "DNS_Zone_Transfer_To_Untrusted_Host" and status = "success"
+      LocalizationId: corrname_DNS_Zone_Transfer_To_Untrusted_Host_success
+Rule: DNS_Zone_Transfer_To_Untrusted_Host
+ObjectId: LOC-CR-74
+Created: []
+Updated: 12.03.2015
+Name: DNS_Zone_Transfer_To_Untrusted_Host
+KnowledgeHolders:
+- Knowledge Holder
+Usecases: 
+- Usecases
+Falsepositives:
+- Falsepositives
+Tags: []
+References: []
+Improvements: []
+ATTACK:
+  discovery:
+  - T1482
+DataSources:
+- Provider: Microsoft-Windows-DNS-Server-Service
+  EventID:
+  - 6001
+  - 6525

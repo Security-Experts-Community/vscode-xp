@@ -1,0 +1,1144 @@
+[ 
+	{
+		"name" : "match",
+		"signature" : "Bool match(String $1, String $2)",
+		"description": "Функция **match** используется для сравнения строки с заданным шаблоном.",
+		"params": [
+			"$1 - строка для поиска",
+			"$2 - шаблон для поиска соответствия",
+			"? — один символ, * — несколько символов",
+			"Возвращает true, либо false."
+		],
+		"examples" : [
+			"subject.process.fullpath = \"c:\\\\windows\\\\system32\\\\services.exe\"",
+			"match(lower(subject.process.fullpath), \"?:\\\\windows\\\\system32\\\\services.exe\")",
+			"# true"
+		]
+	},
+	{
+		"name" : "lower",
+		"signature" : "String lower(String $1)",
+		"description": "Функция **lower** используется для преобразования в строке, указанной в аргументе, всех прописных буквы в строчные.",
+		"params": [
+			"$1 - исходная строка",
+			"Возвращает строку со строчными буквами."
+		],
+		"examples" : [
+			"subject.process.fullpath = \"C:\\\\Windows\\\\System32\\\\services.exe\"",
+			"lower(subject.process.fullpath) == \"c:\\\\windows\\\\system32\\\\services.exe\"",
+			"# true"
+		]
+	},
+	{
+		"name" : "regex",
+		"signature" : "String regex(String $1, String $2, String $3)",
+		"description": "Функция **regex** используется для поиска в строке по заданному [шаблону](https://github.com/google/re2/wiki/Syntax).",
+		"params": [
+			"$1 - строка для поиска",
+			"$2 - шаблон для поиска",
+			"$3 - указывается номер группы символов шаблона:",
+			"    0 — возвращается результат для всего шаблона;",
+			"    1 — возвращается результат для первой группы символов;",
+			"    2 — возвращается результат для второй группы символов, и так далее.",
+			"Для объединения символов шаблона в группу используются круглые скобки. Функция возвращает строку, содержащую первую найденную последовательность символов, удовлетворяющую шаблону. Если указан отличный от нуля номер группы символов шаблона, функция возвращает часть строки, соответствующую этой группе в шаблоне.",
+			"Если какой-либо из аргументов не задан или удовлетворяющая шаблону последовательность символов не найдена, функция возвращает null."
+		],
+		"examples" : [
+			"object.name = \"C:\\\\Windows\\\\temp\\\\payload.vba\"",
+			"regex(lower(object.name), \"\\.(js|vba|vbs)\", 0) != null",
+			"# true"
+		]
+	},
+	{
+		"name" : "append",
+		"signature" : "append(List $1[], Any $2)",
+		"description": "Функция **append** используется для добавления в конец списка, указанного в первом аргументе, элемента, указанного во втором аргументе.",
+		"params": [
+			"$1 - список, в который нужно добавить элемент",
+			"$2 - элемент, который необходимо добавить",
+			"Если первый аргумент функции не определен, функция возвращает список из одного элемента.",
+			"Возвращает новый список с добавленным элементом."
+		],
+		"examples" : [
+			"$list = ['a', 'b', 'c']",
+			"append($list, 'd')",
+			"# $list = ['a', 'b', 'c', 'd']"
+		]
+	},
+	{
+		"name" : "coalesce",
+		"signature" : "coalesce($1, $2, $3,...)",
+		"description": "Функция **coalesce** проверяет значения аргументов слева направо и возвращает значение первого отличного от null.",
+		"params": [
+			"Количество аргументов может быть любым.",
+			"Тип возвращаемого значения, как у аргумента."
+		],
+		"examples" : [
+			"src.ip = 172.16.222.133",
+			"src.hostname = null",
+			"src.host = coalesce(src.hostname, src.ip)",
+			"# src.host = 172.16.222.133"
+		]
+	},
+	{
+		"name" : "datetime_to_epoch",
+		"signature" : "Number datetime_to_epoch(DateTime $1)",
+		"description": "Функ­ция **datetime_to_epoch** ис­поль­зу­ет­ся для пре­об­ра­зо­ва­ния фор­ма­та вре­ме­ни в Unix-вре­мя.",
+		"params": [
+			"$1 - время с типом данных DateTime",
+			"Функция возвращает Unix-вре­мя в секундах."
+		],
+		"examples" : [
+			"datafield1 = '2015-01-25T01:06:40'",
+			"datafield2 = datetime_to_epoch(datafield1)",
+			"# \"datafield2\": \"1422148000\""
+		]
+	},
+	{
+		"name" : "epoch_to_datetime",
+		"signature" : "DateTime epoch_to_datetime(Number $1)",
+		"description": "Функ­ция **epoch_to_datetime** ис­поль­зу­ет­ся для пре­об­ра­зо­ва­ния Unix-вре­мени в зна­че­ние вре­ме­ни с ти­пом дан­ных DateTime.",
+		"params": [
+			"$1 - Unix-время",
+			"Функция возвращает значение времени с типом данных DateTime."
+		],
+		"examples" : [
+			"datafield1 = '1422148000'",
+			"datafield2 = datetime_to_epoch(datafield1)",
+			"# \"datafield2\": \"2015-01-25T01:06:40Z\""
+		]
+	},
+	{
+		"name" : "exec_query",
+		"signature" : "Bool exec_query(String $0, [$1, $2, ...])",
+		"description": "Функ­ция **exec_query** используется для выполнения запроса к табличному списку.",
+		"params": [
+			"$0 - название запроса, описанного в директиве query",
+			"$1, $2 - список значений полей, по которым выполняется запрос",
+			"Возвращает True/False или тип колонки таблицы, если в запросе определен qhandler."
+		],
+		"examples" : [
+			"$datafield1 = exec_query(\"TestQuery\", [dst.ip, dst.port])",
+			"# Возвращает True, если соотвествующая запись найдена в ТС",
+			"$datafield2 = exec_query(\"TestQuery\", [dst.ip, dst.port])[\"$dst.host\"]",
+			"# Возвращает конкретное значение из ТС, если в запросе определен qhandler"
+		]
+	},
+	{
+		"name" : "find_substr",
+		"signature" : "Number find_substr(String $f1, String $f2)",
+		"description": "Функция **find_substr** используется для поиска сочетания символов в строке.",
+		"params": [
+			"$1 - строка для поиска",
+			"$2 - искомое сочетание символов",
+			"Возвращает номер байта в строке, с которого начинается искомое сочетание, либо null."
+		],
+		"examples" : [
+			"object.process.cmdline = \"procdump_x64.exe -ma 4572\"",
+			"find_substr(lower(object.process.cmdline), \"procdump\")",
+			"# 0",
+			"find_substr(lower(object.process.cmdline), \"mimikatz\")",
+			"# null"
+		]
+	},
+	{
+		"name" : "in_list",
+		"signature" : "Bool in_list(List $1[], String $2)",
+		"description": "Функция **in_list** используется для поиска в списке.",
+		"params": [
+			"$1[] - список с типом данных List",
+			"$2 - искомое значение",
+			"Возвращает True, либо False."
+		],
+		"examples" : [
+			"in_list([2,7,10], logon_type)",
+			"# True"
+		]
+	},
+	{
+		"name" : "in_subnet",
+		"signature" : "Bool in_subnet(IpAddress $f1, String $f2)",
+		"description": "Функция **in_subnet** используется для проверки принадлежности IP-адреса к подсети.",
+		"params": [
+			"$1 - IP-адрес с типом данных IPAddress",
+			"$2 - адрес подсети в формате CIDR-нотации",
+			"Возвращает True, либо False."
+		],
+		"examples" : [
+			"in_subnet(172.16.222.133, \"172.16.222.0\\24\"",
+			"# True"
+		]
+	},
+	{
+		"name" : "join",
+		"signature" : "String join(List [$1], String $2)",
+		"description": "Функция **join** используется для объединения в строку элементов списка через разделитель, указанный как второй аргумент.",
+		"params": [
+			"$1[] - список строк для объединения",
+			"$2 - разделитель",
+			"Возвращает объединенные в одну строку элементы."
+		],
+		"examples" : [
+			"subject.account.name = \"pushkin\"",
+			"object.process.cmdline = \"ipconfig\"",
+			"alert.key = join([lower(subject.account.name), (object.process.cmdline)], \"|\")",
+			"# pushkin|ipconfig"
+		]
+	},
+	{
+		"name" : "maybe_ipv4",
+		"signature" : "IPAddress maybe_ipv4(String $1)",
+		"description": "Функ­ция **ipv4** ис­поль­зу­ет­ся для пре­об­ра­зо­ва­ния зна­че­ния с ти­пом дан­ных String в IP-ад­рес с ти­пом дан­ных IPAddress.",
+		"params": [
+			"$1 - строка, содержащая IP-адрес стандарта IPv4 с типом данных String",
+			"Преобразует аргумент в значение с ти­пом дан­ных IPAddress.",
+			"Если IP-адрес распознать не удалось, функция возвращает null."
+		],
+		"examples" : [
+			"$f = '192.168.0.1'",
+			"src.host = ipv4($f)"
+		]
+	},
+	{
+		"name" : "replace",
+		"signature" : "String replace(String $f1, String $f2, String $f3, Number $f4)",
+		"description": "Функция **replace** используется для замены в строке сочетания символов, удовлетворяющих шаблону, другим сочетанием символов.",
+		"params": [
+			"$1 - строка для анализа",
+			"$2 - сочетание символов, которое будет подставлено в строку",
+			"$3 - шаблон для поиска сочетания символов, которое будет удалено из строки (в шаблоне можно использовать регулярные выражения)",
+			"    ? — Замена одного любого символа;",
+			"    * — Замена любого количества любых символов подряд;",
+			"    [abcd] — Замена любого из перечисленных символов;",
+			"    [a-d] — Замена любого символа из диапазона;",
+			"    [!abcd] — Замена любого символа, кроме перечисленных;",
+			"    [!0-9] — Замена любого символа, кроме символов из диапазона;",
+			"$4 - максимальное количество вхождений, которое может быть заменено (если значение аргумента не указано или указан ноль, количество вхождений не ограничено)",
+			"Возвращает копию строки, указанной в первом аргументе, в которой сочетания символов в третьем аргументе заменены на сочетание символов во втором аргументе."
+		],
+		"examples" : [
+			"object.process.cmdline = \"In^vok^e-We^^bRe^que^st\"",
+			"replace(object.process.cmdline, \"\", \"^\")",
+			"# Invoke-WebRequest"
+		]
+	},
+	{
+		"name" : "select_query_first",
+		"signature" : "select_query_first($0<Название запроса>, [$f1, $f2, ...], $3\"<Имя колонки>\")",
+		"description": "Функция **select_query_first** используется для получения значения ячейки табличного списка, удовлетворяющего запросу.",
+		"params": [
+			"$0 - название запроса, описанного в директиве query",
+			"$f1, $f2 -  список значений полей, по которым выполняется запрос",
+			"$3 - заголовок колонки табличного списка (в кавычках), значение которой требуется получить",
+			"Тип данных возвращаемого значения совпадает с типом данных колонки.",
+			"Если условие запроса не выполнено, функция возвращает null."
+		],
+		"examples" : [
+			"$datafield1 = \"Port_Status: \" + select_query_first(\"TestQuery\", [dst.ip, dst.port], \"Status\")",
+			"# Port_Status: Open"
+		]
+	},
+	{
+		"name" : "strip",
+		"signature" : "String strip(String $1, String $2, String $3)",
+		"description": "Функция **strip** используется для удаления из значения первого аргумента с типом данных String, префикса, указанного во втором аргументе, и (или) постфикса, указанного в третьем аргументе.",
+		"params": [
+			"$1 - строка, из которой необходимо удалить префикс и (или) постфикс",
+			"$2 - префикс, который необходимо удалить",
+			"$3 - постфикс, который необходимо удалить",
+			"Вовращает новую обрезанную строку."
+		],
+		"examples" : [
+			"$1 = <<<<Сча­стье есть>>>>",
+			"$f2 = \"<<<<\"",
+			"$f3 = \">>>>\"",
+			"datafield1 = strip($f1, $f2, $f3)",
+			"# \"datafield1\": \"Сча­стье есть\""
+		]
+	},
+
+	{
+		"name" : "div",
+		"signature" : "Number div(Number $1, Number $2)",
+		"description": "Деление. Результатом применения оператора **div** является отношение первого операнда ко второму. Если оба операнда относятся к типу данных Number, результатом является целая часть от деления операндов. Деление на ноль не допускается.",
+		"params": [
+			"$1 - первый операнд",
+			"$2 - второй операнд",
+			"Вовращает целую часть от деления операндов."
+		],
+		"examples" : [
+			"$1 = 12",
+			"$2 = 2",
+			"datafield1 = div($1, $2)",
+			"datafield2 = div($1, 7)",
+			"# \"datafield1\": \"6\"",
+			"# \"datafield2\": \"1\""
+		]
+	},
+	{
+		"name" : "mod",
+		"signature" : "Number mod(Number $1, Number $2)",
+		"description": "Деление по модулю. Результатом применения оператора **mod** к целым числам является остаток от целочисленного деления операндов. Если первый операнд меньше второго, то результатом является его значение. Деление на ноль не допускается.",
+		"params": [
+			"$1 - первый операнд",
+			"$2 - второй операнд",
+			"Вовращает остаток от целочисленного деления операндов."
+		],
+		"examples" : [
+			"$1 = 12",
+			"$2 = 7",
+			"$3 = 2",
+			"datafield1 = mod($1, $2)",
+			"datafield2 = mod($1, $3)",
+			"datafield3 = mod($3, $2)",
+			"# \"datafield1\": \"5\"",
+			"# \"datafield2\": \"0\"",
+			"# \"datafield3\": \"2\""
+		]
+	},
+	{
+		"name" : "datetime",
+		"signature" : "DateTime datetime(String $1)",
+		"description": "Только для правил нормализации. Функция **datetime** используется для преобразования значения аргумента с типом данных String в тип данных DateTime.",
+		"params": [
+			"$1 - строка для преобразования в DateTime"
+		],
+		"examples" : [
+			"$1 = \"1990-10-31T23:13:04+03:00\"",
+			"$2 = datetime($1)",
+			"datafield1 = $2",
+			"datafield2 = year($2)",
+			"datafield3 = month($2)",
+			"datafield4 = day($2)",
+			"# \"datafield1\": \"1990-10-31T23:13:04+03:00\"",
+			"# \"datafield2\": \"1990\"",
+			"# \"datafield3\": \"10\"",
+			"# \"datafield4\": \"31\""
+		]
+	},
+	{
+		"name" : "maybe_datetime",
+		"signature" : "DateTime maybe_datetime(String $1)",
+		"description": "Только для правил нормализации. Функция **maybe_datetime** используется для преобразования значения аргумента с типом данных String в тип данных DateTime.",
+		"params": [
+			"$1 - строка для преобразования в DateTime"
+		],
+		"examples" : [
+			"$1 = \"1990-10-31T23:13:04+03:00\"",
+			"$2 = maybe_datetime($1)",
+			"datafield1 = $2",
+			"datafield2 = year($2)",
+			"datafield3 = month($2)",
+			"datafield4 = day($2)",
+			"# \"datafield1\": \"1990-10-31T23:13:04+03:00\"",
+			"# \"datafield2\": \"1990\"",
+			"# \"datafield3\": \"10\"",
+			"# \"datafield4\": \"31\""
+		]
+	},
+	{
+		"name" : "datetime_to_epoch_ms",
+		"signature" : "Number datetime_to_epoch_ms(DateTime $1)",
+		"description": "Функция **datetime_to_epoch_ms** используется для преобразования формата времени. Аргументом функции является время с типом данных DateTime. Функция возвращает Unix-время в миллисекундах. Отcчет Unix-времени начинается с 00:00:00 UTC 1 января 1970 года.",
+		"params": [
+			"$1 - DateTime для преобразования в миллисекунды"
+		],
+		"examples" : [
+			"$1 = 2015-01-25T01:06:40",
+			"datafield1 = $1",
+			"datafield2 = datetime_to_epoch_ms($1)",
+			"# \"datafield1\": \"2015-01-25T01:06:40Z\"",
+			"# \"datafield2\": \"1422148000000\""
+		]
+	},
+	{
+		"name" : "datetime_to_win_ticks",
+		"signature" : "Number datetime_to_win_ticks(DateTime $1)",
+		"description": "Функция **datetime_to_win_ticks** используется для преобразования формата времени. Аргументом функции является время с типом данных DateTime. Функция возвращает время в формате filetime с типом данных Number. Время filetime указывается в сотнях наносекунд (10-7 секунды), начиная с 00:00:00 UTC 1 января 1601 года.",
+		"params": [
+			"$1 - DateTime для преобразования в filetime"
+		],
+		"examples" : [
+			"$1 = 2015-01-25T01:06:40",
+			"datafield1 = $1",
+			"datafield2 = datetime_to_win_ticks($1)",
+			"datafield3 = div(datetime_to_win_ticks($1), 10000000)",
+			"# \"datafield1\": \"2015-01-25T01:06:40Z\"",
+			"# \"datafield2\": \"130666216000000000\"",
+			"# \"datafield3\": \"13066621600\""
+		]
+	},
+	{
+		"name" : "duration",
+		"signature" : "Number duration(String $1)",
+		"description": "Функция **duration** используется для преобразования значения аргумента с типом данных String, содержащего интервал времени в формате XXXd XXh:XXm:XXs, в число секунд. Если преобразование не удалось, функция возвращает null.",
+		"params": [
+			"$1 - Строка с интервалом времени для преобразования в секунды"
+		],
+		"examples" : [
+			"$1 = \"0d 1h:2m:15s\"",
+			"datafield1 = duration($1)",
+			"datafield2 = div(datafield1,60*60)",
+			"datafield3 = div(mod(datafield1,3600),60)",
+			"datafield4 = mod(mod(datafield1,3600),60)",
+			"# \"datafield1\": \"3735\"",
+			"# \"datafield2\": \"1\"",
+			"# \"datafield3\": \"2\"",
+			"# \"datafield4\": \"15\""
+		]
+	},
+	{
+		"name" : "maybe_duration",
+		"signature" : "Number maybe_duration(String $1)",
+		"description": "Функция **maybe_duration** используется для преобразования значения аргумента с типом данных String, содержащего интервал времени в формате XXXd XXh:XXm:XXs, в число секунд. Если преобразование не удалось, функция возвращает null.",
+		"params": [
+			"$1 - Строка с интервалом времени для преобразования в секунды"
+		],
+		"examples" : [
+			"$1 = \"0d 1h:2m:15s\"",
+			"datafield1 = maybe_duration($1)",
+			"datafield2 = div(datafield1,60*60)",
+			"datafield3 = div(mod(datafield1,3600),60)",
+			"datafield4 = mod(mod(datafield1,3600),60)",
+			"# \"datafield1\": \"3735\"",
+			"# \"datafield2\": \"1\"",
+			"# \"datafield3\": \"2\"",
+			"# \"datafield4\": \"15\""
+		]
+	},
+	{
+		"name" : "hour",
+		"signature" : "Number hour(DateTime $1)",
+		"description": "Функция **hour** используется для получения из даты значения часов. В аргументе функции нужно указать дату с типом данных DateTime. Функция возвращает значение с типом данных Number.",
+		"params": [
+			"$1 - DateTime, из которого надо получить часы"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T23:13:04+03:00",
+			"datafield1 = hour($1)",
+			"# \"datafield1\": \"20\""
+		]
+	},
+	{
+		"name" : "minute",
+		"signature" : "Number minute(DateTime $1)",
+		"description": "Функция **minute** используется для получения из даты значения минут. В аргументе функции нужно указать дату с типом данных DateTime. Функция возвращает значение с типом данных Number.",
+		"params": [
+			"$1 - DateTime, из которого надо получить минуты"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T23:13:04+03:00",
+			"datafield1 = minute($1)",
+			"# \"datafield1\": \"13\""
+		]
+	},
+	{
+		"name" : "second",
+		"signature" : "Number second(DateTime $1)",
+		"description": "Функция **second** используется для получения из даты значения секунд. В аргументе функции нужно указать дату с типом данных DateTime. Функция возвращает значение с типом данных Number.",
+		"params": [
+			"$1 - DateTime, из которого надо получить секунды"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T23:13:04+03:00",
+			"datafield1 = second($1)",
+			"# \"datafield1\": \"4\""
+		]
+	},
+	{
+		"name" : "timezone",
+		"signature" : "Number timezone(DateTime $1)",
+		"description": "Функция **timezone** используется для получения из даты значения отклонения от UTC. В аргументе функции нужно указать дату с типом данных DateTime. Функция возвращает значение в секундах.",
+		"params": [
+			"$1 - DateTime, из которого надо получить отклонение от UTC в секундах"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T23:13:04+03:00",
+			"datafield1 = timezone($1)",
+			"# \"datafield1\": \"10800\""
+		]
+	},
+	{
+		"name" : "win_ticks_to_datetime",
+		"signature" : "DateTime win_ticks_to_datetime(Number $1)",
+		"description": "Функция **win_ticks_to_datetime** используется для преобразования формата времени. Аргументом функции является время в формате filetime. Время filetime указывается в сотнях наносекунд (10−7 секунды) начиная с 00:00:00 UTC 1 января 1601 года. Время ранее 1 января 1970 года считается невалидным. Функция возвращает время с типом данных DateTime.",
+		"params": [
+			"$1 - Время filetime в сотнях наносекунд для преобразования в формат DateTime"
+		],
+		"examples" : [
+			"$1 = 130666216000000000",
+			"datafield1 = win_ticks_to_datetime($1)",
+			"# \"datafield1\": \"2015-01-25T01:06:40Z\""
+		]
+	},
+	{
+		"name" : "year",
+		"signature" : "Number year(DateTime $1)",
+		"description": "Функция **year** используется для получения из даты значения года (в часовом поясе UTC). В аргументе функции нужно указать дату с типом данных DateTime.",
+		"params": [
+			"$1 - DateTime, из которого надо получить значение года"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T02:13:04+03:00",
+			"datafield1 = year($1)",
+			"# \"datafield1\": \"1990\""
+		]
+	},
+	{
+		"name" : "month",
+		"signature" : "Number month(DateTime $1)",
+		"description": "Функция **month** используется для получения из даты значения месяца (в часовом поясе UTC). В аргументе функции нужно указать дату с типом данных DateTime.",
+		"params": [
+			"$1 - DateTime, из которого надо получить значение месяца"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T02:13:04+03:00",
+			"datafield1 = month($1)",
+			"# \"datafield1\": \"10\""
+		]
+	},
+	{
+		"name" : "day",
+		"signature" : "Number day(DateTime $1)",
+		"description": "Функция **day** используется для получения из даты значения числа (в часовом поясе UTC). В аргументе функции нужно указать дату с типом данных DateTime.",
+		"params": [
+			"$1 - DateTime, из которого надо получить значение числа"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T02:13:04+03:00",
+			"datafield1 = day($1)",
+			"# \"datafield1\": \"30\""
+		]
+	},
+
+	{
+		"name" : "bool",
+		"signature" : "Bool bool($1)",
+		"description": "Функция **bool** используется для преобразования значения аргумента в логическое значение True или False.",
+		"params": [
+			"$1 - входной аргумент, который может принимать значение из следующих типов данных: Bool, String, Number, Null",
+			"Если входной аргумент имеет тип Bool и значение True, либо тип String с любым значением кроме 0, false, False и пустой строки, либо тип Number и значение 1 или любое число, кроме 0, то результат функции - True.",
+			"В иных случаях результатом функции является - False.",
+			"Возвращает результат преобразования значения аргумента в логическое значение."
+		],
+		"examples" : [
+			"datafield1 = bool(tRuE)",
+			"datafield2 = bool(12)",
+			"datafield3 = bool(\"\")",
+			"datafield4 = bool(null)",
+			"# \"datafield1\": \"true\"",
+			"# \"datafield2\": \"true\"",
+			"# \"datafield3\": \"false\"",
+			"# \"datafield4\": \"false\""
+		]
+	},
+	{
+		"name" : "ipv4",
+		"signature" : "IPAddress ipv4(String $1)",
+		"description": "Функция **ipv4** используется для преобразования значения с типом данных String в IP-адрес с типом данных IPAddress.",
+		"params": [
+			"$1 - строка, содержащая IP-адрес стандарта IPv4 с типом данных String",
+			"Преобразует аргумент в значение с типом данных IPAddress.",
+			"Если IP-адрес распознать не удалось, функция возвращает null."
+		],
+		"examples" : [
+			"$f = '192.168.0.1'",
+			"src.host = ipv4($f)"
+		]
+	},
+	{
+		"name" : "ipv6",
+		"signature" : "IPAddress ipv6(String $1)",
+		"description": "Функция **ipv6** используется для преобразования значения с типом данных String в IP-адрес с типом данных IPAddress.",
+		"params": [
+			"$1 - строка, содержащая IP-адрес стандарта IPv6 с типом данных String",
+			"Преобразует аргумент в значение с типом данных IPAddress.",
+			"Если IP-адрес распознать не удалось, функция возвращает null."
+		],
+		"examples" : [
+			"$f = '211:DB8:0:0:8:800:200C:47A'",
+			"src.host = ipv6($f)"
+		]
+	},
+	{
+		"name" : "maybe_ipv6",
+		"signature" : "IPAddress maybe_ipv6(String $1)",
+		"description": "Функция **maybe_ipv6** используется для преобразования значения с типом данных String в IP-адрес с типом данных IPAddress.",
+		"params": [
+			"$1 - строка, содержащая IP-адрес стандарта IPv6 с типом данных String",
+			"Преобразует аргумент в значение с типом данных IPAddress.",
+			"Если IP-адрес распознать не удалось, функция возвращает null."
+		],
+		"examples" : [
+			"$f = '211:DB8:0:0:8:800:200C:47A'",
+			"src.host = maybe_ipv6($f)"
+		]
+	},
+	{
+		"name" : "macaddr",
+		"signature" : "MACAddress macaddr(String $1)",
+		"description": "Функция **macaddr** используется для преобразования значения с типом данных String в MAC-адрес с типом данных MACAddress.",
+		"params": [
+			"$1 - строка, содержащая MAC-адрес в одном из форматов: aa:bb:cc:dd:ee:ff, aa-bb-cc-dd-ee-ff, aabb.ccdd.eeff",
+			"Преобразует аргумент в значение с типом данных MACAddress.",
+			"Если MAC-адрес распознать не удалось, функция возвращает null."
+		],
+		"examples" : [
+			"$f = 'a1-f6-33-4d-21-56'",
+			"datafield1 = macaddr($f)",
+			"# \"datafield1\": \"A1:F6:33:4D:21:56\""
+		]
+	},
+	{
+		"name" : "maybe_macaddr",
+		"signature" : "MACAddress maybe_macaddr(String $1)",
+		"description": "Функция **maybe_macaddr** используется для преобразования значения с типом данных String в MAC-адрес с типом данных MACAddress.",
+		"params": [
+			"$1 - строка, содержащая MAC-адрес в одном из форматов: aa:bb:cc:dd:ee:ff, aa-bb-cc-dd-ee-ff, aabb.ccdd.eeff",
+			"Преобразует аргумент в значение с типом данных MACAddress.",
+			"Если MAC-адрес распознать не удалось, функция возвращает null."
+		],
+		"examples" : [
+			"$f = 'a1-f6-33-4d-21-56'",
+			"datafield1 = maybe_macaddr($f)",
+			"# \"datafield1\": \"A1:F6:33:4D:21:56\""
+		]
+	},
+	{
+		"name" : "number",
+		"signature" : "Number number(String $1)",
+		"description": "Функция **number** используется для преобразования значения с типом данных String в число с типом данных Number.",
+		"params": [
+			"$1 - строка, содержащая число в десятичной системе счисления с типом данных String",
+			"Преобразует аргумент в значение с типом данных Number.",
+			"Если число распознать не удалось, функция возвращает null."
+		],
+		"examples" : [
+			"$f = '-245'",
+			"datafield1 = number($f)",
+			"# \"datafield1\": \"-245\""
+		]
+	},
+	{
+		"name" : "maybe_number",
+		"signature" : "Number maybe_number(String $1)",
+		"description": "Функция **maybe_number** используется для преобразования значения с типом данных String в число с типом данных Number.",
+		"params": [
+			"$1 - строка, содержащая число в десятичной системе счисления с типом данных String",
+			"Преобразует аргумент в значение с типом данных Number.",
+			"Если число распознать не удалось, функция возвращает null."
+		],
+		"examples" : [
+			"$f = '-245'",
+			"datafield1 = maybe_number($f)",
+			"# \"datafield1\": \"-245\""
+		]
+	},
+	{
+		"name" : "number8",
+		"signature" : "Number number8(String $1)",
+		"description": "Функция **number8** используется для преобразования значения с типом данных String в число с типом данных Number.",
+		"params": [
+			"$1 - строка, содержащая число в восьмеричной системе счисления с типом данных String",
+			"Преобразует аргумент в значение с типом данных Number.",
+			"Если число распознать не удалось, функция возвращает null."
+		],
+		"examples" : [
+			"$f = '-245'",
+			"datafield1 = number8($f)",
+			"# \"datafield1\": \"-165\""
+		]
+	},
+	{
+		"name" : "maybe_number8",
+		"signature" : "Number maybe_number8(String $1)",
+		"description": "Функция **maybe_number8** используется для преобразования значения с типом данных String в число с типом данных Number.",
+		"params": [
+			"$1 - строка, содержащая число в восьмеричной системе счисления с типом данных String",
+			"Преобразует аргумент в значение с типом данных Number.",
+			"Если число распознать не удалось, функция возвращает null."
+		],
+		"examples" : [
+			"$f = '-245'",
+			"datafield1 = maybe_number8($f)",
+			"# \"datafield1\": \"-165\""
+		]
+	},
+	{
+		"name" : "number16",
+		"signature" : "Number number16(String $1)",
+		"description": "Функция **number16** используется для преобразования значения с типом данных String в число с типом данных Number.",
+		"params": [
+			"$1 - строка, содержащая число в шестнадцатеричной системе счисления с типом данных String",
+			"Преобразует аргумент в значение с типом данных Number.",
+			"Если число распознать не удалось, функция возвращает null."
+		],
+		"examples" : [
+			"$f = '-245e'",
+			"datafield1 = number16($f)",
+			"# \"datafield1\": \"-9310\""
+		]
+	},
+	{
+		"name" : "maybe_number16",
+		"signature" : "Number maybe_number16(String $1)",
+		"description": "Функция **maybe_number16** используется для преобразования значения с типом данных String в число с типом данных Number.",
+		"params": [
+			"$1 - строка, содержащая число в шестнадцатеричной системе счисления с типом данных String",
+			"Преобразует аргумент в значение с типом данных Number.",
+			"Если число распознать не удалось, функция возвращает null."
+		],
+		"examples" : [
+			"$f = '-245e'",
+			"datafield1 = maybe_number16($f)",
+			"# \"datafield1\": \"-9310\""
+		]
+	},
+	{
+		"name" : "string",
+		"signature" : "String string($1)",
+		"description": "Функция **string** используется для преобразования значения аргумента в тип данных String.",
+		"params": [
+			"$1 - входной аргумент, который может принимать значение из следующих типов данных: Bool, Number, String, DateTime",
+			"Преобразует аргумент в значение с типом данных String."
+		],
+		"examples" : [
+			"$f = 192.168.0.1",
+			"datafield1 = string($f)",
+			"# \"datafield1\": \"192.168.0.1\""
+		]
+	},
+	{
+		"name" : "csv",
+		"signature" : "List csv($1, String $2, String $3)",
+		"description": "Функция **csv** используется для разбора строки с CSV-разметкой на элементы.",
+		"params": [
+			"$1 - строка для разбора, может иметь тип String или List",
+			"$2 - символ, разделяющий элементы строки",
+			"$3 - символ экранирования, стоящий перед каждым элементом строки и после него",
+			"Если элементы строки не экранированы, в третьем аргументе нужно указать любой символ, не встречающийся в строке.",
+			"Возвращает список элементов строки."
+		],
+		"examples" : [
+			"# Example: /login=admin/, /password=supercleveradmin/",
+			"TEXT = 'Example: {$f1=REST}'",
+			"$f2 = ','",
+			"$f3 = '/'",
+			"datafield1 = csv($f1, $f2, $f3)[0]",
+			"datafield2 = csv($f1, $f2, $f3)[1]",
+			"# \"datafield1\": \"login=admin\"",
+			"# \"datafield2\": \"password=supercleveradmin\""
+		]
+	},
+	{
+		"name" : "keyvalue",
+		"signature" : "KeyValue keyvalue(String $1, String $2, String $3, String $4)",
+		"description": "Функция **keyvalue** используется для анализа строки и создания ассоциативного массива пар \"ключ — значение\".",
+		"params": [
+			"$1 - строка для анализа",
+			"$2 - внешний разделитель между парами",
+			"$3 - внутренний разделитель в паре",
+			"$4 - символ экранирования значения, стоящий перед каждым значением в паре и после него",
+			"Для ввода одинарных кавычек используется обратная косая черта (\\), для ввода двойных кавычек — две обратные косые черты (\\\\).",
+			"Возвращает ассоциативный массив, каждый элемент которого содержит пару \"ключ — значение\"."
+		],
+		"examples" : [
+			"# login='admin'; password='supercleveradmin'",
+			"TEXT = 'Example: {$f=REST}'",
+			"$result_list = keyvalue($f, \";\", \"=\", \"'\")",
+			"datafield1 = $result_list[\"login\"]",
+			"datafield2 = $result_list[\"password\"]",
+			"# \"datafield1\": \"admin\"",
+			"# \"datafield2\": \"supercleveradmin\""
+		]
+	},
+	{
+		"name" : "length",
+		"signature" : "Number length($1)",
+		"description": "Функция **length** возвращает размер строки в байтах или количество элементов в списке.",
+		"params": [
+			"$1 - входной аргумент, который может принимать значение из следующих типов данных: String, List, Null",
+			"Для аргумента, имеющего тип данных String, функция возвращает размер строки в байтах, для аргумента, имеющего тип данных List — количество элементов в списке.",
+			"Если в качестве аргумента выступает пустое значение, функция возвращает null."
+		],
+		"examples" : [
+			"$f_string = \"Angry Birds\"",
+			"$f_list = [3, \"Angry\", \"Birds\"]",
+			"datafield1 = length($f_string)",
+			"datafield2 = length($f_list)",
+			"# \"datafield1\": \"11\"",
+			"# \"datafield2\": \"3\""
+		]
+	},
+	{
+		"name" : "substr",
+		"signature" : "String substr($1, $2, $3)",
+		"description": "Функция **substr** возвращает часть исходной строки.",
+		"params": [
+			"$1 - исходная строка",
+			"$2 - индекс первого элемента подстроки",
+			"$3 - длина подстроки",
+			"Если второй аргумент отрицательный, отсчет индекса выполняется с конца строки.",
+			"Возвращает подстроку из исходной строки, начиная с байта, указанного во втором аргументе, и длиной в число байт, указанное в третьем аргументе."
+		],
+		"examples" : [
+			"$f1 = \"superadmin\"",
+			"$f2 = 4",
+			"$f3 = 5",
+			"datafield1 = substr($f1, $f2, $f3)",
+			"datafield2 = substr($f1, -$f2, $f3)",
+			"# \"datafield1\": \"radmin\"",
+			"# \"datafield2\": \"dmin\""
+		]
+	},
+	{
+		"name" : "upper",
+		"signature" : "String upper(String $1)",
+		"description": "Функция **upper** используется для преобразования в строке, указанной в аргументе, всех строчных букв в прописные.",
+		"params": [
+			"$1 - исходная строка",
+			"Возвращает строку с прописными буквами."
+		],
+		"examples" : [
+			"subject.process.name = \"services.exe\"",
+			"upper(subject.process.name) == \"SERVICES.EXE\"",
+			"# true"
+		]
+	},
+	
+	{
+		"name" : "is_list",
+		"signature" : "Bool is_list($1)",
+		"description": "Функция **is_list** используется для проверки соответствия аргумента типу данных List.",
+		"params": [
+			"$1 - любой объект для сравнения",
+			"Возвращает True, либо False."
+		],
+		"examples" : [
+			"$list = ['a', 'b', 'c']",
+			"is_list($list)",
+			"# true"
+		]
+	},
+	{
+		"name" : "remove",
+		"signature" : "List remove($1, $2)",
+		"description": "Функция **remove** используется для удаления из списка указанных символов.",
+		"params": [
+			"$1 - исходный список",
+			"$2 - символы для удаления",
+			"Возвращает список без указанных элементов."
+		],
+		"examples" : [
+			"$list = ['a', 'b', 'c', 'd']",
+			"remove($list, 'd')",
+			"# $list = ['a', 'b', 'c']"
+		]
+	},
+	{
+		"name" : "flip_endianness16",
+		"signature" : "Number flip_endianness16($1)",
+		"description": "Функция **flip_endianness16** используется для изменения порядка байтов 16-разрядных чисел на обратный.",
+		"params": [
+			"$1 - исходное число",
+			"Возвращает десятичное число, обратное исходному в соответствии с разрядностью их двоичного представления."
+		],
+		"examples" : [
+			"$1 = \"256\"",
+			"$number = flip_endianness16(\"256\")",
+			"# $number = 1"
+		]
+	},
+	{
+		"name" : "flip_endianness32",
+		"signature" : "Number flip_endianness32($1)",
+		"description": "Функция **flip_endianness32** используется для изменения порядка байтов 32-разрядных чисел на обратный.",
+		"params": [
+			"$1 - исходное число",
+			"Возвращает десятичное число, обратное исходному в соответствии с разрядностью их двоичного представления."
+		],
+		"examples" : [
+			"$1 = \"256\"",
+			"$number = flip_endianness32(\"256\")",
+			"# $number = 65536"
+		]
+	},
+	{
+		"name" : "flip_endianness64",
+		"signature" : "Number flip_endianness64($1)",
+		"description": "Функция **flip_endianness64** используется для изменения порядка байтов 64-разрядных чисел на обратный.",
+		"params": [
+			"$1 - исходное число",
+			"Возвращает десятичное число, обратное исходному в соответствии с разрядностью их двоичного представления."
+		],
+		"examples" : [
+			"$1 = \"256\"",
+			"$number = flip_endianness64(\"256\")",
+			"# $number = 281474976710656"
+		]
+	},
+	{
+		"name" : "regex_match",
+		"signature" : "regex_match($1, $2)",
+		"description": "Функция **regex_match** используется в запросе к табличному списку для сравнения строки с указанным в табличном списке шаблоном.",
+		"params": [
+			"$1 - строка для сравнения",
+			"$2 - название колонки с шаблонами",
+			"Возвращает True, либо False."
+		],
+		"examples" : [
+			"\"TabularList\": [",
+			"   {\"Files\":\".*\\.exe\"},",
+			"   {\"Files\":\".*\\.dll\"}",
+			"]",
+			"$1 = \"start.exe\"",
+			"query QueryName($1) from TabularList {",
+			"   regex_match($1, \"Files\")",
+			"}",
+			"# true"
+		]
+	},
+	{
+		"name" : "submessage",
+		"signature" : "submessage($1, $2, $3)",
+		"description": "Функция **submessage** используется для объявления вложенного правила нормализации для распознавания фрагмента необработанного события, имеющего другой формат. Конструкция из ключевых слов subformula, endsubformula используется для ограничения вложенного правила нормализации.",
+		"params": [
+			"$1 - формат фрагмента",
+			"$2 - названия вложенного правила",
+			"$3 - фрагмент необработанного события"
+		],
+		"examples" : [
+			"Исходное событие: <30>Jun 16 12:36:42 Nortel222 :Web authentication fail from IP address 10.2.64.86",
+			"TEXT = '{\"<\"NUMBER\">\"}{time=DATETIME}{event_src.hostname=HOSTNAME|STRING}  :Web authentication {$3=REST}'",
+			"submessage (\"TEXT\", \"parse_rest1\", $3)",
+			"   subformula \"parse_rest1\"",
+			"      !TEXT = \"fail from IP address {src.ip=IPV4|src.ip=IPV6}\"",
+			"      status = \"failure\"",
+			"   endsubformula",
+			"# Нормализованное событие: { ..., action = \"login\", status = \"failure\", src.ip = 10.2.64.86,...}"
+		]
+	},
+	{
+		"name" : "insert_min",
+		"signature" : "insert_min(column::$1, $2)",
+		"description": "Функция **insert_min** сравнивает и записывает в ячейку табличного списка минимальное из двух значений: текущего и значения аргумента $2. Если ячейка пустая или в табличный список добавляется новая строка, в ячейку заносится значение аругемента $2.",
+		"params": [
+			"$1 - название колонки",
+			"$2 - сравниваемое значение"
+		],
+		"examples" : [
+			"\"Tabular_List\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Port\":21, \"MinDuration\":12}",
+			"]",
+			"insert_into Tabular_List {",
+			"   column::Port = 21",
+			"   insert_min(column::MinDuration, 10)",
+			"}",
+			"# \"Tabular_List\": [{\"IP\":\"192.0.2.11\", \"Port\":21, \"MinDuration\":10}]"
+		]
+	},
+	{
+		"name" : "insert_max",
+		"signature" : "insert_max(column::$1, $2)",
+		"description": "Функция **insert_max** сравнивает и записывает в ячейку табличного списка максимальное из двух значений: текущего и значения аргумента $2. Если ячейка пустая или в табличный список добавляется новая строка, в ячейку заносится значение аругемента $2.",
+		"params": [
+			"$1 - название колонки",
+			"$2 - сравниваемое значение"
+		],
+		"examples" : [
+			"\"Tabular_List\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Port\":21, \"MaxDuration\":12}",
+			"]",
+			"insert_into Tabular_List {",
+			"   column::Port = \"21\"",
+			"   insert_max(column::MaxDuration, 10)",
+			"}",
+			"# \"Tabular_List\": [{\"IP\":\"192.0.2.11\", \"Port\":21, \"MaxDuration\":12}]"
+		]
+	},
+	{
+		"name" : "insert_inc",
+		"signature" : "insert_inc(column::$1)",
+		"description": "Функция **insert_inc** увеличивает значение ячейки в указанной колонке на единицу. Если в табличный список добавляется новая строка, в ячейку заносится 1.",
+		"params": [
+			"$1 - название колонки"
+		],
+		"examples" : [
+			"\"Tabular_List\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Port\":21, \"Count\":10}",
+			"]",
+			"insert_into Tabular_List {",
+			"   column::Port = 21",
+			"   insert_inc(column::Count)",
+			"}",
+			"# \"Tabular_List\": [{\"IP\":\"192.0.2.11\", \"Port\":21, \"Count\":11}]"
+		]
+	},
+	{
+		"name" : "insert_dec",
+		"signature" : "Number insert_dec(column::$1)",
+		"description": "Функция **insert_dec** уменьшает значение ячейки в указанной колонке на единицу. Если в табличный список добавляется новая строка, в ячейку заносится -1.",
+		"params": [
+			"$1 - название колонки"
+		],
+		"examples" : [
+			"\"Tabular_List\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Port\":21, \"Count\":10}",
+			"]",
+			"insert_into Tabular_List {",
+			"   column::Port = 21",
+			"   insert_dec(column::Count)",
+			"}",
+			"# \"Tabular_List\": [{\"IP\":\"192.0.2.11\", \"Port\":21, \"Count\":9}]"
+		]
+	},
+	{
+		"name" : "min",
+		"signature" : "Number min(column::$1)",
+		"description": "Функция **min** возвращает наименьший элемент в результатах запроса к табличному списку. Используется только в инструкции qhandler.",
+		"params": [
+			"$1 - название колонки",
+			"Возвращает наименьший элемент колонки $1 из результатов запроса к табличному списку."
+		],
+		"examples" : [
+			"\"TabularList\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":10},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":20}",
+			"]",
+			"query QueryName($ip) from TabularList {",
+			"   ip == $ip",
+			"}",
+			"   qhandler {",
+			"      $min_count = min(column::Count)",
+			"}",
+			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
+			"$min_value = $get_value[\"$min_count\"]",
+			"# min_value = 10"
+		]
+	},
+	{
+		"name" : "max",
+		"signature" : "Number max(column::$1)",
+		"description": "Функция **max** возвращает наибольший элемент в результатах запроса к табличному списку. Используется только в инструкции qhandler.",
+		"params": [
+			"$1 - название колонки",
+			"Возвращает наибольший элемент колонки $1 из результатов запроса к табличному списку."
+		],
+		"examples" : [
+			"\"TabularList\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":10},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":20}",
+			"]",
+			"query QueryName($ip) from TabularList {",
+			"   ip == $ip",
+			"}",
+			"   qhandler {",
+			"      $max_count = max(column::Count)",
+			"}",
+			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
+			"$max_value = $get_value[\"$max_count\"]",
+			"# max_value = 20"
+		]
+	},
+	{
+		"name" : "avg",
+		"signature" : "Number avg(column::$1)",
+		"description": "Функция **avg** возвращает среднее значение элементов из результатов запроса к табличному списку. Используется только в инструкции qhandler.",
+		"params": [
+			"$1 - название колонки",
+			"Возвращает среднее значение элементов колонки $1 из результатов запроса к табличному списку."
+		],
+		"examples" : [			
+			"\"TabularList\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":10},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":20}",
+			"]",
+			"query QueryName($ip) from TabularList {",
+			"   ip == $ip",
+			"}",
+			"   qhandler {",
+			"      $avg_count = avg(column::Count)",
+			"}",
+			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
+			"$avg_value = $get_value[\"$avg_count\"]",
+			"# avg_value = 15"
+		]
+	},
+	{
+		"name" : "median",
+		"signature" : "Number median(column::$1)",
+		"description": "Функция **median** возвращает медианный элемент из результатов запроса к табличному списку. При четном числе элементов выбирается нижнее медианное значение. Используется только в инструкции qhandler.",
+		"params": [
+			"$1 - название колонки",
+			"Возвращает значение медианного элемента колонки $1 из результатов запроса к табличному списку."
+		],
+		"examples" : [						
+			"\"TabularList\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":10},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":20},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":15}",
+			"]",
+			"query QueryName($ip) from TabularList {",
+			"   ip == $ip",
+			"}",
+			"   qhandler {",
+			"      $median_count = median(column::Count)",
+			"}",
+			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
+			"$median_value = $get_value[\"$median_count\"]",
+			"# median_value = 20"
+		]
+	},
+	{
+		"name" : "sum",
+		"signature" : "Number sum(column::$1)",
+		"description": "Функция **sum** возвращает сумму всех элементов результатов запроса к табличному списку. Используется только в инструкции qhandler.",
+		"params": [
+			"$1 - название колонки",
+			"Возвращает сумму всех значений элементов колонки $1 из результатов запроса к табличному списку."
+		],
+		"examples" : [
+			"\"TabularList\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":10},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":20},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":15}",
+			"]",
+			"query QueryName($ip) from TabularList {",
+			"   ip == $ip",
+			"}",
+			"   qhandler {",
+			"      $sum_count = sum(column::Count)",
+			"}",
+			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
+			"$sum_value = $get_value[\"$sum_count\"]",
+			"# sum_value = 45"
+		]
+	},
+	{
+		"name" : "count",
+		"signature" : "Number count()",
+		"description": "Функция **count** возвращает количество элементов в результатах запроса к табличному списку. Используется только в инструкции qhandler.",
+		"params": [
+			"$1 - название колонки",
+			"Возвращает количество элементов колонки $1 из результатов запроса к табличному списку."
+		],
+		"examples" : [			
+			"\"TabularList\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":10},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":20}",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":15}",
+			"]",
+			"query QueryName($ip) from TabularList {",
+			"   ip == $ip",
+			"}",
+			"   qhandler {",
+			"      $sum_count = sum(column::Count)",
+			"      $median_count = median(column::Count)",
+			"      $get_count = count()",
+			"}",
+			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
+			"$count = $get_value[\"$get_count\"]",
+			"# count = 2"
+		]
+	}
+]

@@ -1,0 +1,4 @@
+Description: inconsistent_localization_identifiers
+EventDescriptions:
+    - LocalizationId: corrname_inconsistent_localization_identifiers
+      EventDescription: 'inconsistent_localization_identifiers'

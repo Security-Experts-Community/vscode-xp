@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+
+	<!--
+		Use a content security policy to only allow loading images from https or from our extension directory,
+		and only allow scripts that have a specific nonce.
+	-->
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Тесты</title>
+
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/main.css">
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/tests.css">
+
+	<!-- Для отладки в браузере добавляю прямую ссылку на JQuery. -->
+	<script	src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
+
+</head>
+	<body>
+		<!-- Common Panel -->
+		<div id="header">
+			<div id="navigation">
+				<input id="runFullGraph" class="run" name="full_test" type="button" value="&#9654;   Прогнать по графу корреляций  ">
+			</div>
+	    </div>
+
+		<div id="main-body">
+			<!-- Raw Events -->
+			<div class="test_block">			
+				<div class="block_header">
+					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
+					<label for="raw_event" class="label">Сырое событие:</label>
+				</div>
+				
+				<div class="manage_buttons">
+					<input type="checkbox" name="word-wrap" onclick="wrap(this);" checked>
+					<label for="word-wrap">переносить по словам</label>
+					<div class="dropdown">
+						<input class="dropbtn" type="button" value="Конверт">
+						<div class="dropdown-content">
+							<div name="add_envelope">application/x-pt-eventlog</div>
+							<div name="add_envelope">application/json</div>
+							<div name="add_envelope">text/plain</div>
+							<div name="add_envelope">text/csv</div>
+							<div name="add_envelope">text/xml</div>
+						</div>
+					</div>
+					<!-- <input name="normalize" type="button" value="Нормализовать"> -->
+				</div>
+				<div class="text">
+					<textarea id="raw_events">{{RawEvents}}</textarea>
+				</div>	
+			</div>
+
+			<!-- Norm Events -->
+			{{#NormEvent}}
+			<div class="test_block">
+				<div class="block_header">
+					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
+					<label for="norm_event" class="label">Нормализованное событие:</label>
+				</div>
+				<div class="manage_buttons">
+					<input name="fast_test" type="button" value="Быстрый тест">
+				</div>
+				<div class="text">
+					<textarea rows="12" id="norm_event" name="norm_event">{{NormEvent}}</textarea>
+				</div>
+			</div>
+			{{/NormEvent}}
+
+			<!-- Test Conditions -->
+			<div class="test_block">
+				<div class="block_header">
+					<label for="expect" class="label">Полученный результат:</label>
+				</div>
+				<div id="correlated_events" class="text">
+					{{#Alerts}}
+						<br />
+						<p><b>{{AlertName}}</b></p>
+						<div id="loc-results">	
+							<p>{{RuLocText}}</p>
+							<p><b>alert.key:</b> {{AlertKey}}</p>
+							<p><b>alert.key:</b> {{AlertContext}}</p>
+						</div>
+					{{/Alerts}}
+					<!-- <p><b>ESC_Alert_Name</b></p>
+					<div id="loc-results">
+						<p>Пользователь anonymous успешно запустил тест правил корреляции для случайного события с узла random10.testlab.esc</p>
+						<p><b>alert.key:</b> anonymous|random10.testlab.esc</p>
+						<p><b>alert.context:</b> anonymous|random10.testlab.esc</p>
+					</div> -->
+
+					<!-- <p><b>ESC_Another_Alert_Name</b></p>
+					<div id="loc-results">
+						<p>Пользователь anonymous успешно запустил тест правил корреляции для случайного события с узла random10.testlab.esc</p>
+						<p><b>alert.key:</b> anonymous|random10.testlab.esc</p>
+						<p><b>alert.context:</b> anonymous|random10.testlab.esc</p>
+					</div>  -->
+				</div>
+			</div>
+		</div>
+		
+		<script>
+
+			function togleTextarea(arrow) {
+				labels = arrow.parentNode.parentNode.children[1];
+				txt = arrow.parentNode.parentNode.children[2];
+				if (txt.hidden == true) {
+					txt.hidden = false;
+					labels.hidden = false;
+					arrow.innerHTML = "ᐯ";
+				} else {
+					txt.hidden = true;
+					labels.hidden = true;
+					arrow.innerHTML = "❯";
+				}
+			}
+
+			// word wrap/unwrap with button
+			function wrap(check) {
+				const textField = check.parentNode.parentNode.children[2].children[0];
+				if (textField.wrap == "off") {
+					check.checked = true;
+					textField.wrap = "on";
+					textField.style.height = textField.scrollHeight + "px";
+				} else {
+					check.checked = false;
+					textField.wrap = "off";
+				}
+			}
+
+			var vscode = acquireVsCodeApi();
+
+			// Получение команд от расширения.
+			window.addEventListener(
+				'message', 
+				(event) => {
+					const message = event.data; 
+					switch (message.command) {
+						case 'correlatedEvents': {
+							const correlationNames = message.correlationNames;
+							const formattedEvents = message.formatedEvents;
+							$("#correlated_events").empty();
+
+							// Добавляем каждую в нужном форматировании.
+							for(const correlationName of correlationNames) {
+								const formatted = `
+								<p>
+									${correlationName}
+								</p>`;
+
+								$("#correlated_events").append(formatted);
+							}
+							break;
+						}
+						case 'updateRawEvents': {
+							const rawEvents = message.rawEvents;
+							if(!rawEvents) {
+								alert("Ошибка обновления сырых событий.");
+								return;
+							}
+
+							$("#raw_events").val(rawEvents);
+							break;
+						}
+					}
+			});
+
+			$(document).ready(function() {
+				raws = $('[name=word-wrap]');
+				for (i = 0; i < raws.length; i++) {
+					wrap(raws[i]);
+				}
+
+				// Грязный хак, позволяющий убрать ошибку двойного копирование по сочетаниям Ctrl+C и Ctrl+V.
+				var ctrlDown = false,
+				ctrlKey = 17,
+				cmdKey = 91,
+				vKey = 86,
+				cKey = 67;
+
+				$(document).keydown(function(e) {
+					if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
+				}).keyup(function(e) {
+					if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
+				});
+
+				// Document Ctrl + C/V 
+				$(document).keydown(function(e) {
+					if (ctrlDown && (e.keyCode == vKey)) {
+						e.preventDefault();
+					}
+				});
+
+				// Полный тест
+				$(document).on("click",'#runFullGraph', function () {
+					const rawEvents = $('#raw_events').val();
+					vscode.postMessage({
+						command: 'runFullGraph',
+						rawEvents : rawEvents
+					});
+				});
+
+				// Добавить конверт
+				$(document).on("click",'[name="add_envelope"]', function () {
+
+					const rawEvents = $('#raw_events').val();
+					vscode.postMessage({
+						command: 'addEnvelope',
+						rawEvents : rawEvents,
+						mimeType : $(this).text()
+					});
+				});
+			});
+		</script>
+	</body>
+</html>

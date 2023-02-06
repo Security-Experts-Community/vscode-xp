@@ -1,0 +1,216 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "XP",
+    "patterns": [
+        {
+            "include": "#strings"
+        },
+        {
+            "name": "comment.line.number-sign.xp",
+            "match": "#.*\\n"
+        },
+        {
+            "name": "constant.numeric.decimal.xp",
+            "match": "\\b[0-9]+(h|m|s)?\\b"
+        },
+        {
+            "name": "constant.language.null.xp",
+            "match": "\\b(null|NULL)\\b"
+        },
+        {
+            "name": "keyword.control.xp",
+            "match": "\\b(if|then|else|elif|endif|and|not|or)\\b"
+        },
+        {
+            "name": "keyword.operator.relational.xp",
+            "match": "(\\<=?|\\>=?|==|\\!=|\\->)"
+        },
+        {
+            "name": "keyword.other.emit.xp",
+            "match": "\\bemit\\b"
+        },
+        {
+            "name": "keyword.other.init.xp",
+            "match": "\\binit\\b"
+        },
+        {
+            "name": "keyword.other.key.xp",
+            "match": "\\bkey\\b"
+        },
+        {
+            "name": "keyword.other.qhandler.xp",
+            "match": "\\bqhandler\\b"
+        },
+        {
+            "name": "keyword.other.time.xp",
+            "match": "\\b(within|timer|with different)\\b"
+        },
+        {
+            "name": "variable.parameter.source.xp",
+            "patterns": [
+                {
+                    "include": "#variable"
+                }
+            ]
+        },
+        {
+            "name": "meta.definition.xp",
+            "match": "\\b(rule|event|enrich)\\s([a-zA-Z0-9_.]*)\\s*:",
+            "captures": {
+                "1": {
+                    "name": "keyword.other.xp"
+                },
+                "2": {
+                    "name": "entity.name.class"
+                }
+            }
+        },
+        {
+            "name": "meta.enrich_fields.xp",
+            "match": "\\b(enrich_fields)\\s*(\\{|$)",
+            "captures": {
+                "1": {
+                    "name": "keyword.other.enrich_fields.xp"
+                }
+            }
+        },
+        {
+            "name": "meta.enrichment.xp",
+            "match": "\\b(enrichment)\\s([a-zA-Z0-9_.]*)",
+            "captures": {
+                "1": {
+                    "name": "keyword.other.xp"
+                },
+                "2": {
+                    "name": "entity.name.class"
+                }
+            }
+        },
+        {
+            "name": "meta.filter.xp",
+            "match": "\\b(filter)\\s*\\{",
+            "captures": {
+                "1": {
+                    "name": "keyword.other.filter.xp"
+                }
+            }
+        },
+        {
+            "name": "meta.filter.call.xp",
+            "match": "\\b(filter)::([^\\(]*)",
+            "captures": {
+                "1": {
+                    "name": "keyword.other.filter.xp"
+                },
+                "2": {
+                    "name": "entity.name.function"
+                },
+                "3": {
+                    "patterns": [
+                        {
+                            "include": "#strings"
+                        },
+                        {
+                            "include": "#variable"
+                        },
+                        {
+                            "include": "#identifier"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "meta.insert_into.xp",
+            "match": "\\b(insert_into)\\s+([a-zA-Z0-9_.]*)\\s*",
+            "captures": {
+                "1": {
+                    "name": "keyword.other.insert_into.xp"
+                },
+                "2": {
+                    "name": "entity.name.class"
+                }
+            }
+        },
+        {
+            "name": "meta.query.xp",
+            "match": "\\b(query)\\s+([\\w]*)\\((.*)\\)\\s+(from)\\s+(\\w*)\\s*",
+            "captures": {
+                "1": {
+                    "name": "keyword.other.query.xp"
+                },
+                "2": {
+                    "name": "entity.name.function"
+                },
+                "3": {
+                    "patterns": [
+                        {
+                            "include": "#variable"
+                        }
+                    ]
+                },
+                "4": {
+                    "name": "keyword.other.from.xp"
+                },
+                "5": {
+                    "name": "entity.name.section"
+                }
+            }
+        },
+        {
+            "name": "meta.on.xp",
+            "match": "\\b(on)\\s+(\\w*)\\s*(\\{|$)",
+            "captures": {
+                "1": {
+                    "name": "keyword.other.on.xp"
+                },
+                "2": {
+                    "name": "entity.name.class"
+                }
+            }
+        },
+        {
+            "include": "#variable"
+        },
+        {
+            "include": "#identifier"
+        }
+    ],
+    "repository": {
+        "identifier": {
+            "name": "variable.other.source.xp",
+            "match": "\\b[a-zA-Z0-9_.]+\\b"
+        },
+        "strings": {
+            "patterns": [
+                {
+                    "name": "string.quoted.single.xp",
+                    "begin": "'",
+                    "end": "'",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.xp",
+                            "match": "\\\\."
+                        }
+                    ]
+                },
+                {
+                    "name": "string.quoted.double.xp",
+                    "begin": "\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.xp",
+                            "match": "\\\\."
+                        }
+                    ]
+                }
+            ]
+        },
+        "variable": {
+            "name": "variable.name.source.xp",
+            "match": "\\$([a-zA-Z0-9_.]+)"
+        }
+    },
+    "scopeName": "source.xp"
+}

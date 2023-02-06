@@ -1,0 +1,127 @@
+event DotNetToJscript_in_Commandline:
+    key:
+        event_src.host, object.process.name
+    filter {
+        filter::NotFromCorrelator()
+        and filter::ProcessStart_Windows_any()
+        and (
+            regex(lower(object.process.meta), "(description|product):dotnettojscript\\b", 0) != null
+            or (
+                regex(replace(lower(object.process.cmdline),"","\""), "(\s)+(((-l)(\s)+)|(--lang=))(jscript|vba|vbscript)\\b", 0) != null
+                and (
+                    regex(replace(lower(object.process.cmdline),"","\""), "(\s)+(((-v)(\s)+)|(--ver=))(auto|none|v2|v4)\\b", 0) != null
+                    or regex(replace(lower(object.process.cmdline),"","\""), "(\s)+(-c((\s)+|=))", 0) != null
+                    or regex(replace(lower(object.process.cmdline),"","\""), "(\s)+(-o((\s)+|=))", 0) != null
+                )
+            )
+        )
+        and filter::CheckWL_Process_Creation("DotNetToJscript_Usage", lower(object.process.cmdline))
+    }
+
+event File_Create:
+    key:
+        event_src.host, subject.process.name
+    filter {
+        filter::NotFromCorrelator()
+        and event_src.title == "sysmon"
+        and msgid == "11"
+        and regex(lower(object.name), "\.(js|vba|vbs)", 0) != null
+        and subject.process.name == "dotnettojscript.exe"
+    }
+
+rule DotNetToJscript_Usage: (DotNetToJscript_in_Commandline and File_Create?) timer 30s
+
+    init {
+        $labels = "w_auto"
+    }
+    
+    on DotNetToJscript_in_Commandline {
+        $object = object
+
+        $subject.account.id = subject.account.id
+        $subject.account.name = subject.account.name
+        $subject.account.domain = subject.account.domain
+        $subject.account.session_id = subject.account.session_id
+        $subject.account.privileges = subject.account.privileges
+
+        $object.process.id = object.process.id
+        $object.process.name = object.process.name
+        $object.process.path = object.process.path
+        $object.process.fullpath = object.process.fullpath
+        $object.process.hash = object.process.hash
+        $object.process.version = object.process.version
+        $object.process.cmdline = object.process.cmdline
+        $object.process.guid = object.process.guid
+        $object.process.meta = object.process.meta
+        $object.process.original_name = object.process.original_name
+        $object.process.cwd = object.process.cwd
+
+        $object.process.parent.id = object.process.parent.id
+        $object.process.parent.name = object.process.parent.name
+        $object.process.parent.path = object.process.parent.path
+        $object.process.parent.fullpath = object.process.parent.fullpath
+        $object.process.parent.guid = object.process.parent.guid
+        $object.process.parent.cmdline = object.process.parent.cmdline
+        
+        $datafield4 = regex(replace(lower($object.process.cmdline),"","\""), "((\s)+(-o((\s)+|=))(.*\.(js|vbs|vba)))", 6)
+        $datafield6 = datafield6  # Идентификатор сессии субъекта в формате UUID
+        $datafield10 = datafield10  # Цепочка процессов для процесса-объекта
+
+        $event_src.host = event_src.host
+        $event_src.fqdn = event_src.fqdn
+        $event_src.hostname = event_src.hostname
+        $event_src.ip = event_src.ip
+        $event_src.asset = event_src.asset
+        $event_src.vendor = event_src.vendor
+        $event_src.title = event_src.title
+        $event_src.subsys = event_src.subsys
+        $event_src.category = event_src.category
+        
+        $meta_found = regex(lower($object.process.meta), "(description|product):dotnettojscript\\b", 0)
+        if $meta_found != null then
+            $alert.context = "Found in object.process.meta: \"" + $meta_found + "\"; "
+        endif
+    }
+    
+    on File_Create {
+        $datafield3 = object.path
+        $datafield4 = object.name
+        $datafield5 = object.fullpath
+    }
+
+emit {
+    $alert.key = lower($object.process.cmdline)
+    
+    $script_lang_specified = regex(replace(lower($object.process.cmdline),"","\""), "(\s)+(((-l)(\s)+)|(--lang=))(jscript|vba|vbscript)\\b", 0)
+    $dotnet_version = regex(replace(lower($object.process.cmdline),"","\""), "(\s)+(((-v)(\s)+)|(--ver=))(auto|none|v2|v4)\\b", 0)
+    $class_name_specified = regex(replace(lower($object.process.cmdline),"","\""), "(\s)+(-c((\s)+|=))", 0)
+    $output_file = regex(replace(lower($object.process.cmdline),"","\""), "(\s)+(-o((\s)+|=))", 0)
+    
+    
+    if coalesce($script_lang_specified, $dotnet_version, $class_name_specified, $output_file) != null then
+        $alert.context = $alert.context + "regex_match: \"" + join([$script_lang_specified, $dotnet_version, $class_name_specified, $output_file], "") + "\""
+    endif
+
+    $correlation_type = "incident"
+
+    $subject = "account"
+    $action = "execute"
+    $status = "success"
+
+    $importance = "high"
+
+    if $subject.account.name != null and $subject.account.name != $object.account.name then
+        $labels = $labels + "|subject_account_to_compromised_assets"
+    endif
+    $labels = $labels + "|object_account_to_compromised_assets"
+    $labels = $labels + "|event_source_to_compromised_assets"
+
+    $category.generic = "Attack"
+    $category.high = "Defense Evasion"
+    $category.low = "Trusted Developer Utilities Proxy Execution"
+
+    $incident.aggregation.key = join([$correlation_name, $event_src.host, $subject.account.id], "|")
+    $incident.severity = "high"
+    $incident.category = "Undefined"
+    $incident.aggregation.timeout = 2h
+}

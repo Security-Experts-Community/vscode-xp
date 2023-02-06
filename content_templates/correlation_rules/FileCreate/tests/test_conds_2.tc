@@ -1,0 +1,5 @@
+# Вайтлистинг
+table_list default
+table_list {"Common_whitelist_auto": [{"rule": "FileCreate", "specific_value": ""}]}
+
+expect not {"correlation_name": "FileCreate"}

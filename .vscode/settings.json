@@ -1,0 +1,126 @@
+{
+	"highlight.regexes": {
+	"(/[*]+)([A-z А-я0-9\r\n]*)([*]+/)": {
+	  "regexFlags": "gm", 
+	  "filterFileRegex": ".*\\.qry", 
+	  "decorations": [ 
+		{ "color": "green" },
+		{ "color": "green" },
+		{ "color": "green" }
+	  ]
+	},
+
+	"(//)([^\r\n]*)": {
+	  "regexFlags": "gm", 
+	  "filterFileRegex": ".*\\.qry", 
+	  "decorations": [ 
+		{ "color": "green" },
+		{ "color": "green" }
+	  ]
+	},
+	
+	"([()[])" : {
+	  "regexFlags": "g", 
+		"filterFileRegex": ".*\\.qry", 
+		"decorations": [ 
+		  { "color": "black" }
+		]
+	},
+	"(])" : {
+	  "regexFlags": "g", 
+		"filterFileRegex": ".*\\.qry", 
+		"decorations": [ 
+		  { "color": "black" }
+		]
+	},
+	"(\".*\")" : {
+	  "regexFlags": "g", 
+		"filterFileRegex": ".*\\.qry", 
+		"decorations": [ 
+		  { "color": "darkred" }
+		]
+	},
+
+	"('.*')" : {
+	  "regexFlags": "g", 
+		"filterFileRegex": ".*\\.qry", 
+		"decorations": [ 
+		  { "color": "red" }
+		]
+	},
+	
+	
+	"(@@@)([A-zА-я0-9.]+)" : {
+	  "regexFlags": "g", 
+		"filterFileRegex": ".*\\.qry", 
+		"decorations": [ 
+		  { "color": "slateblue" },
+		  { "color": "slateblue" }
+		]
+	},
+	
+	"(@@)([A-zА-я0-9.]+)" : {
+	  "regexFlags": "g", 
+		"filterFileRegex": ".*\\.qry", 
+		"decorations": [ 
+		  { "color": "darkblue" },
+		  { "color": "darkblue" }
+		]
+	},
+	"(#set )([A-zА-я0-9]+)" : {
+	  "regexFlags": "gm", 
+	  "filterFileRegex": ".*\\.qry", 
+	  "decorations": [ 
+		{ "color": "blue" },
+		{ "color": "blue" }
+	  ]
+	},
+	
+	"(#attribute )([A-zА-я0-9]+)": {
+	  "regexFlags": "gm", 
+	  "filterFileRegex": ".*\\.qry", 
+	  "decorations": [ 
+		{ "color": "black" },
+		{ "color" : "#00a390"}
+	  ]
+	},
+	"(#object )([A-zА-я0-9]+)": {
+	  "regexFlags": "gm", 
+	  "filterFileRegex": ".*\\.qry", 
+	  "decorations": [ 
+		{ "color": "black" },
+		{ "color" : "#00a390"}
+	  ]
+	},
+	
+	"([A-zА-я0-9:$]+)" : {
+	  "regexFlags": "g", 
+		"filterFileRegex": ".*\\.qry", 
+		"decorations": [ 
+		  { "color": "#00a390" }
+		]
+	},
+	"(#[A-zА-я0-9]+)" : {
+	  "regexFlags": "g", 
+	  "filterFileRegex": ".*\\.qry", 
+	  "decorations": [ 
+		{ "color": "#00a390" }
+	  ]
+	},
+	  
+	  "([\u0028\u0029\u005B\u005D])": {
+		"regexFlags": "gm", 
+		"filterFileRegex": ".*\\.qry", 
+		"decorations": [ 
+		  { "color": "black" }
+		]
+	  },       
+	},
+	"editor.insertSpaces": false,
+	"tslint.enable": true,
+	"typescript.tsc.autoDetect": "off",
+	"typescript.preferences.quoteStyle": "single",
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": true
+	}
+}

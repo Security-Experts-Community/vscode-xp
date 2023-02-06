@@ -1,0 +1,86 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Test",
+    "patterns": [
+        {
+            "name": "comment.line.number-sign.xp",
+            "match": "#.*\\n"
+        },
+        {
+            "name": "constant.language.null.xp",
+            "match": "\\b(null|NULL)\\b"
+        },
+        {
+            "name": "keyword.control.xp",
+            "match": "\\b(not|table_list|default)\\b"
+        },
+		{
+			"comment": "Ключ в json-е выделяем отдельно, дабы не сливался со значением",
+			"match": "(expect)\\s*([0-9]+)",
+			"captures": {
+				"1": {
+					"name": "keyword.control.xp"
+				},
+				"2": {
+					"name": "constant.numeric.decimal.xp"
+				}
+			}
+		},
+		{
+			"comment": "Выделяем отдельные поля с числовыми",
+			"name": "constant.numeric.decimal.xp",
+			"match": "\"[0-9]+\""
+		},
+		{
+			"comment": "Ключ и целочисленное значение",
+			"match": "(\"[a-zA-Z0-9_.]+\")\\s*:\\s*([0-9a-fA-FxX]+)",
+			"captures": {
+				"1": {
+					"name": "variable.name.source.xp"
+				},
+				"2": {
+					"name": "constant.numeric.decimal.xp"
+				}
+			}
+		},
+		{
+			"comment": "Ключ и любое значение",
+			"match": "(\"[a-zA-Z0-9_\\.]+\")\\s*:\\s*(\"[^\"]+\")",
+			"captures": {
+				"1": {
+					"name": "variable.name.source.xp"
+				},
+				"2": {
+					"name": "string.quoted.double.xp"
+				}
+			}
+		},
+		{
+			"comment": "Константы",
+			"match": "(\"[a-zA-Z0-9_.]+\")\\s*:\\s*(true|false|null)\\b",
+			"captures": {
+				"1": {
+					"name": "variable.name.source.xp"
+				},
+				"2": {
+					"name": "constant.language.qry"
+				}
+			}
+		},
+		{
+			"comment": "Ключ массива",
+			"match": "(\"[a-zA-Z0-9_.]+\")\\s*:\\s*\\[",
+			"name": "variable.name.source.xp"
+		},
+		{
+			"comment": "Элементы списка",
+			"match": "(\"[^\"]+\"),?",
+			"captures": {
+				"1": {
+					"name": "string.quoted.double.xp"
+				}
+			}
+		}
+    ],
+    "scopeName": "source.test"
+}

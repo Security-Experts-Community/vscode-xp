@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="{{{extensionBaseUri}}}/client/templates/styles/new_rule.css">
+	
+	<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
+	<title>Создать правило</title>
+</head>
+	<body>
+		<h3>Создание правила {{{ruleTypeLocalization}}}</h3>
+		<table>
+			<tr>
+				<td class="labels">Название {{{ruleTypeLocalization}}}</td>
+				<td class="userinput">
+					<input id="Name" type="text" pattern="[A-Z][A-Za-z0-9_]+" required autofocus>
+				</td>
+			</tr>
+			<tr>
+				<td class="labels">Шаблон</td>
+				<td class="userinput">
+					<select id="TemplateType">
+						{{#templateNames}}
+						<option value="{{.}}">{{.}}</option>
+						{{/templateNames}}
+					</select>
+					<input id="Path" type="hidden" value="{{ruleFullPath}}">
+				</td>
+			</tr>
+		</table>
+
+		<input name="saveOptions" onclick="createCorrelation()" type="submit" value="Создать">
+	</body>
+
+	<script>
+		const vscode = acquireVsCodeApi();
+		
+		function createCorrelation() {
+			
+			const name = document.getElementById("Name").value;
+			const type = document.getElementById("TemplateType").value;
+			const path = document.getElementById("Path").value;
+			
+			vscode.postMessage({
+				command: '{{{commandName}}}',
+				classifier: {
+					'Name' : name,
+					'Path' : path,
+					'TemplateType' : type,
+				}
+			});
+		}
+	</script>
+</html>

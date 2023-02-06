@@ -1,0 +1,68 @@
+:root {
+	--background: #212529;
+	--main-theme: #bdbdbd;
+	--white: #bdbdbd;
+	--gray: #787878; 
+	--red: #c94c4c;
+	--blue: #034f84;
+}
+
+hr {
+	width:50%;
+	background-color:var(--gray);
+	height:1px;
+	border:none;
+}
+
+.language {
+	float: left;
+	width: 50%;
+	margin-bottom: 20px;
+}
+
+.common {
+	float: left;
+	width: 100%;
+	margin-top: 6px;
+	display: block;
+}
+
+label {
+	color: var(--gray);
+}
+
+.criteria {
+	border-left: none;
+	font-weight: bold;
+}
+
+textarea {
+	width: calc(100% - 30px);
+	margin: 10px 0;
+	background-color: transparent;
+	color: var(--white);
+	border: none;
+	border-left: 1px solid var(--white);
+	padding: 6px 10px;
+	font-family: sans-serif;
+}
+
+.add_value {
+	width: 20px;
+	height: 20px;
+	margin: 2px 2px;
+	padding: 3px;
+	background-color: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+	border: none;
+}
+
+.delete_value {
+	width: 20px;
+	height: 20px;
+	margin: 2px 2px;
+	padding: 3px;
+	background-color: var(--red);
+	color: var(--white);
+	border: none;
+}

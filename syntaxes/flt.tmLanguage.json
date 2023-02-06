@@ -1,0 +1,139 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "Macros",
+    "patterns": [
+        {
+            "include": "#strings"
+        },
+        {
+            "name": "comment.line.number-sign.xp",
+            "match": "#.*\\n"
+        },
+        {
+            "name": "constant.language.null.xp",
+            "match": "\\b(null|NULL)\\b"
+        },
+
+        {
+            "name": "keyword.control.xp",
+            "match": "\\b(and|not|or)\\b"
+        },
+        {
+            "match": "\\b(filter)\\s+(\\S+?)\\(",
+            "captures": {
+                "1" : {
+                    "name" : "keyword.control.xp"
+                },
+                "2" : {
+                    "name" : "entity.name.function"
+                }
+            }
+        },
+        {
+            "name": "keyword.operator.relational.xp",
+            "match": "(\\<=?|\\>=?|==|\\!=|\\->)"
+        },
+        {
+            "name": "variable.parameter.source.xp",
+            "patterns": [
+                {
+                    "include": "#variable"
+                }
+            ]
+        },
+        {
+            "name": "meta.filter.call.xp",
+            "match": "\\b(filter)::([^\\(]*)",
+            "captures": {
+                "1": {
+                    "name": "keyword.other.filter.xp"
+                },
+                "2": {
+                    "name": "entity.name.function"
+                },
+                "3": {
+                    "patterns": [
+                        {
+                            "include": "#strings"
+                        },
+                        {
+                            "include": "#functions"
+                        },
+                        {
+                            "include": "#variable"
+                        },
+                        {
+                            "include": "#identifier"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "include": "#functions"
+        },
+        {
+            "include": "#variable"
+        },
+        {
+            "include": "#identifier"
+        }
+    ],
+    "repository": {
+        "strings": {
+            "patterns": [
+                {
+                    "name": "string.quoted.single.xp",
+                    "begin": "'",
+                    "end": "'",
+                    "patterns": [
+                        {
+                            "name": "constant.character.escape.xp",
+                            "match": "\\\\."
+                        }
+                    ]
+                },
+                {
+                    "name": "string.quoted.double.xp",
+                    "begin": "\"",
+                    "end": "\"",
+                    "patterns": [
+                        {
+                            "name": "constant.numeric.decimal.xp",
+                            "match": "[0-9]+"
+                        }
+                    ]
+                }
+            ]
+        },
+        "functions": {
+            "patterns": [
+                {
+                    "name": "support.function.xp",
+                    "begin": "",
+                    "end": "(",
+                    "match": "\\b(match|lower|append|regex|regex_match|length|string|join|exec_query|select_query_first|in_list|in_subnet|find_substr|substr|mod|div|number|number16|strip|coalesce|maybe_ipv[46]{1}|submessage)\\b"
+                }
+            ]
+        },
+        "variable": {
+            "patterns": [{
+                "match": "\\b(\\S*)\\b\\s+(\\$[a-zA-Z0-9_.]+)",
+                "captures": {
+                    "1" : {
+                        "name": "entity.name.type"
+                    },
+                    "2" : {
+                        "name": "variable.parameter"
+                    }
+    
+                }
+            },
+            {
+                "name": "variable.parameter",
+                "match": "\\b\\$[a-zA-Z0-9_.]+\\b"
+            }]
+        }
+    },
+    "scopeName": "source.ptflt"
+}

@@ -1,0 +1,4 @@
+EventDescriptions:
+- Criteria: aggregation_name = "Avaya_ARP_inspection_check_failed"
+  LocalizationId: aggrname_Avaya_ARP_inspection_check_failed
+ObjectId: LOC-AR-8

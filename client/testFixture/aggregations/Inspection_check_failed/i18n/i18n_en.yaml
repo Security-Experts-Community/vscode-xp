@@ -1,0 +1,4 @@
+Description: 'Aggregation of events with id "Inspection_check_failed": from 4th up to 100th within 5 minutes'
+EventDescriptions:
+    - LocalizationId: aggrname_Inspection_check_failed
+      EventDescription: 'Aggregated event. {event_src.host}: ARP packet was discarded on port {datafield1} because the IP-MAC pair was not found in DHCP binding database'

@@ -1,0 +1,8 @@
+Description: Detects password guessing attempts on MSSQL Server
+EventDescriptions:
+- LocalizationId: corrname_MSSQL_user_password_brute_1
+  EventDescription: Brute force attempt detected for account '{subject.account.name}' on MSSQL Server '{dst.host}' from host '{src.host}'. {datafield5} attempts completed.
+- LocalizationId: corrname_MSSQL_user_password_brute_2
+  EventDescription: Brute force attempt detected for account '{subject.account.name}' on MSSQL Server '{dst.host}' locally. {datafield5} attempts completed.
+- LocalizationId: corrname_MSSQL_user_password_brute_3
+  EventDescription: Brute force attempt detected for account on MSSQL Server '{dst.host}' from host '{src.host}'. {datafield5} attempts completed.

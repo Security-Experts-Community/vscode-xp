@@ -1,0 +1,17 @@
+event PLC_Auth:
+    key:
+        event_src.host, subject.account.name
+    filter {
+        filter::NotFromCorrelator()
+        and filter::CheckWL_Specific_Only("ESC_PLC_Auth_", join([lower(subject.account.name), lower(object.account.name), lower(event_src.host)], "|"))
+    }
+
+rule ESC_PLC_Auth: PLC_Auth
+
+    on PLC_Auth {
+        $alert.key = join([lower(subject.account.name), lower(object.account.name), lower(event_src.host)], "|")
+        $alert.context = object.account.privileges
+    }
+
+emit {
+}

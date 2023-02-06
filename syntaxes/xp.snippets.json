@@ -1,0 +1,470 @@
+{
+	"Запрос в табличный список": {
+		"prefix": ["query"],
+		"body": [
+			"query ${1:GetData}(\\$$2, \\$$3) from $4 {",
+			"    $2 == \\$$2",
+			"    and $3 == \\$$3",
+			"}"
+		]
+	},
+	"Пустое событие": {
+		"prefix": ["event"],
+		"body": [
+			"event $1:",
+			"    key:",
+			"        event_src.host",
+			"    filter {",
+			"        filter::NotFromCorrelator()",
+			"        and $2",
+			"    }"
+		]
+	},
+	"msgid = 1": {
+		"prefix": ["event"],
+		"body": [
+			"event ${1:eventName}:",
+			"    key:",
+			"        event_src.host",
+			"    filter {",
+			"        filter::NotFromCorrelator()",
+			"        and event_src.title == \"sysmon\"",
+			"        and msgid == \"1\"",
+			"        and status == \"success\"",
+			"        and filter::CheckWL_Process_Creation(\"${2}\", lower(object.process.cmdline))",
+			"    }",
+			"",
+			"    # Перенесите блок on внутрь блока rule",
+			"    on ${1:eventName} {",
+			"        \\$subject.account.name = subject.account.name",
+			"        \\$subject.account.domain = subject.account.domain",
+			"        \\$subject.account.session_id = subject.account.session_id",
+			"        \\$subject.account.id = subject.account.id",
+			"        \\$subject.account.privileges = subject.account.privileges",
+			"",
+			"        \\$subject.process.id = subject.process.id",
+			"        \\$subject.process.name = subject.process.name",
+			"        \\$subject.process.path = subject.process.path",
+			"        \\$subject.process.fullpath = subject.process.fullpath",
+			"",
+			"        \\$object.account.session_id = object.account.session_id",
+			"        \\$object.account.name = object.account.name",
+			"        \\$object.account.domain = object.account.domain",
+			"        \\$object.account.id = object.account.id",
+			"",
+			"        \\$object.process.id = object.process.id",
+			"        \\$object.process.name = object.process.name",
+			"        \\$object.process.path = object.process.path",
+			"        \\$object.process.fullpath = object.process.fullpath",
+			"        \\$object.process.hash = object.process.hash",
+			"        \\$object.process.version = object.process.version",
+			"        \\$object.process.cmdline = object.process.cmdline",
+			"        \\$object.process.guid = object.process.guid",
+			"        \\$object.process.meta = object.process.meta",
+			"        \\$object.process.original_name = object.process.original_name",
+			"        \\$object.process.cwd = object.process.cwd",
+			"",
+			"        \\$object.process.parent.id = object.process.parent.id",
+			"        \\$object.process.parent.name = object.process.parent.name",
+			"        \\$object.process.parent.path = object.process.parent.path",
+			"        \\$object.process.parent.fullpath = object.process.parent.fullpath",
+			"        \\$object.process.parent.guid = object.process.parent.guid",
+			"        \\$object.process.parent.cmdline = object.process.parent.cmdline",
+			"",
+			"        \\$datafield6 = datafield6  # LogonGuid",
+			"        \\$datafield10 = datafield10  # Цепочка процессов",
+			"",
+			"        \\$event_src.host = event_src.host",
+			"        \\$event_src.fqdn = event_src.fqdn",
+			"        \\$event_src.hostname = event_src.hostname",
+			"        \\$event_src.ip = event_src.ip",
+			"        \\$event_src.asset = event_src.asset",
+			"        \\$event_src.vendor = event_src.vendor",
+			"        \\$event_src.title = event_src.title",
+			"        \\$event_src.subsys = event_src.subsys",
+			"        \\$event_src.category = event_src.category",
+			"",
+			"        \\$alert.key = lower(object.process.fullpath)",
+			"        \\$alert.context = ",
+			"",
+			"        \\$labels = \\$labels + \"|CheckWL_Process_Creation\"",
+			"    }",
+			""
+		]
+	},
+	"msgid = 13": {
+		"prefix": ["event"],
+		"body": [
+			"event ${1:eventName}:",
+			"    key:",
+			"        event_src.host",
+			"    filter {",
+			"        filter::NotFromCorrelator()",
+			"        and event_src.title == \"sysmon\"",
+			"        and msgid == \"13\"",
+			"        and status == \"success\"",
+			"        and filter::CheckWL_Registry_Actions(\"$2\", lower(join([object.fullpath, object.new_value], \"|\")))",
+			"    }",
+			"",
+			"    # Перенесите блок on внутрь блока rule",
+			"    on ${1:eventName} {",
+			"        \\$subject.account.id = subject.account.id",
+			"        \\$subject.account.name = subject.account.name",
+			"        \\$subject.account.domain = subject.account.domain",
+			"",
+			"        \\$subject.process.id = subject.process.id",
+			"        \\$subject.process.name = subject.process.name",
+			"        \\$subject.process.path = subject.process.path",
+			"        \\$subject.process.fullpath = subject.process.fullpath",
+			"        \\$subject.process.guid = subject.process.guid",
+			"",
+			"        \\$object.name = object.name",
+			"        \\$object.path = object.path",
+			"        \\$object.fullpath = object.fullpath",
+			"        \\$object.new_value = object.new_value",
+			"",
+			"        \\$event_src.host = event_src.host",
+			"        \\$event_src.fqdn = event_src.fqdn",
+			"        \\$event_src.hostname = event_src.hostname",
+			"        \\$event_src.ip = event_src.ip",
+			"        \\$event_src.asset = event_src.asset",
+			"        \\$event_src.vendor = event_src.vendor",
+			"        \\$event_src.title = event_src.title",
+			"        \\$event_src.subsys = event_src.subsys",
+			"        \\$event_src.category = event_src.category",
+			"",
+			"        \\$alert.key = lower(join([object.fullpath, object.new_value], \"|\"))",
+			"        \\$alert.content = ",
+			"",
+			"        \\$labels = \\$labels + \"|CheckWL_Registry_Actions\"",
+			"    }",
+			""
+		]
+	},
+	"ProcessStart_Windows_any": {
+		"prefix": ["event"],
+		"body": [
+			"event ${1:eventName}:",
+			"    key:",
+			"        event_src.host",
+			"    filter {",
+			"        filter::NotFromCorrelator()",
+			"        and filter::ProcessStart_Windows_any()",
+			"        and filter::CheckWL_Process_Creation(\"${2}\", lower(object.process.cmdline))",
+			"    }",
+			"",
+			"    on ${1:eventName} {",
+			"        \\$subject.account.name = subject.account.name",
+			"        \\$subject.account.domain = subject.account.domain",
+			"        \\$subject.account.session_id = subject.account.session_id",
+			"        \\$subject.account.id = subject.account.id",
+			"        \\$subject.account.privileges = subject.account.privileges",
+			"",
+			"        \\$subject.process.id = subject.process.id",
+			"        \\$subject.process.name = subject.process.name",
+			"        \\$subject.process.path = subject.process.path",
+			"        \\$subject.process.fullpath = subject.process.fullpath",
+			"",
+			"        \\$object.account.session_id = object.account.session_id",
+			"        \\$object.account.name = object.account.name",
+			"        \\$object.account.domain = object.account.domain",
+			"        \\$object.account.id = object.account.id",
+			"",
+			"        \\$object.process.id = object.process.id",
+			"        \\$object.process.name = object.process.name",
+			"        \\$object.process.path = object.process.path",
+			"        \\$object.process.fullpath = object.process.fullpath",
+			"        \\$object.process.hash = object.process.hash",
+			"        \\$object.process.version = object.process.version",
+			"        \\$object.process.cmdline = object.process.cmdline",
+			"        \\$object.process.guid = object.process.guid",
+			"        \\$object.process.meta = object.process.meta",
+			"        \\$object.process.original_name = object.process.original_name",
+			"        \\$object.process.cwd = object.process.cwd",
+			"",
+			"        \\$object.process.parent.id = object.process.parent.id",
+			"        \\$object.process.parent.name = object.process.parent.name",
+			"        \\$object.process.parent.path = object.process.parent.path",
+			"        \\$object.process.parent.fullpath = object.process.parent.fullpath",
+			"        \\$object.process.parent.guid = object.process.parent.guid",
+			"        \\$object.process.parent.cmdline = object.process.parent.cmdline",
+			"",
+			"        \\$datafield6 = datafield6  # LogonGuid",
+			"        \\$datafield10 = datafield10  # Цепочка процессов",
+			"",
+			"        \\$event_src.host = event_src.host",
+			"        \\$event_src.fqdn = event_src.fqdn",
+			"        \\$event_src.hostname = event_src.hostname",
+			"        \\$event_src.ip = event_src.ip",
+			"        \\$event_src.asset = event_src.asset",
+			"        \\$event_src.vendor = event_src.vendor",
+			"        \\$event_src.title = event_src.title",
+			"        \\$event_src.subsys = event_src.subsys",
+			"        \\$event_src.category = event_src.category",
+			"",
+			"        \\$alert.key = lower(object.process.fullpath)",
+			"",
+			"        \\$labels = \\$labels + \"|CheckWL_Process_Creation\"",
+			"    }"
+		]
+	},
+	"Макросы вайтлистинга": {
+		"prefix":  ["filter::CheckWL"],
+		"body": [
+			"filter::CheckWL_${1|Process_Creation,Powershell,Specific_Only,Windows_Login,Registry_Actions,Networking,File_Creation,Linux_Specific_Only,Linux_File_Operations,Windows_Shares,Web_Access,Tasks,Process_Access,Database_Actions|}(\"${TM_DIRECTORY/.*?(ESC.*?)/$1/}\",$2)"
+		]
+	},	
+	"Макросы": {
+		"prefix":  ["filter::"],
+		"body": [
+			"filter::${1|NotFromCorrelator,FileCreate_Windows,LoginSuccessful_Windows,LoginSuccessful_Unix,LoginFailed_Windows,LoginFailed_Unix,OperatingSystem_UNIXLike,ProcessStart,ProcessStart_Linux,ProcessStart_Windows,ProcessStart_Windows_any,ProcessStart_Windows_cmd_meta,ProcessStart_Windows_commandline,SystemAccount_Windows,UserAccount_Windows|}()"
+		]
+	},		
+	"Пустое правило": {
+		"prefix": ["rule"],
+		"body": [
+			"rule ${1}: ${2:eventName}",
+			"",
+			"    init {",
+			"        \\$labels = \"w_auto\"",
+			"    }",
+			"",
+			"    on ${2:eventName} {",
+			"        ",
+			"    }",
+			""	
+		]
+	},
+	"if else endif": {
+		"prefix": ["if else"],
+		"body": [
+			"if $1 then",
+			"    $2",
+			"else",
+			"    $3",
+			"endif",
+			""
+		]
+	},
+	"if endif": {
+		"prefix": ["if endif"],
+		"body": [
+			"if $1 then",
+			"    $2",
+			"endif",
+			""
+		]
+	},
+	"alert" : {
+		"prefix": ["$alert", "$key", "$context"],
+		"body": [
+			"\\$alert.key = $1",
+			"\\$alert.context = $2"
+		]
+	},
+	"Поля хоста источника события": {
+		"prefix": ["$event_src.*"],
+		"body": [
+			"\\$event_src.ip = event_src.ip",
+			"\\$event_src.hostname = event_src.hostname",
+			"\\$event_src.host = event_src.host",
+			"\\$event_src.asset = event_src.asset",
+			"\\$event_src.host = event_src.host",
+			"\\$event_src.title = event_src.title",
+			"\\$event_src.subsys = event_src.subsys",
+			"\\$event_src.vendor = event_src.vendor",
+			"\\$event_src.title = event_src.title",
+			"\\$event_src.category = event_src.category",
+			"\\$event_src.rule = event_src.rule"
+		]
+	},
+	"Поля аккаунта субъекта": {
+		"prefix": ["$subject.account.*"],
+		"body": [
+			"\\$subject.account.name = subject.account.name",
+			"\\$subject.account.fullname = subject.account.fullname",
+			"\\$subject.account.domain = subject.account.domain",
+			"\\$subject.account.session_id = subject.account.session_id",
+			"\\$subject.account.id = subject.account.id",
+			"\\$subject.account.privileges = subject.account.privileges"
+		]
+	},
+	"Поля аккаунта объекта": {
+		"prefix": ["$object.account.*"],
+		"body": [
+			"\\$object.account.name = object.account.name",
+			"\\$object.account.fullname = object.account.fullname",
+			"\\$object.account.domain = object.account.domain",
+			"\\$object.account.session_id = object.account.session_id",
+			"\\$object.account.id = object.account.id",
+			"\\$object.account.privileges = object.account.privileges"
+		]
+	},
+	"Поля субьекта-процесса": {
+		"prefix": ["$subject.process.*"],
+		"body": [
+			"\\$subject.process.id = subject.process.id",
+			"\\$subject.process.name = subject.process.name",
+			"\\$subject.process.path = subject.process.path",
+			"\\$subject.process.fullpath = subject.process.fullpath",
+			"\\$subject.process.hash = subject.process.hash",
+			"\\$subject.process.version = subject.process.version",
+			"\\$subject.process.cmdline = subject.process.cmdline",
+			"\\$subject.process.guid = subject.process.guid",
+			"\\$subject.process.meta = subject.process.meta",
+			"\\$subject.process.original_name = subject.process.original_name",
+			"\\$subject.process.cwd = subject.process.cwd",
+			"",
+			"\\$subject.process.parent.id = subject.process.parent.id",
+			"\\$subject.process.parent.name = subject.process.parent.name",
+			"\\$subject.process.parent.path = subject.process.parent.path",
+			"\\$subject.process.parent.fullpath = subject.process.parent.fullpath",
+			"\\$subject.process.parent.cmdline = subject.process.parent.cmdline"
+		]
+	},
+	"Поля объекта-процесса": {
+		"prefix": ["$object.process.*"],
+		"body": [
+			"\\$object.process.id = object.process.id",
+			"\\$object.process.name = object.process.name",
+			"\\$object.process.path = object.process.path",
+			"\\$object.process.fullpath = object.process.fullpath",
+			"\\$object.process.hash = object.process.hash",
+			"\\$object.process.version = object.process.version",
+			"\\$object.process.cmdline = object.process.cmdline",
+			"\\$object.process.guid = object.process.guid",
+			"\\$object.process.meta = object.process.meta",
+			"\\$object.process.original_name = object.process.original_name",
+			"\\$object.process.cwd = object.process.cwd",
+			"",
+			"\\$object.process.parent.id = object.process.parent.id",
+			"\\$object.process.parent.name = object.process.parent.name",
+			"\\$object.process.parent.path = object.process.parent.path",
+			"\\$object.process.parent.fullpath = object.process.parent.fullpath",
+			"\\$object.process.parent.cmdline = object.process.parent.cmdline"
+		]
+	},
+	"Поля объекта": {
+		"prefix": ["$object.*"],
+		"body": [
+			"\\$object.name = object.name",
+			"\\$object.path = object.path",
+			"\\$object.fullpath = object.fullpath",
+			"\\$object.type = object.type",
+			"\\$object.property = object.property",
+			"\\$object.value = object.value",
+			"\\$object.new_value = object.new_value",
+			"\\$object.query = object.query"
+		]
+	},
+	"Поля источника": {
+		"prefix": ["$src.*"],
+		"body": [
+		    "\\$src.asset = src.asset",
+			"\\$src.host = src.host",
+			"\\$src.ip = src.ip",
+			"\\$src.hostname = src.hostname",
+			"\\$src.fqdn = src.fqdn",
+			"\\$src.port = src.port",
+			"\\$src.mac = src.mac"
+		]
+	},
+	"Поля приемника": {
+		"prefix": ["$dst.*"],
+		"body": [
+			"\\$dst.asset = dst.asset",
+			"\\$dst.host = dst.host",
+			"\\$dst.ip = dst.ip",
+			"\\$dst.hostname = dst.hostname",
+			"\\$dst.fqdn = dst.fqdn",
+			"\\$dst.port = dst.port",
+			"\\$dst.mac = dst.mac"
+		]
+	},
+    "subject action object status": {
+		"prefix": ["$subject"],
+		"body": [
+			"\\$subject = \"${1|account,application,process,system,host|}\"",
+			"\\$action = \"${2|info,modify,access,start,execute,login,detect,send,exclude,disable,initiate,unlock,call,apply,download,bind,remove,create|}\"",
+			"\\$object = \"${3|file_object,reg_object,account,process,ds_object,resource,command,configuration,malware,message,module,db_object,service,virtual_machine,socket|}\"",
+			"\\$status = \"${4|success,failure|}\""
+		]
+	},
+	"subject": {
+		"prefix": ["$subject"],
+		"body": [
+			"\\$subject = \"${1|account,application,process,system,host|}\""
+		]
+	},
+    "action": {
+		"prefix": ["$action"],
+		"body": [
+			"\\$action = \"${2|info,modify,access,start,execute,login,detect,send,exclude,disable,initiate,unlock,call,apply,download,bind,remove,create|}\""
+		]
+	},
+    "object": {
+		"prefix": ["$object"],
+		"body": [
+			"\\$object = \"${3|file_object,reg_object,account,process,ds_object,resource,command,configuration,malware,message,module,db_object,service,virtual_machine,socket|}\""
+		]
+	},
+    "status": {
+		"prefix": ["$status"],
+		"body": [
+			"\\$status = \"${1|success,failure|}\""
+		]
+	},
+	"Cекция emit": {
+		"prefix": ["emit {"],
+		"body": [
+			"emit {",
+			"    \\$correlation_type = \"${1|event,incident|}\"",
+			"    \\$importance = \"${2|high,medium,low,info|}\"",
+			"}",
+			""
+		]
+	},
+	"correlation_type": {
+		"prefix": ["$correlation_type"],
+		"body": [
+			"\\$correlation_type = \"${1|event,incident|}\""
+		]
+	},
+	"importance": {
+		"prefix": ["$importance"],
+		"body": [
+			"\\$importance = \"${1|high,medium,low,info|}\""
+		]
+	},
+	"Поля инцидента": {
+		"prefix": ["$incident.*"],
+		"body": [
+			"\\$incident.aggregation.key = join([\\$correlation_name, \\$event_src.host, \\$subject.account.id], \"|\")",
+			"\\$incident.severity = \\$importance",
+			"\\$incident.category = \"Undefined\"",
+			"\\$incident.aggregation.timeout = 2h"
+		]
+	},
+	"Поля категорий": {
+		"prefix": ["$category.*"],
+		"body": [
+			"\\$category.generic = \"Attack\"",
+			"\\$category.high = \"${1|Persistence,Lateral Movement,Defense Evasion,Credential Access,Discovery,Privilege Escalation,Execution,Initial Access,Impact|}\"",
+			"\\$category.low = \"$2\""
+		]
+	},
+	"Метки автовайтлистинга": {
+		"prefix": ["$labels"],
+		"body": [
+			"\\$labels = \"w_auto|${1|CheckWL_Specific_Only,CheckWL_Tasks,CheckWL_Web_Access,CheckWL_File_Creation,CheckWL_Windows_Shares,CheckWL_Process_Creation,CheckWL_Powershell,CheckWL_Networking,CheckWL_Registry_Actions,CheckWL_Linux_Specific_Only,CheckWL_Process_Access,CheckWL_Windows_Login,CheckWL_Linux_File_Operations,CheckWL_Linux_Process_Creation,CheckWL_Linux_Login,CheckWL_Linux_Networking,CheckWL_Database_Actions|}\"",
+			""
+		]
+	},
+	"Метки O2": {
+		"prefix": ["$labels"],
+		"body": [
+			"\\$labels = \\$labels + \"|${1|subject_account_to_attacking_assets,subject_account_to_compromised_assets,object_account_to_attacking_assets,object_account_to_compromised_assets,lsass_cache_to_compromised_assets,src_to_attacking_assets,src_to_related_assets,dst_to_attacking_assets,dst_to_compromised_assets,dst_to_related_assets,event_source_to_attacking_assets,event_source_to_related_assets,event_source_to_compromised_assets,powershell_proc_chain_to_event|}\"",
+			""
+		]
+	}
+}

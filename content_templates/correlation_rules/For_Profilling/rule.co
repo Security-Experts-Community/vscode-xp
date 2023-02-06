@@ -1,0 +1,180 @@
+# Проверяем режим сбора профиля и работы правила
+query AutoProfile($rule) from ESC_Auto_Profile {
+    rule == $rule
+}
+
+# Сверка с профилем
+query CheckProfileApplication($login, $src_ip, $dst_ip, $access_type) from ESC_Risk_User_Logon_Profiles_2 {
+    access_type == $access_type
+    and login == $login   
+    and src_ip == $src_ip
+    and dst_ip == $dst_ip # or dst_host == $dst_host
+}
+
+# Проверяем, если ли вообще в профиле такой пользователь
+#query CheckUsername($username) from ESC_Risk_User_Logon_Profiles_2 {
+#    login == $username
+}
+
+# Проверяем, использовал ли пользователь раньше этот адрес
+#query CheckIP($username, $src_ip) from ESC_Risk_User_Logon_Profiles_2 {
+#    login == $username
+#    and src_ip == $src_ip
+}
+
+# Проверяем, изменился ли тип доступа
+#query CheckAccessType($username, $src_ip, $access_type) from ESC_Risk_User_Logon_Profiles_2 {  
+#    access_type == $access_type
+#    and login == $username
+#    and src_ip == $src_ip
+#}
+
+event Anomaly_Logon_Application:
+    key:
+        event_src.host
+    filter {
+        filter::NotFromCorrelator()
+
+        # Сверка с профилем
+        and not exec_query("CheckProfileApplication", )
+    }
+    
+rule For_Profilling: Anomaly_Logon_Application
+
+    init {
+        # Табличный список для включения и отключения механизма автоматического сбора профилей:
+        # 0 - Профиль собран, обогащение отключено, правило обращается напрямую в профиль;
+        # 1 - Правило работает по собранному профилю, но профиль продолжает собираться;
+        # 2 - Профиль на стадии сбора, корреляция не срабатывает
+        $auto_profile = select_query_first("AutoProfile", ["For_Profilling"], "auto_profiling")
+
+        if $auto_profile == null then
+            $auto_profile = 0
+        endif
+    }
+    
+    on Anomaly_Logon_Application {
+   
+        $subject.account.name = subject.account.name
+        $subject.name = subject.name # OLD
+        $subject.account.domain = subject.account.domain
+        $subject.domain = subject.domain # OLD
+        $subject.account.session_id = subject.account.session_id
+        $subject.account.id = subject.account.id
+        $subject.id = subject.id # OLD
+        $subject.account.privileges = subject.account.privileges
+
+        $object.account.name = object.account.name
+        $object.account.domain = object.account.domain
+        $object.account.session_id = object.account.session_id
+        $object.account.id = object.account.id
+        $object.account.privileges = object.account.privileges
+        
+        $object.name = object.name
+        $object.path = object.path
+        $object.fullpath = object.fullpath
+        $object.type = object.type
+        $object.property = object.property
+        $object.value = object.value
+        $object.query = object.query
+
+        $datafield1 = datafield1
+        $datafield2 = datafield2
+        $datafield3 = datafield3
+        $datafield4 = datafield4
+        $datafield5 = datafield5
+        $datafield6 = datafield6
+        $datafield7 = datafield7
+        $datafield8 = datafield8
+        $datafield9 = datafield9
+        $datafield10 = datafield10
+
+        $src.fqdn = src.fqdn
+        $src.port = src.port
+        $src.host = src.host
+        $src.ip = src.ip
+        $src.hostname = src.hostname
+        $src.asset = src.asset
+        $src.geo.org = src.geo.org
+        $src.geo.country = src.geo.country
+
+        $dst.asset = dst.asset
+        $dst.host = dst.host
+        $dst.ip = dst.ip
+        $dst.hostname = dst.hostname
+        $dst.fqdn = dst.fqdn
+        $dst.port = dst.port
+        $dst.mac = dst.mac
+
+        $assigned_src_ip = assigned_src_ip
+
+        $event_src.ip = event_src.ip
+        $event_src.hostname = event_src.hostname
+        $event_src.host = event_src.host
+        $event_src.asset = event_src.asset
+        $event_src.host = event_src.host
+        $event_src.title = event_src.title
+        $event_src.subsys = event_src.subsys
+        $event_src.vendor = event_src.vendor
+        $event_src.title = event_src.title
+        $event_src.category = event_src.category
+        $event_src.rule = event_src.rule
+        
+        # EXAMPLE alert.context
+
+        #$access_type = event_src.vendor + "|" + lower(object.name)
+        #if not exec_query("CheckUsername", [lower(subject.account.name)]) then
+        #    $alert.context = "User never accessed Checkpoint before"
+        #    $reason = "no_user"
+        #    $importance = "medium"
+        #elif not exec_query("CheckIP",  [lower(subject.account.name), string(src.ip)]) then 
+        #    $alert.context = "User never accessed Checkpoint from IP " + string(src.ip)
+        #    $reason = "new_address"
+        #    $importance = "medium"
+        #elif not exec_query("CheckAccessType",  [lower(subject.account.name), string(src.ip), $access_type]) then 
+        #    $alert.context = "User never accessed Checkpoint with new access type: " + $access_type
+        #    $reason = "new_access_type"
+        #    $importance = "medium"
+        #else
+        #    $alert.context = "Unknown case"
+        #    $reason = "-"
+        #    $importance = "info"
+        #endif
+
+        if $auto_profile == 2 then
+            $importance = "info"
+            $detect = "drop"
+        endif 
+
+        $alert.key = 
+    }
+
+    insert_into ESC_Risk_User_Logon_Profiles_2 if $auto_profile != 0 {        
+        risk_type = # "-|money|or smth"
+        access_type = # $event_src.vendor or #event_src,title
+        login = # user lower($subject.account.name)      
+        src_ip = # source ip string($src.ip)
+        dst_ip = # destination ip lower($event_src.host)
+    }
+   
+emit {
+    $correlation_type = ""
+
+    $subject = "account"
+    $action = "login"
+    $object = "application"
+    $status = "success"
+        
+    $category.generic = "Anomaly"
+    $category.high = "User Behavior Anomaly"
+    $category.low = "Detection"
+
+    $labels = $labels + "|src_to_attacking_assets"
+    $labels = $labels + "|subject_account_to_attacking_assets"
+    $labels = $labels + "|event_source_to_related_assets"
+
+    $incident.aggregation.key = join([$correlation_name, $src.ip, $subject.account.name], "|")
+    $incident.severity = $importance
+    $incident.category = "Undefined"
+    $incident.aggregation.timeout = 2h
+}

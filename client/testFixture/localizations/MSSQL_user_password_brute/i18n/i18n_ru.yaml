@@ -1,0 +1,8 @@
+Description: Выявляет попытки подбора пароля на сервере MSSQL Server
+EventDescriptions:
+- LocalizationId: corrname_MSSQL_user_password_brute_1
+  EventDescription: "Обнаружена попытка подбора пароля учетной записи '{subject.account.name}' на MSSQL Server '{dst.host}' с узла '{src.host}'. Выполнено {datafield5} попыток. "
+- LocalizationId: corrname_MSSQL_user_password_brute_2
+  EventDescription: "Обнаружена попытка подбора пароля учетной записи '{subject.account.name}' на MSSQL Server '{dst.host}' локально. Выполнено {datafield5} попыток. "
+- LocalizationId: corrname_MSSQL_user_password_brute_3
+  EventDescription: "Обнаружена попытка подбора пароля учетной записи на MSSQL Server '{dst.host}' с узла '{src.host}'. Выполнено {datafield5} попыток. "

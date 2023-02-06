@@ -1,0 +1,123 @@
+:root {
+	--background: #212529;
+	--main-theme: #bdbdbd;
+	--white: #bdbdbd;
+	--gray: #787878; 
+	--red: #c94c4c;
+	--blue: #034f84;
+}
+
+body{
+	padding: 10px;
+	color: var(--white);
+}
+
+#name {
+	border: none;
+	padding: 6px 10px;
+	margin: 0 10px;
+	box-sizing: border-box;
+	background-color: transparent;
+	color: var(--white);
+	width: 100%;
+	font-size: 1.2em;
+	font-weight: bold;
+	padding: 0 10px;
+	margin-bottom: 5px;
+}
+
+p {
+	color: var(--gray);
+	margin: 0;
+	margin-left: 10px;
+	font-size: 0.8em;
+}
+
+#name:invalid {
+	color: var(--red);
+	outline: none;
+}
+
+table {
+	width: 100%;
+	padding: 3px;
+}
+
+.service {
+	display: none;
+}
+
+td {
+	padding: 0;
+}
+
+.labels {
+	text-align: right;
+	width: 100px;
+	vertical-align: top;
+	padding-top: 8px;
+	font-size: 0.9em;
+}
+
+.userinput {
+	width: 100% - 100px;
+}
+
+div {
+	width: calc(100% - 30px);
+}
+
+div input[type=text], div input[type=url] {
+	width: calc(100% - 50px);
+}
+
+input, select {
+	border: none;
+	padding: 6px 10px;
+	margin: 4px 0;
+	box-sizing: border-box;
+	float: left;
+	background-color: transparent;
+	color: var(--white);
+	border-bottom: 1px solid var(--white);
+}
+
+input:focus, select:focus {
+	border-bottom: 3px solid var(--white);
+	outline: none;
+}
+
+input:invalid {
+	border-bottom: 3px solid var(--red);
+	outline: none;
+}
+
+.add_value, .delete {
+	float: left;
+	width: 20px;
+	height: 20px;
+	margin: 2px 2px;
+	padding: 3px;
+	box-sizing: border-box;
+	background-color: var(--white);
+	border: none;
+}
+
+.add_value {
+	background-color: var(--blue);
+}
+
+.delete {
+	background-color: var(--red);
+	color: var(--background)
+}
+
+.complex {
+	float: left;
+	width: 100%;
+}
+
+.complex input[type=text] {
+	width: calc((100% - 68px) / 2);
+	margin: 2px;
+}

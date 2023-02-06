@@ -1,0 +1,178 @@
+#header {
+	background: var(--vscode-editorGroupHeader-tabsBackground);
+}
+
+#settings {
+	margin: 15px;
+	margin-left: 22%;
+}
+
+/* ------ TAB BAR ------ */
+.tab button {
+	color: var(--vscode-tab-activeForeground);
+	float: left;
+	height: 32px;
+	outline: none;
+	cursor: pointer;
+	padding: 6px 7px;
+	margin-top: 10px;
+	transition: 0.3s;
+}
+
+.tablinks-wrap {
+	width: 100%;
+	float: left;
+}
+
+.tablinks {
+	width: 8%;
+	background-color: var(--vscode-tab-inactiveBackground);
+	border: none;
+	margin-left: 1px;
+}
+.tablinks.active {
+	background-color: var(--vscode-tab-activeBackground);
+	border: none;
+}
+
+button.success {
+	color: var(--vscode-charts-green);
+}
+button.failure {
+	background: var(--vscode-inputValidation-errorBackground);
+	color: var(--vscode-inputValidation-errorForeground);
+}
+button.failure.active {
+	color: var(--vscode-charts-red);
+}
+
+.delete-tablink.active {
+	width: 30px;
+	border: none;
+	background-color: var(--vscode-tab-activeBackground);
+}
+.delete-tablink:hover {
+	background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+#add-test {
+	width: 30px;
+	background-color: var(--vscode-tab-inactiveBackground);
+	border: none;
+	margin-left: 3px;
+}
+#add-test:hover {
+	background-color: var(--vscode-tab-secondaryHoverBackground);
+}
+
+/* ------  ------ */
+.tabcontent {
+	margin-top: 77px;
+	display: block;
+}
+
+div.success {
+	display: none;
+}
+
+div.failure {
+	/* Заменить на block, когда мы будем готовы выводить сообщения об ошибке*/
+	display: none;
+	border: solid 2px var(--vscode-inputValidation-errorBorder);
+	background: var(--vscode-inputValidation-errorBackground);
+	color: var(--vscode-inputValidation-errorForeground);
+	margin-bottom: 15px;
+	width: 60%;
+	margin-left: 20%;
+	padding: 0 40px;
+}
+
+.block_header {
+	display: block;
+	height: 25px;
+}
+
+textarea {
+	width: calc(100% - 22px);
+	background-color: transparent;
+	color: var(--vscode-input-foreground);
+	margin-bottom: 10px;
+	border-left: 1px solid var(--vscode-input-foreground);
+	padding: 6px 10px;
+	height: 100px;
+	outline: none;
+	font-family: var(--vscode-editor-font-family);
+}
+
+#norm_event {
+	white-space: pre;
+	color: var(--vscode-input-foreground);
+	font-family: var(--vscode-editor-font-family);	
+}
+
+textarea:focus {
+	border-left: 3px solid var(--vscode-input-foreground);
+	outline: none;
+}
+
+.scrolldown {
+	float: left;
+	width: 20px;
+}
+
+.scrolldown:hover {
+	cursor: pointer;
+}
+
+.label {
+	float: left;
+	font-weight: bold;
+}
+
+#word-wrap {
+	margin-left: 15px;
+}
+
+.tabs input[type=button]{
+	float: right;
+	background-color: var(--vscode-button-secondaryBackground);
+	color: var(--vscode-button-secondaryForeground);
+	border: none;
+	cursor: pointer;
+	padding: 4px 6px;
+	margin-left: 2px;
+	transition: 0.3s;
+}
+
+.tabs input:hover[type=button] {
+	background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+.dropdown {
+	float: right;
+}
+
+.dropdown input{
+	width: 100px;
+}
+
+.dropdown-content {
+	display: none;
+	position: absolute;
+	background-color: var(--vscode-dropdown-background);
+	min-width: 160px;
+	z-index: 1;
+	border-radius: 5px;
+}
+
+.dropdown-content div {
+	color: var(--vscode-dropdown-foreground);
+	padding: 1px 8px;
+	margin: 5px 0;
+	display: block;
+	cursor: pointer;
+}
+
+.dropdown-content div:hover {background-color: var(--vscode-button-background);}
+
+.dropdown:hover .dropdown-content {display: block;}

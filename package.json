@@ -1,0 +1,627 @@
+{
+	"name": "xp",
+	"displayName": "eXtraction and Processing",
+	"description": "Предназначен для очень удобного и легкого редактирования контента на языке eXtraction and Processing (XP)",
+	"author": "@DmitryOffsec",
+	"icon": "resources/logo.png",
+	"license": "MIT",
+	"version": "3.0.7",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Security-Experts-Community/vscode-xp"
+	},
+	"publisher": "Security-Experts-Community",
+	"categories": [
+		"Snippets",
+		"Formatters"
+	],
+	"activationEvents": [
+		"onLanguage:xp",
+		"onLanguage:en",
+		"onLanguage:co",
+		"onLanguage:test",
+		"onLanguage:agr",
+		"onLanguage:flt",
+		"onView:KnowledgebaseTree"
+	],
+	"keywords": [
+		"xdr edr soldr xp maxpatrol siem"
+	],
+	"engines": {
+		"vscode": "^1.74.0"
+	},
+	"main": "./client/out/extension",
+	"capabilities": {
+		"definitionProvider": "true"
+	},
+	"contributes": {
+		"languages": [
+			{
+				"id": "yaml",
+				"aliases": [
+					"TableLists"
+				],
+				"extensions": [
+					".tl"
+				]
+			},
+			{
+				"id": "json",
+				"aliases": [
+					"NormEvents"
+				],
+				"extensions": [
+					".js"
+				]
+			},
+			{
+				"id": "xp",
+				"aliases": [
+					"XP"
+				],
+				"extensions": [
+					".xp"
+				],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "en",
+				"aliases": [
+					"Enrichment"
+				],
+				"extensions": [
+					".en"
+				],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "co",
+				"aliases": [
+					"Correlation"
+				],
+				"extensions": [
+					".co"
+				],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "test",
+				"aliases": [
+					"Test"
+				],
+				"extensions": [
+					".sc",
+					".tc"
+				],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "agr",
+				"aliases": [
+					"Aggregation"
+				],
+				"extensions": [
+					".agr"
+				],
+				"configuration": "./language-configuration.json"
+			},
+			{
+				"id": "flt",
+				"aliases": [
+					"Macros"
+				],
+				"extensions": [
+					".flt"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "xp",
+				"scopeName": "source.xp",
+				"path": "./syntaxes/xp.tmLanguage.json"
+			},
+			{
+				"language": "en",
+				"scopeName": "source.xp",
+				"path": "./syntaxes/xp.tmLanguage.json"
+			},
+			{
+				"language": "co",
+				"scopeName": "source.xp",
+				"path": "./syntaxes/xp.tmLanguage.json"
+			},
+			{
+				"language": "test",
+				"scopeName": "source.test",
+				"path": "./syntaxes/test.tmLanguage.json"
+			},
+			{
+				"language": "agr",
+				"scopeName": "source.xp",
+				"path": "./syntaxes/xp.tmLanguage.json"
+			},
+			{
+				"language": "flt",
+				"scopeName": "source.flt",
+				"path": "./syntaxes/flt.tmLanguage.json"
+			}
+		],
+		"snippets": [
+			{
+				"language": "co",
+				"path": "./syntaxes/xp.snippets.json"
+			},
+			{
+				"language": "en",
+				"path": "./syntaxes/xp.snippets.json"
+			},
+			{
+				"language": "xp",
+				"path": "./syntaxes/xp.snippets.json"
+			}
+		],
+		"viewsWelcome": [
+			{
+				"view": "KnowledgebaseTree",
+				"contents": "Привет! Это я - расширение для разработки контента для языка eXtraction and Processing (XP). Чтобы начать работу со мной, открой базу знаний.\n[Открыть базу знаний](command:SiemContentEditor.openKnowledgebaseCommand)\nДа пребудет с тобой сила и достойный контент!"
+			},
+			{
+				"view": "ModularTestsListView",
+				"contents": "Тут будут твои классные юнит-тесты, не забывай про них!"
+			}
+		],
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "Content",
+					"title": "Редактор контента",
+					"icon": "resources/view_icon.svg"
+				}
+			]
+		},
+		"views": {
+			"Content": [
+				{
+					"id": "KnowledgebaseTree",
+					"name": "Дерево контента",
+					"contextualTitle": "Дерево контента"
+				},
+				{
+					"id": "ModularTestsListView",
+					"name": "Модульные тесты",
+					"contextualTitle": "Модульные тесты"
+				}
+			]
+		},
+		"menus": {
+			"editor/context": [
+				{
+					"when": "resourceLangId == test",
+					"command": "NativeEditorContextMenu.compressTest",
+					"group": "test@1"
+				}
+			],
+			"view/title": [
+				{
+					"command": "SiemContentEditor.openKnowledgebaseCommand",
+					"when": "view == KnowledgebaseTree",
+					"group": "navigation@1"
+				},
+				{
+					"command": "KnowledgebaseTree.buildAll",
+					"when": "view == KnowledgebaseTree",
+					"group": "navigation@2"
+				},
+				{
+					"command": "KnowledgebaseTree.runningCorrelationGraph",
+					"when": "view == KnowledgebaseTree",
+					"group": "navigation@3"
+				},
+				{
+					"command": "SiemContentEditor.refreshKbTree",
+					"when": "view == KnowledgebaseTree",
+					"group": "navigation@4"
+				},
+				{
+					"command": "ModularTestsListView.addTest",
+					"when": "view == ModularTestsListView",
+					"group": "navigation@1"
+				},
+				{
+					"command": "ModularTestsListView.runTests",
+					"when": "view == ModularTestsListView",
+					"group": "navigation@2"
+				},
+				{
+					"command": "ModularTestsListView.reloadAndRefresh",
+					"when": "view == ModularTestsListView",
+					"group": "navigation@3"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "SiemContentEditor.сreatePackageCommand",
+					"when": "view == KnowledgebaseTree && viewItem == ContentRoot",
+					"group": "ContentRoot@1"
+				},
+				{
+					"command": "KnowledgebaseTree.unpackKbPackage",
+					"when": "view == KnowledgebaseTree && viewItem == ContentRoot",
+					"group": "ContentRoot@2"
+				},
+				{
+					"command": "KnowledgebaseTree.buildKbPackage",
+					"when": "view == KnowledgebaseTree && viewItem == PackageFolder",
+					"group": "PackageFolder@1"
+				},
+				{
+					"command": "KnowledgebaseTree.showCreateCorrelationView",
+					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
+					"group": "create@1"
+				},
+				{
+					"command": "KnowledgebaseTree.showCreateEnrichmentView",
+					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
+					"group": "create@2"
+				},
+				{
+					"command": "SiemContentEditor.createSubFolderCommand",
+					"when": "view == KnowledgebaseTree && viewItem == AnotherFolder",
+					"group": "folder@1"
+				},
+				{
+					"command": "SiemContentEditor.createSubFolderCommand",
+					"when": "viewItem == PackageFolder || viewItem == ContentRoot",
+					"group": "folder@1"
+				},
+				{
+					"command": "SiemContentEditor.deleteContentItemCommand",
+					"when": "view == KnowledgebaseTree",
+					"group": "folder@2"
+				},
+				{
+					"command": "IntegrationTestEditorView.showEditor",
+					"when": "view == KnowledgebaseTree && viewItem == Correlation",
+					"group": "Correlation@1"
+				},
+				{
+					"command": "MetaInfoView.showMetaInfoEditor",
+					"when": "view == KnowledgebaseTree && viewItem == Correlation",
+					"group": "Correlation@2"
+				},
+				{
+					"command": "SiemContentEditor.renameTreeItemCommand",
+					"when": "view == KnowledgebaseTree && viewItem == Correlation",
+					"group": "Correlation@3"
+				},
+				{
+					"command": "LocalizationView.showLocalizationEditor",
+					"when": "view == KnowledgebaseTree && viewItem == Correlation",
+					"group": "Correlation@4"
+				},
+				{
+					"command": "MetaInfoView.showMetaInfoEditor",
+					"when": "view == KnowledgebaseTree && viewItem == Aggregation",
+					"group": "Aggregation@1"
+				},
+				{
+					"command": "LocalizationView.showLocalizationEditor",
+					"when": "view == KnowledgebaseTree && viewItem == Aggregation",
+					"group": "Aggregation@3"
+				},
+				{
+					"command": "MetaInfoView.showMetaInfoEditor",
+					"when": "view == KnowledgebaseTree && viewItem == Normalization",
+					"group": "Normalization@1"
+				},
+				{
+					"command": "LocalizationView.showLocalizationEditor",
+					"when": "view == KnowledgebaseTree && viewItem == Normalization",
+					"group": "Normalization@2"
+				},
+				{
+					"command": "MetaInfoView.showMetaInfoEditor",
+					"when": "view == KnowledgebaseTree && viewItem == Enrichment",
+					"group": "Enrichment@1"
+				},
+				{
+					"command": "IntegrationTestEditorView.showEditor",
+					"when": "view == KnowledgebaseTree && viewItem == Enrichment",
+					"group": "Enrichment@2"
+				},
+				{
+					"command": "SiemContentEditor.renameTreeItemCommand",
+					"when": "view == KnowledgebaseTree && viewItem == Enrichment",
+					"group": "Enrichment@3"
+				},
+				{
+					"command": "LocalizationView.showLocalizationEditor",
+					"when": "view == KnowledgebaseTree && viewItem == Enrichment",
+					"group": "Enrichment@4"
+				},
+				{
+					"command": "ModularTestsListView.removeTest",
+					"when": "view == ModularTestsListView",
+					"group": "ModularTest@4"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "xpContentEditor.setContentType",
+				"title": "Задать тип контента: SIEM или XDR",
+				"category": "Редактор контента",
+				"icon": {
+					"light": "resources/light/folder.svg",
+					"dark": "resources/dark/folder.svg"
+				}
+			},
+			{
+				"command": "SiemContentEditor.openKnowledgebaseCommand",
+				"title": "Открыть базу знаний",
+				"category": "Редактор контента",
+				"icon": {
+					"light": "resources/light/folder.svg",
+					"dark": "resources/dark/folder.svg"
+				}
+			},
+			{
+				"command": "SiemContentEditor.refreshKbTree",
+				"title": "Обновить дерево контента",
+				"icon": {
+					"light": "resources/light/refresh.svg",
+					"dark": "resources/dark/refresh.svg"
+				}
+			},
+			{
+				"command": "SiemContentEditor.сreatePackageCommand",
+				"title": "Создать пустой пакет",
+				"category": "Редактор контента"
+			},
+			{
+				"command": "KnowledgebaseTree.showCreateCorrelationView",
+				"title": "Создать корреляцию",
+				"category": "Редактор контента",
+				"icon": "$(file-add)"
+			},
+			{
+				"command": "KnowledgebaseTree.showCreateEnrichmentView",
+				"title": "Создать обогащение",
+				"category": "Редактор контента"
+			},
+			{
+				"command": "TableListsEditorView.showView",
+				"title": "Создать ТС",
+				"shortTitle": "Создать ТС",
+				"category": "Редактор контента"
+			},
+			{
+				"command": "KnowledgebaseTree.runningCorrelationGraph",
+				"title": "Прогон событий на всём графе корреляций",
+				"shortTitle": "Прогон событий",
+				"category": "Редактор контента",
+				"icon": "$(outline-view-icon)"
+			},
+			{
+				"command": "KnowledgebaseTree.buildAll",
+				"title": "Собрать схему ТС и графы нормализации, обогащения и корреляции",
+				"shortTitle": "Собрать всё",
+				"category": "Редактор контента",
+				"icon": "$(debug-start)"
+			},
+			{
+				"command": "KnowledgebaseTree.unpackKbPackage",
+				"title": "Извлечь пакет(ы) из kb-файла",
+				"shortTitle": "Извлечь пакет(ы) из kb-файла",
+				"category": "Редактор контента",
+				"icon": "$(package)"
+			},
+			{
+				"command": "KnowledgebaseTree.buildKbPackage",
+				"title": "Собрать пакет",
+				"shortTitle": "Собрать пакет в kb-файл",
+				"category": "Редактор контента",
+				"icon": "$(debug-start)"
+			},
+			{
+				"command": "KnowledgebaseTree.onElementSelectionChange",
+				"title": "Вызывается при выборе правила",
+				"category": "Internal"
+			},
+			{
+				"command": "SiemContentEditor.createSubFolderCommand",
+				"title": "Создать директорию",
+				"category": "Редактор контента",
+				"icon": "$(new-folder)"
+			},
+			{
+				"command": "SiemContentEditor.renameTreeItemCommand",
+				"title": "Переименовать",
+				"category": "Редактор контента"
+			},
+			{
+				"command": "SiemContentEditor.deleteContentItemCommand",
+				"title": "Удалить",
+				"category": "Редактор контента",
+				"icon": "$(notebook-delete-cell)"
+			},
+			{
+				"command": "MetaInfoView.showMetaInfoEditor",
+				"title": "Метаданные",
+				"category": "Редактор контента"
+			},
+			{
+				"command": "LocalizationView.showLocalizationEditor",
+				"title": "Локализации",
+				"category": "Редактор контента"
+			},
+			{
+				"command": "ModularTestContentEditorView.showEditor",
+				"title": "Показать модульный тест",
+				"category": "Редактор контента"
+			},
+			{
+				"command": "ModularTestsListView.runTests",
+				"title": "Запустить все",
+				"category": "Редактор контента",
+				"icon": "$(run-all)"
+			},
+			{
+				"command": "ModularTestsListView.addTest",
+				"title": "Добавить",
+				"category": "Редактор контента",
+				"icon": "$(add)"
+			},
+			{
+				"command": "ModularTestsListView.reloadAndRefresh",
+				"title": "Обновить",
+				"category": "Редактор контента",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "ModularTestsListView.removeTest",
+				"title": "Удалить",
+				"category": "Редактор контента",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "IntegrationTestEditorView.showEditor",
+				"title": "Тесты",
+				"category": "Редактор контента"
+			},
+			{
+				"command": "IntegrationTestEditorView.onTestSelectionChange",
+				"title": "Выбран интеграционный тест",
+				"category": "Редактор контента"
+			},
+			{
+				"command": "NativeEditorContextMenu.compressTest",
+				"title": "Compress Document",
+				"category": "Редактор контента"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "NativeEditorContextMenu.compressTest",
+				"key": "shift+alt+c"
+			}
+		],
+		"configuration": {
+			"type": "object",
+			"title": "SiemContentEditor",
+			"properties": {
+				"xpSdkTools.sdkBaseDirectory": {
+					"scope": "window",
+					"type": "string",
+					"default": "C:\\ProgramData\\XP_SDK",
+					"markdownDescription": "Путь к директории c XP SDK"
+				},
+
+				"siemTools.sdkDirectoryFullPath": {
+					"scope": "window",
+					"type": "string",
+					"default": "C:\\Work\\-=SIEM=-\\Tools\\25.0.9349\\vc150\\x86_64\\win",
+					"markdownDescription": "Путь к директории c ptsiem-sdk"
+				},
+				"siemTools.buildToolsDirectoryFullPath": {
+					"scope": "window",
+					"type": "string",
+					"default": "C:\\Work\\-=SIEM=-\\Tools\\0.22.774\\any\\any\\win",
+					"markdownDescription": "Путь к build-tools"
+				},
+				"siemTools.taxonomyFullPath": {
+					"scope": "window",
+					"type": "string",
+					"default": "C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\packages\\taxonomy\\develop\\25.0.579\\taxonomy.json",
+					"markdownDescription": "Путь к файлу таксономии"
+				},
+				"siemTools.outputDirectoryPath": {
+					"scope": "window",
+					"type": "string",
+					"default": "C:\\Work\\-=SIEM=-\\Output",
+					"markdownDescription": "Путь к выходной директории"
+				},
+				"siemTools.knowledgePackagerDirectoryPath": {
+					"scope": "window",
+					"type": "string",
+					"default": "c:\\Work\\-=SIEM=-\\KnowledgeBase.Packager.Cli.1.1.9\\KnowledgeBase.Packager.Cli.1.1.9\\utilities\\netcoreapp3.1",
+					"markdownDescription": "Путь к директории с исполняемыми модулями из KnowledgeBase.Packager.Cli"
+				},
+				"siemTools.knowledgePackagerContractsDirectoryPath": {
+					"scope": "window",
+					"type": "string",
+					"default": "c:\\tmp\\pack\\contracts",
+					"markdownDescription": "Путь к специальным контактам для сборки kb-файлов."
+				},
+				"siemTools.contentPrefix": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"LOC",
+						"ESC"
+					],
+					"default": "ESC",
+					"description": "Префикс ObjectId для определения типа создаваемого контента."
+				},
+				"languageServer.maxNumberOfProblems": {
+					"scope": "resource",
+					"type": "number",
+					"default": 100,
+					"description": "Максимальное количество ошибок, выводимых LSP"
+				},
+				"languageServer.trace.server": {
+					"scope": "window",
+					"type": "string",
+					"enum": [
+						"off",
+						"messages",
+						"verbose"
+					],
+					"default": "off",
+					"description": "Трассировака коммуникации между VS Code и LSP"
+				}
+			}
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -b",
+		"watch": "tsc -b -w",
+		"postinstall": "cd client && npm install && cd ../server && npm install && cd .."
+	},
+	"devDependencies": {
+		"@types/glob": "^8.0.0",
+		"@types/mocha": "^8.2.2",
+		"@typescript-eslint/eslint-plugin": "^4.21.0",
+		"@typescript-eslint/parser": "^4.21.0",
+		"eslint": "^7.23.0",
+		"mocha": "^9.2.2"
+	},
+	"dependencies": {
+		"@types/fs-extra": "^9.0.12",
+		"@types/mustache": "^4.1.2",
+		"@types/node": "^12.12.0",
+		"class-transformer": "^0.5.1",
+		"crc-32": "^1.2.2",
+		"fs-extra": "^10.0.0",
+		"guid-typescript": "^1.0.9",
+		"iconv-lite": "0.6.3",
+		"js2xmlparser": "^4.0.2",
+		"jsonc-parser": "^0.4.2",
+		"lru-cache": "^6.0.0",
+		"minimist": "^1.2.6",
+		"mkdirp": "^0.5.1",
+		"mustache": "^4.2.0",
+		"reflect-metadata": "^0.1.13",
+		"rimraf": "^2.6.2",
+		"typescript": "^4.2.3",
+		"util": "^0.12.4",
+		"uuid": "^8.3.2",
+		"xml-serializer-ts": "^1.0.2",
+		"xml2js": "^0.4.23",
+		"yaml": "^1.10.2",
+		"zlib": "^1.0.5"
+	}
+}

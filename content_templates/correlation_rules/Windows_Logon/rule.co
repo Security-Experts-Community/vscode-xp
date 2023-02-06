@@ -1,0 +1,95 @@
+event User_Login:
+    key:
+        event_src.host
+    filter {
+        filter::NotFromCorrelator()
+        and event_src.title == "windows"
+        and msgid == "4624"
+        #and filter::LoginAttempt_Windows_Endpoint()
+        
+        and filter::CheckWL_Windows_Login("Windows_Logon", )
+    }
+
+rule Windows_Logon: User_Login
+
+    init {
+        $labels = "w_auto|CheckWL_Windows_Login"
+    }
+
+    on User_Login {
+        $subject.account.name = subject.account.name
+        $subject.account.domain = subject.account.domain
+        $subject.account.session_id = subject.account.session_id
+        $subject.account.id = subject.account.id
+        $subject.account.privileges = subject.account.privileges
+
+        $subject.process.id = subject.process.id
+        $subject.process.name = subject.process.name
+        $subject.process.path = subject.process.path
+        $subject.process.fullpath = subject.process.fullpath
+
+        # For Elevate
+        #$object.account.session_id = object.account.session_id
+        #$object.account.name = object.account.name
+        #$object.account.domain = object.account.domain
+        #$object.account.fullname = object.account.fullname
+        #$object.account.id = object.account.id
+
+        $logon_type = logon_type
+        $logon_service = logon_service
+        $logon_auth_method = logon_auth_method
+        
+        $src.asset = src.asset
+        $src.host = src.host
+        $src.ip = src.ip
+        $src.hostname = src.hostname
+        $src.fqdn = src.fqdn
+        $src.port = src.port
+
+        $dst.asset = dst.asset
+        $dst.host = dst.host
+        $dst.ip = dst.ip
+        $dst.hostname = dst.hostname
+        $dst.fqdn = dst.fqdn
+        $dst.port = dst.port
+
+        $datafield7 = datafield7  # TargetLogonId
+
+        $event_src.ip = event_src.ip
+        $event_src.hostname = event_src.hostname
+        $event_src.host = event_src.host
+        $event_src.asset = event_src.asset
+        $event_src.host = event_src.host
+        $event_src.title = event_src.title
+        $event_src.subsys = event_src.subsys
+        $event_src.vendor = event_src.vendor
+        $event_src.title = event_src.title
+        $event_src.category = event_src.category
+        $event_src.rule = event_src.rule
+
+        $alert.key = 
+        $alert.context = 
+
+emit {
+    $correlation_type = ""
+
+    $subject = "account"
+    $action = "login"
+    $object = "system"
+    $status = "success"
+
+    $labels = $labels + "|subject_account_to_attacking_assets"
+    $labels = $labels + "|src_to_attacking_assets"
+    $labels = $labels + "|event_source_to_compromised_assets"
+
+    $importance = ""
+
+    $category.generic = "Attack"
+    $category.high = ""
+    $category.low = ""
+
+    $incident.aggregation.key = join([$correlation_name, $subject.account.name], "|")
+    $incident.severity = "high"
+    $incident.category = "Undefined"
+    $incident.aggregation.timeout = 1h
+}

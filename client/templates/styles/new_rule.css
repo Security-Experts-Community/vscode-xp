@@ -1,0 +1,57 @@
+body{
+	padding: 80px;
+	color: var(--vscode-editor-foreground);
+}
+
+table {
+	width: 98%;
+	margin: 0 1%;
+}
+
+td {
+	padding: 0 8px;
+}
+
+.labels {
+	text-align: right;
+	width: 100px;
+}
+
+/* .userinput {
+	width: 100% - 130px;
+} */
+
+input, select {
+	width: 100%;
+	padding: 12px 20px;
+	margin: 8px 0;
+	float: left;
+	border: none;
+	background: var(--vscode-input-background);
+	color: var(--vscode-input-foreground);
+}
+
+input {
+	width: calc(100% - 40px);
+}
+
+input:focus, select:focus {
+	border: 1px solid var(--vscode-inputValidation-infoBorder);
+	outline: none;
+}
+
+input:invalid {
+	border: 1px solid var(--vscode-inputValidation-errorBorder);
+	/* color: var(--vscode-inputValidation-errorBorder); */
+	outline: none;
+}
+
+input[type=submit] {
+	width: 120px;
+	padding: 12px 20px;
+	margin: 30px 0;
+	background-color: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+	border: none;
+	cursor: pointer;
+}

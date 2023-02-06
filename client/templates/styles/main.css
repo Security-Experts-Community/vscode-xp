@@ -1,0 +1,86 @@
+:root {
+	--background: #212529;
+	--white: #CCBCBC;
+	--gray: #787878; 
+	--red: #DA3E52;
+	--blue: #034f84;
+	--green: #06BA63;
+}
+
+body {
+	padding: 10px;
+	color: var(--vscode-editor-foreground);
+}
+
+/* ------ NAVIGATION ------ */
+#header {
+	width: calc(100% - 10px);
+	padding: 10px 15px 0 15px;
+	position: fixed;
+	top:0; left:0;
+	z-index: 1;
+	display: block;
+	float: left;
+}
+
+#navigation {
+	width: 50%;
+	float: left;
+}
+
+/* 
+#navigation input[type=button] {
+	float:right;
+	height: 27px;
+	min-width: 100px;
+	margin: 0 3px;
+}
+*/
+
+.save[type=button]{
+	width: 15%;
+	min-width: 100px;
+	height: 27px;
+	margin: 5px 5px;
+	float: right;
+	background-color: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+	border: none;
+	cursor: pointer;
+}
+.save:hover {
+	background-color: var(--vscode-button-hoverBackground);
+}
+
+.run {
+	float: left;
+	background-color: var(--vscode-button-secondaryBackground);
+	color: var(--vscode-button-secondaryForeground);
+	min-width: 100px;
+	border: none;
+	cursor: pointer;
+}
+.run:hover {
+	background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
+
+
+/* ------ COMMON ELEMENTS ------ */
+#main-body {
+	margin-top: 56px;
+	display: block;
+	width: 100%;
+}
+
+#loc-results {
+	padding-left: 10px;
+	float: left;
+	width: 100%;
+	display: block;
+	margin-bottom: 20px;
+}
+
+p {
+	margin: 0;
+}

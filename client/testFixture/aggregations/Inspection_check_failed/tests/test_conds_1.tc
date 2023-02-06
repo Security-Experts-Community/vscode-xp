@@ -1,0 +1,2 @@
+expect 4 {"id": "PT_Avaya_ERS_5500_syslog_interface_arp_inspection_check_failed"}
+expect 1 {"aggregation_name": "Avaya_ARP_inspection_check_failed"}

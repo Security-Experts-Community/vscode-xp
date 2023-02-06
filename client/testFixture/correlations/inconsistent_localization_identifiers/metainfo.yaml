@@ -1,0 +1,3 @@
+EventDescriptions:
+    - Criteria: correlation_name = "inconsistent_localization_identifiers"
+      LocalizationId: corrname_inconsistent_localization_identifiers

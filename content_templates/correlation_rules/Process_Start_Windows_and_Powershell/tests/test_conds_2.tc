@@ -1,0 +1,5 @@
+# Вайтлистинг
+table_list default
+table_list {"Common_whitelist_auto": [{"rule": "Process_Start_Windows_and_Powershell", "specific_value": ""}]}
+
+expect not {"correlation_name": "Process_Start_Windows_and_Powershell"}

@@ -1,0 +1,4 @@
+Description: 'Агрегация событий с id "Inspection_check_failed": с 4-го по 100-е в течение 5 минут'
+EventDescriptions:
+    - LocalizationId: aggrname_Avaya_ARP_inspection_check_failed
+      EventDescription: 'Агрегированное событие. {event_src.host}: ARP-пакет был отброшен на порту {datafield1} из-за отсутствия правильной привязки IP-MAC в таблице аренды IP-адресов'
