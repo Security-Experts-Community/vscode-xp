@@ -5,7 +5,7 @@
 	"author": "@DmitryOffsec",
 	"icon": "resources/logo.png",
 	"license": "MIT",
-	"version": "3.0.7",
+	"version": "3.0.4",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
