@@ -123,7 +123,7 @@ scenario=make-nfgraph run-normalize`;
 
 		const normEventsContent = await FileSystemHelper.readContentFile(normEventsFilePath);
 		if(!normEventsContent) {
-			throw new XpExtentionException("Нормализатор вернул пустое событие.");
+			throw new XpExtentionException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
 		}
 
 		await fs.promises.unlink(siemjConfigPath);
