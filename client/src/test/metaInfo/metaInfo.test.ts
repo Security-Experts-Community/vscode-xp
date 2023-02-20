@@ -35,7 +35,7 @@ suite('MetaInfo', () => {
 
 		// Проверяем, что нас устраиват формат сохранения.
 		const metaInfoPath = path.join(savePath, "metainfo.yaml");
-		const metaInfoPlain = TestFixture.readYamlFile(metaInfoPath);
+		const metaInfoPlain = await TestFixture.readYamlFile(metaInfoPath);
 
 		assert.ok(!metaInfoPlain.Name);
 		assert.ok(metaInfoPlain.Created);

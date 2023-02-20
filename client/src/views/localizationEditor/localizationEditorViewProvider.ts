@@ -154,18 +154,15 @@ export class LocalizationEditorViewProvider  {
 
 					// Преобразуем полученные данные в нужный формат.
 					const localizations = criteria.map( (cr, index) => {
+						const ruLoc = ruLocalizations[index];
+						const enLoc = enLocalizations[index];
+						const loc = Localization.create(cr, ruLoc, enLoc);
 
-						const loc =  new Localization();
-						loc.setCriteria(cr);
-						
 						const locId = localizationIds[index];
 						if(locId) {
 							loc.setLocalizationId(locId);
 						}
-
-						// Задаем русскую и английскую локализации.
-						loc.setRuLocalizationText(ruLocalizations[index]);
-						loc.setEnLocalizationText(enLocalizations[index]);
+						
 						return loc;
 					});
 

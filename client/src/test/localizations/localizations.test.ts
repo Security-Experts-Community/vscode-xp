@@ -7,6 +7,14 @@ import { Correlation } from '../../models/content/correlation';
 suite('Локализации', () => {
 	
 	test('Парсинг трех локализаций', () => {
+		const loc = Localization.create(
+			`correlation_name = "MSSQL_user_password_brute" and src.ip != null and newCriteria`,
+			"RuLocalization",
+			"EnLocalization"
+		)
+	});
+
+	test('Парсинг трех локализаций', () => {
 		const rulePath = TestFixture.getTestPath("localizations", "MSSQL_user_password_brute");
 		const localizations = Localization.parseFromDirectory(rulePath);
 
@@ -42,10 +50,11 @@ suite('Локализации', () => {
 		const rulePath = TestFixture.getTestPath("localizations", "MSSQL_user_password_brute");
 		const correlation = await Correlation.parseFromDirectory(rulePath);
 
-		const newLocalization = new Localization();
-		newLocalization.setCriteria(`correlation_name = "MSSQL_user_password_brute" and src.ip != null and newCriteria`);
-		newLocalization.setRuLocalizationText("RuLocalization");
-		newLocalization.setEnLocalizationText("EnLocalization");
+		const newLocalization = 
+		Localization.create(
+			`correlation_name = "MSSQL_user_password_brute" and src.ip != null and newCriteria`,
+			"RuLocalization",
+			"EnLocalization");
 
 		const oldLocalizations = correlation.getLocalizations();
 		oldLocalizations.push(newLocalization);
@@ -77,11 +86,11 @@ suite('Локализации', () => {
 		const rulePath = TestFixture.getTestPath("localizations", "MSSQL_user_password_brute");
 		const correlation = await Correlation.parseFromDirectory(rulePath);
 
-		const newLocalization = new Localization();
-		newLocalization.setCriteria(`correlation_name = "MSSQL_user_password_brute" and src.ip != null`);
-		newLocalization.setRuLocalizationText("RuLocalization");
-		newLocalization.setEnLocalizationText("EnLocalization");
-
+		const newLocalization = Localization.create(
+			`correlation_name = "MSSQL_user_password_brute" and src.ip != null`,
+			"RuLocalization",
+			"EnLocalization");
+			
 		correlation.updateLocalizations([newLocalization]);
 
 		const actualLocalizations = correlation.getLocalizations();

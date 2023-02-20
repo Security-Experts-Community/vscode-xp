@@ -11,6 +11,7 @@ import { FileNotFoundException } from './fileNotFounException';
 import { XpExtentionException } from './xpException';
 import { ContentType } from '../contentType/contentType';
 import { RuleBaseItem } from './content/ruleBaseItem';
+import { Localization } from './content/localization';
 
 
 export enum OsType {
@@ -534,7 +535,7 @@ export class Configuration {
 		const taxonomyFullPath = this.getTaxonomyFullPath();
 
 		const taxonomyDirectoryPath = path.dirname(taxonomyFullPath);
-		const ruLocalizationFilePath = path.join(taxonomyDirectoryPath, "i18n", "i18n_ru.yaml");
+		const ruLocalizationFilePath = path.join(taxonomyDirectoryPath, Localization.LOCALIZATIONS_DIRNAME, Localization.RU_LOCALIZATION_FILENAME);
 		return ruLocalizationFilePath;
 	}
 

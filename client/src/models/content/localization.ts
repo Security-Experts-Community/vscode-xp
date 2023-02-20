@@ -1,9 +1,9 @@
 import * as path from "path";
 import * as fs from 'fs';
-import * as yaml from 'yaml';
 
 import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
+import { YamlHelper } from '../../helpers/yamlHelper';
 
 export enum LocalizationLanguage{
 	Ru = 1,
@@ -11,6 +11,8 @@ export enum LocalizationLanguage{
 }
 
 export class Localization {
+
+	private constructor() {}
 
 	public setRuDescription(description: string ) {
 		this._ruDescription = description;
@@ -63,24 +65,24 @@ export class Localization {
 	public static parseFromDirectory(ruleDirectoryPath: string) : Localization[] {
 
 		// Читаем русские локализации.
-		const ruLocFilePath = path.join(ruleDirectoryPath, "i18n", "i18n_ru.yaml");
+		const ruLocFilePath = path.join(ruleDirectoryPath, Localization.LOCALIZATIONS_DIRNAME, Localization.RU_LOCALIZATION_FILENAME);
 		if(!fs.existsSync(ruLocFilePath)) {
 			return [];
 		}
 
 		const ruLocContant = fs.readFileSync(ruLocFilePath, 'utf8');
-		const ruLocObject = yaml.parse(ruLocContant);
+		const ruLocObject = YamlHelper.parse(ruLocContant);
 		const ruEventDescriptionsObject = ruLocObject.EventDescriptions as any[];
 		const ruDescription = ruLocObject.Description as string;
 
 		// Читаем английские локализации.
-		const enLocFilePath = path.join(ruleDirectoryPath, "i18n", "i18n_en.yaml");
+		const enLocFilePath = path.join(ruleDirectoryPath, Localization.LOCALIZATIONS_DIRNAME, Localization.EN_LOCALIZATION_FILENAME);
 		if(!fs.existsSync(enLocFilePath)) {
 			throw new Error(`Не найден файл английской локализации по пути '${ruLocFilePath}'`);
 		}
 
 		const enLocContant = fs.readFileSync(enLocFilePath, 'utf8');
-		const enLocObject = yaml.parse(enLocContant);
+		const enLocObject = YamlHelper.parse(enLocContant);
 		const enEventDescriptionsObject = enLocObject.EventDescriptions as any[];
 		const enDescription = enLocObject.Description as string;
 
@@ -132,7 +134,7 @@ export class Localization {
 		// Читаем метаинформацию.
 		const metaInfoFullPath = path.join(ruleDirFullPath, "metainfo.yaml");
 		const yamlContent = fs.readFileSync(metaInfoFullPath, 'utf8');
-		const metaInfoPlain = yaml.parse(yamlContent);
+		const metaInfoPlain = YamlHelper.parse(yamlContent);
 
 		const eventDescriptionsPlain = metaInfoPlain.EventDescriptions as any[];
 		if(!eventDescriptionsPlain) {
@@ -149,7 +151,7 @@ export class Localization {
 		return eventDescriptions;
 	}
 
-	public static create(criteria : string, ruLocalizationText : string, enLocalizationText : string, ) : Localization {
+	public static create(criteria : string, ruLocalizationText : string, enLocalizationText : string ) : Localization {
 		const newLocalization = new Localization();
 		newLocalization.setCriteria(criteria);
 		newLocalization.setRuLocalizationText(ruLocalizationText);
@@ -159,27 +161,27 @@ export class Localization {
 
 	public static async parseRuDescription(fullPath: string) : Promise<string> {
 
-		const ruLocFilePath = path.join(fullPath, "i18n", "i18n_ru.yaml");
+		const ruLocFilePath = path.join(fullPath, this.LOCALIZATIONS_DIRNAME, this.RU_LOCALIZATION_FILENAME);
 		if(!fs.existsSync(ruLocFilePath)) {
 			return null;
 		}
 		
 		const ruLocContant = await FileSystemHelper.readContentFile(ruLocFilePath);
-		const ruLocObject = yaml.parse(ruLocContant);
+		const ruLocObject = YamlHelper.parse(ruLocContant);
 
 		return ruLocObject.Description;
 	}
 
 	public static async parseEnDescription(fullPath: string) : Promise<string> {
-		const ruLocFilePath = path.join(fullPath, "i18n", "i18n_en.yaml");
-		if(!fs.existsSync(ruLocFilePath)) {
+		const enLocFilePath = path.join(fullPath, this.LOCALIZATIONS_DIRNAME, this.EN_LOCALIZATION_FILENAME);
+		if(!fs.existsSync(enLocFilePath)) {
 			return null;
 		}
 		
-		const ruLocContant = await FileSystemHelper.readContentFile(ruLocFilePath);
-		const ruLocObject = yaml.parse(ruLocContant);
+		const enLocContant = await FileSystemHelper.readContentFile(enLocFilePath);
+		const enLocObject = YamlHelper.parse(enLocContant);
 
-		return ruLocObject.Description;
+		return enLocObject.Description;
 	}
 
 	private _ruDescription : string;
@@ -191,5 +193,9 @@ export class Localization {
 	private _enLocalizationText : string;
 
 	private _localizationId : string;
-}
 
+	public static RU_LOCALIZATION_FILENAME = "i18n_ru.yaml";
+	public static EN_LOCALIZATION_FILENAME = "i18n_en.yaml";
+
+	public static LOCALIZATIONS_DIRNAME = "i18n";
+}
