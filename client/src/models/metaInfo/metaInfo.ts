@@ -14,7 +14,7 @@ export class MetaInfo {
 
 	public static parseFromFile(ruleDirFullPath: string) : MetaInfo {
 		
-		const metaInfoFullPath = path.join(ruleDirFullPath, MetaInfo.MetaInfoFileName);
+		const metaInfoFullPath = path.join(ruleDirFullPath, MetaInfo.METAINFO_FILENAME);
 
 		if(!fs.existsSync(metaInfoFullPath)) {
 			// Заполнение по умолчанию.
@@ -116,7 +116,7 @@ export class MetaInfo {
 	public async toObject() : Promise<any> {
 		
 		// Сохраняем если ранее не был сохранен.
-		const metainfoFilePath = path.join(this.getDirectoryPath(), "metainfo.yaml");
+		const metainfoFilePath = path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
 		if(!fs.existsSync(metainfoFilePath)) {
 			await this.save();
 		}
@@ -318,9 +318,9 @@ export class MetaInfo {
 
 		let metaInfoFullPath: string;
 		if(ruleDirectoryFullPath) {
-			metaInfoFullPath = path.join(ruleDirectoryFullPath, "metainfo.yaml");
+			metaInfoFullPath = path.join(ruleDirectoryFullPath, MetaInfo.METAINFO_FILENAME);
 		} else {
-			metaInfoFullPath = path.join(this.getDirectoryPath(), "metainfo.yaml");
+			metaInfoFullPath = path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
 		}
 		
 
@@ -397,7 +397,7 @@ export class MetaInfo {
 		}
 
 		let yamlContent = YamlHelper.stringify(metaInfoObject);
-		// yamlContent = this.correctEventIds(yamlContent);
+		yamlContent = this.correctEventIds(yamlContent);
 
 		await FileSystemHelper.writeContentFile(metaInfoFullPath, yamlContent);
 	}
@@ -416,7 +416,7 @@ export class MetaInfo {
 		return metaInfoContent;
 	}
 
-	public static MetaInfoFileName: string = "metainfo.yaml";
+	public static METAINFO_FILENAME: string = "metainfo.yaml";
 
 	private _directoryPath: string;
 

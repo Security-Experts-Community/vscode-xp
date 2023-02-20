@@ -5,8 +5,45 @@ import * as fs from 'fs';
 import { MetaInfo } from '../../models/metaInfo/metaInfo';
 import { MetaInfoEventDescription } from '../../models/metaInfo/metaInfoEventDescription';
 import { TestFixture } from '../helper';
+import { DataSource } from '../../models/metaInfo/dataSource';
+import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 
 suite('MetaInfo', () => {
+
+	test('EventID без кавычек для Windows', async () => {
+		
+		const metaInfo = new MetaInfo();
+		metaInfo.setDataSources([
+			new DataSource("Microsoft-Windows-Security-Auditing", ["1644", "5136"])
+		]);
+		const tmpDir = TestFixture.getTmpPath();
+
+		await metaInfo.save(tmpDir);
+
+		const metaInfoFilePath = path.join(tmpDir, MetaInfo.METAINFO_FILENAME);
+		const metaInfoString = await FileSystemHelper.readContentFile(metaInfoFilePath);
+
+		assert.ok(metaInfoString.includes("- 1644"));
+		assert.ok(metaInfoString.includes("- 5136"));
+	});
+
+	test('EventID без кавычек для Linux', async () => {
+		
+		const metaInfo = new MetaInfo();
+		metaInfo.setDataSources([
+			new DataSource("Unix", ["pt_siem_execve", "pt_siem_execve_daemon", "user_cmd"])
+		]);
+
+		const tmpDir = TestFixture.getTmpPath();
+		await metaInfo.save(tmpDir);
+
+		const metaInfoFilePath = path.join(tmpDir, MetaInfo.METAINFO_FILENAME);
+		const metaInfoString = await FileSystemHelper.readContentFile(metaInfoFilePath);
+
+		assert.ok(metaInfoString.includes("- pt_siem_execve"));
+		assert.ok(metaInfoString.includes("- pt_siem_execve_daemon"));
+		assert.ok(metaInfoString.includes("- user_cmd"));
+	});
 	
 	test('Минимальная метаинформация, содержащая только ObjectId', () => {
 		const metaInfoPath = TestFixture.getTestPath("metaInfo", "onlyObjectId");
@@ -34,7 +71,7 @@ suite('MetaInfo', () => {
 		await metaInfo.save(savePath);
 
 		// Проверяем, что нас устраиват формат сохранения.
-		const metaInfoPath = path.join(savePath, "metainfo.yaml");
+		const metaInfoPath = path.join(savePath, MetaInfo.METAINFO_FILENAME);
 		const metaInfoPlain = await TestFixture.readYamlFile(metaInfoPath);
 
 		assert.ok(!metaInfoPlain.Name);

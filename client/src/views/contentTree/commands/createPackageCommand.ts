@@ -8,6 +8,7 @@ import { ContentTreeProvider } from '../contentTreeProvider';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { Configuration } from '../../../models/configuration';
 import { YamlHelper } from '../../../helpers/yamlHelper';
+import { MetaInfo } from '../../../models/metaInfo/metaInfo';
 
 export class CreatePackageCommand {
 
@@ -79,7 +80,7 @@ export class CreatePackageCommand {
 		await fs.promises.mkdir(metaPath);
 
 		// Пакет -> _meta -> metainfo.yaml
-		const metainfoPath = path.join(metaPath, "metainfo.yaml");
+		const metainfoPath = path.join(metaPath, MetaInfo.METAINFO_FILENAME);
 
 		const contentPrefix = Configuration.get().getContentPrefix();
 		const objectId = KbHelper.generatePackageObjectId(packageName, contentPrefix);
