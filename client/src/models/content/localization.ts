@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { YamlHelper } from '../../helpers/yamlHelper';
+import { MetaInfo } from '../metaInfo/metaInfo';
 
 export enum LocalizationLanguage{
 	Ru = 1,
@@ -132,7 +133,7 @@ export class Localization {
 	public static parseEventDescriptions(ruleDirFullPath: string) : MetaInfoEventDescription [] {
 		
 		// Читаем метаинформацию.
-		const metaInfoFullPath = path.join(ruleDirFullPath, "metainfo.yaml");
+		const metaInfoFullPath = path.join(ruleDirFullPath, MetaInfo.METAINFO_FILENAME);
 		const yamlContent = fs.readFileSync(metaInfoFullPath, 'utf8');
 		const metaInfoPlain = YamlHelper.parse(yamlContent);
 

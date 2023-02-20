@@ -98,7 +98,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	}
 
 	public getMetaInfoFilePath(): string {
-		return path.join(this.getDirectoryPath(), "metainfo.yaml");
+		return path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
 	}
 
 	public setMetaInfo(metaInfo : MetaInfo) {
