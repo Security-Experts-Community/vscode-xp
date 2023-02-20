@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import * as yaml from 'yaml';
 
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';

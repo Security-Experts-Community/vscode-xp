@@ -1,8 +1,6 @@
 import * as path from 'path';
-import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { workspace, ExtensionContext } from 'vscode';
-import * as yaml from 'yaml';
 
 import {
 	LanguageClient,
@@ -26,6 +24,7 @@ import { TableListsEditorViewProvider } from './views/tableListsEditor/TableList
 import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvier';
 import { TestsFormatContentMenuExtention } from './ext/contextMenuExtention';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
+import { YamlHelper } from './helpers/yamlHelper';
 
 let client: LanguageClient;
 
@@ -86,7 +85,13 @@ export async function activate(context: ExtensionContext) {
 			? vscode.workspace.workspaceFolders[0].uri.fsPath
 			: undefined;
 
-	changeGlobalYamlConfiguration();
+	YamlHelper.configure(
+		{
+			lineWidth : -1,
+			indent : 2,
+			noArrayIndent : true
+		}
+	);
 
 	ContentTreeProvider.init(config, rootPath);
 	LocalizationEditorViewProvider.init(context);
@@ -149,10 +154,9 @@ export async function activate(context: ExtensionContext) {
 		)
 	);
 
-	const tokenTypes = ['function', 'variable'];
-
 	// Не очень понятно как тут сделать разумно.
 	const tokenModifiers = ['declaration', 'documentation'];
+	const tokenTypes = ['function', 'variable'];
 	const legend = new vscode.SemanticTokensLegend(tokenTypes, tokenModifiers);
 
 	const xpDocumentHighlightProvider = await XpDocumentHighlightProvider.init(config, legend);
@@ -170,17 +174,6 @@ export async function activate(context: ExtensionContext) {
 		xpDocumentHighlightProvider,
 		legend
 	);
-}
-
-/**
- * Меняет глобальные настройки yaml для сериализации.
- */
-function changeGlobalYamlConfiguration() {
-	// Отменяем перенос значения строк.
-	yaml.scalarOptions.str.fold.lineWidth = 1000;
-
-	// Отключаем отступ для элементов массива.
-	yaml.defaultOptions.indentSeq = false;
 }
 
 export async function deactivate(): Promise<void> | undefined {

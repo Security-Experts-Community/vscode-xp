@@ -2,10 +2,10 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as fsExtra from 'fs-extra';
-import * as yaml from 'yaml';
 
 import { FileSystemHelper } from '../helpers/fileSystemHelper';
 import { ExtensionHelper } from '../helpers/extensionHelper';
+import { YamlHelper } from '../helpers/yamlHelper';
 
 export let doc: vscode.TextDocument;
 export let editor: vscode.TextEditor;
@@ -26,9 +26,9 @@ export class TestFixture {
 		return path.resolve(__dirname, '../../testFixture', filePath);
 	}
 
-	public static readYamlFile(filePath : string) : any {
-		const yamlContent = fs.readFileSync(filePath, 'utf8');
-		return yaml.parse(yamlContent);
+	public static async readYamlFile(filePath : string) : Promise<any> {
+		const yamlContent = await fs.promises.readFile(filePath, 'utf8');
+		return YamlHelper.parse(yamlContent);
 	}
 	
 	public static getTestPath(...pathSegments : string[]) {

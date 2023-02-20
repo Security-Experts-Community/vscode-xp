@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import * as yaml from 'yaml';
-import { Configuration } from '../models/configuration';
 
+import { Configuration } from '../models/configuration';
 import { TaxonomyFieldDetails } from '../providers/taxonomyFieldDetails';
 import { FileSystemHelper } from './fileSystemHelper';
+import { YamlHelper } from './yamlHelper';
 
 export class TaxonomyHelper {
 	public static async getTaxonomyCompletions(configuration: Configuration) : Promise<vscode.CompletionItem[]> {
@@ -15,7 +15,7 @@ export class TaxonomyHelper {
 		// Считываем русскую локализацию для полей таксономии.
 		const taxonomyRuLocalizationFilePath = configuration.getTaxonomyRuLocalizationFullPath();
 		const taxonomyRuLocalizationFileContent = await FileSystemHelper.readContentFile(taxonomyRuLocalizationFilePath);
-		const ruLocalizationPlain = yaml.parse(taxonomyRuLocalizationFileContent);
+		const ruLocalizationPlain = YamlHelper.parse(taxonomyRuLocalizationFileContent);
 
 		const fieldsRuLocalization = ruLocalizationPlain?.Fields;
 

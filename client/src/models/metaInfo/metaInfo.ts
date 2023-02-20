@@ -1,6 +1,5 @@
 import * as path from "path";
 import * as fs from 'fs';
-import * as yaml from 'yaml';
 
 import { MetaInfoEventDescription } from './metaInfoEventDescription';
 import { Attack } from './attack';
@@ -9,6 +8,7 @@ import { DataSource } from './dataSource';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { JsHelper } from '../../helpers/jsHelper';
 import { ParseException } from '../ParseException';
+import { YamlHelper } from '../../helpers/yamlHelper';
 
 export class MetaInfo {
 
@@ -28,7 +28,7 @@ export class MetaInfo {
 		}
 
 		const yamlContent = FileSystemHelper.readContentFileSync(metaInfoFullPath);
-		const metaInfoPlain = yaml.parse(yamlContent);
+		const metaInfoPlain = YamlHelper.parse(yamlContent);
 
 		const metaInfo = MetaInfo.create(metaInfoPlain);
 		metaInfo.setDirectoryPath(ruleDirFullPath);
@@ -122,7 +122,7 @@ export class MetaInfo {
 		}
 
 		const metainfoString = await FileSystemHelper.readContentFile(metainfoFilePath);
-		const metaInfo = yaml.parse(metainfoString);
+		const metaInfo = YamlHelper.parse(metainfoString);
 
 		// Модифицируем ATTACK для форматирования корректного.
 		metaInfo.ATTACK = this.getAttacks();
@@ -396,20 +396,15 @@ export class MetaInfo {
 			metaInfoObject["DataSources"] = this._dataSources;
 		}
 
-		let yamlContent = yaml.stringify(metaInfoObject);
-		yamlContent = this.correctEventIds(yamlContent);
-		
-		// const yamlContent = js_yaml.dump(metaInfoObject, 
-		// 	{
-		// 		lineWidth : 200
-		// 	}
-		// );
+		let yamlContent = YamlHelper.stringify(metaInfoObject);
+		// yamlContent = this.correctEventIds(yamlContent);
+
 		await FileSystemHelper.writeContentFile(metaInfoFullPath, yamlContent);
 	}
 
 	public correctEventIds(metaInfoContent : string) : string {
 
-		const eventIdItemRegExp = /- \"(\d+)\"$/gm;
+		const eventIdItemRegExp = /- \'(\d+)\'$/gm;
 
 		let curResult: RegExpExecArray | null;
 		while ((curResult = eventIdItemRegExp.exec(metaInfoContent))) {

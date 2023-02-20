@@ -1,5 +1,4 @@
 import * as path from "path";
-import * as yaml from 'yaml';
 import * as fs from 'fs';
 
 import { MetaInfo } from '../metaInfo/metaInfo';
@@ -11,7 +10,7 @@ import { KbTreeBaseItem } from './kbTreeBaseItem';
 import { FileSystemError } from 'vscode';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Configuration } from '../configuration';
-import { KbHelper } from '../../helpers/kbHelper';
+import { YamlHelper } from '../../helpers/yamlHelper';
 import { ContentHelper } from '../../helpers/contentHelper';
 import { ArgumentException } from '../argumentException';
 import { XpExtentionException } from '../xpException';
@@ -260,7 +259,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			return;
 		}
 
-		const localizationDirPath = path.join(fullPath, "i18n");
+		const localizationDirPath = path.join(fullPath, Localization.LOCALIZATIONS_DIRNAME);
 		if(!fs.existsSync(localizationDirPath)) {
 			await fs.promises.mkdir(localizationDirPath);
 		}
@@ -284,7 +283,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			};
 		});
 
-		const ruLocalizationYamlContent = yaml.stringify({
+		const ruLocalizationYamlContent = YamlHelper.localizationsStringify({
 			"Description" : this.getRuDescription(),
 			"EventDescriptions" : ruEventDescriptions
 		});
@@ -310,7 +309,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			};
 		});
 
-		const enLocalizationYamlContent = yaml.stringify({
+		const enLocalizationYamlContent = YamlHelper.localizationsStringify({
 			"Description" : this.getEnDescription(),
 			"EventDescriptions" : enEventDescriptions
 		});
@@ -320,14 +319,14 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 
 	protected getLocalizationPath(localizationLanguage: LocalizationLanguage, fullPath : string) : string {
 
-		const localizationDirPath = path.join(fullPath, "i18n");
+		const localizationDirPath = path.join(fullPath, Localization.LOCALIZATIONS_DIRNAME);
 		switch (localizationLanguage) {
 			case LocalizationLanguage.En: {
-				return path.join(localizationDirPath, "i18n_en.yaml" );
+				return path.join(localizationDirPath, Localization.EN_LOCALIZATION_FILENAME);
 			}
 
 			case LocalizationLanguage.Ru: {
-				return path.join(localizationDirPath, "i18n_ru.yaml" );
+				return path.join(localizationDirPath, Localization.RU_LOCALIZATION_FILENAME);
 			}
 		}
 	}

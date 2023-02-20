@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as yaml from 'yaml';
 
 import { KbHelper } from '../../../helpers/kbHelper';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { ContentTreeProvider } from '../contentTreeProvider';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { Configuration } from '../../../models/configuration';
+import { YamlHelper } from '../../../helpers/yamlHelper';
 
 export class CreatePackageCommand {
 
@@ -87,7 +87,7 @@ export class CreatePackageCommand {
 			ObjectId: objectId,
 			Version: "1.0.0"
 		};
-		const defaultMetainfoContent = yaml.stringify(defaultMetainfoObject);
+		const defaultMetainfoContent = YamlHelper.stringify(defaultMetainfoObject);
 		await FileSystemHelper.writeContentFile(metainfoPath, defaultMetainfoContent);
 
 		await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);

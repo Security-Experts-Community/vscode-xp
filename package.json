@@ -518,7 +518,6 @@
 					"default": "C:\\ProgramData\\XP_SDK",
 					"markdownDescription": "Путь к директории c XP SDK"
 				},
-
 				"siemTools.sdkDirectoryFullPath": {
 					"scope": "window",
 					"type": "string",
@@ -593,6 +592,7 @@
 	},
 	"devDependencies": {
 		"@types/glob": "^8.0.0",
+		"@types/js-yaml": "^4.0.5",
 		"@types/mocha": "^8.2.2",
 		"@typescript-eslint/eslint-plugin": "^4.21.0",
 		"@typescript-eslint/parser": "^4.21.0",
@@ -608,6 +608,7 @@
 		"fs-extra": "^10.0.0",
 		"guid-typescript": "^1.0.9",
 		"iconv-lite": "0.6.3",
+		"js-yaml": "^4.1.0",
 		"js2xmlparser": "^4.0.2",
 		"jsonc-parser": "^0.4.2",
 		"lru-cache": "^6.0.0",
