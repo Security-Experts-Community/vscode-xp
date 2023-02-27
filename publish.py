@@ -12,11 +12,6 @@ def read_packages(path: str) -> str:
         return f.read()
 
 
-def write_packages(path: str, data: str) -> None:
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(data)
-
-
 def create_dirs(path: str) -> None:
     if not os.path.exists(path):
         print("Creating directory..")
@@ -55,10 +50,6 @@ def run():
     data = read_packages(JSON_PATH)
     prev_version = get_version(data)
     run_build(f"vsce package -o {BUILD_PATH}\\vscode-xp-{prev_version}.vsix")
-
-    # Увеличиваем версию фикса на единицу
-    data = read_packages(JSON_PATH)
-    write_packages(JSON_PATH, change_version(data))
 
 
 if __name__ == "__main__":
