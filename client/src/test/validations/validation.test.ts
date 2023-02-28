@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
-import { getDocUri, activate } from '../helper';
+
+import { getDocUri, activate, TestFixture } from '../helper';
 
 suite('Проверка валидаций корректности кода корреляции.', async () => {
 
@@ -12,7 +13,6 @@ suite('Проверка валидаций корректности кода к�
 		assert.ok(actualDiagnostics.length == 0);
 	});
 
-
 	test('Корректная корреляция', async () => {
 		const docUri = getDocUri('correctCorrelation.co');
 		await activate(docUri);
@@ -20,7 +20,6 @@ suite('Проверка валидаций корректности кода к�
 		const actualDiagnostics = vscode.languages.getDiagnostics(docUri);
 		assert.ok(actualDiagnostics.length == 0);
 	});
-
 	
 	test('Отличие первого параметра вайтлистинга и имени корреляции', async () => {
 		const docUri = getDocUri('whiteListingCorrNameError.co');
