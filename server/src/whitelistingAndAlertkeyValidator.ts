@@ -10,7 +10,7 @@ import {
 import { IValidator } from './IValidator';
 import { getDocumentSettings } from './server';
 
-export class WhitelistingAndAlertkeyValidator extends IValidator {
+export class WhitelistingAndAlertKeyValidator extends IValidator {
 	constructor() {
 		super(["co"]);
 	}

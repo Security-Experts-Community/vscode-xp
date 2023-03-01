@@ -18,8 +18,9 @@ import {
 } from 'vscode-languageserver-textdocument';
 import { LowerFunctionResultValidator } from './lowerFunctionResultValidator';
 import { IValidator } from './IValidator';
-import { WhitelistingAndAlertkeyValidator } from './whitelistingAndAlertkeyValidator';
+import { WhitelistingAndAlertKeyValidator } from './whitelistingAndAlertkeyValidator';
 import { WhitelistingAndRuleNameValidator } from './whitelistingAndRuleNameValidator';
+import { NestedLowerValidator } from './nestedLowerValidator';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -34,8 +35,10 @@ connection.onInitialize((params: InitializeParams) => {
 	// Инициализируем валидаторы кода.
 	validators.push(
 		new LowerFunctionResultValidator(), 
-		new WhitelistingAndAlertkeyValidator(),
-		new WhitelistingAndRuleNameValidator()
+		// TODO: улучшить логику 
+		// new WhitelistingAndAlertKeyValidator(),
+		new WhitelistingAndRuleNameValidator(),
+		new NestedLowerValidator()
 	);
 
 	const capabilities = params.capabilities;
