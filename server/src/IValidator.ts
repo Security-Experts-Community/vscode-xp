@@ -7,10 +7,6 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 export abstract class IValidator {
-	constructor(protected _languageId: string ) {}
+	constructor(protected _languageIds: string[] ) {}
 	abstract validate(textDocument: TextDocument) : Promise<Diagnostic[]>
-
-	public getExtention() : string {
-		return this._languageId;
-	}
 }

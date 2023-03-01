@@ -16,17 +16,28 @@ import {
 import {
 	TextDocument
 } from 'vscode-languageserver-textdocument';
-import { validateWhitelistingAndRuleNameСonsistency } from './validateWhitelistingAndRuleNameСonsistency';
 import { LowerFunctionResultValidator } from './lowerFunctionResultValidator';
+import { IValidator } from './IValidator';
+import { WhitelistingAndAlertkeyValidator } from './whitelistingAndAlertkeyValidator';
+import { WhitelistingAndRuleNameValidator } from './whitelistingAndRuleNameValidator';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+const validators : IValidator[] = [];
 
 let hasConfigurationCapability = false;
 let hasWorkspaceFolderCapability = false;
 let hasDiagnosticRelatedInformationCapability = false;
 
 connection.onInitialize((params: InitializeParams) => {
+
+	// Инициализируем валидаторы кода.
+	validators.push(
+		new LowerFunctionResultValidator(), 
+		new WhitelistingAndAlertkeyValidator(),
+		new WhitelistingAndRuleNameValidator()
+	);
+
 	const capabilities = params.capabilities;
 
 	hasConfigurationCapability = !!(
@@ -117,19 +128,11 @@ documents.onDidChangeContent(change => {
 
 export async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 		
-	if(textDocument.languageId != "co")
-		return;
-
-	// Валидация равенства первого параметра вайтлистинга и имени правила.
-	const whitelistingAndRuleNameDiagnostics = await validateWhitelistingAndRuleNameСonsistency(textDocument);
-
 	const diagnostics: Diagnostic[] = [];
-	diagnostics.push(...whitelistingAndRuleNameDiagnostics);
-	
-	// TODO: унифицировать код выше.
-	const lowerFunctionResultValidator = new LowerFunctionResultValidator("co");
-	const lowerFunctionResultValidatorResult = await lowerFunctionResultValidator.validate(textDocument);
-	diagnostics.push(...lowerFunctionResultValidatorResult);
+	for(const validator of validators) {
+		const lowerFunctionResultValidatorResult = await validator.validate(textDocument);
+		diagnostics.push(...lowerFunctionResultValidatorResult);
+	}
 
 	connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 }

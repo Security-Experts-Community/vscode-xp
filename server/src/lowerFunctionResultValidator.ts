@@ -9,12 +9,15 @@ import {
 
 import { IValidator } from './IValidator';
 import { getDocumentSettings } from './server';
-import { Test } from 'mocha';
 
 export class LowerFunctionResultValidator extends IValidator {
+	constructor() {
+		super(["co"]);
+	}
+
 	async validate(textDocument: TextDocument) : Promise<Diagnostic[]> {
 
-		if(textDocument.languageId !== this._languageId) {
+		if(!this._languageIds.includes(textDocument.languageId)) {
 			return [];
 		}
 		
