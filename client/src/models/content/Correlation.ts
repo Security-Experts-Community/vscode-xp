@@ -85,7 +85,7 @@ export class Correlation extends RuleBaseItem {
 		metainfo.setName(name);
 
 		const contentPrefix = Configuration.get().getContentPrefix();
-		const objectId = KbHelper.generateRuleObjectId(rule, contentPrefix);
+		const objectId = KbHelper.generateRuleObjectId(name, contentPrefix);
 		metainfo.setObjectId(objectId);
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
@@ -150,7 +150,7 @@ export class Correlation extends RuleBaseItem {
 		metainfo.setName(newRuleName);
 
 		const contentPrefix = Configuration.get().getContentPrefix();
-		const objectId = KbHelper.generateRuleObjectId(this, contentPrefix);
+		const objectId = KbHelper.generateRuleObjectId(newRuleName, contentPrefix);
 		metainfo.setObjectId(objectId);
 
 		// Замена в критериях.
