@@ -31,6 +31,15 @@ suite('CorrelationHelper.createCorrelationFromTemplate', async () => {
 		assert.strictEqual(rule.getName(), "ESC_Super_Duper");
 		assert.strictEqual(rule.getMetaInfo().getName(), "ESC_Super_Duper");
 	});
+
+	test('Проверяем наличие коллизии ObjectID', async () => {
+		const firstCorrelation = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper", "Empty", Configuration.get());
+		const secondCorrelation = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper1", "Empty", Configuration.get());
+
+		const firstObjectId = firstCorrelation.getMetaInfo().getObjectId();
+		const secondObjectId = secondCorrelation.getMetaInfo().getObjectId();
+		assert.ok(firstObjectId != secondObjectId);
+	});
 	
 	test('Сохранение пустой корреляции не упало', async () => {
 		const correlation = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper", "Empty", Configuration.get());
