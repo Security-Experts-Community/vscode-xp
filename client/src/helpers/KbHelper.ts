@@ -20,15 +20,14 @@ export class KbHelper {
 		return ["correlation_rules", "tabular_lists", "aggregation_rules", "enrichment_rules", "normalization_formulas"];
 	}
 
-	public static generateRuleObjectId(rule : RuleBaseItem, contentPrefix : string) : string {
-		const ruleName = rule.getName();
+	public static generateRuleObjectId(ruleName : string, contentPrefix : string) : string {
 		let objectId = Math.abs(crc32.str(ruleName)).toString();
 		objectId = objectId.substring(0, 9);
 		return `${contentPrefix}-CR-${objectId}`;
 	}
 
-	public static generatePackageObjectId(packageName : string, contentPrefix : string) : string {
-		let objectId = Math.abs(crc32.str(packageName)).toString();
+	public static generatePackageObjectId(ruleName : string, contentPrefix : string) : string {
+		let objectId = Math.abs(crc32.str(ruleName)).toString();
 		objectId = objectId.substring(0, 9);
 		return `${contentPrefix}-PKG-${objectId}`;
 	}
