@@ -5,7 +5,7 @@ event Subrule_PC_Access:
     filter {
         filter::NotFromCorrelator()
         and lower(event_src.subsys) == "directory service"
-        and regex(lower(datafield3), "upn=\W+@", 1) != lower(subject.name)
+        and regex(lower(datafield3), "upn=\W+@\S", 1) != lower(subject.name)
         and filter::CheckWL_Windows_Login("Unauthorized_Access", lower(subject.account.name) + "|" + lower(event_src.host) + "|" + lower(src.host) + "|" + lower(src.ip))
     }
 

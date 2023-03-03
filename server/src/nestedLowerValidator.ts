@@ -42,7 +42,7 @@ export class NestedLowerValidator extends IValidator {
 		
 				// Удаляем элементы синтаксиса регулярок, содержащие большие буквы.
 				let stringLiteral = lowerCallResult[1];
-				stringLiteral = stringLiteral.replace(/\\A|\\W|\\B/gm, "");
+				stringLiteral = stringLiteral.replace(/(?<!\\)(\\A|\\W|\\B|\\S)/gm, "");
 
 				for(const char of stringLiteral) {
 					// В литерале есть большая буква, добавляем ошибку.
