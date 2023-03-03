@@ -59,6 +59,10 @@ export class TestFixture {
 		return path.resolve(__dirname, '../../testFixture', "tables", name);
 	}
 
+	public static getValidationUri(name : string) {
+		return vscode.Uri.file(path.resolve(__dirname, '../../testFixture', "validation", name));
+	}
+
 	public static getTmpPath() {
 		const tmpDirectory = this.getTestPath("tmp");
 		return tmpDirectory;
