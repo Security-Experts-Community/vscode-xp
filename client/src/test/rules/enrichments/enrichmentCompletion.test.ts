@@ -3,7 +3,7 @@ import * as assert from 'assert';
 
 import { getDocUri, testCompletion } from '../../helper';
 
-suite('Автодополнение для корреляций', () => {
+suite('Автодополнение для обогащений', () => {
 	const docUri = getDocUri('completion.en');
 
 	test('Наличие автодополнения', async () => {
