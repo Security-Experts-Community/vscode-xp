@@ -50,14 +50,6 @@ suite('Проверка валидаций корректности кода к�
 		const actualDiagnostics = vscode.languages.getDiagnostics(docUri);
 		assert.ok(actualDiagnostics.length == 0);
 	});
-
-	// test('alert.key задается в блоке emit, содержит поле с долларом.', async () => {
-	// 	const docUri = getDocUri('alertKeyDefinesInsideEmit.co');
-	// 	await activate(docUri);
-
-	// 	const actualDiagnostics = vscode.languages.getDiagnostics(docUri);
-	// 	assert.ok(actualDiagnostics.length == 0);
-	// });
 });
 
 function toRange(sLine: number, sChar: number, eLine: number, eChar: number) {
