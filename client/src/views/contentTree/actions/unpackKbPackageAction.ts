@@ -78,18 +78,23 @@ export class UnpackKbPackageAction {
 				// Типовая команда выглядит так:
 				// kbtools.exe unpack -s c:\tmp\pack\esc.kb -o c:\tmp\pack\unpack\doesn_t_exist_folder
 				// doesn_t_exist_folder создается самим kbtools
+				const params = [
+					"unpack", 
+					"-s", kbFilePath, 
+					"-o", outputDirPath
+				];
+
 				const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
 					knowledgeBasePackagerCli,
-					[
-						"unpack", 
-						"-s", kbFilePath, 
-						"-o", outputDirPath
-					],
+					params,
 					this._config.getOutputChannel()
 				);
 
 				if(!output.includes(this.successSubstring)) {
+
 					ExtensionHelper.showUserError(`Ошибка распаковки пакета. Смотри Output.`);
+					this._config.getOutputChannel().appendLine(knowledgeBasePackagerCli + " " + params.join(" "));
+
 					this._config.getOutputChannel().show();
 					return;
 				} 
