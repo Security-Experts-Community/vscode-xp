@@ -10,218 +10,10 @@ import { VsCodeApiHelper } from '../helpers/vsCodeApiHelper';
 import { FileNotFoundException } from './fileNotFounException';
 import { XpExtentionException } from './xpException';
 import { ContentType } from '../contentType/contentType';
-import { RuleBaseItem } from './content/ruleBaseItem';
 import { Localization } from './content/localization';
-
-
-export enum OsType {
-	Windows,
-	Linux,
-	Mac
-}
-
-export interface IPathHelper{
-	// Config
-	// Пока не убрали отличие в именах файлов графов корреляций
-	// оставляем эти функции
-	getCorrulesGraphFileName() : string;
-	// KB
-	getAppendixPath() : string ;
-	getTablesContract() : string ;
-	getRulesDirFilters() : string ;
-	getContentRoots() : string[];
-	getPackages(): string[];
-	isKbOpened() : boolean;
-	getRootByPath(directory: string): string;
-}
-
-export class EDRPathHelper implements IPathHelper {
-	private constructor(private _kbFullPath: string) {}
-	
-	private _prefix = path.join("resources", "build-resources");
-	private static _instance: EDRPathHelper;
-
-	public static get() : EDRPathHelper {
-		const kbFullPath =
-		(vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
-			? vscode.workspace.workspaceFolders[0].uri.fsPath
-			: undefined;
-
-		if(!kbFullPath || !fs.existsSync(kbFullPath)) {
-			throw new FileNotFoundException(`Некорректный путь '${kbFullPath}'`, kbFullPath);
-		}
-
-		if (!EDRPathHelper._instance){
-			EDRPathHelper._instance = new EDRPathHelper(kbFullPath);
-		}
-		return EDRPathHelper._instance;
-	}
-
-	public getRootByPath(directory: string): string{
-		if (!directory){
-			return "";
-		}
-		const pathEntities = directory.split(path.sep);
-		const roots = this.getContentRoots().map(folder => {return path.basename(folder);});
-		for (const root of roots){
-			const  packagesDirectoryIndex = pathEntities.findIndex( pe => pe.toLocaleLowerCase() === root);
-			if(packagesDirectoryIndex === -1){
-				continue;
-			}
-
-			// Удаляем лишние элементы пути и собираем результирующий путь.
-			pathEntities.splice(packagesDirectoryIndex + 1);
-			const packageDirectoryPath = pathEntities.join(path.sep);
-			return packageDirectoryPath;
-		}
-
-		throw new Error(`Путь '${directory}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
-	}
-	
-	public getCorrulesGraphFileName() : string {
-		return "rules_graph.json";
-	}
-
-	// В корневой директории лежат пакеты экспертизы
-	public getContentRoots() : string[]{
-		const basePath = path.join(this._kbFullPath, "rules");
-		let rootDirectories = [];
-		if (fs.existsSync(basePath)){		
-			rootDirectories = rootDirectories.concat(fs.readdirSync(basePath, { withFileTypes: true })
-				.filter(dir => dir.isDirectory())
-				.map(dir => path.join(basePath, dir.name)));
-		}
-		return rootDirectories;
-	}
-
-	public getPackages() : string[]{
-		const contentRoots = this.getContentRoots();
-		const packagesDirectories = [];
-		for(const root in contentRoots){
-			packagesDirectories.concat(fs.readdirSync(root, { withFileTypes: true })
-			.filter(dir => dir.isDirectory())
-			.map(dir => dir.name));
-		}		
-		return packagesDirectories;
-	}
-
-	public getAppendixPath() : string {
-		const relative_path = path.join(this._prefix, "contracts", "xp_appendix", "appendix.xp");
-		return path.join(this._kbFullPath, relative_path);
-	}
-
-	public getTablesContract() : string {
-		const relative_path = path.join(this._prefix, "_extra", "tabular_lists", "tables_contract.yaml");
-		return path.join(this._kbFullPath, relative_path);
-	}
-
-	public getRulesDirFilters() : string {
-		const relative_path = path.join(this._prefix, "common", "rules_filters");
-		return path.join(this._kbFullPath, relative_path);
-	}
-
-	public isKbOpened() : boolean {
-		const kbPath = EDRPathHelper.get();
-		const requredFolders = kbPath.getContentRoots();
-		requredFolders.concat(kbPath.getRulesDirFilters());
-		for (const folder of requredFolders){
-			if (!fs.existsSync(folder)){
-				return false;
-			}
-		}
-		return true;
-	}
-}
-
-export class SIEMPathHelper implements IPathHelper {
-	private constructor(private _kbFullPath: string) {}
-	
-	private static _instance: SIEMPathHelper;
-
-	public static get() : SIEMPathHelper {
-		const kbFullPath =
-		(vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
-			? vscode.workspace.workspaceFolders[0].uri.fsPath
-			: undefined;
-
-		if(!kbFullPath || !fs.existsSync(kbFullPath)) {
-			throw new FileNotFoundException(`Некорректный путь '${kbFullPath}'`, kbFullPath);
-		}
-
-		if (!SIEMPathHelper._instance){
-			SIEMPathHelper._instance = new SIEMPathHelper(kbFullPath);
-		}
-		return SIEMPathHelper._instance;
-	}
-
-	public getRootByPath(directory: string): string{
-		if (!directory){
-			return "";
-		}
-		const pathEntities = directory.split(path.sep);
-		const roots = this.getContentRoots().map(folder => {return path.basename(folder);});
-		for (const root of roots){
-			const  packagesDirectoryIndex = pathEntities.findIndex( pe => pe.toLocaleLowerCase() === root);
-			if(packagesDirectoryIndex === -1){
-				continue;
-			}
-
-			// Удаляем лишние элементы пути и собираем результирующий путь.
-			pathEntities.splice(packagesDirectoryIndex + 1);
-			const packageDirectoryPath = pathEntities.join(path.sep);
-			return packageDirectoryPath;
-		}
-
-		throw new Error(`Путь '${directory}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
-	}
-
-	public getCorrulesGraphFileName() : string {
-		return "corrules_graph.json";
-	}	
-
-	// В корневой директории лежат пакеты экспертизы
-	public getContentRoots() : string[]{
-		return [path.join(this._kbFullPath, "packages")];
-	}
-
-	public getPackages() : string[]{
-		const contentRoots = this.getContentRoots();
-		const packagesDirectories = [];
-		for(const root in contentRoots){
-			packagesDirectories.concat(fs.readdirSync(root, { withFileTypes: true })
-			.filter(dir => dir.isDirectory())
-			.map(dir => dir.name));
-		}		
-		return packagesDirectories;
-	}
-
-	public getAppendixPath() : string {
-		const relative_path = path.join("contracts", "xp_appendix", "appendix.xp");
-		return path.join(this._kbFullPath, relative_path);
-	}
-
-	public getTablesContract() : string {
-		const relative_path = path.join("_extra", "tabular_lists", "tables_contract.yaml");
-		return path.join(this._kbFullPath, relative_path);
-	}
-
-	public getRulesDirFilters() : string {
-		const relative_path = path.join("common", "rules_filters");
-		return path.join(this._kbFullPath, relative_path);
-	}
-
-	public isKbOpened() : boolean {
-		const kbPath = SIEMPathHelper.get();
-		const requredFolders = kbPath.getContentRoots();
-		requredFolders.concat(kbPath.getRulesDirFilters());
-		for (const folder of requredFolders){
-			if (!fs.existsSync(folder)){
-				return false;
-			}
-		}
-		return true;
-	}
-}
+import { EDRPathHelper } from './locator/EDRPathLocator';
+import { OsType, PathLocator } from './locator/pathLocator';
+import { SIEMPathHelper } from './locator/SIEMPathLocator';
 
 export class Configuration {
 
@@ -239,15 +31,15 @@ export class Configuration {
 		context.subscriptions.push(this._diagnosticCollection);
 	}
 
-	public getPathHelper(): IPathHelper{
+	public getPathHelper(): PathLocator {
 		return this._pathHelper;
 	}
 
-	public setContentType(contentType: ContentType){
+	public setContentType(contentType: ContentType) {
 		if (contentType === ContentType.EDR) {
 			this._pathHelper = EDRPathHelper.get();
 		}
-		else{
+		else {
 			this._pathHelper = SIEMPathHelper.get(); 
 		}
 		this._context.workspaceState.update("ContentType", contentType);
@@ -621,7 +413,7 @@ export class Configuration {
 
 	private static _instance : Configuration;
 
-	private _pathHelper: IPathHelper;
+	private _pathHelper: PathLocator;
 
 	private _outputChannel : vscode.OutputChannel;
 

@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { Configuration, IPathHelper } from '../models/configuration';
+
+import { Configuration} from '../models/configuration';
 import { RuleFileDiagnostics } from '../views/integrationTests/ruleFileDiagnostics';
 import { ProcessHelper } from '../helpers/processHelper';
 import { ExtensionHelper } from '../helpers/extensionHelper';
@@ -11,7 +12,7 @@ import { RCCOutputParser } from './outputParsers/rccOutputParser';
 import { MktablesOutputParser } from './outputParsers/mktablesOutputParser';
 import { SiemKBTestsOutputParser } from './outputParsers/siemKBTestsOutputParser';
 import { XpExtentionException } from '../models/xpException';
-import { ContentType } from '../contentType/contentType';
+import { PathLocator } from '../models/locator/pathLocator';
 
 /** Класс для запуска утилит SDK
  * 
@@ -21,7 +22,7 @@ import { ContentType } from '../contentType/contentType';
 export class SDKUtilitiesWrappers {
 	constructor(private config: Configuration) {}
 
-	private _kbPaths: IPathHelper = this.config.getPathHelper();
+	private _kbPaths: PathLocator = this.config.getPathHelper();
 
 	/** Функция проверки отсутствия ошибок в диагностических сообщениях
 	 * 
