@@ -5,7 +5,7 @@
 	"author": "@DmitryOffsec",
 	"icon": "resources/logo.png",
 	"license": "MIT",
-	"version": "3.0.8",
+	"version": "3.0.9",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -14,15 +14,6 @@
 	"categories": [
 		"Snippets",
 		"Formatters"
-	],
-	"activationEvents": [
-		"onLanguage:xp",
-		"onLanguage:en",
-		"onLanguage:co",
-		"onLanguage:test",
-		"onLanguage:agr",
-		"onLanguage:flt",
-		"onView:KnowledgebaseTree"
 	],
 	"keywords": [
 		"xdr edr soldr xp maxpatrol siem"
