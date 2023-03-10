@@ -15,6 +15,15 @@
 		"Snippets",
 		"Formatters"
 	],
+	"activationEvents": [
+		"onLanguage:xp",
+		"onLanguage:en",
+		"onLanguage:co",
+		"onLanguage:test",
+		"onLanguage:agr",
+		"onLanguage:flt",
+		"onView:KnowledgebaseTree"
+	],
 	"keywords": [
 		"xdr edr soldr xp maxpatrol siem"
 	],
