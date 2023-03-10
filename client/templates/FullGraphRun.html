@@ -13,10 +13,12 @@
 
 	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/main.css">
 	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/tests.css">
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/hljs.css">
 
 	<!-- Для отладки в браузере добавляю прямую ссылку на JQuery. -->
 	<script	src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
+	<script src="{{{ExtensionBaseUri}}}/client/templates/js/highlight-10.0.1.min.js"></script>
 
 </head>
 	<body>
@@ -55,50 +57,15 @@
 				</div>	
 			</div>
 
-			<!-- Norm Events -->
-			{{#NormEvent}}
+			<!-- Raw Events -->
 			<div class="test_block">
 				<div class="block_header">
 					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
-					<label for="norm_event" class="label">Нормализованное событие:</label>
-				</div>
-				<div class="manage_buttons">
-					<input name="fast_test" type="button" value="Быстрый тест">
+					<label for="norm_event" class="label">Скоррелированные события:</label>
 				</div>
 				<div class="text">
-					<textarea rows="12" id="norm_event" name="norm_event">{{NormEvent}}</textarea>
-				</div>
-			</div>
-			{{/NormEvent}}
-
-			<!-- Test Conditions -->
-			<div class="test_block">
-				<div class="block_header">
-					<label for="expect" class="label">Полученный результат:</label>
-				</div>
-				<div id="correlated_events" class="text">
-					{{#Alerts}}
-						<br />
-						<p><b>{{AlertName}}</b></p>
-						<div id="loc-results">	
-							<p>{{RuLocText}}</p>
-							<p><b>alert.key:</b> {{AlertKey}}</p>
-							<p><b>alert.key:</b> {{AlertContext}}</p>
-						</div>
-					{{/Alerts}}
-					<!-- <p><b>ESC_Alert_Name</b></p>
-					<div id="loc-results">
-						<p>Пользователь anonymous успешно запустил тест правил корреляции для случайного события с узла random10.testlab.esc</p>
-						<p><b>alert.key:</b> anonymous|random10.testlab.esc</p>
-						<p><b>alert.context:</b> anonymous|random10.testlab.esc</p>
-					</div> -->
-
-					<!-- <p><b>ESC_Another_Alert_Name</b></p>
-					<div id="loc-results">
-						<p>Пользователь anonymous успешно запустил тест правил корреляции для случайного события с узла random10.testlab.esc</p>
-						<p><b>alert.key:</b> anonymous|random10.testlab.esc</p>
-						<p><b>alert.context:</b> anonymous|random10.testlab.esc</p>
-					</div>  -->
+					<div contenteditable="true" id="correlated_events" name="correlated_events">
+					</div>
 				</div>
 			</div>
 		</div>
@@ -141,19 +108,15 @@
 					const message = event.data; 
 					switch (message.command) {
 						case 'correlatedEvents': {
-							const correlationNames = message.correlationNames;
-							const formattedEvents = message.formatedEvents;
-							$("#correlated_events").empty();
+							
+							// Очищаем предыдущий вывод событий.
+							$('#correlated_events').html('');
 
-							// Добавляем каждую в нужном форматировании.
-							for(const correlationName of correlationNames) {
-								const formatted = `
-								<p>
-									${correlationName}
-								</p>`;
+							// Подсвечиваем события.
+							const events = message.events;
+							const highlightedEvents = hljs.highlightAuto(events).value;
+							$('#correlated_events').html(highlightedEvents);
 
-								$("#correlated_events").append(formatted);
-							}
 							break;
 						}
 						case 'updateRawEvents': {
@@ -197,6 +160,8 @@
 
 				// Полный тест
 				$(document).on("click",'#runFullGraph', function () {
+					$('#correlated_events').html('');
+
 					const rawEvents = $('#raw_events').val();
 					vscode.postMessage({
 						command: 'runFullGraph',
