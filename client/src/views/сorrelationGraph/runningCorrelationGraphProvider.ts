@@ -6,11 +6,7 @@ import { MustacheFormatter } from '../mustacheFormatter';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
-import { IntegrationTest } from '../../models/tests/integrationTest';
-import { Normalizer } from '../../models/tests/normalizer';
-import { KbHelper } from '../../helpers/kbHelper';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { XpExtentionException } from '../../models/xpException';
 import { CorrGraphRunner } from '../../models/tests/corrGraphRunner';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
@@ -128,7 +124,7 @@ export class RunningCorrelationGraphProvider {
                         ExtensionHelper.showUserInfo("По данным событиям не произошло ни одной сработки.");
                         return;
                     }
-
+                    
                     // Извлекаем имена сработавших корреляций.
                     const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /(\"correlation_name"\s*:\s*\"(.*?)\")/g);
                     if(!correlationNames) {
@@ -138,10 +134,10 @@ export class RunningCorrelationGraphProvider {
 
                     // Отдаем события во front-end.
                     const formatedEvents = TestHelper.formatTestCodeAndEvents(correlatedEventsString);
+                    const cleanedEvents = TestHelper.cleanTestCode(formatedEvents);
                     this._view.webview.postMessage( {
                         command : "correlatedEvents",
-                        correlationNames : correlationNames,
-                        formatedEvents : formatedEvents            
+                        events : cleanedEvents            
                     });
                 }
                 catch(error) {
