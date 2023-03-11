@@ -6,7 +6,7 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
 import { Configuration } from '../configuration';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
-import { XpExtentionException } from '../xpException';
+import { XpException } from '../xpException';
 
 export class CorrGraphRunner {
 
@@ -15,24 +15,11 @@ export class CorrGraphRunner {
 	public async Run(correlationsFullPath: string, rawEventsFilePath: string) : Promise<string> {
 
 		if(!fs.existsSync(rawEventsFilePath)) {
-			throw new XpExtentionException(`Файл сырых событий '${rawEventsFilePath}' не доступен.`);
+			throw new XpException(`Файл сырых событий '${rawEventsFilePath}' не доступен.`);
 		}
 
 		if(!fs.existsSync(correlationsFullPath)) {
-			throw new XpExtentionException(`Директория контента '${correlationsFullPath}' не существует.`);
-		}
-
-		// Проверка доступости нужных утилит.
-		if(!fs.existsSync(this._config.getSiemSdkDirectoryPath())) {
-			ExtensionHelper.showUserError(`Заданный в настройках расширения путь '${this._config.getSiemSdkDirectoryPath()}' недоступен. Запуск тестов, нормализация событий и т.д. будут невозможны.`);
-			await VsCodeApiHelper.openSettings(this._config.getExtentionSettingsPrefix());
-			return;
-		}
-
-		if(!fs.existsSync(this._config.getTaxonomyFullPath())) {
-			ExtensionHelper.showUserError(`Заданный в настройках путь '${this._config.getTaxonomyFullPath()}' к файлу таксономии недоступен. Запуск тестов, нормализация событий и т.д. будут невозможны.`);
-			await VsCodeApiHelper.openSettings(this._config.getExtentionSettingsPrefix());
-			return;
+			throw new XpException(`Директория контента '${correlationsFullPath}' не существует.`);
 		}
 
 		const ptsiem_sdk = this._config.getSiemSdkDirectoryPath();
@@ -125,7 +112,7 @@ scenario=make-tables-db make-crgraph run-normalize run-enrich run-correlate
 
 		const corrEventsFilePath = this._config.getCorrEventsFilePath(rootFolder);
 		if(!fs.existsSync(corrEventsFilePath)) {
-			throw new XpExtentionException("Ошибка прогона события на графе корреляций.");
+			throw new XpException("Ошибка прогона события на графе корреляций.");
 		}
 		
 		const normEventsContent = await FileSystemHelper.readContentFile(corrEventsFilePath);

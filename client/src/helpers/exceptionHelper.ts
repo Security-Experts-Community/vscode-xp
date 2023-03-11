@@ -1,4 +1,4 @@
-import { XpExtentionException } from '../models/xpException';
+import { XpException } from '../models/xpException';
 import { ExtensionHelper } from './extensionHelper';
 
 export class ExceptionHelper {
@@ -9,7 +9,7 @@ export class ExceptionHelper {
 			case "XpExtentionException" : 
 			case "FileNotFoundException" : 
 			case "IncorrectFieldFillingException" :  {
-				const typedError = error as XpExtentionException;
+				const typedError = error as XpException;
 				return ExtensionHelper.showError(typedError.message, error);
 			}
 			default: {

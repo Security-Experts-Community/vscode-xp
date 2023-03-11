@@ -8,7 +8,7 @@ export class SiemjConfigHelper {
 
 	public static getBuildAllGraphs(config : Configuration ) : string[] {
 		const ptsiem_sdk = config.getSiemSdkDirectoryPath();
-		const build_tools = config.getBuildToolsDirectoryPath();
+		const build_tools = config.getBuildToolsDirectoryFullPath();
 		const taxonomy = config.getTaxonomyFullPath();
 		const temp = config.getTmpDirectoryPath();
 		const kbPaths = Configuration.get().getPathHelper();
@@ -77,7 +77,7 @@ scenario=make-nfgraph make-tables-schema make-ergraph make-crgraph`;
 	 */
 	public static getTestConfigForRuleWithSubrules(rule : RuleBaseItem, config : Configuration ) : string {
 		const ptsiem_sdk = config.getSiemSdkDirectoryPath();
-		const build_tools = config.getBuildToolsDirectoryPath();
+		const build_tools = config.getBuildToolsDirectoryFullPath();
 		const taxonomy = config.getTaxonomyFullPath();
 		const root = config.getPathHelper().getRootByPath(rule.getDirectoryPath());
 		const output_folder = config.getOutputDirectoryPath(path.basename(root));
@@ -143,7 +143,7 @@ scenario=make-nfgraph make-tables-schema make-ergraph make-crgraph rules-tests`;
 
 	public static getStartTestForSingleRule(rule : RuleBaseItem, config : Configuration ) : string {
 		const ptsiem_sdk = config.getSiemSdkDirectoryPath();
-		const build_tools = config.getBuildToolsDirectoryPath();
+		const build_tools = config.getBuildToolsDirectoryFullPath();
 		const taxonomy = config.getTaxonomyFullPath();
 		const root = config.getPathHelper().getRootByPath(rule.getDirectoryPath());
 		const output_folder = config.getOutputDirectoryPath(path.basename(root));
@@ -185,7 +185,7 @@ scenario=rules-tests`;
 	 */
 	public static getTestConfig(rule : RuleBaseItem, config : Configuration ) : string {
 		const ptsiem_sdk = config.getSiemSdkDirectoryPath();
-		const build_tools = config.getBuildToolsDirectoryPath();
+		const build_tools = config.getBuildToolsDirectoryFullPath();
 		const taxonomy = config.getTaxonomyFullPath();
 		const root = config.getPathHelper().getRootByPath(rule.getDirectoryPath());
 		const output_folder = config.getOutputDirectoryPath(path.basename(root));
@@ -261,7 +261,7 @@ scenario=make-nfgraph make-tables-schema make-ergraph make-crgraph rules-tests`;
 		// Проверяем, что директория для записи файла существует
 		const siemjFolder = path.dirname(siemjConfigPath);
 		if(!fs.existsSync(siemjFolder)) {
-			fs.mkdirSync(siemjFolder, {recursive: true});
+			await fs.promises.mkdir(siemjFolder, {recursive: true});
 		}
 		// Сохраняем конфигурационный файл для siemj.
 		return fs.promises.writeFile(siemjConfigPath, siemjConfigContent);

@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { RuleBaseItem } from '../models/content/ruleBaseItem';
 import { IntegrationTest } from '../models/tests/integrationTest';
 import { RegExpHelper } from './regExpHelper';
-import { XpExtentionException } from '../models/xpException';
+import { XpException } from '../models/xpException';
 
 
 export class TestHelper {
@@ -410,7 +410,7 @@ export class TestHelper {
 			// Сырые события.
 			const rawEvents = plainTest?.rawEvents;
 			if(!rawEvents || rawEvents == "") {
-				throw new XpExtentionException(`Попытка сохранить тест №${number} без сырых событий.`);
+				throw new XpException(`Попытка сохранить тест №${number} без сырых событий.`);
 			}
 			test.setRawEvents(rawEvents);
 

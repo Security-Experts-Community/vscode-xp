@@ -8,7 +8,7 @@ import { Guid } from 'guid-typescript';
 import { FileSystemHelper } from '../helpers/fileSystemHelper';
 import { VsCodeApiHelper } from '../helpers/vsCodeApiHelper';
 import { FileNotFoundException } from './fileNotFounException';
-import { XpExtentionException } from './xpException';
+import { XpException as XpException } from './xpException';
 import { ContentType } from '../contentType/contentType';
 import { Localization } from './content/localization';
 import { EDRPathHelper } from './locator/EDRPathLocator';
@@ -84,6 +84,18 @@ export class Configuration {
 	}
 
 	/**
+	 * Возвращает путь к директории со всеми SDK утилитами.
+	 * @returns путь к директории со всеми SDK утилитами.
+	 */
+	public getKbtBaseDirectory(): string {
+		const configuration = vscode.workspace.getConfiguration("xpConfig");
+		const basePath = configuration.get<string>("kbtBaseDirectory");
+		this.checkKbtToolPath("KBT", basePath);
+
+		return basePath;
+	}
+
+	/**
 	 * Возвращает внутреннее имя расширения.
 	 * @returns внутреннее имя расширения.
 	 */
@@ -103,20 +115,19 @@ export class Configuration {
 		return contentType;
 	}
 
-	// TODO: исключить при полном переводе на нативные утилиты sdk.
 	public getSiemjPath() : string {
 		const osType = this.getOsType();
-		let fullPath = "";
+		
+		let appName = "";
 		switch(osType) {
-			case OsType.Windows: fullPath = path.join(this.getSdkBaseDirectory(), "siemj", "siemj.exe"); break;
-			default: throw new Error("Платформа не поддеживается.");
+			case OsType.Windows: appName = "siemj.exe"; break;
+			case OsType.Linux: appName = "siemj"; break;
+
+			default: throw new XpException("Платформа не поддерживается.");
 		}
 
-		if (!fs.existsSync(fullPath)){
-			throw new FileNotFoundException(
-				`Утилита 'siemj.exe' не найдена по пути ${fullPath}. Проверьте путь к [XP SDK](command:workbench.action.openSettings?["xpSdkTools"])`,
-				 fullPath);
-		}
+		let fullPath = path.join(this.getKbtBaseDirectory(), "extra-tools", "siemj", appName);
+		this.checkKbtToolPath(appName, fullPath);
 
 		return fullPath;
 	}
@@ -126,13 +137,12 @@ export class Configuration {
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "rcc.exe"; break;
 			case OsType.Linux: appName = "rcc"; break;
-			default: throw new Error("Платформа не поддеживается.");
+
+			default: throw new XpException("Платформа не поддерживается.");
 		}
 
-		const fullPath = path.join(this.getSiemSdkDirectoryPath(), "cli", appName);
-		if (!fs.existsSync(fullPath)){
-			throw new FileNotFoundException(`Утилита создания графов не найдена по пути ${fullPath}. Проверьте путь к XP SDK`);
-		}
+		const fullPath = path.join(this.getKbtBaseDirectory(), "xp-sdk", "cli", appName);
+		this.checkKbtToolPath(appName, fullPath);
 
 		return fullPath;
 	}
@@ -141,15 +151,13 @@ export class Configuration {
 		let appName = "";
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "mktables.exe"; break;
-			default: throw new Error("Платформа не поддеживается.");
+			case OsType.Linux: appName = "mktables"; break;
+
+			default: throw new XpException("Платформа не поддерживается.");
 		}
 
-		const fullPath = path.join(this.getFPTAFillerPath(), appName);
-		if (!fs.existsSync(fullPath)){
-			throw new FileNotFoundException(
-				`XP::[Error]: Утилита создания схемы табличных списков не найдена по пути ${fullPath}! Проверьте путь к XP SDK`,
-				fullPath);
-		}
+		const fullPath = path.join(this.getKbtBaseDirectory(), "build-tools", appName);
+		this.checkKbtToolPath(appName, fullPath);
 
 		return fullPath;
 	}
@@ -158,39 +166,108 @@ export class Configuration {
 		let appName = "";
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "fpta_filler.exe"; break;
-			default: throw new Error("Платформа не поддеживается.");
+			case OsType.Linux: appName = "fpta_filler"; break;
+
+			default: throw new XpException("Платформа не поддерживается.");
 		}
 
-		const fullPath = path.join(this.getSiemSdkDirectoryPath(), appName);
-		if (!fs.existsSync(fullPath)){
-			throw new FileNotFoundException(
-				`XP::[Error]: Утилита создания БД табличных списков не найдена по пути ${fullPath}! Проверьте путь к XP SDK`,
-				fullPath);
-		}
+		const fullPath = path.join(this.getKbtBaseDirectory(), "xp-sdk", appName);
+		this.checkKbtToolPath(appName, appName);
 
 		return fullPath;
 	}
 
-	/**
-	 * Возвращает путь к директории со всеми SDK утилитами.
-	 * @returns путь к директории со всеми SDK утилитами.
-	 */
-	public getSdkBaseDirectory(): string {
-		const configuration = vscode.workspace.getConfiguration("xpSdkTools");
-		const basePath = configuration.get<string>("sdkBaseDirectory");
-		if (!fs.existsSync(basePath)){
-			VsCodeApiHelper.openSettings(this.getExtentionSettingsPrefix());
-			throw new FileNotFoundException(
-				`Заданный в настройках путь к директории XP SDK не существует: '${basePath}'. Укажите корректный путь в настройках расширения.`,
-				basePath);
+	public getLocalizationBuilder() : string {
+		let appName = "";
+		switch(this.getOsType()) {
+			case OsType.Windows: appName = "build_l10n_rules.exe"; break;
+			case OsType.Linux: appName = "build_l10n_rules"; break;
+			
+			default: throw new XpException("Платформа не поддерживается.");
 		}
 
-		return basePath;
+		const fullPath = path.join(this.getKbtBaseDirectory(), "build-tools", appName);
+		this.checkKbtToolPath(appName, fullPath);
+
+		return fullPath;
+	}
+
+	public getSiemKBTests() : string {
+		let appName = "";
+		switch(this.getOsType()) {
+			case OsType.Windows: appName = "siemkb_tests.exe"; break;
+			case OsType.Linux: appName = "siemkb_tests"; break;
+
+			default: throw new XpException("Платформа не поддерживается.");
+		}
+
+		const fullPath = path.join(this.getKbtBaseDirectory(), "build-tools", appName);
+		this.checkKbtToolPath(appName, fullPath);
+
+		return fullPath;
+	}
+
+	public getNormalizerCli() : string {
+		let appName = "";
+		switch(this.getOsType()) {
+			case OsType.Windows: appName = "normalizer-cli.exe"; break;
+			case OsType.Linux: appName = "normalizer-cli"; break;
+
+			default: throw new XpException("Платформа не поддеживается.");
+		}
+
+		const fullPath = path.join(this.getKbtBaseDirectory(), "xp-sdk", "cli", appName);
+		this.checkKbtToolPath(appName, fullPath);
+
+		return fullPath;
+	}
+
+	public getKbPackFullPath() : string {
+		let appName = "";
+		switch(this.getOsType()) {
+			case OsType.Windows: appName = "kbpack.exe"; break;
+			case OsType.Linux: appName = "kbpack"; break;
+
+			default: throw new XpException("Платформа не поддеживается.");
+		}
+
+		const fullPath = path.join(this.getKbtBaseDirectory(), "extra-tools", "kbpack", appName);
+		this.checkKbtToolPath(appName, fullPath);
+
+		return fullPath;
+	}
+
+	public getEcatestFullPath() : string {
+		let appName = "";
+		switch(this.getOsType()) {
+			case OsType.Windows: appName = "ecatest.exe"; break;
+			case OsType.Linux: appName = "ecatest"; break;
+
+			default: throw new XpException("Платформа не поддеживается.");
+		}
+
+		const fullPath = path.join(this.getKbtBaseDirectory(), "build-tools", appName);
+		this.checkKbtToolPath(appName, fullPath);
+
+		return fullPath;
 	}
 
 	public getOutputDirectoryPath(rootFolder: string) : string {
-		const extensionSettings = vscode.workspace.getConfiguration("siemTools");
+		const extensionSettings = vscode.workspace.getConfiguration("xpConfig");
 		const outputDirectoryPath = extensionSettings.get<string>("outputDirectoryPath");
+
+		if (!outputDirectoryPath || outputDirectoryPath === ""){
+			throw new FileNotFoundException(
+				`Выходная директория не задана. Задайте путь к [ней](command:workbench.action.openSettings?["xpConfig.outputDirectoryPath"])`,
+				outputDirectoryPath);
+		}
+
+		if (!fs.existsSync(outputDirectoryPath)){
+			throw new FileNotFoundException(
+				`Выходная директория не найдена по пути ${outputDirectoryPath}. Проверьте путь к [ней](command:workbench.action.openSettings?["xpConfig.outputDirectoryPath"])`,
+				outputDirectoryPath);
+		}
+
 		return path.join(outputDirectoryPath, rootFolder);
 	}
 
@@ -238,59 +315,30 @@ export class Configuration {
 		return path.join(this.getTmpDirectoryPath(), Guid.create().toString());
 	}
 
-	public getLocalizationBuilder() : string {
-		let appName = "";
-		switch(this.getOsType()) {
-			case OsType.Windows: appName = "build_l10n_rules.exe"; break;
-			case OsType.Linux: appName = "build_l10n_rules"; break;
-			default: throw new Error("Платформа не поддеживается.");
-		}
-
-		const fullPath = path.join(this.getBuildToolsDirectoryPath(), appName);
-		if (!fs.existsSync(fullPath)) {
-			throw new FileNotFoundException(
-				`XP::[Error]: Утилита создания графа локализаций не найдена по пути ${fullPath}! Проверьте путь к XP SDK`,
-				fullPath);
-		}
-		return fullPath;
-	}
-
-	public getSiemKBTests() : string {
-		let appName = "";
-		switch(this.getOsType()) {
-			case OsType.Windows: appName = "siemkb_tests.exe"; break;
-			default: throw new XpExtentionException("Платформа не поддеживается.");
-		}
-
-		const fullPath = path.join(this.getBuildToolsDirectoryPath(), appName);
-		if (!fs.existsSync(fullPath)){
-			throw new FileNotFoundException(
-				`XP::[Error]: Утилита запуска интеграционных тестов не найдена по пути ${fullPath}! Проверьте путь к XP SDK`,
-				fullPath);
-		}
-		return fullPath;
-	}
-
-	public getNormalizerCli() : string {
-		let appName = "";
-		switch(this.getOsType()) {
-			case OsType.Windows: appName = "normalizer-cli.exe"; break;
-			default: throw new XpExtentionException("Платформа не поддеживается.");
-		}
-
-		const fullPath = path.join(this.getSiemSdkDirectoryPath(), "cli", appName);
-		if (!fs.existsSync(fullPath)){
-			throw new FileNotFoundException(
-				`XP::[Error]: Утилита нормализации событий не найдена по пути ${fullPath}! Проверьте путь к XP SDK`,
-				fullPath);
-		}
-		return fullPath;
-	}
 
 	public getSiemSdkDirectoryPath() : string {
-		const configuration = vscode.workspace.getConfiguration("siemTools");
-		const siemSdkDirectory = configuration.get<string>("sdkDirectoryFullPath");
-		return siemSdkDirectory;
+		const dirName = "xp-sdk";
+		const fullPath = path.join(this.getKbtBaseDirectory(), dirName);
+		this.checkKbtToolPath(dirName, fullPath);
+
+		return fullPath;
+	}
+
+	public getBuildToolsDirectoryFullPath() : string {
+		const dirName = "build-tools";
+		const fullPath = path.join(this.getKbtBaseDirectory(), dirName);
+		this.checkKbtToolPath(dirName, fullPath);
+
+		return fullPath;
+	}
+
+	public getKnowledgePackagerContractsDirectoryPath() : string {
+
+		const dirName = "contracts";
+		const fullPath = path.join(this.getKbtBaseDirectory(), "knowledgebase", dirName);
+		this.checkKbtToolPath(dirName, fullPath);
+
+		return fullPath;
 	}
 
 	/**
@@ -298,9 +346,11 @@ export class Configuration {
 	 * @returns путь к файлу описания таксономии.
 	 */
 	public getTaxonomyFullPath() : string {
-		const configuration = vscode.workspace.getConfiguration("siemTools");
-		const taxonomyFullPath = configuration.get<string>("taxonomyFullPath");
-		return taxonomyFullPath;
+		const taxonomyFileName = "taxonomy.json";
+		const fullPath = path.join(this.getKbtBaseDirectory(), "knowledgebase", "contracts", "taxonomy", taxonomyFileName);
+		this.checkKbtToolPath(taxonomyFileName, fullPath);
+		
+		return fullPath;
 	}
 
 	/**
@@ -308,15 +358,9 @@ export class Configuration {
 	 * @returns префикс создаваемого контента.
 	 */
 	public getContentPrefix() : string {
-		const configuration = vscode.workspace.getConfiguration("siemTools");
+		const configuration = vscode.workspace.getConfiguration("xpConfig");
 		const taxonomyFullPath = configuration.get<string>("contentPrefix");
 		return taxonomyFullPath;
-	}
-
-	public getBuildToolsDirectoryFullPath() : string {
-		const configuration = vscode.workspace.getConfiguration("siemTools");
-		const buildToolsDirectoryFullPath = configuration.get<string>("buildToolsDirectoryFullPath");
-		return buildToolsDirectoryFullPath;
 	}
 
 	/**
@@ -327,50 +371,31 @@ export class Configuration {
 		const taxonomyFullPath = this.getTaxonomyFullPath();
 
 		const taxonomyDirectoryPath = path.dirname(taxonomyFullPath);
-		const ruLocalizationFilePath = path.join(taxonomyDirectoryPath, Localization.LOCALIZATIONS_DIRNAME, Localization.RU_LOCALIZATION_FILENAME);
+		const ruLocalizationFilePath = path.join(
+			taxonomyDirectoryPath, 
+			Localization.LOCALIZATIONS_DIRNAME, 
+			Localization.RU_LOCALIZATION_FILENAME);
+			
 		return ruLocalizationFilePath;
 	}
 
-	public getBuildToolsDirectoryPath() : string {
-		const configuration = vscode.workspace.getConfiguration("siemTools");
-		const buildToolsDirectoryFullPath = configuration.get<string>("buildToolsDirectoryFullPath");
-		return buildToolsDirectoryFullPath;
-	}
-
-	public getKnowledgeBasePackagerCli() : string {
-		const configuration = vscode.workspace.getConfiguration("siemTools");
-		const knowledgeBasePackagerCli = configuration.get<string>("knowledgePackagerDirectoryPath");
-
-		const osType = this.getOsType();
-		switch(osType) {
-			case OsType.Windows: {
-				return path.join(knowledgeBasePackagerCli, "kbtools.exe"); 
-			} 
-			case OsType.Linux:  {
-				return path.join(knowledgeBasePackagerCli, "kbtools");
-			}
-
-			default: throw new Error("Платформа не поддеживается.");
+	private checkKbtToolPath(name : string, fullPath : string) : void {
+		if (!fullPath || fullPath === ""){
+			throw new FileNotFoundException(
+				`Путь к '${name}' не найден. Проверьте [настройки](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"])`,
+				 fullPath);
 		}
-	}
 
-	public getKnowledgePackagerContractsDirectoryPath() : string {
-		const configuration = vscode.workspace.getConfiguration("siemTools");
-		const knowledgePackagerContractsDirectoryPath = configuration.get<string>("knowledgePackagerContractsDirectoryPath");
-		return knowledgePackagerContractsDirectoryPath;
-	}
-	
-	public getEcatestFullPath() : string {
-		const osType = this.getOsType();
-		switch(osType) {
-			case OsType.Windows: return path.join(this.getBuildToolsDirectoryPath(), "ecatest.exe");
-			default: throw new Error("Платформа не поддеживается.");
+		if (!fs.existsSync(fullPath)){
+			throw new FileNotFoundException(
+				`Путь к ${fullPath} не найден. Проверьте [настройки](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"])`,
+				 fullPath);
 		}
 	}
 
 	public static get() {
 		if(!this._instance) {
-			throw new Error("Конфигурация расширения не получена. Возможно, она не была инициализирована.");
+			throw new XpException("Конфигурация расширения не получена. Возможно, она не была инициализирована.");
 		}
         return this._instance;
     }
@@ -378,20 +403,11 @@ export class Configuration {
 	public static async init(context : vscode.ExtensionContext) : Promise<Configuration> {
 		this._instance = new Configuration(context);
 
-		// Создание временной директории.
-		const tmpPath = this._instance.getTmpDirectoryPath();
-		if(!fs.existsSync(tmpPath)) {
-			try {
-				await fs.promises.mkdir(tmpPath);
-			}
-			catch(error) {
-				ExtensionHelper.showUserError(`Заданный в настройках путь '${tmpPath}' к временной директории некорректен. Укажите корректный путь в настройках расширения.`);
-				VsCodeApiHelper.openSettings(this._instance.getExtentionDisplayName());
-			}
+		let tmpPath: string;
+		try {
+			tmpPath = this._instance.getTmpDirectoryPath();
 		}
-
-		// Очистка временной директории.
-		if(!fs.existsSync(tmpPath)) {
+		catch(error) {
 			return this._instance;
 		}
 
@@ -404,7 +420,7 @@ export class Configuration {
 				await fs.promises.rmdir(subDirectoryPath, {recursive: true});
 			}
 			catch(error) {
-				console.warn("Не удалось удалить временную директорию. " + error.message);
+				console.warn(`Не удалось удалить временную директорию '${subDirectoryPath}'`);
 			}
 		}
 

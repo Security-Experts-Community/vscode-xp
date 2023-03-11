@@ -25,7 +25,7 @@ export class UnpackKbPackageAction {
 		}
 
 		// Проверка наличия утилиты сборки kb-файлов.
-		const knowledgeBasePackagerCli = this._config.getKnowledgeBasePackagerCli();
+		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();
 		if(!fs.existsSync(knowledgeBasePackagerCli)) {
 			ExtensionHelper.showUserError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку.");
 			await VsCodeApiHelper.openSettings(this._config.getExtentionSettingsPrefix());

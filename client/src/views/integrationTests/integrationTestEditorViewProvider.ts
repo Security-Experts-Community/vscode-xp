@@ -22,7 +22,7 @@ import { SiemJOutputParser } from './siemJOutputParser';
 import { ModuleTestOutputParser } from '../modularTestsEditor/modularTestOutputParser';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { Interface } from 'readline';
-import { XpExtentionException } from '../../models/xpException';
+import { XpException } from '../../models/xpException';
 
 export class IntegrationTestEditorViewProvider  {
 
@@ -486,26 +486,6 @@ export class IntegrationTestEditorViewProvider  {
 				return false;
 			}
 
-			// Проверяем конфигурацию.
-			if(!fs.existsSync(this._config.getSiemSdkDirectoryPath())) {
-				ExtensionHelper.showUserError(`Заданный в настройках расширения путь '${this._config.getSiemSdkDirectoryPath()}' недоступен. Запуск тестов, нормализация событий и т.д. будут невозможны.`);
-				await VsCodeApiHelper.openSettings(this._config.getExtentionSettingsPrefix());
-				return;
-			}
-
-			if(!fs.existsSync(this._config.getBuildToolsDirectoryPath())) {
-				ExtensionHelper.showUserError(`Заданный в настройках расширения путь '${this._config.getBuildToolsDirectoryPath()}' недоступен. Запуск тестов, нормализация событий и т.д. будут невозможны.`);
-				await VsCodeApiHelper.openSettings(this._config.getExtentionSettingsPrefix());
-				return;
-			}
-
-			// const taxonomy = `C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\packages\\taxonomy\\develop\\25.0.579\\taxonomy.json`;
-			if(!fs.existsSync(this._config.getTaxonomyFullPath())) {
-				ExtensionHelper.showUserError(`Заданный в настройках путь '${this._config.getTaxonomyFullPath()}' к файлу таксономии недоступен. Запуск тестов, нормализация событий и т.д. будут невозможны.`);
-				await VsCodeApiHelper.openSettings(this._config.getExtentionSettingsPrefix());
-				return;
-			}
-
 			try {
 				const executedTests = await testRunner.run(this._rule);
 
@@ -534,7 +514,7 @@ export class IntegrationTestEditorViewProvider  {
 		// Номер активного теста.
 		const activeTestNumberString = message?.activeTestNumber;
 		if(!activeTestNumberString) {
-			throw new XpExtentionException(`Не задан номер активного теста.`);
+			throw new XpException(`Не задан номер активного теста.`);
 		}
 
 		await TestHelper.saveAllTest(message, this._rule);

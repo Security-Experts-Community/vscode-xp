@@ -6,7 +6,7 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
 import { Configuration } from '../configuration';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
-import { XpExtentionException } from '../xpException';
+import { XpException } from '../xpException';
 import { RuleBaseItem } from '../content/ruleBaseItem';
 import { SiemjConfigHelper } from '../../helpers/siemjConfigHelper';
 
@@ -17,12 +17,12 @@ export class Normalizer {
 	public async Normalize(rule: RuleBaseItem, rawEventsFilePath: string) : Promise<string> {
 
 		if(!fs.existsSync(rawEventsFilePath)) {
-			throw new XpExtentionException(`Файл сырых событий '${rawEventsFilePath}' не существует.`);
+			throw new XpException(`Файл сырых событий '${rawEventsFilePath}' не существует.`);
 		}
 
 		const contentFullPath = rule.getPackagePath(this._config);
 		if(!fs.existsSync(contentFullPath)) {
-			throw new XpExtentionException(`Директория контента '${contentFullPath}' не существует.`);
+			throw new XpException(`Директория контента '${contentFullPath}' не существует.`);
 		}
 
 		const config = Configuration.get();
@@ -41,7 +41,7 @@ export class Normalizer {
 		}
 
 		const ptsiem_sdk = config.getSiemSdkDirectoryPath();
-		const build_tools = config.getBuildToolsDirectoryPath();
+		const build_tools = config.getBuildToolsDirectoryFullPath();
 		const taxonomy = config.getTaxonomyFullPath();
 		const root = this._config.getPathHelper().getRootByPath(rule.getDirectoryPath());
 		const rootFolder = path.basename(root);
@@ -118,12 +118,12 @@ scenario=make-nfgraph run-normalize`;
 
 		const normEventsFilePath = config.getNormEventsFilePath(rootFolder);
 		if(!fs.existsSync(normEventsFilePath)) {
-			throw new XpExtentionException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
+			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
 		}
 
 		const normEventsContent = await FileSystemHelper.readContentFile(normEventsFilePath);
 		if(!normEventsContent) {
-			throw new XpExtentionException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
+			throw new XpException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
 		}
 
 		await fs.promises.unlink(siemjConfigPath);

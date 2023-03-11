@@ -13,7 +13,7 @@ import { Configuration } from '../configuration';
 import { YamlHelper } from '../../helpers/yamlHelper';
 import { ContentHelper } from '../../helpers/contentHelper';
 import { ArgumentException } from '../argumentException';
-import { XpExtentionException } from '../xpException';
+import { XpException } from '../xpException';
 import { ContentType } from '../../contentType/contentType';
 
 /**
@@ -40,7 +40,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 
 	public getDirectoryPath() : string {
 		if(!this._parentPath) {
-			throw new XpExtentionException(`Не задан путь к директории правила '${this.getName()}'.`);
+			throw new XpException(`Не задан путь к директории правила '${this.getName()}'.`);
 		}
 
 		return path.join(this._parentPath, this.getName());
@@ -416,7 +416,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			return this._ruleCode;
 		}
 
-		throw new XpExtentionException("Отсутствует код правила.");
+		throw new XpException("Отсутствует код правила.");
 	}
 
 	public setRuleFileName(fileName: string) {
@@ -428,7 +428,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	}
 
 	public async save(fullPath?: string) : Promise<void> {
-		throw new XpExtentionException("Сохранение данного типа контента не реализовано.");
+		throw new XpException("Сохранение данного типа контента не реализовано.");
 	}
 
 	public setParentPath(parentPath: string) : void{
