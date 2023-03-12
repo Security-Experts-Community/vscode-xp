@@ -548,7 +548,7 @@
 						"verbose"
 					],
 					"default": "off",
-					"description": "Трассировака коммуникации между VS Code и LSP"
+					"description": "Трассировка коммуникации между VS Code и LSP"
 				}
 			}
 		}
