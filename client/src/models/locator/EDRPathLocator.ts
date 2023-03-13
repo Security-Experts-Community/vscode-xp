@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { PathLocator } from './pathLocator';
+import { XpExtentionException } from '../xpException';
 
 
 export class EDRPathHelper extends PathLocator {
@@ -26,8 +27,8 @@ export class EDRPathHelper extends PathLocator {
 		return EDRPathHelper._instance;
 	}
 
-	public getOutputDirectoryPath(): string {
-		throw new Error('Method not implemented.');
+	public getOutputDirName(): string {
+		throw new XpExtentionException("Данная функция не поддерживается.");
 	}
 
 	public getRootByPath(directory: string): string{

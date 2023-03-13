@@ -10,6 +10,7 @@ import { XpExtentionException } from '../xpException';
 import { RuleBaseItem } from '../content/ruleBaseItem';
 import { SiemjConfigHelper } from '../../helpers/siemjConfigHelper';
 import { FileNotFoundException } from '../fileNotFounException';
+import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
 
 export class Normalizer {
 
@@ -91,12 +92,22 @@ export class Normalizer {
 			fs.mkdirSync(output_folder);
 		}
 		
-		let siemjConfContent = SiemjConfigHelper.getBuildNormalizationGraphAndNormalizeAndEnrichConfig(rule, rawEventsFilePath, this._config);
+		const configBuilder = new SiemjConfBuilder(this._config);
+		configBuilder.addNfgraphBuilding();
+		configBuilder.addTablesSchemaBuilding();
+		configBuilder.addEfgraphBuilding();
+		configBuilder.addEventsNormalization(rawEventsFilePath);
+		configBuilder.addEventsEnrich();
+
+		const siemjConfContent = configBuilder.build();
 
 		// Централизованно сохраняем конфигурационный файл для siemj.
 		const siemjConfigPath = this._config.getTmpSiemjConfigPath();
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 		const siemjExePath = this._config.getSiemjPath();
+
+		this._config.getOutputChannel().clear();
+		this._config.getOutputChannel().show();
 
 		// Типовая команда выглядит так:
 		// "C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");

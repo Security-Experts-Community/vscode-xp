@@ -6,6 +6,7 @@ import { PathLocator } from './pathLocator';
 
 export class SIEMPathHelper extends PathLocator {
 
+
 	private constructor(kbFullPath: string) {
 		super(kbFullPath);
 	}
@@ -48,6 +49,10 @@ export class SIEMPathHelper extends PathLocator {
 		}
 
 		throw new Error(`Путь '${directory}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
+	}
+
+	public getOutputDirName(): string {
+		return "packages";
 	}
 
 	public getCorrulesGraphFileName() : string {

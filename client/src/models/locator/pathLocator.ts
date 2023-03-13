@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+
 import { FileNotFoundException } from '../fileNotFounException';
 import { XpExtentionException } from '../xpException';
 
@@ -26,7 +27,7 @@ export abstract class PathLocator {
 	public abstract getPackages(): string[]
 	public abstract isKbOpened() : boolean
 	public abstract getRootByPath(directory: string): string
-	public abstract getOutputDirectoryPath(): string
+	public abstract getOutputDirName(): string
 
 	protected checkKbPath() : void {
 		if(!this._kbFullPath) {

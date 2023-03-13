@@ -1,3 +1,5 @@
+import * as path from 'path';
+
 import { Configuration } from '../configuration';
 import { PathLocator } from '../locator/pathLocator';
 
@@ -7,45 +9,6 @@ import { PathLocator } from '../locator/pathLocator';
  */
 export class SiemjConfBuilder {
 
-	// `[DEFAULT]
-	// ptsiem_sdk=${ptsiem_sdk}
-	// build_tools=${build_tools}
-	// taxonomy=${taxonomy}
-	// output_folder=${output_folder}
-	// temp=${temp}
-	// [make-nfgraph]
-	// type=BUILD_RULES
-	// rcc_lang=n
-	// rules_src=${rulesSrcPath}
-	// xp_appendix=${xpAppendixPath}
-	// out=\${output_folder}\\formulas_graph.json
-	// [make-tables-schema]
-	// type=BUILD_TABLES_SCHEMA
-	// table_list_schema_src=${rulesSrcPath}
-	// contract=${contract}
-	// out=\${output_folder}
-	// [make-ergraph]
-	// type=BUILD_RULES
-	// rcc_lang=e
-	// rules_src=${rulesSrcPath}
-	// rfilters_src=${rules_filters}
-	// table_list_schema=\${output_folder}\\schema.json
-	// out=\${output_folder}\\enrules_graph.json
-	// [run-normalize]
-	// type=NORMALIZE
-	// formulas=\${make-nfgraph:out}
-	// in=${rawEventsFilePath}
-	// raw_without_envelope=no
-	// out=\${output_folder}\\norm_events.json
-	// [run-enrich]
-	// type=ENRICH
-	// enrules=\${make-ergraph:out}
-	// in=\${run-normalize:out}
-	// out=\${output_folder}\\enrich_events.json
-	// [main]
-	// type=SCENARIO
-	// scenario=make-nfgraph make-tables-schema make-ergraph run-normalize run-enrich`;
-
 	constructor(private _config : Configuration) {
 
 		const ptsiemSdk = this._config.getSiemSdkDirectoryPath();
@@ -54,7 +17,8 @@ export class SiemjConfBuilder {
 		const temp = this._config.getTmpDirectoryPath();
 
 		const pathHelper = this._config.getPathHelper();
-		const outputFolder = pathHelper.getOutputDirectoryPath();
+		const outputDirName = pathHelper.getOutputDirName();
+		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
 
 		// Заполнение конфига по умолчанию.
 		this._siemjConfigSection = 
