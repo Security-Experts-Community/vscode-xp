@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import { FileNotFoundException } from '../fileNotFounException';
 import { XpExtentionException } from '../xpException';
 
-
 export enum OsType {
 	Windows,
 	Linux,
@@ -11,7 +10,7 @@ export enum OsType {
 
 export abstract class PathLocator {
 	constructor(kbFullPath: string) {
-		this.KbFullPath = kbFullPath;
+		this._kbFullPath = kbFullPath;
 	}
 
 	// Config
@@ -27,16 +26,21 @@ export abstract class PathLocator {
 	public abstract getPackages(): string[]
 	public abstract isKbOpened() : boolean
 	public abstract getRootByPath(directory: string): string
+	public abstract getOutputDirectoryPath(): string
 
 	protected checkKbPath() : void {
-		if(!this.KbFullPath) {
+		if(!this._kbFullPath) {
 			throw new XpExtentionException(`База знаний не открыта.`);
 		}
 	
-		if(!fs.existsSync(this.KbFullPath)) {
-			throw new FileNotFoundException(`Некорректный путь '${this.KbFullPath}'`, this.KbFullPath);
+		if(!fs.existsSync(this._kbFullPath)) {
+			throw new FileNotFoundException(`Некорректный путь '${this._kbFullPath}'`, this._kbFullPath);
 		}
 	}
 
-	protected KbFullPath: string
+	protected getKbFullPath() : string {
+		return this._kbFullPath;
+	}
+
+	private _kbFullPath: string
 }

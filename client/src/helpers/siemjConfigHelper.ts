@@ -334,8 +334,6 @@ scenario=make-nfgraph run-normalize`;
 		return siemjConfigContent;
 	}
 
-
-
 	public static getBuildNormalizationGraphAndNormalizeAndEnrichConfig(rule : RuleBaseItem, rawEventsFilePath: string, config : Configuration ) : string {
 		const ptsiem_sdk = config.getSiemSdkDirectoryPath();
 		const build_tools = config.getBuildToolsDirectoryPath();
@@ -344,15 +342,13 @@ scenario=make-nfgraph run-normalize`;
 		// Получение контентозависимых путей.
 		const pathHelper = config.getPathHelper();
 
-		const root = pathHelper.getRootByPath(rule.getDirectoryPath());
-		const rootFolder = path.basename(root);
-
 		const contract = pathHelper.getTablesContract();
-		const xpAppendixPath = pathHelper.getAppendixPath()
+		const xpAppendixPath = pathHelper.getAppendixPath();
 		const rules_filters = pathHelper.getRulesDirFilters();
-		const formulas_graph = config.getFormulasGraphFilePath(rootFolder);
 
+		const root = pathHelper.getRootByPath(rule.getDirectoryPath());
 		const output_folder = config.getOutputDirectoryPath(path.basename(root));
+
 		if(!fs.existsSync(output_folder)) {
 			fs.mkdirSync(output_folder, {recursive: true});
 		}

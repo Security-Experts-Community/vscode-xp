@@ -6,6 +6,7 @@ import { PathLocator } from './pathLocator';
 
 
 export class EDRPathHelper extends PathLocator {
+
 	private constructor(kbFullPath: string) {
 		super(kbFullPath);
 	}
@@ -23,6 +24,10 @@ export class EDRPathHelper extends PathLocator {
 			EDRPathHelper._instance = new EDRPathHelper(kbFullPath);
 		}
 		return EDRPathHelper._instance;
+	}
+
+	public getOutputDirectoryPath(): string {
+		throw new Error('Method not implemented.');
 	}
 
 	public getRootByPath(directory: string): string{
@@ -51,11 +56,11 @@ export class EDRPathHelper extends PathLocator {
 	}
 
 	// В корневой директории лежат пакеты экспертизы
-	public getContentRoots() : string[]{
+	public getContentRoots() : string[] {
 
 		this.checkKbPath();
 
-		const basePath = path.join(this.KbFullPath, "rules");
+		const basePath = path.join(this.getKbFullPath(), "rules");
 
 		let rootDirectories = [];
 		if (fs.existsSync(basePath)){		
@@ -66,7 +71,7 @@ export class EDRPathHelper extends PathLocator {
 		return rootDirectories;
 	}
 
-	public getPackages() : string[]{
+	public getPackages() : string[] {
 		const contentRoots = this.getContentRoots();
 		const packagesDirectories = [];
 		
@@ -81,19 +86,19 @@ export class EDRPathHelper extends PathLocator {
 	public getAppendixPath() : string {
 		this.checkKbPath();
 		const relative_path = path.join(this._prefix, "contracts", "xp_appendix", "appendix.xp");
-		return path.join(this.KbFullPath, relative_path);
+		return path.join(this.getKbFullPath(), relative_path);
 	}
 
 	public getTablesContract() : string {
 		this.checkKbPath();
 		const relative_path = path.join(this._prefix, "_extra", "tabular_lists", "tables_contract.yaml");
-		return path.join(this.KbFullPath, relative_path);
+		return path.join(this.getKbFullPath(), relative_path);
 	}
 
 	public getRulesDirFilters() : string {
 		this.checkKbPath();
 		const relative_path = path.join(this._prefix, "common", "rules_filters");
-		return path.join(this.KbFullPath, relative_path);
+		return path.join(this.getKbFullPath(), relative_path);
 	}
 
 	public isKbOpened() : boolean {
