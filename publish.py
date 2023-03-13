@@ -4,7 +4,7 @@ import re
 import subprocess
 
 JSON_PATH = ".\package.json"
-BUILD_PATH = ".\Build"
+BUILD_PATH = ".\\build"
 
 
 def read_packages(path: str) -> str:

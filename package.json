@@ -2,10 +2,10 @@
 	"name": "xp",
 	"displayName": "eXtraction and Processing",
 	"description": "Предназначен для очень удобного и легкого редактирования контента на языке eXtraction and Processing (XP)",
-	"author": "@DmitryOffsec",
+	"author": "Dmitry Fedosov (@DmitryOffsec)",
 	"icon": "resources/logo.png",
 	"license": "MIT",
-	"version": "3.0.11",
+	"version": "3.0.12",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"

@@ -1,8 +1,8 @@
 import * as path from 'path';
 import * as fs from 'fs';
 
-import { Configuration } from '../models/configuration';
-import { RuleBaseItem } from '../models/content/ruleBaseItem';
+import { Configuration } from '../configuration';
+import { RuleBaseItem } from '../content/ruleBaseItem';
 
 export class SiemjConfigHelper {
 
@@ -46,6 +46,12 @@ type=BUILD_TABLES_SCHEMA
 table_list_schema_src=${root}
 contract=${tables_contract}
 out=\${output_folder}
+[make-tables-db]
+type=BUILD_TABLES_DATABASE
+table_list_filltype=All
+table_list_schema=\${output_folder}\\schema.json
+table_list_defaults=\${output_folder}\\correlation_defaults.json
+out=\${output_folder}\\fpta_db.db
 [make-ergraph]
 type=BUILD_RULES
 rcc_lang=e
@@ -62,7 +68,7 @@ table_list_schema=\${output_folder}\\schema.json
 out=\${output_folder}\\${corrulesGraphName}
 [main]
 type=SCENARIO
-scenario=make-nfgraph make-tables-schema make-ergraph make-crgraph`;
+scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgraph`;
 
 		return siemjConfContent;});
 	}
@@ -76,32 +82,37 @@ scenario=make-nfgraph make-tables-schema make-ergraph make-crgraph`;
 	 * @returns конфиг siemj
 	 */
 	public static getTestConfigForRuleWithSubrules(rule : RuleBaseItem, config : Configuration ) : string {
-		const ptsiem_sdk = config.getSiemSdkDirectoryPath();
-		const build_tools = config.getBuildToolsDirectoryPath();
+		const ptsiemSdk = config.getSiemSdkDirectoryPath();
+		const buildTools = config.getBuildToolsDirectoryPath();
 		const taxonomy = config.getTaxonomyFullPath();
+
 		const root = config.getPathHelper().getRootByPath(rule.getDirectoryPath());
-		const output_folder = config.getOutputDirectoryPath(path.basename(root));
-		if(!fs.existsSync(output_folder)) {
-			fs.mkdirSync(output_folder, {recursive: true});
+		const outputFolder = config.getOutputDirectoryPath(path.basename(root));
+
+		if(!fs.existsSync(outputFolder)) {
+			fs.mkdirSync(outputFolder, {recursive: true});
 		}
 		const temp = config.getTmpDirectoryPath();
 		const kbPaths = Configuration.get().getPathHelper();
-		const rules_src = rule.getContentRoot(config);
+		const rulesSrc = rule.getContentRoot(config);
 		const xpAppendixPath = kbPaths.getAppendixPath();
 		const tables_contract = kbPaths.getTablesContract();
-		const rfilters_src = kbPaths.getRulesDirFilters();
+		const rfiltersSrc = kbPaths.getRulesDirFilters();
+
+		// Путь к пакету нужен для сборки сабрулей.
+		const packagePath = rule.getPackagePath(config);
 
 		// Проверяем наличие графа нормализации.
 		const testRuleFullPath = rule.getDirectoryPath();
 
 		const siemjConfContent = 
 `[DEFAULT]
-ptsiem_sdk=${ptsiem_sdk}
-build_tools=${build_tools}
+ptsiem_sdk=${ptsiemSdk}
+build_tools=${buildTools}
 taxonomy=${taxonomy}
-output_folder=${output_folder}
+output_folder=${outputFolder}
 temp=${temp}
-content_root=${rules_src}
+content_root=${rulesSrc}
 [make-nfgraph]
 type=BUILD_RULES
 rcc_lang=n
@@ -113,18 +124,24 @@ type=BUILD_TABLES_SCHEMA
 table_list_schema_src=\${content_root}
 contract=${tables_contract}
 out=\${output_folder}
+[make-tables-db]
+type=BUILD_TABLES_DATABASE
+table_list_filltype=All
+table_list_schema=\${output_folder}\\schema.json
+table_list_defaults=\${output_folder}\\correlation_defaults.json
+out=\${output_folder}\\fpta_db.db
 [make-ergraph]
 type=BUILD_RULES
 rcc_lang=e
 rules_src=\${content_root}
-rfilters_src=${rfilters_src}
+rfilters_src=${rfiltersSrc}
 table_list_schema=\${output_folder}\\schema.json
 out=\${output_folder}\\enrules_graph.json
 [make-crgraph]
 type=BUILD_RULES
 rcc_lang=c
-rules_src=${rules_src}
-rfilters_src=${rfilters_src}
+rules_src=${packagePath}
+rfilters_src=${rfiltersSrc}
 table_list_schema=\${output_folder}\\schema.json
 out=\${output_folder}\\corrules_graph.json
 [rules-tests]
@@ -136,44 +153,7 @@ table_list_defaults=\${output_folder}\\correlation_defaults.json
 rules_src=${testRuleFullPath}
 [main]
 type=SCENARIO
-scenario=make-nfgraph make-tables-schema make-ergraph make-crgraph rules-tests`;
-		return siemjConfContent;
-	}
-
-
-	public static getStartTestForSingleRule(rule : RuleBaseItem, config : Configuration ) : string {
-		const ptsiem_sdk = config.getSiemSdkDirectoryPath();
-		const build_tools = config.getBuildToolsDirectoryPath();
-		const taxonomy = config.getTaxonomyFullPath();
-		const root = config.getPathHelper().getRootByPath(rule.getDirectoryPath());
-		const output_folder = config.getOutputDirectoryPath(path.basename(root));
-		if(!fs.existsSync(output_folder)) {
-			fs.mkdirSync(output_folder, {recursive: true});
-		}
-		const temp = config.getTmpDirectoryPath();
-
-		// Проверяем наличие графа нормализации.
-		const testRuleFullPath = rule.getDirectoryPath();
-
-		// ОСТОРОЖНО! Эксперимент. Так в SDK GUI не делается.
-		const siemjConfContent = 
-`[DEFAULT]
-ptsiem_sdk=${ptsiem_sdk}
-build_tools=${build_tools}
-taxonomy=${taxonomy}
-output_folder=${output_folder}
-temp=${temp}
-[rules-tests]
-type=TEST_RULES
-formulas=\${output_folder}\\formulas_graph.json
-enrules=\${output_folder}\\enrules_graph.json
-corrules=\${output_folder}\\corrules_graph.json
-table_list_defaults=\${output_folder}\\correlation_defaults.json
-rules_src=${testRuleFullPath}
-[main]
-type=SCENARIO
-scenario=rules-tests`;
-
+scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgraph rules-tests`;
 		return siemjConfContent;
 	}
 
@@ -229,6 +209,12 @@ type=BUILD_TABLES_SCHEMA
 table_list_schema_src=${rules_src}
 contract=${tables_contract}
 out=\${output_folder}
+[make-tables-db]
+type=BUILD_TABLES_DATABASE
+table_list_filltype=All
+table_list_schema=\${output_folder}\\schema.json
+table_list_defaults=\${output_folder}\\correlation_defaults.json
+out=\${output_folder}\\fpta_db.db
 [make-ergraph]
 type=BUILD_RULES
 rcc_lang=e
@@ -252,7 +238,7 @@ table_list_defaults=\${output_folder}\\correlation_defaults.json
 rules_src=${testRuleFullPath}
 [main]
 type=SCENARIO
-scenario=make-nfgraph make-tables-schema make-ergraph make-crgraph rules-tests`;
+scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgraph rules-tests`;
 
 		return siemjConfContent;
 	}
@@ -265,5 +251,27 @@ scenario=make-nfgraph make-tables-schema make-ergraph make-crgraph rules-tests`;
 		}
 		// Сохраняем конфигурационный файл для siemj.
 		return fs.promises.writeFile(siemjConfigPath, siemjConfigContent);
+	}
+
+	/**
+	 * Очищаем артефакты запуска siemj. Неоходимо для невозможности получения неактуальных данных из них.
+	 */
+	public static async clearArtifacts(config : Configuration) : Promise<void> {
+		const outputDirName = config.getPathHelper().getOutputDirName();
+
+		const ftpdDbFilePath = config.getFptaDbFilePath(outputDirName);
+		if(fs.existsSync(ftpdDbFilePath)) {
+			await fs.promises.unlink(ftpdDbFilePath);
+		}
+
+		const normEventsFilePath = config.getNormEventsFilePath(outputDirName);
+		if(fs.existsSync(normEventsFilePath)) {
+			await fs.promises.unlink(normEventsFilePath);
+		}
+
+		const enrichEventsFilePath = config.getEnrichEventsFilePath(outputDirName);
+		if(fs.existsSync(enrichEventsFilePath)) {
+			await fs.promises.unlink(enrichEventsFilePath);
+		}
 	}
 }
