@@ -10,7 +10,7 @@ import { Correlation } from '../../models/content/correlation';
 import { Enrichment } from '../../models/content/enrichment';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
-import { Normalizer } from '../../models/tests/normalizer';
+import { SiemjManager } from '../../models/siemj/siemjManager';
 import { UnitTestsRunner } from '../../models/tests/unitTestsRunner';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
@@ -351,7 +351,7 @@ export class IntegrationTestEditorViewProvider  {
 		}, async (progress) => {
 
 			try {
-				const normalizer = new Normalizer(this._config);
+				const normalizer = new SiemjManager(this._config);
 				let normEvents : string;
 				if(enrich) {
 					normEvents = await normalizer.normalizeAndEnrich(this._rule, rawEventsFilePath);
@@ -534,7 +534,7 @@ export class IntegrationTestEditorViewProvider  {
 					ExtensionHelper.showUserInfo(`Интеграционные тесты завершились успешно.`);
 					return true;
 				} 
-				ExtensionHelper.showUserError(`Интеграционные тесты завершились неуспешно.`);
+				ExtensionHelper.showUserError(`Интеграционные тесты завершились неуспешно. Возможно в правиле используются сабрули из других пакетов.`);
 			}
 			catch(error) {
 				ExceptionHelper.show(error, `Ошибка запуска тестов`);

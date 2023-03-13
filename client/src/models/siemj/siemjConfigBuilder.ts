@@ -1,7 +1,6 @@
-import * as path from 'path';
+import * as fs from 'fs';
 
 import { Configuration } from '../configuration';
-import { PathLocator } from '../locator/pathLocator';
 
 
 /**
@@ -69,6 +68,20 @@ out=\${output_folder}`;
 
 		this._siemjConfigSection += tablesSchemaBuildingSection;
 		this._scenarios.push("make-tables-schema");
+	}
+
+	public addTablesDbBuilding() : void {
+		const tablesDatabaseBuildingSection = 
+`
+[make-tables-db]
+type=BUILD_TABLES_DATABASE
+table_list_filltype=All
+table_list_schema=\${output_folder}\\schema.json
+table_list_defaults=\${output_folder}\\correlation_defaults.json
+out=\${output_folder}\\fpta_db.db`;
+
+		this._siemjConfigSection += tablesDatabaseBuildingSection;
+		this._scenarios.push("make-tables-db");
 	}
 
 	public addEfgraphBuilding() : void {

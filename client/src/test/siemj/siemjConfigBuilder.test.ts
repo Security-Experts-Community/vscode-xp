@@ -8,6 +8,7 @@ import { TestFixture } from '../helper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
 
 suite('SiemjConfigBuilder', () => {
+
 	test('Нормализовать и обогатить событие', async () => {
 		const rulePath = TestFixture.getCorrelationPath("Active_Directory_Snapshot");
 		const actualTests = IntegrationTest.parseFromRuleDirectory(rulePath);
@@ -16,6 +17,7 @@ suite('SiemjConfigBuilder', () => {
 		const configBuilder = new SiemjConfBuilder(Configuration.get());
 		configBuilder.addNfgraphBuilding();
 		configBuilder.addTablesSchemaBuilding();
+		configBuilder.addTablesDbBuilding();
 		configBuilder.addEfgraphBuilding();
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		configBuilder.addEventsEnrich();
@@ -33,6 +35,7 @@ suite('SiemjConfigBuilder', () => {
 		// Выбранные секции
 		assert.ok(result.includes("[make-nfgraph]"));
 		assert.ok(result.includes("[make-tables-schema]"));
+		assert.ok(result.includes("[make-tables-db]"));
 		assert.ok(result.includes("[make-ergraph]"));
 		assert.ok(result.includes("[run-normalize]"));
 		assert.ok(result.includes("[run-enrich]"));
@@ -40,6 +43,6 @@ suite('SiemjConfigBuilder', () => {
 		// Сценарий
 		assert.ok(result.includes("[main]"));
 		assert.ok(result.includes("type=SCENARIO"));
-		assert.ok(result.includes("scenario=make-nfgraph make-tables-schema make-ergraph run-normalize run-enrich"));
+		assert.ok(result.includes("make-nfgraph make-tables-schema make-tables-db make-ergraph run-normalize run-enrich"));
 	});
 });

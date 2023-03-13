@@ -1,18 +1,16 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
 import { Configuration } from '../configuration';
-import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { XpExtentionException } from '../xpException';
 import { RuleBaseItem } from '../content/ruleBaseItem';
-import { SiemjConfigHelper } from '../../helpers/siemjConfigHelper';
+import { SiemjConfigHelper } from './siemjConfigHelper';
 import { FileNotFoundException } from '../fileNotFounException';
-import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
+import { SiemjConfBuilder } from './siemjConfigBuilder';
 
-export class Normalizer {
+export class SiemjManager {
 
 	constructor(private _config : Configuration) {}
 
@@ -27,30 +25,27 @@ export class Normalizer {
 			throw new FileNotFoundException(`Директория контента '${contentFullPath}' не существует.`);
 		}
 
-		const root = this._config.getPathHelper().getRootByPath(rule.getDirectoryPath());
-		const rootFolder = path.basename(root);
+		await SiemjConfigHelper.clearArtifacts(this._config);
 
-		const output_folder = this._config.getOutputDirectoryPath(rootFolder);
-		if(!fs.existsSync(output_folder)) {
-			fs.mkdirSync(output_folder);
+		const outputDirName = this._config.getPathHelper().getOutputDirName();
+		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
+
+		if(!fs.existsSync(outputFolder)) {
+			fs.mkdirSync(outputFolder);
 		}
 		
-		// Проверяем наличие графа нормализации.
-		const formulas_graph = this._config.getFormulasGraphFilePath(rootFolder);
-		let siemjConfContent = "";
-
-		// Если есть граф формул нормализаций, тогда запускаем только нормализацию событий.
-		if(fs.existsSync(formulas_graph)) {
-			siemjConfContent = SiemjConfigHelper.getNormalizerConfig(rule, rawEventsFilePath, this._config);
-		} else {
-			// Если нет графа формул нормализаций, тогда сначала соберем граф, потом уже запускаем нормализацию событий.
-			siemjConfContent = SiemjConfigHelper.getNgraphBuildAndNormalizerConfig(rule, rawEventsFilePath, this._config);
-		}
+		// Получаем нужный конфиг для нормализации событий.
+		const configBuilder = new SiemjConfBuilder(this._config);
+		configBuilder.addNfgraphBuilding();
+		configBuilder.addEventsNormalization(rawEventsFilePath);
+		const siemjConfContent = configBuilder.build();
 
 		// Централизованно сохраняем конфигурационный файл для siemj.
 		const siemjConfigPath = this._config.getTmpSiemjConfigPath();
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 		const siemjExePath = this._config.getSiemjPath();
+
+		this._config.getOutputChannel().clear();
 
 		// Типовая команда выглядит так:
 		// "C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
@@ -60,7 +55,7 @@ export class Normalizer {
 			this._config.getOutputChannel()
 		);
 
-		const normEventsFilePath = this._config.getNormEventsFilePath(rootFolder);
+		const normEventsFilePath = this._config.getNormEventsFilePath(outputDirName);
 		if(!fs.existsSync(normEventsFilePath)) {
 			throw new XpExtentionException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
 		}
@@ -84,21 +79,22 @@ export class Normalizer {
 			throw new FileNotFoundException(`Директория контента '${contentFullPath}' не существует.`);
 		}
 
-		const root = this._config.getPathHelper().getRootByPath(rule.getDirectoryPath());
-		const rootFolder = path.basename(root);
+		await SiemjConfigHelper.clearArtifacts(this._config);
 
-		const output_folder = this._config.getOutputDirectoryPath(rootFolder);
-		if(!fs.existsSync(output_folder)) {
-			fs.mkdirSync(output_folder);
+		const outputDirName = this._config.getPathHelper().getOutputDirName();
+		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
+
+		if(!fs.existsSync(outputFolder)) {
+			fs.mkdirSync(outputFolder);
 		}
 		
 		const configBuilder = new SiemjConfBuilder(this._config);
 		configBuilder.addNfgraphBuilding();
 		configBuilder.addTablesSchemaBuilding();
+		configBuilder.addTablesDbBuilding();
 		configBuilder.addEfgraphBuilding();
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		configBuilder.addEventsEnrich();
-
 		const siemjConfContent = configBuilder.build();
 
 		// Централизованно сохраняем конфигурационный файл для siemj.
@@ -107,8 +103,7 @@ export class Normalizer {
 		const siemjExePath = this._config.getSiemjPath();
 
 		this._config.getOutputChannel().clear();
-		this._config.getOutputChannel().show();
-
+		
 		// Типовая команда выглядит так:
 		// "C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
 		await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
@@ -117,7 +112,7 @@ export class Normalizer {
 			this._config.getOutputChannel()
 		);
 
-		const enrichEventsFilePath = this._config.getEnrichEventsFilePath(rootFolder);
+		const enrichEventsFilePath = this._config.getEnrichEventsFilePath(outputDirName);
 		if(!fs.existsSync(enrichEventsFilePath)) {
 			throw new XpExtentionException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
 		}
@@ -130,4 +125,7 @@ export class Normalizer {
 		await fs.promises.unlink(siemjConfigPath);
 		return enrichEventsContent;
 	}
+
+
+
 }

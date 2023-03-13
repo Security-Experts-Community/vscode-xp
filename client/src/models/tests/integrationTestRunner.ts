@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
-import { SiemjConfigHelper } from '../../helpers/siemjConfigHelper';
+import { SiemjConfigHelper } from '../siemj/siemjConfigHelper';
 import { TestHelper } from '../../helpers/testHelper';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { SiemJOutputParser } from '../../views/integrationTests/siemJOutputParser';
@@ -45,6 +45,8 @@ export class IntegrationTestRunner {
 		// Если у нас в правиле используются сабрули, то надо собрать полный граф корреляций.
 		const ruleCode = await rule.getRuleCode();
 		const isContainsSubrules = TestHelper.isRuleCodeContainsSubrules(ruleCode);
+
+		await SiemjConfigHelper.clearArtifacts(this._config);
 
 		// Если в правиле используются сабрули, тогда собираем весь граф корреляций.
 		let siemjConfContent = "";
