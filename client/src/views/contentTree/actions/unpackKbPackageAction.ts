@@ -16,14 +16,6 @@ export class UnpackKbPackageAction {
 
 	public async run(selectedPackage : RuleBaseItem) : Promise<void> {
 
-		// Проверяем путь к контрактам и копируем их.
-		const packagerContractsDirectoryPath = this._config.getKnowledgePackagerContractsDirectoryPath();
-		if(!fs.existsSync(packagerContractsDirectoryPath)) {
-			ExtensionHelper.showUserError("Путь к специальным контактам для сборки kb-файла задан не верно. Измените его в настройках и повторите попытку.");
-			await VsCodeApiHelper.openSettings(this._config.getExtentionSettingsPrefix());
-			return;
-		}
-
 		// Проверка наличия утилиты сборки kb-файлов.
 		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();
 		if(!fs.existsSync(knowledgeBasePackagerCli)) {
@@ -121,5 +113,5 @@ export class UnpackKbPackageAction {
 		});
 	}
 
-	private readonly successSubstring = "Unpacking the knowledge base package into source format completed successfully";
+	private readonly successSubstring = "Knowledge base unpacking completed successfully";
 }

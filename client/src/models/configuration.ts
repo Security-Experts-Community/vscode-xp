@@ -332,15 +332,6 @@ export class Configuration {
 		return fullPath;
 	}
 
-	public getKnowledgePackagerContractsDirectoryPath() : string {
-
-		const dirName = "contracts";
-		const fullPath = path.join(this.getKbtBaseDirectory(), "knowledgebase", dirName);
-		this.checkKbtToolPath(dirName, fullPath);
-
-		return fullPath;
-	}
-
 	/**
 	 * Возвращает путь к файлу описания таксономии. 
 	 * @returns путь к файлу описания таксономии.
@@ -349,6 +340,18 @@ export class Configuration {
 		const taxonomyFileName = "taxonomy.json";
 		const fullPath = path.join(this.getKbtBaseDirectory(), "knowledgebase", "contracts", "taxonomy", taxonomyFileName);
 		this.checkKbtToolPath(taxonomyFileName, fullPath);
+		
+		return fullPath;
+	}
+
+	/**
+	 * Возращает путь к директории с таксономией. 
+	 * @returns путь к директории с таксономией.
+	 */
+	public getTaxonomyDirPath() : string {
+		const taxonomyDirName = "taxonomy";
+		const fullPath = path.join(this.getKbtBaseDirectory(), "knowledgebase", "contracts", taxonomyDirName);
+		this.checkKbtToolPath(taxonomyDirName, fullPath);
 		
 		return fullPath;
 	}

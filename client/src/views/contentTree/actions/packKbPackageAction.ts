@@ -35,19 +35,10 @@ export class PackKbPackageAction {
 			await fs.promises.unlink(unpackKbFilePath);
 		}
 
-		// Проверяем путь к контрактам и копируем их.
-		const packagerContractsDirectoryPath = this._config.getKnowledgePackagerContractsDirectoryPath();
-		if(!fs.existsSync(packagerContractsDirectoryPath)) {
-			ExtensionHelper.showUserError("Путь к специальным контактам для сборки kb-файла задан не верно. Измените его в настройках и повторите попытку.");
-			await VsCodeApiHelper.openSettings(this._config.getExtentionSettingsPrefix());
-			return;
-		}
-
 		// Проверка наличия утилиты сборки kb-файлов.
 		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();
 		if(!fs.existsSync(knowledgeBasePackagerCli)) {
 			ExtensionHelper.showUserError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку.");
-			await VsCodeApiHelper.openSettings(this._config.getExtentionSettingsPrefix());
 			return;
 		}
 
@@ -81,13 +72,15 @@ export class PackKbPackageAction {
 					await fs.promises.writeFile(contentfullPath, content);
 				}
 
-				// в contracts всякую фигню
-				const contractsPackageDirPath = path.join(tmpSubDirectoryPath, "contracts");
-				await fs.promises.mkdir(contractsPackageDirPath);
+				// Нужна ссылка в 
+				const contractsDirPath = path.join(tmpSubDirectoryPath, "contracts");
+				await fs.promises.mkdir(contractsDirPath);
 
 				// Проверяем путь к контрактам и копируем их.
-				const packagerContractsDirectoryPath = this._config.getKnowledgePackagerContractsDirectoryPath();
-				await fse.copy(packagerContractsDirectoryPath, contractsPackageDirPath);
+				const taxonomyPath = path.join(contractsDirPath, "taxonomy");
+				await fs.promises.mkdir(taxonomyPath);
+				const сontractsDirectoryPath = this._config.getTaxonomyDirPath();
+				await fse.copy(сontractsDirectoryPath, taxonomyPath);
 
 				// Типовая команда выглядит так:
 				// kbtools.exe pack -s "c:\tmp\pack" -o "c:\tmp\pack\Esc.kb"
