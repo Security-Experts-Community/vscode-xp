@@ -1,4 +1,4 @@
-export class XpExtentionException extends Error {
+export class XpException extends Error {
 	public constructor(message: string, inner?: Error) {
 		super(message);
 		this._inner = inner;

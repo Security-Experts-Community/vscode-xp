@@ -11,7 +11,7 @@ import { BuildLocsOutputParser, FillFPTAOutputParser } from './outputParsers/fil
 import { RCCOutputParser } from './outputParsers/rccOutputParser';
 import { MktablesOutputParser } from './outputParsers/mktablesOutputParser';
 import { SiemKBTestsOutputParser } from './outputParsers/siemKBTestsOutputParser';
-import { XpExtentionException } from '../models/xpException';
+import { XpException } from '../models/xpException';
 import { PathLocator } from '../models/locator/pathLocator';
 
 /** Класс для запуска утилит SDK
@@ -740,10 +740,10 @@ export class SDKUtilitiesWrappers {
 								await fs.promises.unlink(path.join(outputDirectory, file));
 							}
 
-					if (!await this.buildNormalizations(basePath)) {throw new XpExtentionException("Ошибка сбора графов!"); }
-					if (!await this.make_table_schema(basePath)) { throw new XpExtentionException("Ошибка сбора графов!"); }
-					if (!await this.make_fpta(basePath)) { throw new XpExtentionException("Ошибка сбора графов!"); }
-					if (!await this.make_enrichments(basePath)) { throw new XpExtentionException("Ошибка сбора графов!"); }
+					if (!await this.buildNormalizations(basePath)) {throw new XpException("Ошибка сбора графов!"); }
+					if (!await this.make_table_schema(basePath)) { throw new XpException("Ошибка сбора графов!"); }
+					if (!await this.make_fpta(basePath)) { throw new XpException("Ошибка сбора графов!"); }
+					if (!await this.make_enrichments(basePath)) { throw new XpException("Ошибка сбора графов!"); }
 				}
 				if (!await this.make_correlations(rule.getDirectoryPath())){throw new Error("Ошибка сбора графов!");}
 				if (!await this.make_localizations(rule.getDirectoryPath())){throw new Error("Ошибка сбора графов!");}
@@ -918,7 +918,7 @@ export class SDKUtilitiesWrappers {
 			 * 
 			 */
 			// Формируем параметры запуска утилиты	
-			const packagerExePath = this.config.getKnowledgeBasePackagerCli();
+			const packagerExePath = this.config.getKbPackFullPath();
 			// TODO: fix parameter getRootByPath
 			const root = this.config.getPathHelper().getRootByPath("");
 			const rootFolder = path.basename(root);

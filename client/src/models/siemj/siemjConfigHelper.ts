@@ -8,7 +8,7 @@ export class SiemjConfigHelper {
 
 	public static getBuildAllGraphs(config : Configuration ) : string[] {
 		const ptsiem_sdk = config.getSiemSdkDirectoryPath();
-		const build_tools = config.getBuildToolsDirectoryPath();
+		const build_tools = config.getBuildToolsDirectoryFullPath();
 		const taxonomy = config.getTaxonomyFullPath();
 		const temp = config.getTmpDirectoryPath();
 		const kbPaths = Configuration.get().getPathHelper();
@@ -83,7 +83,7 @@ scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgrap
 	 */
 	public static getTestConfigForRuleWithSubrules(rule : RuleBaseItem, config : Configuration ) : string {
 		const ptsiemSdk = config.getSiemSdkDirectoryPath();
-		const buildTools = config.getBuildToolsDirectoryPath();
+		const buildTools = config.getBuildToolsDirectoryFullPath();
 		const taxonomy = config.getTaxonomyFullPath();
 
 		const root = config.getPathHelper().getRootByPath(rule.getDirectoryPath());
@@ -165,7 +165,7 @@ scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgrap
 	 */
 	public static getTestConfig(rule : RuleBaseItem, config : Configuration ) : string {
 		const ptsiem_sdk = config.getSiemSdkDirectoryPath();
-		const build_tools = config.getBuildToolsDirectoryPath();
+		const build_tools = config.getBuildToolsDirectoryFullPath();
 		const taxonomy = config.getTaxonomyFullPath();
 		const root = config.getPathHelper().getRootByPath(rule.getDirectoryPath());
 		const output_folder = config.getOutputDirectoryPath(path.basename(root));

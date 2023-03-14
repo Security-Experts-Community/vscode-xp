@@ -1,6 +1,6 @@
-import { XpExtentionException } from './xpException';
+import { XpException } from './xpException';
 
-export class InvalidPathException extends XpExtentionException {
+export class InvalidPathException extends XpException {
 	public constructor(message: string, inner?: Error) {
 		super(message, inner);
 	}

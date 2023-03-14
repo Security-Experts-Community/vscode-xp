@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 
 import { FileNotFoundException } from '../fileNotFounException';
-import { XpExtentionException } from '../xpException';
+import { XpException } from '../xpException';
 
 export enum OsType {
 	Windows,
@@ -31,7 +31,7 @@ export abstract class PathLocator {
 
 	protected checkKbPath() : void {
 		if(!this._kbFullPath) {
-			throw new XpExtentionException(`База знаний не открыта.`);
+			throw new XpException(`База знаний не открыта.`);
 		}
 	
 		if(!fs.existsSync(this._kbFullPath)) {

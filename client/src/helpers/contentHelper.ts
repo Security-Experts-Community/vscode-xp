@@ -6,7 +6,7 @@ import { Correlation } from '../models/content/correlation';
 
 import { Enrichment } from '../models/content/enrichment';
 import { Localization } from '../models/content/localization';
-import { XpExtentionException } from '../models/xpException';
+import { XpException } from '../models/xpException';
 import { ExtensionHelper } from './extensionHelper';
 import { FileSystemHelper } from './fileSystemHelper';
 
@@ -67,7 +67,7 @@ export class ContentHelper {
             .find(p => path.basename(p).toLocaleLowerCase() === templateName.toLocaleLowerCase());
 
         if(!templateDirPath) {
-            throw new XpExtentionException("Заданное имя шаблона не найдено.");
+            throw new XpException("Заданное имя шаблона не найдено.");
         }
         
         // Копируем во временную директорию и переименовываем.

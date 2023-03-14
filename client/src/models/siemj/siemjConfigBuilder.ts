@@ -11,7 +11,7 @@ export class SiemjConfBuilder {
 	constructor(private _config : Configuration) {
 
 		const ptsiemSdk = this._config.getSiemSdkDirectoryPath();
-		const buildTools = this._config.getBuildToolsDirectoryPath();
+		const buildTools = this._config.getBuildToolsDirectoryFullPath();
 		const taxonomy = this._config.getTaxonomyFullPath();
 		const temp = this._config.getTmpDirectoryPath();
 

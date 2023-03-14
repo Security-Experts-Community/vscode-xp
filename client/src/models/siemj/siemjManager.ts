@@ -4,7 +4,7 @@ import * as path from 'path';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
 import { Configuration } from '../configuration';
-import { XpExtentionException } from '../xpException';
+import { XpException } from '../xpException';
 import { RuleBaseItem } from '../content/ruleBaseItem';
 import { SiemjConfigHelper } from './siemjConfigHelper';
 import { FileNotFoundException } from '../fileNotFounException';
@@ -57,12 +57,12 @@ export class SiemjManager {
 
 		const normEventsFilePath = this._config.getNormEventsFilePath(outputDirName);
 		if(!fs.existsSync(normEventsFilePath)) {
-			throw new XpExtentionException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
+			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
 		}
 
 		const normEventsContent = await FileSystemHelper.readContentFile(normEventsFilePath);
 		if(!normEventsContent) {
-			throw new XpExtentionException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
+			throw new XpException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
 		}
 
 		await fs.promises.unlink(siemjConfigPath);
@@ -114,12 +114,12 @@ export class SiemjManager {
 
 		const enrichEventsFilePath = this._config.getEnrichEventsFilePath(outputDirName);
 		if(!fs.existsSync(enrichEventsFilePath)) {
-			throw new XpExtentionException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
+			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
 		}
 
 		const enrichEventsContent = await FileSystemHelper.readContentFile(enrichEventsFilePath);
 		if(!enrichEventsContent) {
-			throw new XpExtentionException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
+			throw new XpException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
 		}
 
 		await fs.promises.unlink(siemjConfigPath);

@@ -5,7 +5,7 @@
 	"author": "Dmitry Fedosov (@DmitryOffsec)",
 	"icon": "resources/logo.png",
 	"license": "MIT",
-	"version": "3.0.12",
+	"version": "3.0.13",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -512,56 +512,25 @@
 			"type": "object",
 			"title": "SiemContentEditor",
 			"properties": {
-				"xpSdkTools.sdkBaseDirectory": {
+				"xpConfig.kbtBaseDirectory": {
 					"scope": "window",
 					"type": "string",
-					"default": "C:\\ProgramData\\XP_SDK",
-					"markdownDescription": "Путь к директории c XP SDK"
+					"markdownDescription": "Путь к директории c KBT"
 				},
-				"siemTools.sdkDirectoryFullPath": {
+				"xpConfig.outputDirectoryPath": {
 					"scope": "window",
 					"type": "string",
-					"default": "C:\\Work\\-=SIEM=-\\Tools\\25.0.9349\\vc150\\x86_64\\win",
-					"markdownDescription": "Путь к директории c ptsiem-sdk"
-				},
-				"siemTools.buildToolsDirectoryFullPath": {
-					"scope": "window",
-					"type": "string",
-					"default": "C:\\Work\\-=SIEM=-\\Tools\\0.22.774\\any\\any\\win",
-					"markdownDescription": "Путь к build-tools"
-				},
-				"siemTools.taxonomyFullPath": {
-					"scope": "window",
-					"type": "string",
-					"default": "C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\packages\\taxonomy\\develop\\25.0.579\\taxonomy.json",
-					"markdownDescription": "Путь к файлу таксономии"
-				},
-				"siemTools.outputDirectoryPath": {
-					"scope": "window",
-					"type": "string",
-					"default": "C:\\Work\\-=SIEM=-\\Output",
 					"markdownDescription": "Путь к выходной директории"
 				},
-				"siemTools.knowledgePackagerDirectoryPath": {
-					"scope": "window",
-					"type": "string",
-					"default": "c:\\Work\\-=SIEM=-\\KnowledgeBase.Packager.Cli.1.1.9\\KnowledgeBase.Packager.Cli.1.1.9\\utilities\\netcoreapp3.1",
-					"markdownDescription": "Путь к директории с исполняемыми модулями из KnowledgeBase.Packager.Cli"
-				},
-				"siemTools.knowledgePackagerContractsDirectoryPath": {
-					"scope": "window",
-					"type": "string",
-					"default": "c:\\tmp\\pack\\contracts",
-					"markdownDescription": "Путь к специальным контактам для сборки kb-файлов."
-				},
-				"siemTools.contentPrefix": {
+				"xpConfig.contentPrefix": {
 					"scope": "window",
 					"type": "string",
 					"enum": [
 						"LOC",
-						"ESC"
+						"ESC",
+						"PT"
 					],
-					"default": "ESC",
+					"default": "LOC",
 					"description": "Префикс ObjectId для определения типа создаваемого контента."
 				},
 				"languageServer.maxNumberOfProblems": {
@@ -579,7 +548,7 @@
 						"verbose"
 					],
 					"default": "off",
-					"description": "Трассировака коммуникации между VS Code и LSP"
+					"description": "Трассировка коммуникации между VS Code и LSP"
 				}
 			}
 		}
