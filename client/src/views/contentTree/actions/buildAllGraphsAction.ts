@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { ExtensionHelper } from '../../../helpers/extensionHelper';
 
 import { ProcessHelper } from '../../../helpers/processHelper';
-import { SiemjConfigHelper } from '../../../helpers/siemjConfigHelper';
+import { SiemjConfigHelper } from '../../../models/siemj/siemjConfigHelper';
 import { SiemJOutputParser } from '../../integrationTests/siemJOutputParser';
 import { Configuration } from '../../../models/configuration';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
@@ -20,6 +20,8 @@ export class BuildAllGraphsAction {
 			title: `Сбор графов`
 		}, async (progress) => {
 			try {
+				await SiemjConfigHelper.clearArtifacts(this._config);
+				
 				// Если в правиле используются сабрули, тогда собираем весь граф корреляций.
 				const siemjConfContents = SiemjConfigHelper.getBuildAllGraphs(this._config);
 	

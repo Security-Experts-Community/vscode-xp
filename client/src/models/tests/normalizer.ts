@@ -8,7 +8,8 @@ import { Configuration } from '../configuration';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { XpException } from '../xpException';
 import { RuleBaseItem } from '../content/ruleBaseItem';
-import { SiemjConfigHelper } from '../../helpers/siemjConfigHelper';
+import { SiemjConfigHelper } from '../siemj/siemjConfigHelper';
+
 
 export class Normalizer {
 

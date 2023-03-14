@@ -283,6 +283,10 @@ export class Configuration {
 		return path.join(this.getOutputDirectoryPath(rootFolder), "norm_events.json");
 	}
 
+	public getEnrichEventsFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), "enrich_events.json");
+	}
+
 	public getCorrEventsFilePath(rootFolder: string) : string {
 		return path.join(this.getOutputDirectoryPath(rootFolder), "corr_events.json");
 	}

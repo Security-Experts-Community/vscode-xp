@@ -64,6 +64,7 @@
 							<div name="add_envelope">text/xml</div>
 						</div>
 					</div>
+					<input name="normalize_and_enrich" type="button" value="Нормализовать + Обогатить">
 					<input name="normalize" type="button" value="Нормализовать">
 				</div>
 
@@ -352,6 +353,25 @@
 					// Передает тест как параметр запроса.
 					vscode.postMessage({
 						command: 'normalize',
+						test: test,
+						rawEvents : rawEvents
+					});
+				});
+
+				// Нормализовать и обогатить.
+				$(document).on("click",'[name="normalize_and_enrich"]', function () {
+
+					// Получаем текущий тест.
+					const activeTestNumber = $("#active_test_number").val();
+					const baseTestElement = $("#" + activeTestNumber);
+					const test = baseTestElement.data("test");
+					
+					// Получаем актуальные сырые события.
+					const rawEvents = baseTestElement.find('[name="raw_event"]').val();
+
+					// Передает тест как параметр запроса.
+					vscode.postMessage({
+						command: 'normalizeAndEnrich',
 						test: test,
 						rawEvents : rawEvents
 					});

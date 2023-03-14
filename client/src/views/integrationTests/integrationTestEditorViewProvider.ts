@@ -10,7 +10,7 @@ import { Correlation } from '../../models/content/correlation';
 import { Enrichment } from '../../models/content/enrichment';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
-import { Normalizer } from '../../models/tests/normalizer';
+import { SiemjManager } from '../../models/siemj/siemjManager';
 import { UnitTestsRunner } from '../../models/tests/unitTestsRunner';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
@@ -198,8 +198,23 @@ export class IntegrationTestEditorViewProvider  {
 				currTest.setRawEvents(rawEvents);
 				await currTest.save();
 
-				return this.normalizeRawEvents(currTest);
+				return this.normalizeRawEvents(false, currTest);
 			}
+			case 'normalizeAndEnrich': {
+				if(!message.test) {
+					ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите.");
+					return;
+				}
+
+				// Актуализируем сырые события в тесте из вьюшки.
+				const rawEvents = message.rawEvents;
+				const currTest = IntegrationTest.convertFromObject(message.test);
+				currTest.setRawEvents(rawEvents);
+				await currTest.save();
+
+				return this.normalizeRawEvents(true, currTest);
+			}
+
 			case 'fastTest': {
 				return this.fastTest(message);
 			}
@@ -325,7 +340,7 @@ export class IntegrationTestEditorViewProvider  {
 		});
 	}
 
-	private async normalizeRawEvents(test: IntegrationTest) {
+	private async normalizeRawEvents(enrich: boolean, test: IntegrationTest) {
 
 		const rawEventsFilePath = test.getRawEventsFilePath();
 
@@ -336,8 +351,14 @@ export class IntegrationTestEditorViewProvider  {
 		}, async (progress) => {
 
 			try {
-				const normalizer = new Normalizer(this._config);
-				const normEvents = await normalizer.Normalize(this._rule, rawEventsFilePath);
+				const normalizer = new SiemjManager(this._config);
+				let normEvents : string;
+				if(enrich) {
+					normEvents = await normalizer.normalizeAndEnrich(this._rule, rawEventsFilePath);
+				} else {
+					normEvents = await normalizer.normalize(this._rule, rawEventsFilePath);
+				}
+				
 				test.setNormalizedEvents(normEvents);
 			}
 			catch(error) {
@@ -493,7 +514,7 @@ export class IntegrationTestEditorViewProvider  {
 					ExtensionHelper.showUserInfo(`Интеграционные тесты завершились успешно.`);
 					return true;
 				} 
-				ExtensionHelper.showUserError(`Интеграционные тесты завершились неуспешно.`);
+				ExtensionHelper.showUserError(`Интеграционные тесты завершились неуспешно. Возможно в правиле используются сабрули из других пакетов.`);
 			}
 			catch(error) {
 				ExceptionHelper.show(error, `Ошибка запуска тестов`);
