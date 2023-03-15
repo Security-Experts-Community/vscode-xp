@@ -57,7 +57,6 @@ rule Universal: EventName
         $src.ip = src.ip
         $src.asset = src.asset
         $src.port = src.port
-        $labels = $labels + "|src_to_related_assets"
 
         # dst
         $dst.host = dst.host
@@ -65,7 +64,6 @@ rule Universal: EventName
         $dst.ip = dst.ip
         $dst.asset = dst.asset
         $dst.port = dst.port
-        $labels = $labels + "|dst_to_attacking_assets"
 
         # event src host
         $event_src.host = event_src.host
@@ -87,9 +85,6 @@ rule Universal: EventName
 emit {
     $correlation_type = ""
     $importance = ""
-
-    $labels = $labels + "|subject_account_to_attacking_assets"
-    $labels = $labels + "|event_source_to_related_assets"
 
     $subject = ""
     $action = ""

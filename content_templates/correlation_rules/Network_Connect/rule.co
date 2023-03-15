@@ -79,13 +79,9 @@ emit {
     if $dst.ip != null and not in_subnet($dst.ip, "127.0.0.0/8") and not in_subnet($dst.ip, "172.16.0.0/12") and not in_subnet($dst.ip, "192.168.0.0/16") and not in_subnet($dst.ip, "10.0.0.0/8") and not in_subnet($dst.ip, "224.0.0.0/4") and not exec_query("Check_if_subnet_is_specific", [$dst.ip]) then
         # dst - внешний
         $importance = "high"
-        $labels = $labels + "|dst_to_attacking_assets"
-        $labels = $labels + "|event_source_to_compromised_assets"
     else
         #dst - внутренний
         $importance = "medium"
-        $labels = $labels + "|dst_to_related_assets"
-        $labels = $labels + "|event_source_to_attacking_assets"
     endif
 
     $category.generic = "Attack"

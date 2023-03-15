@@ -169,10 +169,6 @@ emit {
     $category.high = "User Behavior Anomaly"
     $category.low = "Detection"
 
-    $labels = $labels + "|src_to_attacking_assets"
-    $labels = $labels + "|subject_account_to_attacking_assets"
-    $labels = $labels + "|event_source_to_related_assets"
-
     $incident.aggregation.key = join([$correlation_name, $src.ip, $subject.account.name], "|")
     $incident.severity = $importance
     $incident.category = "Undefined"

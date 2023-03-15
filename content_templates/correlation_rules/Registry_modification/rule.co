@@ -79,11 +79,9 @@ emit {
 
     if $subject.account.name != null then
         $subject = "account"
-        $labels = $labels + "|subject_account_to_compromised_assets"
     else
         $subject = "process"
     endif
-    $labels = $labels + "|event_source_to_compromised_assets"
     
     $importance = ""
        

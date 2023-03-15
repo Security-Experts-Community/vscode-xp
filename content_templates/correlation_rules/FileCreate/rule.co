@@ -51,16 +51,10 @@ rule FileCreate: File_Create
 emit {  
     $correlation_type = 
 
-    if $subject.account.name != null then
-        $labels = $labels + "|subject_account_to_compromised_assets"
-    else
-
     $subject = "process"
     $action = "create"
     $object = "file_object"
     $status = "success"
-
-    $labels = $labels + "|event_source_to_compromised_assets"
 
     $importance = 
 

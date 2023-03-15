@@ -74,9 +74,6 @@ emit {
     $object = "task"
     $status = "success"
 
-    $labels = $labels + "|subject_account_to_compromised_assets"
-    $labels = $labels + "|event_source_to_compromised_assets"
-
     $importance = ""
 
     $category.generic = "Attack"

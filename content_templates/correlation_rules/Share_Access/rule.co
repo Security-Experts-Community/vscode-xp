@@ -74,14 +74,6 @@ emit {
     $action = "access"
     $object = "file_object"
 
-    if $status == "success" then
-        $labels = $labels + "|event_source_to_compromised_assets"
-    else
-        $labels = $labels + "|event_source_to_related_assets"
-    endif
-    $labels = $labels + "|src_to_attacking_assets"
-    $labels = $labels + "|subject_account_to_attacking_assets"
-
     $importance = ""
 
     $category.generic = "Attack"

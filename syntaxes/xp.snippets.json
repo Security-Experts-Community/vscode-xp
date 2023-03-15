@@ -269,11 +269,9 @@
 			"\\$event_src.hostname = event_src.hostname",
 			"\\$event_src.host = event_src.host",
 			"\\$event_src.asset = event_src.asset",
-			"\\$event_src.host = event_src.host",
 			"\\$event_src.title = event_src.title",
 			"\\$event_src.subsys = event_src.subsys",
 			"\\$event_src.vendor = event_src.vendor",
-			"\\$event_src.title = event_src.title",
 			"\\$event_src.category = event_src.category",
 			"\\$event_src.rule = event_src.rule"
 		]

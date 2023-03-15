@@ -75,10 +75,6 @@ emit {
     $object = "request"
     $status = "success"
 
-    $labels = $labels + "|subject_account_to_attacking_assets"
-    $labels = $labels + "|event_source_to_related_assets"
-    $labels = $labels + "|src_to_attacking_assets"
-    
     $importance = ""
 
     $category.generic = "Attack"

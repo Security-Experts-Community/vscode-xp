@@ -69,12 +69,6 @@ emit {
     $object = "process"
     $status = "success"
 
-    if $subject.account.name != null then
-        $labels = $labels + "|subject_account_to_compromised_assets"
-    endif
-    $labels = $labels + "|event_source_to_compromised_assets"
-    #$labels = $labels + "|lsass_cache_to_compromised_assets"
-
     $importance = ""
 
     $category.generic = "Attack"

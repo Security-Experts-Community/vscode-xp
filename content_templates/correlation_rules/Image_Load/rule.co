@@ -75,11 +75,6 @@ emit {
     $object = "module"
     $status = "success"
 
-    if $subject.account.name != null then
-        $labels = $labels + "|subject_account_to_compromised_assets"
-    endif
-    $labels = $labels + "|event_source_to_compromised_assets"
-
     $importance = ""
 
     $category.generic = "Attack"
