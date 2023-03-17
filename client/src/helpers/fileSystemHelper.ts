@@ -68,6 +68,30 @@ export class FileSystemHelper {
 		return directories;
 	}
 
+	/**
+	 * Удаляет все поддиректории и файлы.
+	 * @param dirPath
+	 * @returns 
+	 */
+	public static async clearDirectory(dirPath: string) {
+
+		const entityDirPaths = fs.readdirSync(dirPath, { withFileTypes: true })
+			.filter(entity => entity.isDirectory())
+			.map(entity => path.join(dirPath, entity.name));
+
+		for(const entityDirPath of entityDirPaths) {
+			await fs.promises.rmdir(entityDirPath, {recursive : true});
+		}
+
+		const entityFilePaths = fs.readdirSync(dirPath, { withFileTypes: true })
+			.filter(entity => entity.isFile())
+			.map(entity => path.join(dirPath, entity.name));
+
+		for(const entityFilePath of entityFilePaths) {
+			await fs.promises.unlink(entityFilePath);
+		}
+	}
+
 	public static readFiles(filePath: string) {
 
 		const files = fs.readdirSync(filePath, { withFileTypes: true })

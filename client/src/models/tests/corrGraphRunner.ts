@@ -36,7 +36,7 @@ export class CorrGraphRunner {
 		}
 		
 		const temp = this._config.getTmpDirectoryPath();
-		const formulasGraph = this._config.getFormulasGraphFilePath(rootFolder);
+		const formulasGraph = this._config.getNormGraphFilePath(rootFolder);
 		const kbPaths = Configuration.get().getPathHelper();
 		const rulesFilter = kbPaths.getRulesDirFilters();
 		const correlationDefaults = this._config.getCorrelationDefaultsFilePath(rootFolder);

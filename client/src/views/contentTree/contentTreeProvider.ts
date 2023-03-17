@@ -29,6 +29,7 @@ import { UnpackKbPackageAction } from './actions/unpackKbPackageAction';
 import { ContentType } from '../../contentType/contentType';
 import { ContentTypeChecker } from '../../contentType/contentTypeChecker';
 import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';
+import { GitHooks } from './gitHooks';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolder|RuleBaseItem> {
 
@@ -39,11 +40,13 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 		const context = config.getContext();
 		const gitApi = await VsCodeApiHelper.getScmGitApiCore();
 
+		const gitHooks = new GitHooks(gitApi, config);
 		const kbTreeProvider = new ContentTreeProvider(knowledgebaseDirectoryPath, gitApi, config);
 
 		// Обновляем дерево при смене текущей ветки.
 		gitApi.onDidOpenRepository( (r) => {
 			r.state.onDidChange( (e) => {
+				gitHooks.update();
 				kbTreeProvider.refresh();
 			});
 		});
@@ -290,7 +293,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 			kbItems.push(kbItem);
 		}
 
-		// Подсвечиваем правила, у которых есть хотя бы один измеменный файл.
+		// Подсвечиваем правила, у которых есть хотя бы один измененный файл.
 		if(this._gitAPI) { 
 			this.highlightsLabelForNewOrEditRules(kbItems);
 		}

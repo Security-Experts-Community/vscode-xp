@@ -29,10 +29,23 @@ output_folder=${outputFolder}
 temp=${temp}`;
 	}
 
-	public addNfgraphBuilding() : void {
+	/**
+	 * Добавить сборку графа нормализации
+	 * @param force пересобирать ли ранее собранный	граф
+	 */
+	public addNfgraphBuilding(force : boolean = true) : void {
 		const pathLocator = this._config.getPathHelper();
 		const xpAppendixPath = pathLocator.getAppendixPath();
 		const contentRoots = pathLocator.getContentRoots();
+
+		// Не собираем граф, если он уже есть.
+		if(!force) {
+			const root = pathLocator.getOutputDirName();
+			const normGraphFilePath = this._config.getNormGraphFilePath(root);
+			if(fs.existsSync(normGraphFilePath)) {
+				return;
+			}
+		}
 		
 		// Собираем граф нормализации из всех источников контента, их несколько для EDR.
 		const rulesSrcPath = contentRoots.join(",");
@@ -112,7 +125,7 @@ out=\${output_folder}\\enrules_graph.json`;
 `
 [run-normalize]
 type=NORMALIZE
-formulas=\${make-nfgraph:out}
+formulas=\${output_folder}\\formulas_graph.json
 in=${rawEventsFilePath}
 raw_without_envelope=no
 print_statistics=yes
@@ -129,7 +142,7 @@ out=\${output_folder}\\norm_events.json`;
 `
 [run-enrich]
 type=ENRICH
-enrules=\${make-ergraph:out}
+enrules=\${output_folder}\\enrules_graph.json
 in=\${run-normalize:out}
 out=\${output_folder}\\enrich_events.json`;
 

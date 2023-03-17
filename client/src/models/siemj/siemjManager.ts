@@ -36,7 +36,7 @@ export class SiemjManager {
 		
 		// Получаем нужный конфиг для нормализации событий.
 		const configBuilder = new SiemjConfBuilder(this._config);
-		configBuilder.addNfgraphBuilding();
+		configBuilder.addNfgraphBuilding(false);
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		const siemjConfContent = configBuilder.build();
 
@@ -89,7 +89,7 @@ export class SiemjManager {
 		}
 		
 		const configBuilder = new SiemjConfBuilder(this._config);
-		configBuilder.addNfgraphBuilding();
+		configBuilder.addNfgraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEfgraphBuilding();

@@ -74,7 +74,7 @@ export class SDKUtilitiesWrappers {
 				const taxonomy_arg = "--taxonomy=" + this.config.getTaxonomyFullPath();				
 				const root = this.config.getPathHelper().getRootByPath(buildDirectory);
 				const rootFolder = path.basename(root);
-				const normalization_graph_arg = "--output=" + this.config.getFormulasGraphFilePath(rootFolder);
+				const normalization_graph_arg = "--output=" + this.config.getNormGraphFilePath(rootFolder);
 				const formula_appendix = "--formula-appendix=" + this._kbPaths.getAppendixPath();
 				const content = buildDirectory;
 
@@ -512,7 +512,7 @@ export class SDKUtilitiesWrappers {
 				const tmp_arg = "--temp=" + path.join(this.config.getTmpDirectoryPath(), folder);
 				const root = this.config.getPathHelper().getRootByPath(rule.getDirectoryPath());
 				const rootFolder = path.basename(root);
-				const normalization_graph_arg = "--nfgraph=" + this.config.getFormulasGraphFilePath(rootFolder);
+				const normalization_graph_arg = "--nfgraph=" + this.config.getNormGraphFilePath(rootFolder);
 				const correlation_graph_arg = "--crgraph=" + this.config.getCorrulesGraphFilePath(rootFolder);
 				const fpta_defaults_arg = "--fpta-defaults=" + this.config.getCorrelationDefaultsFilePath(rootFolder);
 				const buildDirectory = rule.getDirectoryPath();
@@ -589,7 +589,7 @@ export class SDKUtilitiesWrappers {
 			const normalizerExePath = this.config.getNormalizerCli();
 			const root = this.config.getPathHelper().getRootByPath(rawEventPath);
 			const rootFolder = path.basename(root);
-			const normalization_graph_arg = this.config.getFormulasGraphFilePath(rootFolder);
+			const normalization_graph_arg = this.config.getNormGraphFilePath(rootFolder);
 
 			// Записываем в лог выполнения строку запуска
 			outputChannel.appendLine(
@@ -922,7 +922,7 @@ export class SDKUtilitiesWrappers {
 			// TODO: fix parameter getRootByPath
 			const root = this.config.getPathHelper().getRootByPath("");
 			const rootFolder = path.basename(root);
-			const normalization_graph_arg = this.config.getFormulasGraphFilePath(rootFolder);
+			const normalization_graph_arg = this.config.getNormGraphFilePath(rootFolder);
 
 			return new vscode.ProcessExecution(
 				packagerExePath,

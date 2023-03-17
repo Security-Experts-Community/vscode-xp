@@ -57,7 +57,7 @@ export class Normalizer {
 		const xpAppendixPath = kbPaths.getAppendixPath();
 
 		// Проверяем наличие графа нормализации.
-		const formulas_graph = config.getFormulasGraphFilePath(rootFolder);
+		const formulas_graph = config.getNormGraphFilePath(rootFolder);
 		let siemjConfContent = "";
 
 		// Если есть граф формул нормализаций, тогда запускаем только нормализацию событий.

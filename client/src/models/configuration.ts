@@ -252,7 +252,7 @@ export class Configuration {
 		return fullPath;
 	}
 
-	public getOutputDirectoryPath(rootFolder: string) : string {
+	public getOutputDirectoryPath(rootFolder: string = "") : string {
 		const extensionSettings = vscode.workspace.getConfiguration("xpConfig");
 		const outputDirectoryPath = extensionSettings.get<string>("outputDirectoryPath");
 
@@ -291,7 +291,7 @@ export class Configuration {
 		return path.join(this.getOutputDirectoryPath(rootFolder), "corr_events.json");
 	}
 
-	public getFormulasGraphFilePath(rootFolder: string) : string {
+	public getNormGraphFilePath(rootFolder: string) : string {
 		return path.join(this.getOutputDirectoryPath(rootFolder), "formulas_graph.json");
 	}
 
@@ -410,25 +410,16 @@ export class Configuration {
 	public static async init(context : vscode.ExtensionContext) : Promise<Configuration> {
 		this._instance = new Configuration(context);
 
-		let tmpPath: string;
+		let outputDirPath : string;
 		try {
-			tmpPath = this._instance.getTmpDirectoryPath();
+			outputDirPath = this._instance.getOutputDirectoryPath();
+			if(!fs.existsSync(outputDirPath)) {
+				return this._instance;
+			}
+			await FileSystemHelper.clearDirectory(outputDirPath);
 		}
 		catch(error) {
-			return this._instance;
-		}
-
-		const subDirPaths = FileSystemHelper
-			.readSubDirectories(tmpPath)
-			.map(dn => path.join(tmpPath, dn));
-
-		for(const subDirectoryPath of subDirPaths) {
-			try {
-				await fs.promises.rmdir(subDirectoryPath, {recursive: true});
-			}
-			catch(error) {
-				console.warn(`Не удалось удалить временную директорию '${subDirectoryPath}'`);
-			}
+			console.warn(`Не удалось удалить временную директорию '${outputDirPath}'`);
 		}
 
 		return this._instance;
