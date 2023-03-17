@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { ExtensionHelper } from '../../../helpers/extensionHelper';
 
+import { ExtensionHelper } from '../../../helpers/extensionHelper';
 import { ProcessHelper } from '../../../helpers/processHelper';
 import { SiemjConfigHelper } from '../../../models/siemj/siemjConfigHelper';
 import { SiemJOutputParser } from '../../integrationTests/siemJOutputParser';
@@ -35,8 +35,8 @@ export class BuildAllGraphsAction {
 						return;
 					}
 
+					// Cохраняем конфигурационный файл для siemj.
 					const siemjConfigPath = this._config.getTmpSiemjConfigPath();
-					// Централизованно сохраняем конфигурационный файл для siemj.
 					await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 
 					// Типовая команда выглядит так:

@@ -40,8 +40,7 @@ temp=${temp}`;
 
 		// Не собираем граф, если он уже есть.
 		if(!force) {
-			const root = pathLocator.getOutputDirName();
-			const normGraphFilePath = this._config.getNormGraphFilePath(root);
+			const normGraphFilePath = this._config.getNormGraphFilePath();
 			if(fs.existsSync(normGraphFilePath)) {
 				return;
 			}
@@ -97,10 +96,48 @@ out=\${output_folder}\\fpta_db.db`;
 		this._scenarios.push("make-tables-db");
 	}
 
-	public addEfgraphBuilding() : void {
+	public addCfgraphBuilding(force : boolean = true) : void {
 		const pathLocator = this._config.getPathHelper();
 		const rulesFilters = pathLocator.getRulesDirFilters();
 		const contentRoots = pathLocator.getContentRoots();
+
+		// Не собираем граф, если он уже есть.
+		if(!force) {
+			const enrichGraphFilePath = this._config.getEnrulesGraphFilePath();
+			if(fs.existsSync(enrichGraphFilePath)) {
+				return;
+			}
+		}
+		
+		// Собираем граф нормализации из всех источников контента, их несколько для EDR.
+		const rulesSrcPath = contentRoots.join(",");
+
+		const efgraphBuildingSection = 
+`
+[make-crgraph]
+type=BUILD_RULES
+rcc_lang=c
+rules_src=${rulesSrcPath}
+rfilters_src=${rulesFilters}
+table_list_schema=\${output_folder}\\schema.json
+out=\${output_folder}\\corrules_graph.json`;
+
+		this._siemjConfigSection += efgraphBuildingSection;
+		this._scenarios.push("make-crgraph");
+	}
+
+	public addEfgraphBuilding(force : boolean = true) : void {
+		const pathLocator = this._config.getPathHelper();
+		const rulesFilters = pathLocator.getRulesDirFilters();
+		const contentRoots = pathLocator.getContentRoots();
+
+		// Не собираем граф, если он уже есть.
+		if(!force) {
+			const enrichGraphFilePath = this._config.getEnrulesGraphFilePath();
+			if(fs.existsSync(enrichGraphFilePath)) {
+				return;
+			}
+		}
 		
 		// Собираем граф нормализации из всех источников контента, их несколько для EDR.
 		const rulesSrcPath = contentRoots.join(",");
@@ -119,7 +156,7 @@ out=\${output_folder}\\enrules_graph.json`;
 		this._scenarios.push("make-ergraph");
 	}
 
-	public addEventsNormalization(rawEventsFilePath : string) : void {
+	public addEventsNormalize(rawEventsFilePath : string) : void {
 
 		const eventNormalizationSection = 
 `
@@ -143,11 +180,26 @@ out=\${output_folder}\\norm_events.json`;
 [run-enrich]
 type=ENRICH
 enrules=\${output_folder}\\enrules_graph.json
-in=\${run-normalize:out}
+in=\${output_folder}\\norm_events.json
 out=\${output_folder}\\enrich_events.json`;
 
 		this._siemjConfigSection += eventEnrichSection;
-		this._scenarios.push("run-enrich ");
+		this._scenarios.push("run-enrich");
+	}
+
+	public addEventsCorrelate() : void {
+
+		const eventEnrichSection = 
+`
+[run-correlate]
+type=CORRELATE
+corrules=\${output_folder}\\corrules_graph.json
+in=\${output_folder}\\enrich_events.json
+table_list_database=\${output_folder}\\fpta_db.db
+out=\${output_folder}\\corr_events.json`;
+
+		this._siemjConfigSection += eventEnrichSection;
+		this._scenarios.push("run-correlate");
 	}
 
 	public build() : string {

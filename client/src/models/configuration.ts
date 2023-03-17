@@ -291,12 +291,14 @@ export class Configuration {
 		return path.join(this.getOutputDirectoryPath(rootFolder), "corr_events.json");
 	}
 
-	public getNormGraphFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), "formulas_graph.json");
+	public getNormGraphFilePath() : string {
+		const root = this._pathHelper.getOutputDirName();
+		return path.join(this.getOutputDirectoryPath(root), "formulas_graph.json");
 	}
 
-	public getEnrulesGraphFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), "enrules_graph.json");
+	public getEnrulesGraphFilePath() : string {
+		const root = this._pathHelper.getOutputDirName();
+		return path.join(this.getOutputDirectoryPath(root), "enrules_graph.json");
 	}
 
 	public getCorrulesGraphFilePath(rootFolder: string) : string {
