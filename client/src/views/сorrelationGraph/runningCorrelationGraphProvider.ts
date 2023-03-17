@@ -7,7 +7,7 @@ import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { CorrGraphRunner } from '../../models/tests/corrGraphRunner';
+import { CorrGraphRunner } from './corrGraphRunner';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { TestHelper } from '../../helpers/testHelper';
@@ -118,7 +118,7 @@ export class RunningCorrelationGraphProvider {
             }, async (progress) => {
                 try {
                     const runner = new CorrGraphRunner(this._config);
-                    const correlatedEventsString = await runner.Run(root, rawEventsPath);
+                    const correlatedEventsString = await runner.run(root, rawEventsPath);
 
                     if(!correlatedEventsString) {
                         ExtensionHelper.showUserInfo("По данным событиям не произошло ни одной сработки.");

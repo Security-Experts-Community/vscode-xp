@@ -72,9 +72,7 @@ export class SDKUtilitiesWrappers {
 				// Формируем параметры запуска утилиты
 				const rccExePath = this.config.getRccCli();
 				const taxonomy_arg = "--taxonomy=" + this.config.getTaxonomyFullPath();				
-				const root = this.config.getPathHelper().getRootByPath(buildDirectory);
-				const rootFolder = path.basename(root);
-				const normalization_graph_arg = "--output=" + this.config.getFormulasGraphFilePath(rootFolder);
+				const normalization_graph_arg = "--output=" + this.config.getNormGraphFilePath();
 				const formula_appendix = "--formula-appendix=" + this._kbPaths.getAppendixPath();
 				const content = buildDirectory;
 
@@ -288,7 +286,7 @@ export class SDKUtilitiesWrappers {
 				const taxonomy_arg = "--taxonomy=" + this.config.getTaxonomyFullPath();
 				const root = this.config.getPathHelper().getRootByPath(buildDirectory);
 				const rootFolder = path.basename(root);
-				const enrichment_graph_arg = "--output=" + this.config.getEnrulesGraphFilePath(rootFolder);
+				const enrichment_graph_arg = "--output=" + this.config.getEnrulesGraphFilePath();
 				const schema_arg = "--schema=" + this.config.getSchemaFullPath(rootFolder);
 				const lib_path_arg = "--lib-path=" + this._kbPaths.getRulesDirFilters();
 
@@ -510,9 +508,10 @@ export class SDKUtilitiesWrappers {
 				const testsExePath = this.config.getSiemKBTests();
 				const sdk_arg = "--sdk=" + this.config.getSiemSdkDirectoryPath();
 				const tmp_arg = "--temp=" + path.join(this.config.getTmpDirectoryPath(), folder);
+
 				const root = this.config.getPathHelper().getRootByPath(rule.getDirectoryPath());
 				const rootFolder = path.basename(root);
-				const normalization_graph_arg = "--nfgraph=" + this.config.getFormulasGraphFilePath(rootFolder);
+				const normalization_graph_arg = "--nfgraph=" + this.config.getNormGraphFilePath();
 				const correlation_graph_arg = "--crgraph=" + this.config.getCorrulesGraphFilePath(rootFolder);
 				const fpta_defaults_arg = "--fpta-defaults=" + this.config.getCorrelationDefaultsFilePath(rootFolder);
 				const buildDirectory = rule.getDirectoryPath();
@@ -587,9 +586,7 @@ export class SDKUtilitiesWrappers {
 			 */
 			// Формируем параметры запуска утилиты	
 			const normalizerExePath = this.config.getNormalizerCli();
-			const root = this.config.getPathHelper().getRootByPath(rawEventPath);
-			const rootFolder = path.basename(root);
-			const normalization_graph_arg = this.config.getFormulasGraphFilePath(rootFolder);
+			const normalization_graph_arg = this.config.getNormGraphFilePath();
 
 			// Записываем в лог выполнения строку запуска
 			outputChannel.appendLine(
@@ -919,10 +916,8 @@ export class SDKUtilitiesWrappers {
 			 */
 			// Формируем параметры запуска утилиты	
 			const packagerExePath = this.config.getKbPackFullPath();
-			// TODO: fix parameter getRootByPath
-			const root = this.config.getPathHelper().getRootByPath("");
-			const rootFolder = path.basename(root);
-			const normalization_graph_arg = this.config.getFormulasGraphFilePath(rootFolder);
+
+			const normalization_graph_arg = this.config.getNormGraphFilePath();
 
 			return new vscode.ProcessExecution(
 				packagerExePath,

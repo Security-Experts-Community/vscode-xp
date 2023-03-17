@@ -1,6 +1,4 @@
-import * as vscode from 'vscode';
 import * as assert from 'assert';
-import * as fs from 'fs';
 
 import { SiemjConfBuilder } from '../../models/siemj/siemjConfigBuilder';
 import { Configuration } from '../../models/configuration';
@@ -19,7 +17,7 @@ suite('SiemjConfigBuilder', () => {
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEfgraphBuilding();
-		configBuilder.addEventsNormalization(rawEventsFilePath);
+		configBuilder.addEventsNormalize(rawEventsFilePath);
 		configBuilder.addEventsEnrich();
 
 		const result = configBuilder.build();

@@ -42,20 +42,10 @@ export class IntegrationTestRunner {
 			return;
 		}
 
-		// Если у нас в правиле используются сабрули, то надо собрать полный граф корреляций.
-		const ruleCode = await rule.getRuleCode();
-		const isContainsSubrules = TestHelper.isRuleCodeContainsSubrules(ruleCode);
-
 		await SiemjConfigHelper.clearArtifacts(this._config);
 
 		// Если в правиле используются сабрули, тогда собираем весь граф корреляций.
-		let siemjConfContent = "";
-		if(isContainsSubrules) { 
-			siemjConfContent = SiemjConfigHelper.getTestConfigForRuleWithSubrules(rule, this._config);
-
-		} else {
-			siemjConfContent = SiemjConfigHelper.getTestConfig(rule, this._config);
-		}
+		let siemjConfContent = SiemjConfigHelper.getTestConfig(rule, this._config);
 
 		if(!siemjConfContent) {
 			ExtensionHelper.showUserError("Не удалось сгенерировать siemj.conf для заданного правила и тестов.");

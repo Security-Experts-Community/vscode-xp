@@ -39,7 +39,7 @@ export abstract class PathLocator {
 		}
 	}
 
-	protected getKbFullPath() : string {
+	public getKbFullPath() : string {
 		return this._kbFullPath;
 	}
 

@@ -15,7 +15,7 @@ export class Normalizer {
 
 	constructor(private _config : Configuration) {}
 
-	public async Normalize(rule: RuleBaseItem, rawEventsFilePath: string) : Promise<string> {
+	public async normalize(rule: RuleBaseItem, rawEventsFilePath: string) : Promise<string> {
 
 		if(!fs.existsSync(rawEventsFilePath)) {
 			throw new XpException(`Файл сырых событий '${rawEventsFilePath}' не существует.`);
@@ -57,7 +57,7 @@ export class Normalizer {
 		const xpAppendixPath = kbPaths.getAppendixPath();
 
 		// Проверяем наличие графа нормализации.
-		const formulas_graph = config.getFormulasGraphFilePath(rootFolder);
+		const formulas_graph = config.getNormGraphFilePath();
 		let siemjConfContent = "";
 
 		// Если есть граф формул нормализаций, тогда запускаем только нормализацию событий.

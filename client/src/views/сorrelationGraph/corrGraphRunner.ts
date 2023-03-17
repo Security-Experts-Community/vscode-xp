@@ -4,15 +4,16 @@ import * as path from 'path';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
-import { Configuration } from '../configuration';
+import { Configuration } from '../../models/configuration';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
-import { XpException } from '../xpException';
+import { XpException } from '../../models/xpException';
+import { SiemjConfBuilder } from '../../models/siemj/siemjConfigBuilder';
 
 export class CorrGraphRunner {
 
 	constructor(private _config : Configuration) {}
 
-	public async Run(correlationsFullPath: string, rawEventsFilePath: string) : Promise<string> {
+	public async run(correlationsFullPath: string, rawEventsFilePath: string) : Promise<string> {
 
 		if(!fs.existsSync(rawEventsFilePath)) {
 			throw new XpException(`Файл сырых событий '${rawEventsFilePath}' не доступен.`);
@@ -35,54 +36,19 @@ export class CorrGraphRunner {
 			await fs.promises.mkdir(output_folder);
 		}
 		
-		const temp = this._config.getTmpDirectoryPath();
-		const formulasGraph = this._config.getFormulasGraphFilePath(rootFolder);
-		const kbPaths = Configuration.get().getPathHelper();
-		const rulesFilter = kbPaths.getRulesDirFilters();
-		const correlationDefaults = this._config.getCorrelationDefaultsFilePath(rootFolder);
-		const schema = this._config.getSchemaFullPath(rootFolder);
+		const configBuilder = new SiemjConfBuilder(this._config);
+		configBuilder.addNfgraphBuilding();
+		configBuilder.addTablesSchemaBuilding();
+		configBuilder.addTablesDbBuilding();
+		configBuilder.addCfgraphBuilding();
+		configBuilder.addEfgraphBuilding();
 
-		const siemjConfContent =
-`[DEFAULT]
-ptsiem_sdk=${ptsiem_sdk}
-build_tools=${build_tools}
-taxonomy=${taxonomy}
-output_folder=${output_folder}
-temp=${temp}
-[make-tables-db]
-type=BUILD_TABLES_DATABASE
-table_list_filltype=All
-table_list_schema=${schema}
-table_list_defaults=${correlationDefaults}
-out=\${output_folder}\\fpta_db.db
-[make-crgraph]
-type=BUILD_RULES
-rcc_lang=c
-rules_src=${root}
-rfilters_src=${rulesFilter}
-table_list_schema=${schema}
-out=\${output_folder}\\corrules_graph.json
-[run-normalize]
-type=NORMALIZE
-formulas=${formulasGraph}
-in=${rawEventsFilePath}
-raw_without_envelope=no
-out=${output_folder}\\norm_events.json
-[run-enrich]
-type=ENRICH
-enrules=\${output_folder}\\enrules_graph.json
-in=\${run-normalize:out}
-out=\${output_folder}\\enrich_events.json
-[run-correlate]
-type=CORRELATE
-corrules=\${make-crgraph:out}
-in=\${run-enrich:out}
-table_list_database=\${output_folder}\\fpta_db.db
-out=\${output_folder}\\corr_events.json
-[main]
-type=SCENARIO
-scenario=make-tables-db make-crgraph run-normalize run-enrich run-correlate 
-`;
+		configBuilder.addEventsNormalize(rawEventsFilePath);
+		configBuilder.addEventsEnrich();
+		configBuilder.addEventsCorrelate();
+		
+		const siemjConfContent = configBuilder.build();
+
 		const randTmpDir = this._config.getRandTmpSubDirectoryPath();
 		await fs.promises.mkdir(randTmpDir);
 

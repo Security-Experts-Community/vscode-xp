@@ -1,24 +1,51 @@
 import * as fs from 'fs';
-import { API } from '../../@types/vscode.git';
+import { Uri } from 'vscode';
+import { API, Branch } from '../../@types/vscode.git';
+import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 
 import { Configuration } from '../../models/configuration';
 
 export class GitHooks {
-	constructor(private _gitAPI : API, private _config: Configuration) {}
+	constructor(private _git : API, private _config: Configuration) {}
 
-	public async updateBranchName(branchName: string) {
+	public async update() {
+		const currBranch = this.getCurrentBranch();
+		
 		// Первичное задание текущей ветке.
+		const branchName = currBranch.name;
 		if(!this._branchName) {
 			this._branchName = branchName;
-			return;
+
+			// Первичное задание коммита.
+			const commit = currBranch.commit;
+			if(!this._commit) {
+				this._commit = commit;
+				return;
+			}
 		}
 
-		// Смена ветки.
-		if(this._branchName != branchName) {
-			const outputDirectory = this._config.getOutputDirectoryPath("");
-			await fs.promises.rmdir(outputDirectory, { recursive: true});
+		// Смена ветки или коммита.
+		const commit = currBranch.commit;
+		if(this._branchName != branchName || this._commit != commit) {
+			const outputDirectory = this._config.getOutputDirectoryPath();
+			if(fs.existsSync(outputDirectory)) {
+				await FileSystemHelper.clearDirectory(outputDirectory);
+			}
 		}
+
+		// Обновить данные.
+		this._branchName = branchName;
+		this._commit = commit;
+	}
+
+	public getCurrentBranch() : Branch {
+		const ph = this._config.getPathHelper();
+		const kbPath = ph.getKbFullPath();
+
+		const repository = this._git.getRepository(Uri.file(kbPath));
+		return repository.state.HEAD;
 	}
 
 	private _branchName: string;
-}
+	private _commit: string;
+} 
