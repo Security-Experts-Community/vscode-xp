@@ -23,25 +23,21 @@ export class CorrGraphRunner {
 			throw new XpException(`Директория контента '${correlationsFullPath}' не существует.`);
 		}
 
-		const ptsiem_sdk = this._config.getSiemSdkDirectoryPath();
-		const build_tools = this._config.getBuildToolsDirectoryFullPath();
-		const taxonomy = this._config.getTaxonomyFullPath();
-		const root = this._config.getPathHelper().getRootByPath(correlationsFullPath);
-
 		// В зависимости от типа контента получаем нужную выходную директорию.
+		const root = this._config.getPathHelper().getRootByPath(correlationsFullPath);
 		const rootFolder = path.basename(root);
-		const output_folder = this._config.getOutputDirectoryPath(rootFolder);
+		const outputFolder = this._config.getOutputDirectoryPath(rootFolder);
 
-		if(!fs.existsSync(output_folder)) {
-			await fs.promises.mkdir(output_folder);
+		if(!fs.existsSync(outputFolder)) {
+			await fs.promises.mkdir(outputFolder);
 		}
 		
 		const configBuilder = new SiemjConfBuilder(this._config);
-		configBuilder.addNfgraphBuilding();
+		configBuilder.addNfgraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
-		configBuilder.addCfgraphBuilding();
-		configBuilder.addEfgraphBuilding();
+		configBuilder.addCfgraphBuilding(false);
+		configBuilder.addEfgraphBuilding(false);
 
 		configBuilder.addEventsNormalize(rawEventsFilePath);
 		configBuilder.addEventsEnrich();

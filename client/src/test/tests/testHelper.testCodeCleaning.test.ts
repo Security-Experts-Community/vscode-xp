@@ -4,6 +4,30 @@ import { TestHelper } from '../../helpers/testHelper';
 
 suite('TestHelper.testCodeCleaning', () => {
 
+    test('Удаление uuid из двух событий', async () => {
+
+        const testCode = 
+`{
+    "normalized": true,
+    "uuid": "c38ab502-3958-4c73-b1db-9e7d8c92afec"
+}
+{
+    "normalized": true,
+    "uuid": "c38ab502-3958-4c73-b1db-9e7d8c92afec"
+}`;
+
+const expectedTestCode = 
+`{
+    "normalized": true
+}
+{
+    "normalized": true
+}`;
+
+        const actualTestCode = TestHelper.cleanTestCode(testCode);
+        assert.strictEqual(actualTestCode, expectedTestCode);
+    });
+
     test('Удаление последнего поля uuid', async () => {
 
         const testCode = 
