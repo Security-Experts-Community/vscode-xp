@@ -96,7 +96,13 @@ out=\${output_folder}\\fpta_db.db`;
 		this._scenarios.push("make-tables-db");
 	}
 
-	public addCfgraphBuilding(force : boolean = true) : void {
+	/**
+	 * Добавить сборку графа корреляций
+	 * @param force принудительно пересобрать граф корреляций
+	 * @param contentSubdirPath собирать определенную часть контента
+	 * @returns 
+	 */
+	public addCfgraphBuilding(force : boolean = true, contentSubdirPath? : string) : void {
 		const pathLocator = this._config.getPathHelper();
 		const rulesFilters = pathLocator.getRulesDirFilters();
 		const contentRoots = pathLocator.getContentRoots();
@@ -109,10 +115,16 @@ out=\${output_folder}\\fpta_db.db`;
 			}
 		}
 		
-		// Собираем граф нормализации из всех источников контента, их несколько для EDR.
-		const rulesSrcPath = contentRoots.join(",");
+		let rulesSrcPath : string;
+		if(contentSubdirPath) {
+			rulesSrcPath = contentSubdirPath;
+		}
+		else {
+			// Собираем граф нормализации из всех источников контента, их несколько для EDR.
+			rulesSrcPath = contentRoots.join(",");
+		}
 
-		const efgraphBuildingSection = 
+		const cfgraphBuildingSection = 
 `
 [make-crgraph]
 type=BUILD_RULES
@@ -122,7 +134,7 @@ rfilters_src=${rulesFilters}
 table_list_schema=\${output_folder}\\schema.json
 out=\${output_folder}\\corrules_graph.json`;
 
-		this._siemjConfigSection += efgraphBuildingSection;
+		this._siemjConfigSection += cfgraphBuildingSection;
 		this._scenarios.push("make-crgraph");
 	}
 
@@ -187,6 +199,23 @@ out=\${output_folder}\\enrich_events.json`;
 		this._scenarios.push("run-enrich");
 	}
 
+	public addTestsRun(testsRuleFullPath: string) : void {
+
+		const rulesTestsSection = 
+`
+[rules-tests]
+type=TEST_RULES
+cr_timeout=${this._crTimeout}
+formulas=\${output_folder}\\formulas_graph.json
+enrules=\${output_folder}\\enrules_graph.json
+corrules=\${output_folder}\\corrules_graph.json
+table_list_defaults=\${output_folder}\\correlation_defaults.json
+rules_src=${testsRuleFullPath}`
+
+		this._siemjConfigSection += rulesTestsSection;
+		this._scenarios.push("rules-tests");
+	}
+
 	public addEventsCorrelate() : void {
 
 		const eventEnrichSection = 
@@ -214,4 +243,5 @@ scenario=${this._scenarios.join(" ")}
 
 	private _siemjConfigSection : string;
 	private _scenarios : string[] = [];
+	private _crTimeout : number = 45;
 }
