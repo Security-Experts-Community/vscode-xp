@@ -1,55 +1,52 @@
+#!/usr/bin/env python3
+
 import json
-import os
 import re
+import sys
 import subprocess
-
-JSON_PATH = ".\package.json"
-BUILD_PATH = ".\\build"
-
-
-def read_packages(path: str) -> str:
-    with open(path, encoding="utf-8") as f:
-        return f.read()
+from pathlib import Path
+from typing import List
 
 
-def create_dirs(path: str) -> None:
-    if not os.path.exists(path):
+ROOT = Path(__file__).parent
+package_json = ROOT / "package.json"
+build_dir = ROOT / "build"
+
+
+def verbose_create_dir(path: Path) -> None:
+    if not path.exists():
         print("Creating directory..")
-        os.mkdir(path)
-
-
-def increment_version(version: str) -> str:
-    _version = version.split(".")
-    _version[2] = str(int(_version[2]) + 1)
-    return ".".join(_version)
-
-
-def change_version(content: str) -> None:
-    return re.sub(
-        '"version":\s+"\S+",',
-        f'"version": "{increment_version(get_version(content))}",',
-        content,
-    )
+        path.mkdir()
 
 
 def get_version(content: str) -> str:
     return json.loads(content).get("version")
 
 
-def run_build(command: str) -> None:
-    subprocess.call("cmd.exe /c " + command)
+def set_child_package_version(version: str, dirs: List[str]):
+    for dir in dirs:
+        child_package = ROOT / dir / "package.json"
+        package = json.loads(child_package.read_text(encoding="utf-8"))
+        package["version"] = version
+        child_package.write_text(json.dumps(package, indent=4), encoding="utf-8")
 
 
-def run_tests(command: str) -> None:
-    subprocess.call("cmd.exe /c " + command)
+def run_command(command: str) -> None:
+    if sys.platform.startswith("win32"):
+        subprocess.call(f"cmd.exe /c {command}")
+    else:
+        subprocess.call(command, shell=True)
 
 
 def run():
     # Собираем расширение с исходной версией
-    create_dirs(BUILD_PATH)
-    data = read_packages(JSON_PATH)
-    prev_version = get_version(data)
-    run_build(f"vsce package -o {BUILD_PATH}\\vscode-xp-{prev_version}.vsix")
+    verbose_create_dir(build_dir)
+    data = package_json.read_text(encoding="utf-8")
+    version = get_version(data)
+    set_child_package_version(version, ["client", "server"])
+
+    vsix_name = f"vscode-xp-{version}.vsix"
+    run_command(f"vsce package -o {build_dir / vsix_name}")
 
 
 if __name__ == "__main__":
