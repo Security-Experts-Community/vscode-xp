@@ -5,10 +5,10 @@ event Event:
         filter::NotFromCorrelator()
         and filter::FileCreate_Windows()
         
-        and filter::CheckWL_Linux_Specific_Only("Linux_Universal", )
+        and filter::CheckWL_Linux_Specific_Only("Unix_Universal", )
     }
 
-rule Linux_Universal: Event
+rule Unix_Universal: Event
 
     init {
         $labels = "w_auto|CheckWL_Linux_Specific_Only"
