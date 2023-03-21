@@ -60,7 +60,7 @@ export class IntegrationTestRunner {
 		configBuilder.addEfgraphBuilding(false);
 
 		// TODO: временное решения до устранение проблем с вылетом тестов по таймауту.
-		configBuilder.addCfgraphBuilding(true, rule.getDirectoryPath());
+		configBuilder.addCfgraphBuilding(true, rule.getPackagePath(this._config));
 		configBuilder.addTestsRun(rule.getDirectoryPath());
 
 		const siemjConfContent = configBuilder.build();
