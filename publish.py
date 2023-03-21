@@ -5,10 +5,12 @@ import re
 import sys
 import subprocess
 from pathlib import Path
+from typing import List
 
 
-package_json = Path("./package.json")
-build_dir = Path("./build")
+ROOT = Path(__file__).parent
+package_json = ROOT / "package.json"
+build_dir = ROOT / "build"
 
 
 def verbose_create_dir(path: Path) -> None:
@@ -17,22 +19,16 @@ def verbose_create_dir(path: Path) -> None:
         path.mkdir()
 
 
-def increment_version(version: str) -> str:
-    _version = version.split(".")
-    _version[2] = str(int(_version[2]) + 1)
-    return ".".join(_version)
-
-
-def change_version(content: str) -> str:
-    return re.sub(
-        r'"version":\s+"\S+",',
-        f'"version": "{increment_version(get_version(content))}",',
-        content,
-    )
-
-
 def get_version(content: str) -> str:
     return json.loads(content).get("version")
+
+
+def set_child_package_version(version: str, dirs: List[str]):
+    for dir in dirs:
+        child_package = ROOT / dir / "package.json"
+        package = json.loads(child_package.read_text(encoding="utf-8"))
+        package["version"] = version
+        child_package.write_text(json.dumps(package, indent=4), encoding="utf-8")
 
 
 def run_command(command: str) -> None:
@@ -46,9 +42,11 @@ def run():
     # Собираем расширение с исходной версией
     verbose_create_dir(build_dir)
     data = package_json.read_text(encoding="utf-8")
-    prev_version = get_version(data)
-    prev_version_str = f"vscode-xp-{prev_version}.vsix"
-    run_command(f"vsce package -o {build_dir / prev_version_str}")
+    version = get_version(data)
+    set_child_package_version(version, ["client", "server"])
+
+    vsix_name = f"vscode-xp-{version}.vsix"
+    run_command(f"vsce package -o {build_dir / vsix_name}")
 
 
 if __name__ == "__main__":
