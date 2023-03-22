@@ -12,14 +12,14 @@ import { Configuration } from '../../../models/configuration';
 suite('CorrelationHelper.createCorrelationFromTemplate', async () => {
 
 	test('Создание универсальной корреляции в памяти', async () => {
-		const rule = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper", "Universal", Configuration.get());
+		const rule = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper", "Windows_Universal", Configuration.get());
 
 		assert.strictEqual(rule.getName(), "ESC_Super_Duper");
 		assert.strictEqual(rule.getMetaInfo().getName(), "ESC_Super_Duper");
 	});
 
 	test('Сохранение универсальной корреляции не упало', async () => {
-		const correlation = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper", "Universal", Configuration.get());
+		const correlation = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper", "Windows_Universal", Configuration.get());
 
 		const tmpPath = TestFixture.getTmpPath();
 		await correlation.save(tmpPath);

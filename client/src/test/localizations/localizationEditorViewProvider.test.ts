@@ -20,9 +20,9 @@ suite('LocalizationEditorViewProvider', () => {
 		localizationEditor.showLocalizationEditor(rule);
 	});
 
-	test('Сохранение одной добавленой локализации к кореляции', async () => {
+	test('Сохранение одной добавленой локализации к корреляции', async () => {
 		// Создание корреляции из шаблона и её сохранение.
-		const rule = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper", "Universal", Configuration.get());
+		const rule = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper", "Windows_Universal", Configuration.get());
 
 		const tmpPath = TestFixture.getTmpPath();
 		rule.save(tmpPath);
