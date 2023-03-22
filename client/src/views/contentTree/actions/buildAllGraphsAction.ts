@@ -68,7 +68,7 @@ export class BuildAllGraphsAction {
 				}
 			}
 			catch(error) {
-				ExceptionHelper.show(error, `Ошибка обработки событий`);
+				ExceptionHelper.show(error, `Ошибка обработки событий: ${error.message} \n ${error.stack}`);
 			}
 			finally {
 				const siemjConfigPath = this._config.getTmpSiemjConfigPath();

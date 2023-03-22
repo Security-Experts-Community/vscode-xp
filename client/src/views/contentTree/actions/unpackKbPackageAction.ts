@@ -108,7 +108,7 @@ export class UnpackKbPackageAction {
 				await ContentTreeProvider.refresh();
 			}
 			catch(error) {
-				ExtensionHelper.showUserError("Произошла неожиданная ошибка.");
+				ExtensionHelper.showUserError(`Произошла неожиданная ошибка: ${error.message}`);
 			}
 		});
 	}

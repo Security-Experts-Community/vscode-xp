@@ -126,7 +126,7 @@ export class Configuration {
 			default: throw new XpException("Платформа не поддерживается.");
 		}
 
-		let fullPath = path.join(this.getKbtBaseDirectory(), "extra-tools", "siemj", appName);
+		const fullPath = path.join(this.getKbtBaseDirectory(), "extra-tools", "siemj", appName);
 		this.checkKbtToolPath(appName, fullPath);
 
 		return fullPath;
@@ -337,12 +337,20 @@ export class Configuration {
 	}
 
 	/**
+	 * Возвращает путь к папке с директориями контрактов из KBT. 
+	 * @returns путь к папке с директориями контрактов.
+	 */
+	private getContractsDirectory(): string {
+		return path.join(this.getKbtBaseDirectory(), "knowledgebase", "contracts");
+	}
+
+	/**
 	 * Возвращает путь к файлу описания таксономии. 
 	 * @returns путь к файлу описания таксономии.
 	 */
 	public getTaxonomyFullPath() : string {
 		const taxonomyFileName = "taxonomy.json";
-		const fullPath = path.join(this.getKbtBaseDirectory(), "knowledgebase", "contracts", "taxonomy", taxonomyFileName);
+		const fullPath = path.join(this.getContractsDirectory(), "taxonomy", taxonomyFileName);
 		this.checkKbtToolPath(taxonomyFileName, fullPath);
 		
 		return fullPath;
@@ -354,8 +362,32 @@ export class Configuration {
 	 */
 	public getTaxonomyDirPath() : string {
 		const taxonomyDirName = "taxonomy";
-		const fullPath = path.join(this.getKbtBaseDirectory(), "knowledgebase", "contracts", taxonomyDirName);
+		const fullPath = path.join(this.getContractsDirectory(), taxonomyDirName);
 		this.checkKbtToolPath(taxonomyDirName, fullPath);
+		
+		return fullPath;
+	}
+	
+	/**
+	 * Возвращает путь к файлу дополнения формул нормализации. 
+	 * @returns путь к файлу дополнения формул нормализации.
+	 */
+	public getAppendixFullPath() : string {
+		const appendixFileName = "appendix.xp";
+		const fullPath = path.join(this.getContractsDirectory(), "xp_appendix", appendixFileName);
+		this.checkKbtToolPath(appendixFileName, fullPath);
+		
+		return fullPath;
+	}
+
+	/**
+	 * Возвращает путь к файлу описания контрактов табличных списков. 
+	 * @returns путь к файлу описания контрактов табличных списков.
+	 */
+	public getTablesContract() : string {
+		const tabulatContractsFileName = "tables_contract.yaml";
+		const fullPath = path.join(this.getContractsDirectory(), "tabular_lists", tabulatContractsFileName);
+		this.checkKbtToolPath(tabulatContractsFileName, fullPath);
 		
 		return fullPath;
 	}
@@ -390,13 +422,13 @@ export class Configuration {
 		if (!fullPath || fullPath === ""){
 			throw new FileNotFoundException(
 				`Путь к '${name}' не найден. Проверьте [настройки](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"])`,
-				 fullPath);
+				fullPath);
 		}
 
 		if (!fs.existsSync(fullPath)){
 			throw new FileNotFoundException(
 				`Путь к ${fullPath} не найден. Проверьте [настройки](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"])`,
-				 fullPath);
+				fullPath);
 		}
 	}
 

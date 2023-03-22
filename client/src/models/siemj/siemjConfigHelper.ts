@@ -13,8 +13,8 @@ export class SiemjConfigHelper {
 		const temp = config.getTmpDirectoryPath();
 		const kbPaths = Configuration.get().getPathHelper();
 		const roots = kbPaths.getContentRoots();
-		const xpAppendixPath = kbPaths.getAppendixPath();
-		const tables_contract = kbPaths.getTablesContract();
+		const xpAppendixPath = config.getAppendixFullPath();
+		const tables_contract = config.getTablesContract();
 		const rfilters_src = kbPaths.getRulesDirFilters();
 		const corrulesGraphName = kbPaths.getCorrulesGraphFileName();
 
@@ -66,9 +66,13 @@ rules_src=${root}
 rfilters_src=${rfilters_src}
 table_list_schema=\${output_folder}\\schema.json
 out=\${output_folder}\\${corrulesGraphName}
+[make-loca]
+type=BUILD_EVENT_LOCALIZATION
+rules_src=${root}
+out=\${output_folder}\\langs
 [main]
 type=SCENARIO
-scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgraph`;
+scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgraph make-loca`;
 
 		return siemjConfContent;});
 	}
@@ -95,8 +99,8 @@ scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgrap
 		const temp = config.getTmpDirectoryPath();
 		const kbPaths = Configuration.get().getPathHelper();
 		const rulesSrc = rule.getContentRoot(config);
-		const xpAppendixPath = kbPaths.getAppendixPath();
-		const tables_contract = kbPaths.getTablesContract();
+		const xpAppendixPath = config.getAppendixFullPath();
+		const tables_contract = config.getTablesContract();
 		const rfiltersSrc = kbPaths.getRulesDirFilters();
 
 		// Путь к пакету нужен для сборки сабрулей.
@@ -151,9 +155,13 @@ enrules=\${make-ergraph:out}
 corrules=\${make-crgraph:out}
 table_list_defaults=\${output_folder}\\correlation_defaults.json
 rules_src=${testRuleFullPath}
+[make-loca]
+type=BUILD_EVENT_LOCALIZATION
+rules_src=${packagePath}
+out=\${output_folder}\\langs
 [main]
 type=SCENARIO
-scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgraph rules-tests`;
+scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgraph rules-tests make-loca`;
 		return siemjConfContent;
 	}
 
@@ -175,8 +183,8 @@ scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgrap
 		const temp = config.getTmpDirectoryPath();
 		const kbPaths = Configuration.get().getPathHelper();
 		const rules_src = rule.getContentRoot(config);
-		const xpAppendixPath = kbPaths.getAppendixPath();
-		const tables_contract = kbPaths.getTablesContract();
+		const xpAppendixPath = config.getAppendixFullPath();
+		const tables_contract = config.getTablesContract();
 		const rfilters_src = kbPaths.getRulesDirFilters();
 
 		// TODO: тесты с контентом для XDR
@@ -236,9 +244,13 @@ enrules=\${make-ergraph:out}
 corrules=\${make-crgraph:out}
 table_list_defaults=\${output_folder}\\correlation_defaults.json
 rules_src=${testRuleFullPath}
+[make-loca]
+type=BUILD_EVENT_LOCALIZATION
+rules_src=${rulePackage}
+out=\${output_folder}\\langs
 [main]
 type=SCENARIO
-scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgraph rules-tests`;
+scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgraph rules-tests make-loca`;
 
 		return siemjConfContent;
 	}
@@ -257,21 +269,26 @@ scenario=make-nfgraph make-tables-schema make-tables-db make-ergraph make-crgrap
 	 * Очищаем артефакты запуска siemj. Неоходимо для невозможности получения неактуальных данных из них.
 	 */
 	public static async clearArtifacts(config : Configuration) : Promise<void> {
-		const outputDirName = config.getPathHelper().getOutputDirName();
+		const pathHelper = config.getPathHelper();
+		const roots = pathHelper.getContentRoots();
 
-		const ftpdDbFilePath = config.getFptaDbFilePath(outputDirName);
-		if(fs.existsSync(ftpdDbFilePath)) {
-			await fs.promises.unlink(ftpdDbFilePath);
-		}
+		for (const root of roots){
+			const outputDirName = path.basename(root);
 
-		const normEventsFilePath = config.getNormEventsFilePath(outputDirName);
-		if(fs.existsSync(normEventsFilePath)) {
-			await fs.promises.unlink(normEventsFilePath);
-		}
+			const ftpdDbFilePath = config.getFptaDbFilePath(outputDirName);
+			if(fs.existsSync(ftpdDbFilePath)) {
+				await fs.promises.unlink(ftpdDbFilePath);
+			}
 
-		const enrichEventsFilePath = config.getEnrichEventsFilePath(outputDirName);
-		if(fs.existsSync(enrichEventsFilePath)) {
-			await fs.promises.unlink(enrichEventsFilePath);
+			const normEventsFilePath = config.getNormEventsFilePath(outputDirName);
+			if(fs.existsSync(normEventsFilePath)) {
+				await fs.promises.unlink(normEventsFilePath);
+			}
+
+			const enrichEventsFilePath = config.getEnrichEventsFilePath(outputDirName);
+			if(fs.existsSync(enrichEventsFilePath)) {
+				await fs.promises.unlink(enrichEventsFilePath);
+			}
 		}
 	}
 }

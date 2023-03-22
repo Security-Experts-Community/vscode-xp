@@ -75,7 +75,7 @@ export class SDKUtilitiesWrappers {
 				const root = this.config.getPathHelper().getRootByPath(buildDirectory);
 				const rootFolder = path.basename(root);
 				const normalization_graph_arg = "--output=" + this.config.getFormulasGraphFilePath(rootFolder);
-				const formula_appendix = "--formula-appendix=" + this._kbPaths.getAppendixPath();
+				const formula_appendix = "--formula-appendix=" + this.config.getAppendixFullPath();
 				const content = buildDirectory;
 
 				// Запускаем утилиту с параметрами
@@ -141,7 +141,7 @@ export class SDKUtilitiesWrappers {
 				 */
 				// Формируем параметры запуска утилиты
 				const mktablesExePath = this.config.getMkTablesPath();
-				const contract_arg = "--contract=" + this._kbPaths.getTablesContract();
+				const contract_arg = "--contract=" + this.config.getTablesContract();
 				const root = this.config.getPathHelper().getRootByPath(buildDirectory);
 				const rootFolder = path.basename(root);
 				const outputFolder = this.config.getOutputDirectoryPath(rootFolder);

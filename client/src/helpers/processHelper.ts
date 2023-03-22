@@ -134,8 +134,49 @@ export class ProcessHelper {
 			});
 		});
 	}
-		
 
+	public static ExecuteWithArgsWithRealtimeEmmiterOutput(command : string, params : string[], emmiter : vscode.EventEmitter<string>) : Promise<string> {
+
+		return new Promise(function(resolve, reject) {
+			
+			// Записываем в лог выполнения строку запуска
+			emmiter.fire(`\n\nXP :: Run command: ${command} ${params.join(' ')}\n`);
+
+			let child; 
+			try {
+				child = child_process.spawn(command, params);
+			} 
+			catch(error) {
+				reject(error.message);
+				return;
+			}
+		
+			let output = "";
+		
+			child.stdout.setEncoding('utf8');
+			child.stdout.on('data', function(data) {
+				output += data.toString();
+				emmiter.fire(data.toString());
+			});
+
+			child.stdout.setEncoding('utf8');
+			child.stdout.on("error", function(data) {
+				emmiter.fire(data.toString());
+				output += data.toString();
+			});
+		
+			child.stderr.setEncoding('utf8');
+			child.stderr.on('data', function(data) {
+				emmiter.fire(data.toString());
+				output += data.toString();
+			});
+		
+			child.on('close', function(code) {
+				resolve(output);
+			});
+		});
+	}
+		
 	public static readProcessOutputSync(command: string,encoding: BufferEncoding) : string {
 		const childProcess = child_process.spawnSync(
 			command,

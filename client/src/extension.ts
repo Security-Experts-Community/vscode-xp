@@ -25,8 +25,12 @@ import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHig
 import { TestsFormatContentMenuExtention } from './ext/contextMenuExtention';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
 import { YamlHelper } from './helpers/yamlHelper';
+import { InitKBRootCommand } from './views/contentTree/commands/InitKBRootCommand';
+import { XPPackingTaskProvider } from './providers/xpCustomTaskProvider';
+
 
 let client: LanguageClient;
+let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
 
 export async function activate(context: ExtensionContext) {
 
@@ -102,6 +106,10 @@ export async function activate(context: ExtensionContext) {
 	RunningCorrelationGraphProvider.init(config);
 	TableListsEditorViewProvider.init(config);
 	SetContentTypeCommand.init(config);
+	InitKBRootCommand.init(config);
+
+	siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(XPPackingTaskProvider.Type, new XPPackingTaskProvider(config));
+
 	
 	// Расширение нативного контекстого меню.
 	TestsFormatContentMenuExtention.init(context);
@@ -179,6 +187,10 @@ export async function activate(context: ExtensionContext) {
 export async function deactivate(): Promise<void> | undefined {
 	if (!client) {
 		return undefined;
+	}
+
+	if(siemCustomPackingTaskProvider){
+		siemCustomPackingTaskProvider.dispose();
 	}
 
 	return client.stop();

@@ -29,6 +29,7 @@ import { UnpackKbPackageAction } from './actions/unpackKbPackageAction';
 import { ContentType } from '../../contentType/contentType';
 import { ContentTypeChecker } from '../../contentType/contentTypeChecker';
 import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';
+import { InitKBRootCommand } from './commands/InitKBRootCommand';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolder|RuleBaseItem> {
 
@@ -242,6 +243,9 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 				return Promise.resolve([]);
 			}
 
+			const subDirectories = FileSystemHelper.readSubDirectories(this._knowledgebaseDirectoryPath);
+			this.initializeRootIfNeeded(subDirectories);
+
 			// В случане штатной директории пакетов будет возможности создавать и собирать пакеты.
 			const dirName = path.basename(this._knowledgebaseDirectoryPath);
 			if (this.isContentRoot(dirName)){
@@ -302,6 +306,23 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 		const pathHelper = Configuration.get().getPathHelper();
 		const rootFolders = pathHelper.getContentRoots().map(dir => {return path.basename(dir);});
 		return rootFolders.includes(dirName);
+	}
+
+	private async initializeRootIfNeeded(subDirectories: string[]) : Promise<void> {
+		// Проверяем тип контента фактический и выбранный и увеломляем если что-то не так.
+		const actualContentType = ContentTypeChecker.getContentTypeBySubDirectories(subDirectories);
+		const configContentType = this._config.getContentType();
+		
+		if(!actualContentType){
+			const answer = await vscode.window.showInformationMessage(
+				`Кажется, что база знаний не проинициализирована, хотите создать необходимые директории для режима ${configContentType} автоматически?`,
+				"Да",
+				"Нет");
+
+			if (answer === "Да") {		
+				return vscode.commands.executeCommand(InitKBRootCommand.Name, this._config, this._knowledgebaseDirectoryPath);
+			}
+		}
 	}
 
 	private async notifyIfContentTypeIsSelectedIncorrectly(subDirectories: string[]) : Promise<void> {

@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 
 import { Configuration } from '../configuration';
 
@@ -8,15 +9,16 @@ import { Configuration } from '../configuration';
  */
 export class SiemjConfBuilder {
 
-	constructor(private _config : Configuration) {
+	constructor(private _config : Configuration, private _contentRootPath: string) {
 
 		const ptsiemSdk = this._config.getSiemSdkDirectoryPath();
 		const buildTools = this._config.getBuildToolsDirectoryFullPath();
 		const taxonomy = this._config.getTaxonomyFullPath();
 		const temp = this._config.getTmpDirectoryPath();
 
-		const pathHelper = this._config.getPathHelper();
-		const outputDirName = pathHelper.getOutputDirName();
+		//const pathHelper = this._config.getPathHelper();
+		//const outputDirName = pathHelper.getOutputDirName();
+		const outputDirName = path.basename(this._contentRootPath);
 		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
 
 		// Заполнение конфига по умолчанию.
@@ -30,19 +32,20 @@ temp=${temp}`;
 	}
 
 	public addNfgraphBuilding() : void {
-		const pathLocator = this._config.getPathHelper();
-		const xpAppendixPath = pathLocator.getAppendixPath();
-		const contentRoots = pathLocator.getContentRoots();
+		//const pathLocator = this._config.getPathHelper();
+		const xpAppendixPath = this._config.getAppendixFullPath();
+		//const contentRoots = pathLocator.getContentRoots();
 		
 		// Собираем граф нормализации из всех источников контента, их несколько для EDR.
-		const rulesSrcPath = contentRoots.join(",");
+		//const rulesSrcPath = contentRoots.join(",");
+		//const rulesSrcPath = this._contentRootFolder;
 
 		const nfgraphBuildingSection = 
 `
 [make-nfgraph]
 type=BUILD_RULES
 rcc_lang=n
-rules_src=${rulesSrcPath}
+rules_src=${this._contentRootPath}
 xp_appendix=${xpAppendixPath}
 out=\${output_folder}\\formulas_graph.json`;
 
@@ -51,18 +54,19 @@ out=\${output_folder}\\formulas_graph.json`;
 	}
 
 	public addTablesSchemaBuilding() : void {
-		const pathLocator = this._config.getPathHelper();
-		const contentRoots = pathLocator.getContentRoots();
-		const contract = pathLocator.getTablesContract();
+		//const pathLocator = this._config.getPathHelper();
+		//const contentRoots = pathLocator.getContentRoots();
+		const contract = this._config.getTablesContract();
 
 		// Собираем граф нормализации из всех источников контента, их несколько для EDR.
-		const rulesSrcPath = contentRoots.join(",");
+		//const rulesSrcPath = contentRoots.join(",");
+
 
 		const tablesSchemaBuildingSection = 
 `
 [make-tables-schema]
 type=BUILD_TABLES_SCHEMA
-table_list_schema_src=${rulesSrcPath}
+table_list_schema_src=${this._contentRootPath}
 contract=${contract}
 out=\${output_folder}`;
 
@@ -87,17 +91,17 @@ out=\${output_folder}\\fpta_db.db`;
 	public addEfgraphBuilding() : void {
 		const pathLocator = this._config.getPathHelper();
 		const rulesFilters = pathLocator.getRulesDirFilters();
-		const contentRoots = pathLocator.getContentRoots();
+		//const contentRoots = pathLocator.getContentRoots();
 		
 		// Собираем граф нормализации из всех источников контента, их несколько для EDR.
-		const rulesSrcPath = contentRoots.join(",");
+		//const rulesSrcPath = contentRoots.join(",");
 
 		const efgraphBuildingSection = 
 `
 [make-ergraph]
 type=BUILD_RULES
 rcc_lang=e
-rules_src=${rulesSrcPath}
+rules_src=${this._contentRootPath}
 rfilters_src=${rulesFilters}
 table_list_schema=\${output_folder}\\schema.json
 out=\${output_folder}\\enrules_graph.json`;

@@ -20,14 +20,33 @@ export abstract class PathLocator {
 	public abstract getCorrulesGraphFileName() : string
 
 	// KB
-	public abstract getAppendixPath() : string
-	public abstract getTablesContract() : string
+	// public abstract getAppendixPath() : string
+	// public abstract getTablesContract() : string
 	public abstract getRulesDirFilters() : string
 	public abstract getContentRoots() : string[]
 	public abstract getPackages(): string[]
 	public abstract isKbOpened() : boolean
 	public abstract getRootByPath(directory: string): string
-	public abstract getOutputDirName(): string
+	//public abstract getOutputDirName(): string
+	public abstract getRequiredRootDirectories(): string[]
+
+	// protected getAppendixPath() : string {
+	// 	this.checkKbPath();
+	// 	const relative_path = path.join(this._config.getKbtBaseDirectory(), "knowledgebase", "contracts", "xp_appendix", "appendix.xp");
+	// 	return path.join(this.getKbFullPath(), relative_path);
+	// }
+
+	// protected getTablesContract() : string {
+	// 	this.checkKbPath();
+	// 	const relative_path = path.join(this._config.getKbtBaseDirectory(), "knowledgebase", "contracts", "tabular_lists", "tables_contract.yaml");
+	// 	return path.join(this.getKbFullPath(), relative_path);
+	// }
+
+	// public getRulesDirFilters() : string {
+	// 	this.checkKbPath();
+	// 	const relative_path = path.join("common", "rules_filters");
+	// 	return path.join(this.getKbFullPath(), relative_path);
+	// }
 
 	protected checkKbPath() : void {
 		if(!this._kbFullPath) {

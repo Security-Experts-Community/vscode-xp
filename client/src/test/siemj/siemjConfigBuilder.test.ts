@@ -14,7 +14,8 @@ suite('SiemjConfigBuilder', () => {
 		const actualTests = IntegrationTest.parseFromRuleDirectory(rulePath);
 		const rawEventsFilePath = actualTests[0].getRawEventsFilePath();
 		
-		const configBuilder = new SiemjConfBuilder(Configuration.get());
+		// TODO: Уточнить тут второй параметр
+		const configBuilder = new SiemjConfBuilder(Configuration.get(), "packages");
 		configBuilder.addNfgraphBuilding();
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();

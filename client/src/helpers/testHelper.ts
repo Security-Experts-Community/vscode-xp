@@ -58,8 +58,8 @@ export class TestHelper {
 	 * @returns список ошибок, в котором задан начальный символ строки первым непробельным символом.
 	 */
 	public static correctWhitespaceCharacterFromErrorLines(ruleContent : string, diagnostics : vscode.Diagnostic[]) : vscode.Diagnostic[] {
-
-		const lines = ruleContent.split(EOL);
+		const fixedContent = ruleContent.replace(/(\r\n)/gm, "\n");
+		const lines = fixedContent.split('\n');
 
 		return diagnostics.map(d => {
 			const lineNumber = d.range.start.line;

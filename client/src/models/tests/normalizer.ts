@@ -53,8 +53,7 @@ export class Normalizer {
 		
 		const temp = config.getTmpDirectoryPath();		
 		const rulesSrcPath = rule.getContentRoot(config);
-		const kbPaths = Configuration.get().getPathHelper();
-		const xpAppendixPath = kbPaths.getAppendixPath();
+		const xpAppendixPath = config.getAppendixFullPath();
 
 		// Проверяем наличие графа нормализации.
 		const formulas_graph = config.getFormulasGraphFilePath(rootFolder);

@@ -4,6 +4,7 @@ import * as fs from 'fs';
 
 import { PathLocator } from './pathLocator';
 import { XpException } from '../xpException';
+import { Configuration } from '../configuration';
 
 
 export class EDRPathHelper extends PathLocator {
@@ -12,7 +13,6 @@ export class EDRPathHelper extends PathLocator {
 		super(kbFullPath);
 	}
 	
-	private _prefix = path.join("resources", "build-resources");
 	private static _instance: EDRPathHelper;
 
 	public static get() : EDRPathHelper {
@@ -27,9 +27,9 @@ export class EDRPathHelper extends PathLocator {
 		return EDRPathHelper._instance;
 	}
 
-	public getOutputDirName(): string {
-		throw new XpException("Данная функция не поддерживается.");
-	}
+	// public getOutputDirName(): string {
+	// 	throw new XpException("Данная функция не поддерживается.");
+	// }
 
 	public getRootByPath(directory: string): string{
 		if (!directory){
@@ -84,22 +84,14 @@ export class EDRPathHelper extends PathLocator {
 		return packagesDirectories;
 	}
 
-	public getAppendixPath() : string {
-		this.checkKbPath();
-		const relative_path = path.join(this._prefix, "contracts", "xp_appendix", "appendix.xp");
-		return path.join(this.getKbFullPath(), relative_path);
-	}
-
-	public getTablesContract() : string {
-		this.checkKbPath();
-		const relative_path = path.join(this._prefix, "_extra", "tabular_lists", "tables_contract.yaml");
-		return path.join(this.getKbFullPath(), relative_path);
-	}
-
 	public getRulesDirFilters() : string {
 		this.checkKbPath();
-		const relative_path = path.join(this._prefix, "common", "rules_filters");
+		const relative_path = path.join("common", "rules_filters");
 		return path.join(this.getKbFullPath(), relative_path);
+	}
+
+	public getRequiredRootDirectories(): string[]{
+		return [path.join("common", "rules_filters"), path.join('rules', "windows"), path.join('rules', "linux")];
 	}
 
 	public isKbOpened() : boolean {

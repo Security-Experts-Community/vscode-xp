@@ -26,8 +26,10 @@ export class SiemjManager {
 		}
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
+		const contentRoot = rule.getContentRoot(this._config);
+		const outputDirName = path.basename(contentRoot);
 
-		const outputDirName = this._config.getPathHelper().getOutputDirName();
+		//const outputDirName = this._config.getPathHelper().getOutputDirName();
 		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
 
 		if(!fs.existsSync(outputFolder)) {
@@ -35,7 +37,7 @@ export class SiemjManager {
 		}
 		
 		// Получаем нужный конфиг для нормализации событий.
-		const configBuilder = new SiemjConfBuilder(this._config);
+		const configBuilder = new SiemjConfBuilder(this._config, contentRoot);
 		configBuilder.addNfgraphBuilding();
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		const siemjConfContent = configBuilder.build();
@@ -81,14 +83,16 @@ export class SiemjManager {
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
 
-		const outputDirName = this._config.getPathHelper().getOutputDirName();
+		//const outputDirName = this._config.getPathHelper().getOutputDirName();
+		const contentRoot = rule.getContentRoot(this._config);
+		const outputDirName = path.basename(contentRoot);
 		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
 
 		if(!fs.existsSync(outputFolder)) {
 			fs.mkdirSync(outputFolder);
 		}
 		
-		const configBuilder = new SiemjConfBuilder(this._config);
+		const configBuilder = new SiemjConfBuilder(this._config, contentRoot);
 		configBuilder.addNfgraphBuilding();
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
