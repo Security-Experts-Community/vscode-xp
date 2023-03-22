@@ -84,6 +84,10 @@ export class EDRPathHelper extends PathLocator {
 		return packagesDirectories;
 	}
 
+	public getRequiredRootDirectories(): string[]{
+		return [path.join("common", "rules_filters"), path.join('rules', "windows"), path.join('rules', "linux")];
+	}
+
 	public getAppendixPath() : string {
 		this.checkKbPath();
 		const relative_path = path.join(this._prefix, "contracts", "xp_appendix", "appendix.xp");

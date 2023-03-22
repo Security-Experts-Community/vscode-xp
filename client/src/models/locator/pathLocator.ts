@@ -24,6 +24,7 @@ export abstract class PathLocator {
 	public abstract getTablesContract() : string
 	public abstract getRulesDirFilters() : string
 	public abstract getContentRoots() : string[]
+	public abstract getRequiredRootDirectories(): string[]
 	public abstract getPackages(): string[]
 	public abstract isKbOpened() : boolean
 	public abstract getRootByPath(directory: string): string
