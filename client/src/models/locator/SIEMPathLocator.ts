@@ -76,6 +76,10 @@ export class SIEMPathHelper extends PathLocator {
 		return packagesDirectories;
 	}
 
+	public getRequiredRootDirectories(): string[]{
+		return [path.join("common", "rules_filters"), "packages"];
+	}
+
 	public getAppendixPath() : string {
 		this.checkKbPath();
 		const relative_path = path.join("contracts", "xp_appendix", "appendix.xp");

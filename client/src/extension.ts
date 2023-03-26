@@ -25,6 +25,8 @@ import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHig
 import { TestsFormatContentMenuExtention } from './ext/contextMenuExtention';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
 import { YamlHelper } from './helpers/yamlHelper';
+import { InitKBRootCommand } from './views/contentTree/commands/InitKBRootCommand';
+
 
 let client: LanguageClient;
 
@@ -102,6 +104,7 @@ export async function activate(context: ExtensionContext) {
 	RunningCorrelationGraphProvider.init(config);
 	TableListsEditorViewProvider.init(config);
 	SetContentTypeCommand.init(config);
+	InitKBRootCommand.init(config);
 	
 	// Расширение нативного контекстого меню.
 	TestsFormatContentMenuExtention.init(context);
