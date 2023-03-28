@@ -3,7 +3,6 @@ event Event:
         event_src.host
     filter {
         filter::NotFromCorrelator()
-        and filter::FileCreate_Windows()
         
         and filter::CheckWL_Linux_Specific_Only("Unix_Universal", )
     }

@@ -4,7 +4,7 @@ event Event:
     filter {
         filter::NotFromCorrelator()
         and filter::OperatingSystem_UNIXLike()
-        and lower(event_src.subsys) == "auditd"
+        and event_src.subsys == "auditd"
         
         and filter::CheckWL_Linux_Process_Creation("Unix_Execve", )
     }
