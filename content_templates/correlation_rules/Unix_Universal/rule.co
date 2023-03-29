@@ -19,7 +19,7 @@ rule Unix_Universal: Event
         $subject.account.fullname = subject.account.fullname
         $subject.account.name = subject.account.name
         $subject.account.session_id = subject.account.session_id
-		$subject.type = subject.type
+        $subject.type = subject.type
 
         $subject.process.name = subject.process.name
         $subject.process.id = subject.process.id
@@ -29,43 +29,43 @@ rule Unix_Universal: Event
         $subject.process.cwd = subject.process.cwd
         $subject.process.meta = subject.process.meta
         $subject.process.parent.id = subject.process.parent.id
-		
-		$object.account.name = object.account.name # root
+        
+        $object.account.name = object.account.name # root
         $object.account.domain = object.account.domain
         $object.account.id = object.account.id
         $object.account.group = object.account.group
-		
-		$object.process.name = object.process.name
+        
+        $object.process.name = object.process.name
         $object.process.id = object.process.id
         $object.process.path = object.process.path
         $object.process.fullpath = object.process.fullpath
-		$object.process.cmdline = object.process.cmdline
+        $object.process.cmdline = object.process.cmdline
         $object.process.meta = object.process.meta
-		$object.process.cwd = object.process.cwd
+        $object.process.cwd = object.process.cwd
         $object.process.parent.id = object.process.parent.id
      
         $object.name = object.name
-		$object.domain = object.domain
-		$object.type = object.type
+        $object.domain = object.domain
+        $object.type = object.type
         $object.path = object.path
         $object.fullpath = object.fullpath
         $object.property = object.property
         $object.value = object.value
-		$object.state = object.state
-		
-		$logon_service = logon_service
-		
-		$protocol = protocol
-		
-		$direction = direction
-		
-		$datafield1 = datafield1
-		$datafield2 = datafield2
-		$datafield3 = datafield3
-		$datafield4 = datafield4
-		$datafield5 = datafield5
-		
-		$numfield2 = numfield2
+        $object.state = object.state
+        
+        $logon_service = logon_service
+        
+        $protocol = protocol
+        
+        $direction = direction
+        
+        $datafield1 = datafield1
+        $datafield2 = datafield2
+        $datafield3 = datafield3
+        $datafield4 = datafield4
+        $datafield5 = datafield5
+        
+        $numfield2 = numfield2
 
         $event_src.host = event_src.host
         $event_src.fqdn = event_src.fqdn

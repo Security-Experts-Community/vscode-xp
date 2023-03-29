@@ -21,7 +21,7 @@ rule Unix_Connect: Event
         $subject.account.id = subject.account.id
         $subject.account.session_id = subject.account.session_id
         $subject.account.privileges = subject.account.privileges
-		$subject.type = subject.type
+        $subject.type = subject.type
                 
         $subject.process.name = subject.process.name
         $subject.process.id = subject.process.id
@@ -36,15 +36,15 @@ rule Unix_Connect: Event
         $object.account.group = object.account.group
 
         $object.domain = object.domain
-		$object.type = object.type
-		$object.property = object.property
-		$object.value = object.value
-		
-		$logon_service = logon_service
-		
-		$protocol = protocol
-		
-		$direction = direction
+        $object.type = object.type
+        $object.property = object.property
+        $object.value = object.value
+        
+        $logon_service = logon_service
+        
+        $protocol = protocol
+        
+        $direction = direction
                 
         $event_src.ip = event_src.ip
         $event_src.hostname = event_src.hostname

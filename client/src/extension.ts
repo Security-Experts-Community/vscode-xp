@@ -116,11 +116,19 @@ export async function activate(context: ExtensionContext) {
 			[
 				{
 					scheme: 'file',
+					language: 'xp'
+				},
+				{
+					scheme: 'file',
 					language: 'co'
 				},
 				{
 					scheme: 'file',
 					language: 'en'
+				},
+				{
+					scheme: 'file',
+					language: 'flt'
 				},
 			],
 			signatureProvider,
@@ -135,11 +143,19 @@ export async function activate(context: ExtensionContext) {
 			[
 				{
 					scheme: 'file',
+					language: 'xp'
+				},
+				{
+					scheme: 'file',
 					language: 'co'
 				},
 				{
 					scheme: 'file',
 					language: 'en'
+				},
+				{
+					scheme: 'file',
+					language: 'flt'
 				},
 			],
 			completionItemProvider,
@@ -167,11 +183,19 @@ export async function activate(context: ExtensionContext) {
 		[
 			{
 				scheme: 'file',
+				language: 'xp'
+			},
+			{
+				scheme: 'file',
 				language: 'co'
 			},
 			{
 				scheme: 'file',
 				language: 'en'
+			},
+			{
+				scheme: 'file',
+				language: 'flt'
 			},
 		],
 		xpDocumentHighlightProvider,

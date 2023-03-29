@@ -38,10 +38,10 @@ rule Unix_OpenOpenat: Event
         $object.account.group = object.account.group
 
         $object.name = object.name
-		$object.path = object.path
-		$object.fullpath = object.fullpath
-		$object.id = object.id
-		$object.type = object.type
+        $object.path = object.path
+        $object.fullpath = object.fullpath
+        $object.id = object.id
+        $object.type = object.type
         $object.state = object.state
                 
         $event_src.ip = event_src.ip

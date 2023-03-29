@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
+import * as path from 'path';
 
-import { activate, getDocUri, testCompletion } from '../../helper';
+import { getDocUri, testCompletion } from '../../helper';
 
 suite('Автодополнение для корреляций', () => {
-	const docUri = getDocUri('completion.co');
+	const docUri = getDocUri(path.join('completion', 'completion.co'));
 
-	test('Наличие автодополнения в корреляциях', async () => {
-		
+	test('Наличие автодополнения', async () => {
 		const completions = await testCompletion(docUri, new vscode.Position(0, 0));
-		assert.ok(completions.items.length >= 0);
+		assert.ok(completions.items.length > 0);
 	});
 
 	test('Наличие автодополнения функции div', async () => {

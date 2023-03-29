@@ -21,31 +21,31 @@ rule Linux_Execve: Event
         $subject.account.id = subject.account.id
         $subject.account.session_id = subject.account.session_id
         $subject.account.privileges = subject.account.privileges
-		$subject.type = subject.type
+        $subject.type = subject.type
         
-		$object.account.name = object.account.name
+        $object.account.name = object.account.name
         $object.account.domain = object.account.domain
         $object.account.id = object.account.id
         $object.account.group = object.account.group
         
-		$object.process.name = object.process.name
+        $object.process.name = object.process.name
         $object.process.id = object.process.id
         $object.process.path = object.process.path
         $object.process.fullpath = object.process.fullpath
-		$object.process.cmdline = object.process.cmdline
+        $object.process.cmdline = object.process.cmdline
         $object.process.meta = object.process.meta
-		$object.process.cwd = object.process.cwd
+        $object.process.cwd = object.process.cwd
         $object.process.parent.id = object.process.parent.id
-		
-		$logon_service = logon_service
-		
-		$datafield1 = datafield1
-		$datafield2 = datafield2
-		$datafield3 = datafield3
-		$datafield4 = datafield4
-		$datafield5 = datafield5
-		
-		$numfield2 = numfield2		
+        
+        $logon_service = logon_service
+        
+        $datafield1 = datafield1
+        $datafield2 = datafield2
+        $datafield3 = datafield3
+        $datafield4 = datafield4
+        $datafield5 = datafield5
+        
+        $numfield2 = numfield2		
                 
         $event_src.ip = event_src.ip
         $event_src.hostname = event_src.hostname

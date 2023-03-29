@@ -1,13 +1,19 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
-import * as fs from 'fs';
+import * as path from 'path';
 
-import { TestFixture } from '../../helper';
-import { Test } from 'mocha';
+import { getDocUri, testCompletion, TestFixture } from '../../helper';
 import { Normalization } from '../../../models/content/normalization';
 import { ContentTreeProvider } from '../../../views/contentTree/contentTreeProvider';
 
-suite('Нормализации', () => {
+suite('Нормализация', () => {
+
+	const docUri = getDocUri(path.join('completion', 'completion.xp'));
+	
+	test('Наличие автодополнения', async () => {
+		const completions = await testCompletion(docUri, new vscode.Position(0, 0));
+		assert.ok(completions.items.length > 0);
+	});
 
 	test('Успешный парсинг нормализации', async () => {
 		const rulePath = TestFixture.getNormalizationPath("1001_Application_Error");
