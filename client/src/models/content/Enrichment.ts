@@ -17,20 +17,20 @@ import { ContentHelper } from '../../helpers/contentHelper';
  * Обогащение
  */
 export class Enrichment extends RuleBaseItem {
-	
+
 	public async save(parentFullPath?: string): Promise<void> {
 		// Путь либо передан как параметр, либо он уже задан в правиле.
 		let directoryFullPath = "";
-		if(parentFullPath) {
+		if (parentFullPath) {
 			directoryFullPath = path.join(parentFullPath, this._name);
 			this.setParentPath(parentFullPath);
 		} else {
 			directoryFullPath = this.getDirectoryPath();
 		}
 
-		if(!fs.existsSync(directoryFullPath)) {
+		if (!fs.existsSync(directoryFullPath)) {
 			await fs.promises.mkdir(directoryFullPath);
-		} 
+		}
 
 		const ruleFullPath = path.join(directoryFullPath, this.getRuleFileName());
 		await FileSystemHelper.writeContentFile(ruleFullPath, this._ruleCode);
@@ -40,18 +40,18 @@ export class Enrichment extends RuleBaseItem {
 		await this.saveIntegrationTest();
 	}
 
-	private constructor(name: string, parentDirectoryPath? : string) {
+	private constructor(name: string, parentDirectoryPath?: string) {
 		super(name, parentDirectoryPath);
 		this.setRuleFileName("rule.en");
 	}
 
-	public static create(name: string, parentPath?: string, fileName?: string) : Enrichment {
+	public static create(name: string, parentPath?: string, fileName?: string): Enrichment {
 		const rule = new Enrichment(name, parentPath);
 
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
-		if (fileName){
-			rule.setRuleFileName(fileName);			
+		if (fileName) {
+			rule.setRuleFileName(fileName);
 		}
 
 		const metainfo = rule.getMetaInfo();
@@ -63,16 +63,16 @@ export class Enrichment extends RuleBaseItem {
 		metainfo.setObjectId(objectId);
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
-		rule.setCommand({ 
-			command: ContentTreeProvider.onRuleClickCommand,  
-			title: "Open File", 
-			arguments: [rule] 
+		rule.setCommand({
+			command: ContentTreeProvider.onRuleClickCommand,
+			title: "Open File",
+			arguments: [rule]
 		});
 
 		return rule;
 	}
 
-	public static async parseFromDirectory(directoryPath: string, fileName?: string) : Promise<Enrichment> {
+	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Enrichment> {
 		// Получаем имя корреляции и родительский путь.
 		const name = path.basename(directoryPath);
 		const parentDirectoryPath = path.dirname(directoryPath);
@@ -81,12 +81,12 @@ export class Enrichment extends RuleBaseItem {
 
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
-		if (fileName){
-			enrichment.setRuleFileName(fileName);			
+		if (fileName) {
+			enrichment.setRuleFileName(fileName);
 		}
 
 		// Парсим основные метаданные.
-		const metaInfo = MetaInfo.parseFromFile(directoryPath);
+		const metaInfo = MetaInfo.fromFile(directoryPath);
 		enrichment.setMetaInfo(metaInfo);
 
 		const modularTest = CorrelationUnitTest.parseFromRuleDirectory(directoryPath, enrichment);
@@ -96,10 +96,10 @@ export class Enrichment extends RuleBaseItem {
 		enrichment.addIntegrationTests(integrationalTests);
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
-		enrichment.setCommand({ 
-			command: ContentTreeProvider.onRuleClickCommand,  
-			title: "Open File", 
-			arguments: [enrichment] 
+		enrichment.setCommand({
+			command: ContentTreeProvider.onRuleClickCommand,
+			title: "Open File",
+			arguments: [enrichment]
 		});
 
 		return enrichment;
@@ -139,7 +139,7 @@ export class Enrichment extends RuleBaseItem {
 		});
 
 		// Замена в тестах.
-		this.getIntegrationTests().forEach( 
+		this.getIntegrationTests().forEach(
 			it => {
 				it.setRuleDirectoryPath(newRuleDirectoryPath);
 				const testCode = it.getTestCode();
@@ -148,7 +148,7 @@ export class Enrichment extends RuleBaseItem {
 			}
 		);
 
-		this.getModularTests().forEach( 
+		this.getModularTests().forEach(
 			it => {
 				it.setRuleDirectoryPath(newRuleDirectoryPath);
 				const testCode = it.getTestCode();
@@ -160,7 +160,7 @@ export class Enrichment extends RuleBaseItem {
 		// Обновление имени правила.
 		this.setName(newRuleName);
 	}
- 
+
 	iconPath = {
 		light: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'light', 'rule.svg'),
 		dark: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'dark', 'rule.svg')

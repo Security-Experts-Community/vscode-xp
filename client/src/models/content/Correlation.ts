@@ -16,14 +16,14 @@ import { ContentHelper } from '../../helpers/contentHelper';
 
 export class Correlation extends RuleBaseItem {
 
-	private constructor(name: string, parentDirectoryPath? : string) {
+	private constructor(name: string, parentDirectoryPath?: string) {
 		super(name, parentDirectoryPath);
 		this.setRuleFileName("rule.co");
 	}
 
-	public static async parseFromDirectory(directoryPath: string, fileName?: string) : Promise<Correlation> {
+	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Correlation> {
 
-		if(!fs.existsSync(directoryPath)) {
+		if (!fs.existsSync(directoryPath)) {
 			throw new Error(`Директория '${directoryPath}' не существует.`);
 		}
 
@@ -31,15 +31,15 @@ export class Correlation extends RuleBaseItem {
 		const correlationName = path.basename(directoryPath);
 		const parentDirectoryPath = path.dirname(directoryPath);
 		const correlation = new Correlation(correlationName, parentDirectoryPath);
-		
+
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
-		if (fileName){
-			correlation.setRuleFileName(fileName);			
+		if (fileName) {
+			correlation.setRuleFileName(fileName);
 		}
 
 		// Парсим основные метаданные.
-		const metaInfo = MetaInfo.parseFromFile(directoryPath);
+		const metaInfo = MetaInfo.fromFile(directoryPath);
 		correlation.setMetaInfo(metaInfo);
 
 		const ruleFilePath = correlation.getRuleFilePath();
@@ -63,22 +63,22 @@ export class Correlation extends RuleBaseItem {
 		correlation.addIntegrationTests(integrationalTests);
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
-		correlation.setCommand({ 
-			command: ContentTreeProvider.onRuleClickCommand,  
-			title: "Open File", 
-			arguments: [correlation] 
+		correlation.setCommand({
+			command: ContentTreeProvider.onRuleClickCommand,
+			title: "Open File",
+			arguments: [correlation]
 		});
 
 		return correlation;
 	}
 
-	public static create(name: string, parentPath?: string, fileName?: string) : Correlation {
+	public static create(name: string, parentPath?: string, fileName?: string): Correlation {
 		const rule = new Correlation(name, parentPath);
 
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
-		if (fileName){
-			rule.setRuleFileName(fileName);			
+		if (fileName) {
+			rule.setRuleFileName(fileName);
 		}
 
 		const metainfo = rule.getMetaInfo();
@@ -89,37 +89,37 @@ export class Correlation extends RuleBaseItem {
 		metainfo.setObjectId(objectId);
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
-		rule.setCommand({ 
-			command: ContentTreeProvider.onRuleClickCommand,  
-			title: "Open File", 
-			arguments: [rule] 
+		rule.setCommand({
+			command: ContentTreeProvider.onRuleClickCommand,
+			title: "Open File",
+			arguments: [rule]
 		});
 
 		return rule;
 	}
 
-	public async save(parentFullPath?: string) : Promise<void> {
+	public async save(parentFullPath?: string): Promise<void> {
 
 		// Путь либо передан как параметр, либо он уже задан в правиле.
 		let corrDirPath = "";
-		if(parentFullPath) {
+		if (parentFullPath) {
 			corrDirPath = path.join(parentFullPath, this._name);
 			this.setParentPath(parentFullPath);
 		} else {
 			const parentPath = this.getParentPath();
-			if(!parentPath) {
+			if (!parentPath) {
 				throw new Error("Не задан путь для сохранения корреляции.");
 			}
 
 			corrDirPath = this.getDirectoryPath();
 		}
 
-		if(!fs.existsSync(corrDirPath)) {
+		if (!fs.existsSync(corrDirPath)) {
 			await fs.promises.mkdir(corrDirPath);
-		} 
+		}
 
 		const ruleFullPath = path.join(corrDirPath, this.getRuleFileName());
-		if(this._ruleCode) {
+		if (this._ruleCode) {
 			await FileSystemHelper.writeContentFile(ruleFullPath, this._ruleCode);
 		} else {
 			await FileSystemHelper.writeContentFile(ruleFullPath, "");
@@ -165,7 +165,7 @@ export class Correlation extends RuleBaseItem {
 		});
 
 		// Замена в тестах.
-		this.getIntegrationTests().forEach( 
+		this.getIntegrationTests().forEach(
 			it => {
 				it.setRuleDirectoryPath(newRuleDirectoryPath);
 				const testCode = it.getTestCode();
@@ -174,7 +174,7 @@ export class Correlation extends RuleBaseItem {
 			}
 		);
 
-		this.getModularTests().forEach( 
+		this.getModularTests().forEach(
 			it => {
 				it.setRuleDirectoryPath(newRuleDirectoryPath);
 				const testCode = it.getTestCode();
@@ -183,7 +183,7 @@ export class Correlation extends RuleBaseItem {
 			}
 		);
 
-		this.getLocalizations().forEach( 
+		this.getLocalizations().forEach(
 			loc => {
 				const localizationId = loc.getLocalizationId();
 				const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, localizationId);

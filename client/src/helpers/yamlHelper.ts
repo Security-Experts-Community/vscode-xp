@@ -1,11 +1,12 @@
 import * as js_yaml from 'js-yaml';
+import * as prettier from 'prettier';
 
 export class YamlHelper {
 	public static configure(
-		dumpOptions: js_yaml.DumpOptions, 
+		dumpOptions: js_yaml.DumpOptions,
 		loadOptions?: js_yaml.LoadOptions) {
-			this.dumpOptions = dumpOptions;
-			this.loadOptions = loadOptions;
+		this.dumpOptions = dumpOptions;
+		this.loadOptions = loadOptions;
 	}
 
 	/**
@@ -13,20 +14,28 @@ export class YamlHelper {
 	 * @param object объект для сериализации в строку
 	 * @returns 
 	 */
-	public static localizationsStringify(object: any) : string {
+	public static localizationsStringify(object: any): string {
 		const localizationDumpOptions = Object.assign({}, this.dumpOptions);
 		localizationDumpOptions.forceQuotes = true;
 
-		let yamlContent = js_yaml.dump(object, localizationDumpOptions);
+		const yamlContent = js_yaml.dump(object, localizationDumpOptions);
 		return yamlContent;
 	}
 
-	public static stringify(object: any) : string {
-		let yamlContent = js_yaml.dump(object, this.dumpOptions);
-		return yamlContent;
+	public static stringify(object: any): string {
+		const yamlContent = js_yaml.dump(object, this.dumpOptions);
+
+		return prettier.format(
+			yamlContent,
+			{
+				'parser': 'yaml',
+				'tabWidth': this.dumpOptions.indent,
+				'maxLineLength': this.dumpOptions.lineWidth,
+			}
+		);
 	}
 
-	public static parse(str: string) : any {
+	public static parse(str: string): any {
 		return js_yaml.load(str, this.loadOptions);
 	}
 

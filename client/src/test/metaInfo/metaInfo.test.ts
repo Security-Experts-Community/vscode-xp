@@ -11,7 +11,7 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 suite('MetaInfo', () => {
 
 	test('EventID без кавычек для Windows', async () => {
-		
+
 		const metaInfo = new MetaInfo();
 		metaInfo.setDataSources([
 			new DataSource("Microsoft-Windows-Security-Auditing", ["1644", "5136"])
@@ -28,7 +28,7 @@ suite('MetaInfo', () => {
 	});
 
 	test('EventID без кавычек для Linux', async () => {
-		
+
 		const metaInfo = new MetaInfo();
 		metaInfo.setDataSources([
 			new DataSource("Unix", ["pt_siem_execve", "pt_siem_execve_daemon", "user_cmd"])
@@ -44,18 +44,18 @@ suite('MetaInfo', () => {
 		assert.ok(metaInfoString.includes("- pt_siem_execve_daemon"));
 		assert.ok(metaInfoString.includes("- user_cmd"));
 	});
-	
+
 	test('Минимальная метаинформация, содержащая только ObjectId', () => {
 		const metaInfoPath = TestFixture.getTestPath("metaInfo", "onlyObjectId");
-		const metaInfo = MetaInfo.parseFromFile(metaInfoPath);
-		
+		const metaInfo = MetaInfo.fromFile(metaInfoPath);
+
 		assert.strictEqual(metaInfo.getObjectId(), "LOC-ER-1");
 	});
 
 	test('Поле Created = []', () => {
 		const metaInfoPath = TestFixture.getTestPath("metaInfo", "createdIsEmptyArray");
-		const metaInfo = MetaInfo.parseFromFile(metaInfoPath);
-		
+		const metaInfo = MetaInfo.fromFile(metaInfoPath);
+
 		assert.strictEqual(metaInfo.getCreatedDate(), undefined);
 	});
 
@@ -90,9 +90,9 @@ suite('MetaInfo', () => {
 	});
 
 	// Создаем временную директорию.
-	setup( () => {
+	setup(() => {
 		const tmpPath = TestFixture.getTmpPath();
-		if(!fs.existsSync(tmpPath)) {
+		if (!fs.existsSync(tmpPath)) {
 			fs.mkdirSync(tmpPath);
 		}
 	});
@@ -100,7 +100,7 @@ suite('MetaInfo', () => {
 	// Удаляем созданные корреляции.
 	teardown(() => {
 		const tmpPath = TestFixture.getTmpPath();
-		if(fs.existsSync(tmpPath)) {
+		if (fs.existsSync(tmpPath)) {
 			fs.rmdirSync(tmpPath, { recursive: true });
 		}
 	});
