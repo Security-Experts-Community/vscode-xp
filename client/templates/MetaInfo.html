@@ -269,7 +269,8 @@
 			// Получаем источники данных
 			const dataSourceElements = Array.from(document.getElementsByName('dataSource'));
 
-			const dataSources = dataSourceElements.map(ds => {
+			var dataSourcesAsDict = {};
+			dataSourceElements.map(ds => {
 				const providerElement = ds.querySelector("[name='provider']");
 				if (!providerElement) {
 					console.log("Ошибка получения провайдера.")
@@ -285,8 +286,17 @@
 				const eventIdString = eventIdsElement.value;
 				const eventIds = eventIdString.split(',').map(eid => eid.trim());
 
-				return { "Provider": providerName, "EventID": eventIds };
+				if (!(providerName in dataSourcesAsDict)) {
+					dataSourcesAsDict[providerName] = [];
+				}
+
+				dataSourcesAsDict[providerName] = dataSourcesAsDict[providerName].concat(eventIds);
 			});
+
+			var dataSources = [];
+			for (var k in dataSourcesAsDict) {
+				dataSources.push({ 'Provider': k, 'EventID': dataSourcesAsDict[k] });
+			}
 
 			// Преобразум атаки по MITRE.
 			const attackElements = Array.from(document.getElementsByName('attack'));
