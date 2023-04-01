@@ -9,7 +9,7 @@ event Event:
         and filter::CheckWL_Linux_Process_Creation("Unix_Execve", )
     }
 
-rule Linux_Execve: Event
+rule Unix_Execve: Event
 
     init {
         $labels = "w_auto|CheckWL_Linux_Process_Creation"
