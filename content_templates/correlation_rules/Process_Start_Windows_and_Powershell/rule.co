@@ -68,6 +68,7 @@ rule Process_Start_Windows_and_Powershell: Process_Start or Powershell_Pipeline_
         $object.process.meta = object.process.meta
         $object.process.original_name = object.process.original_name
         $object.process.cwd = object.process.cwd
+        $object.process.chain = object.process.chain
 
         $object.process.parent.id = object.process.parent.id
         $object.process.parent.name = object.process.parent.name
