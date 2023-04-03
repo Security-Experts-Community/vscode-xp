@@ -45,7 +45,7 @@ rule Unix_Execve: Event
         $datafield4 = datafield4
         $datafield5 = datafield5
         
-        $numfield2 = numfield2		
+        $numfield2 = numfield2
                 
         $event_src.ip = event_src.ip
         $event_src.hostname = event_src.hostname
