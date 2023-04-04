@@ -23,7 +23,7 @@ export class ImportanceAndSeverityValidator extends IValidator {
 		
 		const text = textDocument.getText();
 
-		// Получаем значение importance.
+		// Получаем значение $importance
 		const importanceRegExp = /\$importance\s*=\s*"(\S+?)"/gm;
 		const importanceResult = importanceRegExp.exec(text);
 		if(!importanceResult) {
@@ -36,7 +36,7 @@ export class ImportanceAndSeverityValidator extends IValidator {
 
 		const importanceValue = importanceResult[1];
 
-		// Получаем значение importance.
+		// Получаем значение $incident.severity
 		const severityRegExp = /\$incident\.severity\s*=\s*"(\S+?)"/gm;
 		const severityResult = severityRegExp.exec(text);
 		if(!severityResult) {
@@ -49,7 +49,7 @@ export class ImportanceAndSeverityValidator extends IValidator {
 
 		const severityValue = severityResult[1];
 
-		// Либо значений совпадают, либо incident.severity переприсваивается от importance
+		// Либо значений совпадают, либо incident.severity переприсваивается от $importance
 		if(importanceValue === severityValue || severityValue === "$importance") {
 			return [];
 		}
