@@ -155,7 +155,7 @@ export class TestHelper {
 			const formatedEvent = comNormEventResult[0];
 			let compressedEvent = formatedEvent
 				.replace(/^[ \t]+/gm, "")
-				.replace(/":\s*/gm, "\": ")
+				.replace(/":\s+/gm, "\": ")
 				.replace(/,\r\n/gm, ", ")
 				.replace(/,\n/gm, ", ");
 
