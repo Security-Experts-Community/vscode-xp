@@ -25,9 +25,9 @@
 	<div id="header">
 		<div id="navigation">
 			<input id="name" type="text" value="{{Name}}" title="{{Name}}" pattern="[A-Z][a-zA-Z0-9_]+">
-			<p>Cоздано: {{Created}} </p>
-			<p>Обновлено: {{Updated}} </p>
-			<p>ID: {{ObjectId}} </p>
+			<p>Cоздано: {{FormattedCreated}}</p>
+			<p>Обновлено: {{FormattedUpdated}}</p>
+			<p>ID: {{ObjectId}}</p>
 		</div>
 
 		<input class="save" name="saveMetainfo" onclick="saveMetaInfo()" type="button" value="Сохранить">
@@ -75,14 +75,6 @@
 					<input id="Updated" readonly type="text" value="{{Updated}}" title="{{Updated}}">
 				</td>
 			</tr>
-
-			<tr class="service">
-				<td class="labels">Origin</td>
-				<td>
-					<input id="Origin" type="text" value="{{Origin}}" title="{{Origin}}">
-				</td>
-			</tr>
-
 			<tr>
 				<td class="labels">Сценарий использования</td>
 				<td>
@@ -147,11 +139,15 @@
 				<td class="labels">Источники данных</td>
 				<td>
 					{{#DataSources}}
-					<div name='dataSource' class="complex">
-						<input name="provider" type="text" value="{{Provider}}" list="providers" required />
-						<input name="eventID" type="text" value="{{EventID}}" title="{{EventID}}" required>
+					<div>
+						{{#EventID}}
+						<div name='dataSource' class="complex">
+							<input name="provider" type="text" value="{{Provider}}" list="providers" required />
+							<input name="eventID" type="text" value="{{.}}" title="{{.}}" required>
 
-						<input class="delete" type="button" value="-" title="-" onclick="deleteValue(this)">
+							<input class="delete" type="button" value="-" title="-" onclick="deleteValue(this)">
+						</div>
+						{{/EventID}}
 					</div>
 					{{/DataSources}}
 					<input class="add_value" type="button" value="+" onclick="addDataSourceComplexValue(this)">
@@ -187,15 +183,6 @@
 					</div>
 					{{/ATTACK}}
 					<input class="add_value" type="button" value="+" onclick="addAttackComplexValue(this)">
-				</td>
-			</tr>
-
-			<tr class="service">
-				<td class="labels">Тег {{tagsIndex}}</td>
-				<td>
-					{{#Tags}}
-					<input name="tag" type="text" value="{{.}}" title="{{.}}">
-					{{/Tags}}
 				</td>
 			</tr>
 		</table>
@@ -256,7 +243,6 @@
 			const newObjectId = document.getElementById("ObjectId")?.value;
 			const newCreated = document.getElementById("Created")?.value;
 			const newUpdated = document.getElementById("Updated")?.value;
-			const newOrigin = document.getElementById("Origin")?.value;
 
 			const usecases = inputsNameToArray("usecase");
 			const knowledgeHolders = inputsNameToArray("knowledgeHolder");
@@ -264,7 +250,6 @@
 			const improvements = inputsNameToArray("improvement");
 
 			const references = inputsNameToArray("reference");
-			const tags = inputsNameToArray("tag");
 
 			// Получаем источники данных
 			const dataSourceElements = Array.from(document.getElementsByName('dataSource'));
@@ -344,14 +329,12 @@
 					'ObjectId': newObjectId,
 					'Created': newCreated,
 					'Updated': newUpdated,
-					'Origin': newOrigin,
 
 					'Usecases': usecases,
 					'KnowledgeHolders': knowledgeHolders,
 					'Falsepositives': falsepositives,
 					'Improvements': improvements,
 					'References': references,
-					'Tags': tags,
 
 					'DataSources': dataSources,
 					'ATTACK': attacks,

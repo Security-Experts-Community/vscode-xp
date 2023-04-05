@@ -7,7 +7,7 @@ import { DateHelper } from '../../helpers/dateHelper';
 import { DataSource } from './dataSource';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { JsHelper } from '../../helpers/jsHelper';
-import { ParseException } from '../ParseException';
+import { ParseException } from '../parseException';
 import { YamlHelper } from '../../helpers/yamlHelper';
 
 export class MetaInfo {
@@ -80,7 +80,6 @@ export class MetaInfo {
 			metaInfo.addEventDescriptions(eventDescriptions);
 		}
 
-		metaInfo.setOrigin(metaDict.Origin);
 		metaInfo.setObjectId(metaInfoAsInFile.ObjectId);
 
 		if (metaDict.KnowledgeHolders) {
@@ -148,6 +147,7 @@ export class MetaInfo {
 
 	public setCreatedDate(date: Date): void {
 		this.Created = date;
+		this.FormattedCreated = DateHelper.dateToString(date);
 	}
 
 	public getCreatedDate(): Date {
@@ -156,6 +156,7 @@ export class MetaInfo {
 
 	public setUpdatedDate(date: Date) {
 		this.Updated = date;
+		this.FormattedUpdated = DateHelper.dateToString(date);
 	}
 
 	public setName(name: string) {
@@ -172,14 +173,6 @@ export class MetaInfo {
 
 	public getObjectId(): string | undefined {
 		return this.ObjectId;
-	}
-
-	public setOrigin(origin: string) {
-		this.Origin = origin;
-	}
-
-	public getOrigin(): string | undefined {
-		return this.Origin;
 	}
 
 	public setUseCases(usecase: string[]) {
@@ -285,24 +278,6 @@ export class MetaInfo {
 		return this.References;
 	}
 
-	public setTags(tags: string[]) {
-		if (!tags) {
-			this.Tags = [];
-			return;
-		}
-
-		if (tags.length == 1 && tags[0] == "") {
-			this.Tags = [];
-			return;
-		}
-
-		this.Tags = tags;
-	}
-
-	public getTags(): string[] {
-		return this.Tags;
-	}
-
 	public getAttacks(): Attack[] {
 		return this.ATTACK;
 	}
@@ -332,18 +307,18 @@ export class MetaInfo {
 			metaInfoFullPath = path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
 		}
 
+		this.setUpdatedDate(new Date());
 
 		// Если дата создания не задана, то будет текущая.
-		const updatedDate = new Date();
 		if (!this.Created) {
-			this.Created = updatedDate;
+			this.setCreatedDate(this.Updated);
 		}
 
 		// Обновляем метаданные на диске известными нам полями, оставляя другие неизменными
 		const metaInfoObject = this._asInFile;
 
 		metaInfoObject.ExpertContext.Created = DateHelper.dateToString(this.Created);
-		metaInfoObject.ExpertContext.Updated = DateHelper.dateToString(updatedDate);
+		metaInfoObject.ExpertContext.Updated = DateHelper.dateToString(this.Updated);
 
 		if (this.Name) {
 			metaInfoObject.ContentAutoName = this.Name;
@@ -354,10 +329,6 @@ export class MetaInfo {
 				this.EventDescriptions.map(function (ed, index) {
 					return { "Criteria": ed.getCriteria(), "LocalizationId": ed.getLocalizationId() };
 				});
-		}
-
-		if (this.Origin) {
-			metaInfoObject.ExpertContext.Origin = this.Origin;
 		}
 
 		if (this.ObjectId) {
@@ -374,10 +345,6 @@ export class MetaInfo {
 
 		if (this.Falsepositives.length != 0) {
 			metaInfoObject.ExpertContext.Falsepositives = this.Falsepositives;
-		}
-
-		if (this.Tags.length != 0) {
-			metaInfoObject.ExpertContext.Tags = this.Tags;
 		}
 
 		if (this.References.length != 0) {
@@ -433,16 +400,16 @@ export class MetaInfo {
 
 	private Created: Date;
 	private Updated: Date;
+	private FormattedCreated: string;
+	private FormattedUpdated: string;
 	private Name: string | undefined = undefined;
 	private ObjectId: string | undefined = undefined;
-	private Origin: string | undefined = undefined;
 
 	private KnowledgeHolders: string[] = [];
 	private Usecases: string[] = [];
 	private References: string[] = [];
 	private Falsepositives: string[] = [];
 	private Improvements: string[] = [];
-	private Tags: string[] = [];
 
 	private DataSources: DataSource[] = [];
 	private ATTACK: Attack[] = [];
