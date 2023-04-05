@@ -6,7 +6,7 @@ import { RuleBaseItem } from './ruleBaseItem';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 
 export class Aggregation extends RuleBaseItem {
-	public rename(newName: string): Promise<void> {
+	public async rename(newName: string): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
 

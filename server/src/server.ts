@@ -21,6 +21,7 @@ import { IValidator } from './IValidator';
 import { WhitelistingAndAlertKeyValidator } from './whitelistingAndAlertkeyValidator';
 import { WhitelistingAndRuleNameValidator } from './whitelistingAndRuleNameValidator';
 import { NestedLowerValidator } from './nestedLowerValidator';
+import { ImportanceAndSeverityValidator } from './importanceAndSeverityValidator';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -38,7 +39,8 @@ connection.onInitialize((params: InitializeParams) => {
 		// TODO: улучшить логику 
 		// new WhitelistingAndAlertKeyValidator(),
 		new WhitelistingAndRuleNameValidator(),
-		new NestedLowerValidator()
+		new NestedLowerValidator(),
+		new ImportanceAndSeverityValidator()
 	);
 
 	const capabilities = params.capabilities;

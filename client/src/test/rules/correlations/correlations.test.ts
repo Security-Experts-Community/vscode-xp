@@ -12,7 +12,18 @@ import { CorrelationUnitTest } from '../../../models/tests/correlationUnitTest';
 
 suite('Корреляции', () => {
 
-	test('Переименование без сохранения на диск', async () => {
+	test('ObjectID остается такой же после переименования', async () => {
+		// Копируем корреляцию во временную директорию.
+		const correlation = Correlation.create("New_correlation");
+		const oldId = correlation.getMetaInfo().getObjectId();
+
+		correlation.rename("New_correlation1");
+		const newId = correlation.getMetaInfo().getObjectId();
+
+		assert.strictEqual(oldId, newId);
+	});
+
+	test('Переименование открытой корреляции без сохранения на диск', async () => {
 		// Копируем корреляцию во временную директорию.
 		const oldRuleName = "Active_Directory_Snapshot";
 		const correlationTmpPath = TestFixture.getCorrelationPath(oldRuleName);

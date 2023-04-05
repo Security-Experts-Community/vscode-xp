@@ -7,14 +7,13 @@ import { CorrelationUnitTest } from '../tests/correlationUnitTest';
 import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { IntegrationTest } from '../tests/integrationTest';
 import { KbTreeBaseItem } from './kbTreeBaseItem';
-import { FileSystemError } from 'vscode';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Configuration } from '../configuration';
 import { YamlHelper } from '../../helpers/yamlHelper';
-import { ContentHelper } from '../../helpers/contentHelper';
 import { ArgumentException } from '../argumentException';
 import { XpException } from '../xpException';
-import { ContentType } from '../../contentType/contentType';
+import { ContentHelper } from '../../helpers/contentHelper';
+import { KbHelper } from '../../helpers/kbHelper';
 
 /**
  * Базовый класс для всех правил.
@@ -45,6 +44,8 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 
 		return path.join(this._parentPath, this.getName());
 	}
+
+	public async rename(newName: string) : Promise<void> {}
 
 	/**
 	 * Возвращает путь к пакету, в котором расположеню правило.

@@ -10,6 +10,17 @@ suite('Обогащение', () => {
 
 	const docUri = getDocUri(path.join('completion', 'completion.en'));
 
+	test('ObjectID остается такой же после переименования', async () => {
+		// Копируем корреляцию во временную директорию.
+		const enrichment = Enrichment.create("New_enrichment");
+		const oldId = enrichment.getMetaInfo().getObjectId();
+
+		enrichment.rename("New_enrichment1");
+		const newId = enrichment.getMetaInfo().getObjectId();
+
+		assert.strictEqual(oldId, newId);
+	});
+
 	test('Наличие автодополнения', async () => {
 		const completions = await testCompletion(docUri, new vscode.Position(0, 0));
 		assert.ok(completions.items.length > 0);

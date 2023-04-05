@@ -42,12 +42,19 @@ export class NestedLowerValidator extends IValidator {
 		
 				// Удаляем элементы синтаксиса регулярок, содержащие большие буквы.
 				let stringLiteral = lowerCallResult[1];
-				stringLiteral = stringLiteral.replace(/(?<!\\)(\\A|\\W|\\B|\\S)/gm, "");
+
+				// Обработаем ситуацию появления ошибки с \System и исключаем \\\\\S в пути.
+				stringLiteral = stringLiteral.replace(/(\\A|\\W|\\B|\\S)(\+|\*|\?|\.|$)+/gm, "");
 
 				for(const char of stringLiteral) {
 					// В литерале есть большая буква, добавляем ошибку.
 					if(this.isUpperCase(char)) {
-						const diagnostic = this.getDiagnostic(lowerCallResult, textDocument);
+						const diagnostic = this.getDiagnostic(
+							lowerCallResult,
+							textDocument,
+							"Данное условие некорректно, так как регистр первого параметра отличается от второго параметра.",
+							DiagnosticSeverity.Error);
+
 						diagnostics.push(diagnostic);
 						break;
 					}
@@ -56,27 +63,6 @@ export class NestedLowerValidator extends IValidator {
 		}
 	
 		return diagnostics;
-	}
-
-	private getDiagnostic(lowerCallResult : RegExpExecArray, textDocument : TextDocument) : Diagnostic {
-		const commonMatch = lowerCallResult[0];
-	
-		// Выделяем всё сравнение как ошибку. 
-		// lower(event_src.subsys) == "Directory Service"
-		const startPosition = lowerCallResult.index;
-		const endPosition = lowerCallResult.index + commonMatch.length;
-
-		const diagnostic: Diagnostic = {
-			severity: DiagnosticSeverity.Error,
-			range: {
-				start: textDocument.positionAt(startPosition),
-				end: textDocument.positionAt(endPosition)
-			},
-			message: "Данное условие некорректно, так как регистр первого параметра отличается от второго параметра.",
-			source: 'xp'
-		};
-
-		return diagnostic;
 	}
 
 	private isUpperCase(char: string) : boolean {

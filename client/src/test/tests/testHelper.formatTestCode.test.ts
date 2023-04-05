@@ -4,6 +4,26 @@ import { TestHelper } from '../../helpers/testHelper';
 
 suite('TestHelper.formatTestCode', async () => {
 
+	test('Корректная обработка localhost ipv6', async () => {
+
+		const compressedTestCode =
+`{"object.value": "name,objectClass,objectGUID", "src.host": "::1", "src.ip": "::1", "src.port": 1198}`;
+
+		const formatedTestCode = TestHelper.formatTestCodeAndEvents(compressedTestCode);
+		const lines = formatedTestCode.split("\n");
+
+		assert.strictEqual(lines.length, 6);
+	});
+
+	test('Неизменность одного текстого события при форматировании', async () => {
+
+		const textEvent = `2022-07-20 07:03:38 W3SVC2 mail-srv 10.0.2.216 POST /Microsoft-Server-ActiveSync/Proxy/default.eas User=user@domain.com&DeviceId=00000000000000000000000001&DeviceType=iPhone&Cmd=Ping&Log=SC1:1_PrxFrom:10.20.52.208_Ver1:161_HH:mail.domain.com_SmtpAdrs:user%40domain.com_Hb:600_Rto:2_Cpo:656_Fet:600000_Mbx:mail-srv.domain.ru_Cafe:DC2-MBX-03.domain.RU_Dc:dc-srv.domain.ru_Throttle:0_SBkOffD:L%2f-470_TmRcv:06:53:38.4480003_TmSt:06:53:38.4519947_TmFin:06:53:38.4519947_TmCmpl:07:03:38.440522_TmCnt:07:03:37.7834641_Budget:(A)Owner%3aS-1-5-21-1023191730-727829927-3110000192-14176%5F00000000000000000000000001%5FiPhone%2cConn%3a0%2cMaxConn%3a10%2cMaxBurst%3a480000%2cBalance%3a480000%2cCutoff%3a600000%2cRechargeRate%3a1800000%2cPolicy%3aGlobalThrottlingPolicy%5F5c9d3d31-7f05-4e14-b8f8-05780608b52f%2cIsServiceAccount%3aFalse%2cLiveTime%3a00%3a00%3a30.6952647%3b(D)Owner%3aS-1-5-21-1023191730-727829927-3110000192-14176%5F00000000000000000000000001%5FiPhone%2cConn%3a0%2cMaxConn%3a10%2cMaxBurst%3a480000%2cBalance%3a480000%2cCutoff%3a600000%2cRechargeRate%3a1800000%2cPolicy%3aGlobalThrottlingPolicy%5F5c9d3d31-7f05-4e14-b8f8-05780608b52f%2cIsServiceAccount%3aFalse%2cLiveTime%3a00%3a00%3a00.6580618_ActivityContextData:ActivityID%3d0483abd0-f1d6-44e7-bfe8-e951e242b7bd%3bI32%3aADS.C%5bdc-srv%5d%3d1%3bF%3aADS.AL%5bdc-srv%5d%3d1.62791%3bI32%3aATE.C%5bdc-srv.domain.com%5d%3d1%3bF%3aATE.AL%5bdc-srv.domain.com%5d%3d0%3bS%3aWLM.Bal%3d480000%3bS%3aWLM.BT%3dEas_ 444 domain\\user 10.0.12.18 HTTP/1.1 Apple-iPhone11C6/1905.258 - - mail-srv.domain.com:444 200 0 0 600013 9.9.5.1,+10.0.11.6,+10.23.2.39,10.40.59.96`;
+
+		const formatedTestCode = TestHelper.formatTestCodeAndEvents(textEvent);
+		assert.strictEqual(formatedTestCode, textEvent);
+	});
+
+
 	test('Корректное выделение нормализованного события из кода теста', async () => {
 
 		const compressedTestCode =

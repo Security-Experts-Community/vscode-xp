@@ -9,7 +9,7 @@ event Event:
         and filter::CheckWL_Linux_Process_Creation("Unix_Execve", )
     }
 
-rule Linux_Execve: Event
+rule Unix_Execve: Event
 
     init {
         $labels = "w_auto|CheckWL_Linux_Process_Creation"
@@ -45,7 +45,7 @@ rule Linux_Execve: Event
         $datafield4 = datafield4
         $datafield5 = datafield5
         
-        $numfield2 = numfield2		
+        $numfield2 = numfield2
                 
         $event_src.ip = event_src.ip
         $event_src.hostname = event_src.hostname

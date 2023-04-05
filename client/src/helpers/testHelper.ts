@@ -65,7 +65,12 @@ export class TestHelper {
 			const lineNumber = d.range.start.line;
 			const errorLine = lines[lineNumber];
 
-			const firstNonWhitespaceCharacterIndex = errorLine.search(/\w/);
+			const firstNonWhitespaceCharacterIndex = errorLine.search(/[^\s]/);
+			// Если не удалось скорректировать, тогда возвращем как ест.
+			if(firstNonWhitespaceCharacterIndex === -1) {
+				return d;
+			}
+
 			d.range = new vscode.Range(
 				new vscode.Position(d.range.start.line, firstNonWhitespaceCharacterIndex),
 				d.range.end);
@@ -150,7 +155,7 @@ export class TestHelper {
 			const formatedEvent = comNormEventResult[0];
 			let compressedEvent = formatedEvent
 				.replace(/^[ \t]+/gm, "")
-				.replace(/":\s*/gm, "\": ")
+				.replace(/":\s+/gm, "\": ")
 				.replace(/,\r\n/gm, ", ")
 				.replace(/,\n/gm, ", ");
 

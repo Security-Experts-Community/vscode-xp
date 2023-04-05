@@ -43,6 +43,12 @@ rule Unix_OpenOpenat: Event
         $object.id = object.id
         $object.type = object.type
         $object.state = object.state
+
+        $datafield1 = datafield1  # Executable Name
+        $datafield2 = datafield2  # Owner User Name
+        $datafield3 = datafield3  # File Access Mode
+
+        $numfield2 = numfield2  # Owner User ID
                 
         $event_src.ip = event_src.ip
         $event_src.hostname = event_src.hostname

@@ -5,7 +5,7 @@ event Process_Start:
         filter::NotFromCorrelator()
         and filter::ProcessStart_Windows_any()
         # and filter::and filter::ProcessStart_Windows_commandline("process_name", "regex_value")
-        # and filter::ProcessStart_Windows("prcoess_name")
+        # and filter::ProcessStart_Windows("process_name")
         and filter::CheckWL_Process_Creation("Process_Start_Windows", )
     }
 
@@ -40,6 +40,7 @@ rule Process_Start_Windows: Process_Start
         $object.process.meta = object.process.meta
         $object.process.original_name = object.process.original_name
         $object.process.cwd = object.process.cwd
+        $object.process.chain = object.process.chain
 
         $object.process.parent.id = object.process.parent.id
         $object.process.parent.name = object.process.parent.name

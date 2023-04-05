@@ -13,7 +13,7 @@ suite('Проверки логики использования функции l
 		assert.ok(actualDiagnostics.length == 0);
 	});
 	
-	test('regex(lower(datafield3), "upn=(.*?)@", 1) != lower(subject.name)', async () => {
+	test('regex(lower(datafield3), "UPN=(.*?)@", 1) != lower(subject.name)', async () => {
 		const docUri = TestFixture.getValidationUri('regex_lower_errro.co');
 		await activate(docUri);
 
