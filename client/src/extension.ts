@@ -89,9 +89,9 @@ export async function activate(context: ExtensionContext) {
 
 	YamlHelper.configure(
 		{
-			lineWidth : -1,
-			indent : 2,
-			noArrayIndent : true
+			lineWidth: -1,
+			indent: 4,
+			noArrayIndent: true
 		}
 	);
 
@@ -105,7 +105,7 @@ export async function activate(context: ExtensionContext) {
 	TableListsEditorViewProvider.init(config);
 	SetContentTypeCommand.init(config);
 	InitKBRootCommand.init(config);
-	
+
 	// Расширение нативного контекстого меню.
 	TestsFormatContentMenuExtention.init(context);
 

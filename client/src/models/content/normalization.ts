@@ -12,7 +12,7 @@ export class Normalization extends RuleBaseItem {
 		throw new Error('Method not implemented.');
 	}
 
-	public async save(fullPath: string) : Promise<void> {
+	public async save(fullPath: string): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
 
@@ -22,12 +22,12 @@ export class Normalization extends RuleBaseItem {
 	protected _directoryPath: string;
 	protected _normalizationPath: string;
 
-	private constructor(name: string, parentDirectoryPath? : string) {
+	private constructor(name: string, parentDirectoryPath?: string) {
 		super(name, parentDirectoryPath);
 		this.setRuleFileName("formula.xp");
 	}
 
-	public static async parseFromDirectory(directoryPath: string, fileName?: string) : Promise<Normalization> {
+	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Normalization> {
 
 		// Получаем имя корреляции и родительский путь.
 		const name = path.basename(directoryPath);
@@ -37,12 +37,12 @@ export class Normalization extends RuleBaseItem {
 
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
-		if (fileName){
-			normalization.setRuleFileName(fileName);			
+		if (fileName) {
+			normalization.setRuleFileName(fileName);
 		}
 
 		// Парсим основные метаданные.
-		const metaInfo = MetaInfo.parseFromFile(directoryPath);
+		const metaInfo = MetaInfo.fromFile(directoryPath);
 		normalization.setMetaInfo(metaInfo);
 
 		// Парсим описания на разных языках.
@@ -56,15 +56,15 @@ export class Normalization extends RuleBaseItem {
 		normalization.updateLocalizations(localization);
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
-		normalization.setCommand({ 
-			command: ContentTreeProvider.onRuleClickCommand,  
-			title: "Open File", 
-			arguments: [normalization] 
+		normalization.setCommand({
+			command: ContentTreeProvider.onRuleClickCommand,
+			title: "Open File",
+			arguments: [normalization]
 		});
 
 		return normalization;
 	}
- 
+
 	iconPath = {
 		light: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'light', 'rule.svg'),
 		dark: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'dark', 'rule.svg')

@@ -7,13 +7,13 @@ import { Configuration } from '../models/configuration';
 import { CompleteSignature } from './signature/completeSignature';
 import { TaxonomyHelper } from '../helpers/taxonomyHelper';
 import { ExtensionHelper } from '../helpers/extensionHelper';
-	
+
 /**
  * Позволяет сформировать необходимые списки автодополнения одинаковые для всех типов контента.
  */
 export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 
-	constructor(private _completionItems: vscode.CompletionItem []) {
+	constructor(private _completionItems: vscode.CompletionItem[]) {
 	}
 
 	/**
@@ -21,28 +21,28 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 	 * @param context контекст расширения
 	 * @returns возвращает настроеннный провайдер.
 	 */
-	public static async init(context : vscode.ExtensionContext, configuration: Configuration) : Promise<XpCompletionItemProvider> {
+	public static async init(context: vscode.ExtensionContext, configuration: Configuration): Promise<XpCompletionItemProvider> {
 
-		let autocompleteSignatures : vscode.CompletionItem [] = [];
+		let autocompleteSignatures: vscode.CompletionItem[] = [];
 
 		// Считываем автодополнение функций.
 		const signaturesFilePath = path.join(context.extensionPath, "syntaxes", "co.signature.json");
 		try {
 			const signaturesFileContent = await FileSystemHelper.readContentFile(signaturesFilePath);
 			const functionSignaturesPlain = JSON.parse(signaturesFileContent);
-	
-			if(functionSignaturesPlain) {
-				const functionsSignatures = 
+
+			if (functionSignaturesPlain) {
+				const functionsSignatures =
 					Array.from(functionSignaturesPlain)
 						.map(s => classTransformer.plainToInstance(CompleteSignature, s))
 						.map(s => new vscode.CompletionItem(s.name, vscode.CompletionItemKind.Function));
-	
+
 				autocompleteSignatures = autocompleteSignatures.concat(functionsSignatures);
 			} else {
 				console.warn("Не было считано ни одного описания функций.");
 			}
 		}
-		catch(error) {
+		catch (error) {
 			ExtensionHelper.showError(`Ошибка считывания описания функций языка XP. Их автодополнение и описание параметров работать не будет. Возможно поврежден файл '${signaturesFilePath}'.`, error);
 		}
 
@@ -51,12 +51,12 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 			const taxonomySignatures = await TaxonomyHelper.getTaxonomyCompletions(configuration);
 			autocompleteSignatures = autocompleteSignatures.concat(taxonomySignatures);
 
-			if(taxonomySignatures.length == 0) {
+			if (taxonomySignatures.length == 0) {
 				console.warn("Не было считано ни одного описания функций.");
 			}
 		}
-		catch(error) {
-			console.warn(`Ошибка считывания описания описания полей таксономии. Их автодополнение работать не будет. Возможно поврежден файл '${signaturesFilePath}'.`);
+		catch (error) {
+			ExtensionHelper.showError(`Ошибка считывания описания описания полей таксономии. Их автодополнение работать не будет. Возможно поврежден файл '${signaturesFilePath}'.`, error);
 		}
 
 		try {
@@ -84,17 +84,17 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 				"insert_into", "remove_from", "clear_table",
 
 				// обогащение
-				"enrichment", "enrich", "enrich_fields"  
+				"enrichment", "enrich", "enrich_fields"
 			]
-			.map(k => new vscode.CompletionItem(k, vscode.CompletionItemKind.Keyword));
+				.map(k => new vscode.CompletionItem(k, vscode.CompletionItemKind.Keyword));
 
 			autocompleteSignatures = autocompleteSignatures.concat(keywords);
 
-			if(keywords.length == 0) {
+			if (keywords.length == 0) {
 				console.warn("Не было считано ни одного описания функций.");
 			}
 		}
-		catch(error) {
+		catch (error) {
 			console.warn("Ошибка при считывании." + error.message);
 		}
 
@@ -102,9 +102,9 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 	}
 
 	public provideCompletionItems(
-		document : vscode.TextDocument,
-		position : vscode.Position,
-		token : vscode.CancellationToken,
+		document: vscode.TextDocument,
+		position: vscode.Position,
+		token: vscode.CancellationToken,
 		context) {
 
 		return this._completionItems;

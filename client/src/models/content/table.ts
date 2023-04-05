@@ -12,19 +12,19 @@ export class Table extends RuleBaseItem {
 	public async rename(newName: string): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
-	
-	public async save(fullPath: string) : Promise<void> {
+
+	public async save(fullPath: string): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
 
-	private constructor(name: string, parentDirectoryPath? : string) {
+	private constructor(name: string, parentDirectoryPath?: string) {
 		super(name, parentDirectoryPath);
 		this.setRuleFileName("table.tl");
 	}
 
-	public static async parseFromDirectory(directoryPath: string, fileName?: string) : Promise<Table> {
+	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Table> {
 
-		if(!fs.existsSync(directoryPath)) {
+		if (!fs.existsSync(directoryPath)) {
 			throw new Error(`Директория '${directoryPath}' не существует.`);
 		}
 
@@ -33,40 +33,40 @@ export class Table extends RuleBaseItem {
 		const parentDirectoryPath = path.dirname(directoryPath);
 
 		const table = new Table(name, parentDirectoryPath);
-				
+
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
-		if (fileName){
-			table.setRuleFileName(fileName);			
+		if (fileName) {
+			table.setRuleFileName(fileName);
 		}
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
-		table.setCommand({ 
-			command: ContentTreeProvider.onRuleClickCommand,  
-			title: "Open File", 
-			arguments: [table] 
+		table.setCommand({
+			command: ContentTreeProvider.onRuleClickCommand,
+			title: "Open File",
+			arguments: [table]
 		});
 
 		return table;
 	}
 
-	public static create(directoryPath: string, fileName?: string) : Table {
+	public static create(directoryPath: string, fileName?: string): Table {
 		const table = new Table(directoryPath);
 
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
-		if (fileName){
-			table.setRuleFileName(fileName);			
+		if (fileName) {
+			table.setRuleFileName(fileName);
 		}
 
 		// Парсим основные метаданные.
-		const metaInfo = MetaInfo.parseFromFile(directoryPath);
+		const metaInfo = MetaInfo.fromFile(directoryPath);
 		table.setMetaInfo(metaInfo);
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
-		table.setCommand({ 
+		table.setCommand({
 			command: ContentTreeProvider.onRuleClickCommand,
-			title: "Open File", 
+			title: "Open File",
 			arguments: [table]
 		});
 
