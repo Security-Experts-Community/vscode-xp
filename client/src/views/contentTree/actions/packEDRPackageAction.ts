@@ -72,9 +72,9 @@ export class PackEDRPackageAction {
 				}
 
 				// Проверка наличия скрипта сборки архива graphs.zip
-				const edrPackagerScript = path.join(this.config.getBuildToolsDirectoryFullPath(), "soldr-build", "gen_correlator_config.py");
-				if(!fs.existsSync(edrPackagerScript)) {
-					throw new Error(`Путь к скрипту сборки graphs.zip задан не верно: ${edrPackagerScript}`);
+				const edrPackager = path.join(this.config.getBuildToolsDirectoryFullPath(), "soldr-build", "gen_correlator_config.exe");
+				if(!fs.existsSync(edrPackager)) {
+					throw new Error(`Путь к скрипту сборки graphs.zip задан не верно: ${edrPackager}`);
 				}
 
 				/** Типовая команда выглядит так:
@@ -88,10 +88,10 @@ export class PackEDRPackageAction {
 				const crdir = `--crdir ${this.config.getOutputDirectoryPath(packageName)}`;
 				const taxonomy = `--taxonomy ${this.config.getTaxonomyFullPath()}`;
 				const metainfo = `--metainfo ${metainfoPath}`;
-				const command = `python.exe ${edrPackagerScript} ${mvdir} ${crdir} ${taxonomy} ${metainfo}`;
+				const command = `${edrPackager} ${mvdir} ${crdir} ${taxonomy} ${metainfo}`;
 				
 				outputChannel.appendLine(`XP :: Run command: ${command}`);
-				const output = ProcessHelper.readProcessArgsOutputSync(`python.exe ${edrPackagerScript}`, [mvdir, crdir, taxonomy, metainfo], 'utf-8');
+				const output = ProcessHelper.readProcessArgsOutputSync(`${edrPackager}`, [mvdir, crdir, taxonomy, metainfo], 'utf-8');
 				outputChannel.appendLine(output);
 				
 				if(output.includes("done")) {
@@ -157,9 +157,9 @@ export class PackEDRAllPackagesAction implements PackAction {
 		}
 
 		// Проверка наличия скрипту сборки graphs.zip
-		const edrPackagerScript = path.join(this.config.getBuildToolsDirectoryFullPath(), "soldr-build", "gen_correlator_config.py");
-		if(!fs.existsSync(edrPackagerScript)) {
-			ExtensionHelper.showUserError(`Путь к скрипту сборки graphs.zip задан не верно: ${edrPackagerScript}`);
+		const edrPackager = path.join(this.config.getBuildToolsDirectoryFullPath(), "soldr-build", "gen_correlator_config.exe");
+		if(!fs.existsSync(edrPackager)) {
+			ExtensionHelper.showUserError(`Путь к скрипту сборки graphs.zip задан не верно: ${edrPackager}`);
 			return;
 		}
 
@@ -179,11 +179,11 @@ export class PackEDRAllPackagesAction implements PackAction {
 				const taxonomy = `--taxonomy ${this.config.getTaxonomyFullPath()}`;
 				const metainfo = `--metainfo ${metainfoPath}`;
 
-				const command = `python.exe ${edrPackagerScript} ${mvdir} ${crdir} ${taxonomy} ${metainfo}`;
+				const command = `${edrPackager} ${mvdir} ${crdir} ${taxonomy} ${metainfo}`;
 
 				emitter.fire(`\r\nXP:: Run command: ${command}\r\n`);
 
-				const output = ProcessHelper.readProcessArgsOutputSync(`python.exe ${edrPackagerScript}`, [mvdir, crdir, taxonomy, metainfo], 'utf-8');
+				const output = ProcessHelper.readProcessArgsOutputSync(`${edrPackager}`, [mvdir, crdir, taxonomy, metainfo], 'utf-8');
 				
 				emitter.fire(`\r\nXP:: Command output:\n${output.trim()}\n\n`);
 
