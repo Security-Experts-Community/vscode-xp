@@ -1,6 +1,5 @@
 import * as path from "path";
 import * as fs from 'fs';
-import * as crc32 from 'crc-32';
 
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { Localization } from './localization';
@@ -138,20 +137,20 @@ export class Correlation extends RuleBaseItem {
 
 		// Переименовываем директорию с правилом
 		const parentDirectoryPath = this.getParentPath();
-		const newRuleDirectoryPath = path.join(parentDirectoryPath, newRuleName);
 
-		// Переименовываем в коде правила.
-		const ruleCode = await this.getRuleCode();
-		const newRuleCode = ContentHelper.replaceAllCorrelantionNameWithinCode(newRuleName, ruleCode);
-		this.setRuleCode(newRuleCode);
+		let newRuleDirectoryPath : string;
+		if(parentDirectoryPath && fs.existsSync(parentDirectoryPath)) {
+			newRuleDirectoryPath = path.join(parentDirectoryPath, newRuleName);
+
+			// Переименовываем в коде правила.
+			const ruleCode = await this.getRuleCode();
+			const newRuleCode = ContentHelper.replaceAllCorrelantionNameWithinCode(newRuleName, ruleCode);
+			this.setRuleCode(newRuleCode);
+		}
 
 		// В метаинформации.
 		const metainfo = this.getMetaInfo();
 		metainfo.setName(newRuleName);
-
-		const contentPrefix = Configuration.get().getContentPrefix();
-		const objectId = KbHelper.generateRuleObjectId(newRuleName, contentPrefix);
-		metainfo.setObjectId(objectId);
 
 		// Замена в критериях.
 		this.getMetaInfo().getEventDescriptions().forEach(ed => {
@@ -194,6 +193,7 @@ export class Correlation extends RuleBaseItem {
 		// Имя правила.
 		this.setName(newRuleName);
 	}
+
 
 	iconPath = {
 		light: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'light', 'rule.svg'),

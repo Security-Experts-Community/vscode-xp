@@ -4,8 +4,6 @@ import * as fs from "fs";
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
-import { KbTreeBaseItem } from './kbTreeBaseItem';
-import { fstat } from 'fs';
 import { RuleBaseItem } from './ruleBaseItem';
 
 export enum ContentFolderType {
@@ -21,7 +19,7 @@ export enum ContentFolderType {
 
 export class ContentFolder extends RuleBaseItem {
 
-	public rename(newName: string): Promise<void> {
+	public async rename(newName: string): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
 

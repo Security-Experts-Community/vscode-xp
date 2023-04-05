@@ -20,7 +20,7 @@
 			"    }"
 		]
 	},
-	"event Process_Creation": {
+	"event Windows_Process_Creation": {
 		"prefix": ["event Process_Creation", "msgid == \"1\""],
 		"body": [
 			"event ${1:eventName}:",
@@ -93,7 +93,7 @@
 			""
 		]
 	},
-	"event Registry_Actions": {
+	"event Windos_Registry_Actions": {
 		"prefix": ["event Registry_Actions", "msgid == \"13\""],
 		"body": [
 			"event ${1:eventName}:",
@@ -258,7 +258,7 @@
 			"        \\$datafield3 = datafield3  # File Access Mode",
 			"",
 			"        \\$numfield2 = numfield2  # Owner User ID",
-			"                ",
+			"",
 			"        \\$event_src.ip = event_src.ip",
 			"        \\$event_src.hostname = event_src.hostname",
 			"        \\$event_src.fqdn = event_src.fqdn",
@@ -269,8 +269,8 @@
 			"        \\$event_src.vendor = event_src.vendor",
 			"        \\$event_src.category = event_src.category",
 			"        \\$event_src.rule = event_src.rule",
-			"               ",
-			"        \\$alert.key =           ",
+			"",
+			"        \\$alert.key =",
 			"        \\$alert.context = ",
 			"    }"
 		]

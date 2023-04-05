@@ -6,11 +6,11 @@ import { RuleBaseItem } from './ruleBaseItem';
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { CorrelationUnitTest } from '../tests/correlationUnitTest';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
-import { IntegrationTest } from '../tests/integrationTest';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Configuration } from '../configuration';
 import { KbHelper } from '../../helpers/kbHelper';
+import { IntegrationTest } from '../tests/integrationTest';
 import { ContentHelper } from '../../helpers/contentHelper';
 
 /**
@@ -38,6 +38,70 @@ export class Enrichment extends RuleBaseItem {
 		await this.getMetaInfo().save(directoryFullPath);
 		await this.saveLocalizationsImpl(directoryFullPath);
 		await this.saveIntegrationTest();
+	}
+
+	public async rename(newRuleName: string): Promise<void> {
+
+		// Старые значения.
+		const oldRuleName = this.getName();
+
+		// Переименовываем директорию с правилом
+		const parentDirectoryPath = this.getParentPath();
+
+		let newRuleDirectoryPath : string;
+		if(parentDirectoryPath && fs.existsSync(parentDirectoryPath)) {
+			newRuleDirectoryPath = path.join(parentDirectoryPath, newRuleName);
+
+			// Переименовываем в коде правила.
+			const ruleCode = await this.getRuleCode();
+			const newRuleCode = ContentHelper.replaceAllCorrelantionNameWithinCode(newRuleName, ruleCode);
+			this.setRuleCode(newRuleCode);
+		}
+
+		// В метаинформации.
+		const metainfo = this.getMetaInfo();
+		metainfo.setName(newRuleName);
+
+		// Замена в критериях.
+		this.getMetaInfo().getEventDescriptions().forEach(ed => {
+			const criteria = ed.getCriteria();
+			const newCriteria = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, criteria);
+			ed.setCriteria(newCriteria);
+
+			const localizationId = ed.getLocalizationId();
+			const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, localizationId);
+			ed.setLocalizationId(newLocalizationId);
+		});
+
+		// Замена в тестах.
+		this.getIntegrationTests().forEach( 
+			it => {
+				it.setRuleDirectoryPath(newRuleDirectoryPath);
+				const testCode = it.getTestCode();
+				const newTestCode = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testCode);
+				it.setTestCode(newTestCode);
+			}
+		);
+
+		this.getModularTests().forEach( 
+			it => {
+				it.setRuleDirectoryPath(newRuleDirectoryPath);
+				const testCode = it.getTestCode();
+				const newTestCode = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testCode);
+				it.setTestCode(newTestCode);
+			}
+		);
+
+		this.getLocalizations().forEach( 
+			loc => {
+				const localizationId = loc.getLocalizationId();
+				const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, localizationId);
+				loc.setLocalizationId(newLocalizationId);
+			}
+		);
+
+		// Имя правила.
+		this.setName(newRuleName);
 	}
 
 	private constructor(name: string, parentDirectoryPath? : string) {
@@ -105,62 +169,6 @@ export class Enrichment extends RuleBaseItem {
 		return enrichment;
 	}
 
-	public async rename(newRuleName: string): Promise<void> {
-
-		// Старые значения.
-		const oldRuleName = this.getName();
-
-		// Переименовываем директорию с правилом
-		const parentDirectoryPath = this.getParentPath();
-		const newRuleDirectoryPath = path.join(parentDirectoryPath, newRuleName);
-
-		// Переименовываем в коде правила.
-		const ruleCode = await this.getRuleCode();
-		const newRuleCode = ContentHelper.replaceAllEnrichmentNameWithinCode(newRuleName, ruleCode);
-		this.setRuleCode(newRuleCode);
-
-		// В метаинформации.
-		const metainfo = this.getMetaInfo();
-		metainfo.setName(newRuleName);
-
-		const contentPrefix = Configuration.get().getContentPrefix();
-		const objectId = KbHelper.generateRuleObjectId(newRuleName, contentPrefix);
-		metainfo.setObjectId(objectId);
-
-		// Замена в критериях.
-		this.getMetaInfo().getEventDescriptions().forEach(ed => {
-			const criteria = ed.getCriteria();
-			const newCriteria = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, criteria);
-			ed.setCriteria(newCriteria);
-
-			const localizationId = ed.getLocalizationId();
-			const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, localizationId);
-			ed.setLocalizationId(newLocalizationId);
-		});
-
-		// Замена в тестах.
-		this.getIntegrationTests().forEach( 
-			it => {
-				it.setRuleDirectoryPath(newRuleDirectoryPath);
-				const testCode = it.getTestCode();
-				const newTestCode = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testCode);
-				it.setTestCode(newTestCode);
-			}
-		);
-
-		this.getModularTests().forEach( 
-			it => {
-				it.setRuleDirectoryPath(newRuleDirectoryPath);
-				const testCode = it.getTestCode();
-				const newTestCode = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testCode);
-				it.setTestCode(newTestCode);
-			}
-		);
-
-		// Обновление имени правила.
-		this.setName(newRuleName);
-	}
- 
 	iconPath = {
 		light: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'light', 'rule.svg'),
 		dark: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'dark', 'rule.svg')
