@@ -30,7 +30,7 @@ export class YamlHelper {
 			{
 				'parser': 'yaml',
 				'tabWidth': this.dumpOptions.indent,
-				'maxLineLength': this.dumpOptions.lineWidth,
+				// 'maxLineLength': this.dumpOptions.lineWidth,
 			}
 		);
 	}
