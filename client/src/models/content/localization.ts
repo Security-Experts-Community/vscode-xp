@@ -105,15 +105,17 @@ export class Localization {
 					console.warn("Не задан EventDescription в метаинформации.");
 				}
 				localization.setRuLocalizationText(ruEdp.EventDescription);
-				
 				localization.setRuDescription(ruDescription);
 
 				const enEventDescription = enEventDescriptionsObject.find(enEdp => enEdp.LocalizationId == ruEdp.LocalizationId);
-				if(!enEventDescription) {
-					throw new Error("Для русской локализации не найден соответсвую английская по localizationId.");
+
+				// Если нет английской локализации, то ничего страшного.
+				if(enEventDescription) {
+					localization.setEnLocalizationText(enEventDescription.EventDescription);
+				} else {
+					localization.setEnLocalizationText("");
 				}
 
-				localization.setEnLocalizationText(enEventDescription.EventDescription);
 				localization.setEnDescription(enDescription);
 
 				// Добавляем критерий из метаданных.
