@@ -106,7 +106,15 @@ export class MetaInfo {
 			metaInfo.DataSources = metaDict.DataSources as DataSource[];
 		}
 
-		const attackDict = useExpertContext ? metaInfoAsInFile.ContentRelations.Implements.ATTACK : metaInfoAsInFile.ATTACK;
+		let attackDict = metaInfoAsInFile.ATTACK;
+		if (useExpertContext) {
+			try {
+				attackDict = metaInfoAsInFile.ContentRelations.Implements.ATTACK;
+			}
+			catch (e) {
+				if (!(e instanceof TypeError)) throw e;
+			}
+		}
 		if (attackDict) {
 			metaInfo.ATTACK = Object.keys(attackDict).map(
 				tactic => {
