@@ -9,10 +9,9 @@ import { IncorrectFieldFillingException } from '../incorrectFieldFillingExceptio
 
 
 export class MetaInfoUpdater {
-	public update(metaInfo : MetaInfo, fields : any) : MetaInfo {
+	public update(metaInfo: MetaInfo, fields: any): MetaInfo {
 
 		metaInfo.setName(fields.Name);
-		metaInfo.setOrigin(fields.Origin);
 
 		const useCases = this.filterAndTrimArray(fields.Usecases);
 		metaInfo.setUseCases(useCases);
@@ -30,46 +29,45 @@ export class MetaInfoUpdater {
 		metaInfo.setReferences(references);
 
 		const tags = this.filterAndTrimArray(fields.Tags);
-		metaInfo.setTags(tags);
 
-		if(fields.DataSources) {
+		if (fields.DataSources) {
 			const dataSources = Array.from(fields.DataSources)
-				.map(dt => classTransformer.plainToInstance(DataSource, dt) );
+				.map(dt => classTransformer.plainToInstance(DataSource, dt));
 
 			// Встречаются null в случае несоответствия типа элемента списка с number.
 			const errorDs = dataSources.find(ds => ds.EventID.some(ei => !ei));
-			if(errorDs) {
+			if (errorDs) {
 				throw new IncorrectFieldFillingException(`Некорректное заполнение списка событий провайдера '${errorDs.Provider}', который должен быть указаны в виде списка идентификаторов через запятую.`);
 			}
 
 			metaInfo.setDataSources(dataSources);
 		}
 
-		if(fields.ATTACK) {
+		if (fields.ATTACK) {
 			const attacks = Array.from(fields.ATTACK)
 				.map(dt => classTransformer.plainToInstance(Attack, dt));
 
-			for(const attack of attacks) {
-				const validationResult = attack.Techniques.every( t => {
+			for (const attack of attacks) {
+				const validationResult = attack.Techniques.every(t => {
 					const result = /T(\d+\.\d+|\d+)/g.test(t);
 					return result;
 				});
 
-				if(!validationResult) {
-					throw new IncorrectFieldFillingException(`Некорректное заполнение тактики '${attack.Tactic}'. Техники должны начинаться с 'T' и быть в формате T<N> или T<N>.<M>, где <N>, <M> - натуральные числа.`);	
+				if (!validationResult) {
+					throw new IncorrectFieldFillingException(`Некорректное заполнение тактики '${attack.Tactic}'. Техники должны начинаться с 'T' и быть в формате T<N> или T<N>.<M>, где <N>, <M> - натуральные числа.`);
 				}
 			}
-			
+
 			metaInfo.setAttacks(attacks);
 		}
 
 		return metaInfo;
 	}
 
-	private filterAndTrimArray(input: any) : string [] {
-		if(!input) {
+	private filterAndTrimArray(input: any): string[] {
+		if (!input) {
 			return [];
 		}
-		return (input as string []).filter(elem => elem && elem != "").map(c => c.trim());
+		return (input as string[]).filter(elem => elem && elem != "").map(c => c.trim());
 	}
 }
