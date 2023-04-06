@@ -9,6 +9,7 @@ import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Correlation } from '../../models/content/correlation';
 import { Configuration } from '../../models/configuration';
 import { StringHelper } from '../../helpers/stringHelper';
+import { XpException } from '../../models/xpException';
 
 export class LocalizationEditorViewProvider  {
 
@@ -55,27 +56,34 @@ export class LocalizationEditorViewProvider  {
 
 				const locId = loc.getLocalizationId();
 				if(!locId) {
-					throw new Error("LocalizationId не задан.");
+					throw new XpException("LocalizationId не задан.");
 				}
 
 				const criteria = loc.getCriteria();
 				if(!criteria) {
-					throw new Error(`Критерий локализации пуст для LocalizationId = '${locId}.`);
+					throw new XpException(`Критерий локализации пуст для LocalizationId = '${locId}'.`);
 				}
 
+				// Ошибка в том случае, если нет обоих локализаций.
+				if(!loc.getRuLocalizationText() && !loc.getEnLocalizationText()) {
+					throw new XpException(`Для критерия LocalizationId = '${locId}' не задана ни одна из локализаций.`);	
+				}
+
+				let ruLocalizationText = loc.getRuLocalizationText();
 				if(!loc.getRuLocalizationText()) {
-					throw new Error(`Не задана русская локализация для LocalizationId = '${locId}.`);
+					ruLocalizationText = "";
 				}
 
-				if(!loc.getEnLocalizationText()) {
-					throw new Error(`Не задана английская локализация для LocalizationId = '${locId}.`);
-				}
+				let enLocalizationText = loc.getEnLocalizationText();
+				if(!enLocalizationText) {
+					enLocalizationText = "";
+				} 
 				
 				plainLocalizations.push({
 					"Criteria" : criteria,
 					"LocalizationId" : locId,
-					"RuLocalization" : loc.getRuLocalizationText(),
-					"EnLocalization" : loc.getEnLocalizationText()
+					"RuLocalization" : ruLocalizationText,
+					"EnLocalization" : enLocalizationText
 				});
 			});
 
