@@ -317,6 +317,10 @@ export class MetaInfo {
 		// Обновляем метаданные на диске известными нам полями, оставляя другие неизменными
 		const metaInfoObject = this._asInFile;
 
+		if (!metaInfoObject.ExpertContext) {
+			metaInfoObject.ExpertContext = {};
+		}
+
 		metaInfoObject.ExpertContext.Created = DateHelper.dateToString(this.Created);
 		metaInfoObject.ExpertContext.Updated = DateHelper.dateToString(this.Updated);
 
@@ -361,11 +365,14 @@ export class MetaInfo {
 				const tactic = attack.Tactic as string;
 				const techniques = attack.Techniques as string[];
 
-				attackPlain[tactic] = techniques;
+				if (!attackPlain[tactic]) attackPlain[tactic] = [];
+				attackPlain[tactic] = attackPlain[tactic].concat(techniques);
 			}
 		);
 
 		if (!JsHelper.isEmptyObj(attackPlain)) {
+			if (!metaInfoObject.ContentRelations) metaInfoObject.ContentRelations = {};
+			if (!metaInfoObject.ContentRelations.Implements) metaInfoObject.ContentRelations.Implements = {};
 			metaInfoObject.ContentRelations.Implements.ATTACK = attackPlain;
 		}
 
@@ -396,7 +403,7 @@ export class MetaInfo {
 	public static METAINFO_FILENAME = "metainfo.yaml";
 
 	private _directoryPath: string;
-	private _asInFile: any;
+	private _asInFile: any = {};
 
 	private Created: Date;
 	private Updated: Date;
