@@ -168,6 +168,29 @@ out=\${output_folder}\\enrules_graph.json`;
 		this._scenarios.push("make-ergraph");
 	}
 
+	public addLocalizationBuilding(rulesSrcPath? : string) : void {
+
+		let rulesSrcPathResult : string;
+		if(!rulesSrcPath) {
+			const pathLocator = this._config.getPathHelper();
+			const contentRoots = pathLocator.getContentRoots();
+
+			rulesSrcPathResult = contentRoots.join(",");
+		} else {
+			rulesSrcPathResult = rulesSrcPath;
+		}
+
+		const localizationBuildingSection = 
+`
+[make-loca]
+type=BUILD_EVENT_LOCALIZATION
+rules_src=${rulesSrcPathResult}
+out=\${output_folder}\\langs`;
+
+		this._siemjConfigSection += localizationBuildingSection;
+		this._scenarios.push("make-loca");
+	}
+
 	public addEventsNormalize(rawEventsFilePath : string) : void {
 
 		const eventNormalizationSection = 

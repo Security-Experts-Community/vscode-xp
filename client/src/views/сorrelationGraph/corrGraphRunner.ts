@@ -66,7 +66,7 @@ export class CorrGraphRunner {
 		}
 
 		// Типовая команда выглядит так:
-		// "C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
+		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
 		const result = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],

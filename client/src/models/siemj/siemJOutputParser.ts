@@ -1,8 +1,9 @@
 import * as vscode  from 'vscode';
+import { EOL } from 'os';
+
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { TestHelper } from '../../helpers/testHelper';
-import { RuleFileDiagnostics } from './ruleFileDiagnostics';
-import { EOL } from 'os';
+import { RuleFileDiagnostics } from '../../views/integrationTests/ruleFileDiagnostics';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 
 export class SiemJOutputParser {
@@ -11,8 +12,8 @@ export class SiemJOutputParser {
 	 * @param testOutput вывод модульных тестов.
 	 * @returns список локаций ошибок.
 	 */
-	public parse(testOutput : string) : RuleFileDiagnostics[] {
-		const result: RuleFileDiagnostics[] = [];
+	public async parse(testOutput : string) : Promise<RuleFileDiagnostics[]> {
+		let result: RuleFileDiagnostics[] = [];
 
 		// [ERROR] Compilation failed:
 		// c:\Work\-=SIEM=-\Content\knowledgebase\packages\esc\correlation_rules\active_directory\Active_Directory_Snapshot\rule.co:27:29: syntax error, unexpected '='
@@ -68,6 +69,7 @@ export class SiemJOutputParser {
 			result.push(newRuleFileDiag);
 		}
 
+		result = await this.correctDiagnosticBeginCharRanges(result);
 		return result;
 	}
 
@@ -76,7 +78,7 @@ export class SiemJOutputParser {
 	 * @param ruleFileDiagnostics список диагностик для файлов.
 	 * @returns скорректированные диагностики.
 	 */
-	public async correctDiagnosticBeginCharRanges(ruleFileDiagnostics : RuleFileDiagnostics[]) : Promise<RuleFileDiagnostics[]> {
+	private async correctDiagnosticBeginCharRanges(ruleFileDiagnostics : RuleFileDiagnostics[]) : Promise<RuleFileDiagnostics[]> {
 		for(const rfd of ruleFileDiagnostics) {
 			const ruleFilePath = rfd.Uri.fsPath;
 			const ruleContent = await FileSystemHelper.readContentFile(ruleFilePath);

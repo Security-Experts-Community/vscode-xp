@@ -22,7 +22,7 @@ export class UnitTestsRunner {
 
 	public async run(test: CorrelationUnitTest): Promise<CorrelationUnitTest> {
 
-		// const tmp = `--temp "c:\\Work\\-=SIEM=-\\Output\\temp"`;
+		// const tmp = `--temp "C:\\Output\\temp"`;
 		const root = this._config.getPathHelper().getRootByPath(test.getRule().getDirectoryPath());
 		const rootFolder = path.basename(root);
 		const outputFolder = this._config.getOutputDirectoryPath(rootFolder);
@@ -30,7 +30,7 @@ export class UnitTestsRunner {
 			fs.mkdirSync(outputFolder);
 		}
 		
-		// const tmp = `c:\\Work\\-=SIEM=-\\Output\\temp`;
+		// const tmp = `C:\\Output\\temp`;
 		const tmpDirPath = this._config.getTmpDirectoryPath();
 		if(!fs.existsSync(tmpDirPath)) {
 			fs.mkdirSync(tmpDirPath);
@@ -43,7 +43,7 @@ export class UnitTestsRunner {
 		}
 
 		try {
-			// "C:\\Work\\-=SIEM=-\\Tools\\0.22.774\\any\\any\\win\\ecatest.exe" 
+			// "C:\\Tools\\0.22.774\\any\\any\\win\\ecatest.exe" 
 			// 	--sdk "C:\Work\-=SIEM=-\Tools\25.0.9349\vc150\x86_64\win" 
 			// 	--taxonomy "C:\Work\-=SIEM=-\PTSIEMSDK_GUI.4.0.0.738\packages\taxonomy\develop\25.0.579\taxonomy.json" 
 			// 	--temp "C:\Work\Coding\PTSIEMSDK_GUI\PTSIEMSDK_GUI\bin\Debug\temp" 
@@ -58,7 +58,7 @@ export class UnitTestsRunner {
 			this._config.getOutputChannel().show();
 			const ruleFilePath = test.getRuleFullPath();
 
-			// const ecaTestParam = `C:\\Work\\-=SIEM=-\\Tools\\0.22.774\\any\\any\\win\\ecatest.exe`;
+			// const ecaTestParam = `C:\\Tools\\0.22.774\\any\\any\\win\\ecatest.exe`;
 			const ecaTestParam = this._config.getEcatestFullPath();
 			const sdkDirPath = this._config.getSiemSdkDirectoryPath();
 			const taxonomyFilePath= this._config.getTaxonomyFullPath();
