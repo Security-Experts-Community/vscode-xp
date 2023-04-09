@@ -5,6 +5,7 @@ import { RuleBaseItem } from '../models/content/ruleBaseItem';
 import { IntegrationTest } from '../models/tests/integrationTest';
 import { RegExpHelper } from './regExpHelper';
 import { XpException } from '../models/xpException';
+import { ParseException } from '../models/parseException';
 
 
 export class TestHelper {
@@ -63,9 +64,14 @@ export class TestHelper {
 
 		return diagnostics.map(d => {
 			const lineNumber = d.range.start.line;
-			const errorLine = lines[lineNumber];
 
+			if(lineNumber >= lines.length) {
+				throw new ParseException(`Ошибка разбора ошибки кода правила по пути ${ruleContent}`);
+			}
+
+			const errorLine = lines[lineNumber];
 			const firstNonWhitespaceCharacterIndex = errorLine.search(/[^\s]/);
+			
 			// Если не удалось скорректировать, тогда возвращем как ест.
 			if(firstNonWhitespaceCharacterIndex === -1) {
 				return d;

@@ -7,14 +7,6 @@ import { Correlation } from '../../models/content/correlation';
 suite('Локализации', () => {
 	
 	test('Парсинг трех локализаций', () => {
-		const loc = Localization.create(
-			`correlation_name = "MSSQL_user_password_brute" and src.ip != null and newCriteria`,
-			"RuLocalization",
-			"EnLocalization"
-		)
-	});
-
-	test('Парсинг трех локализаций', () => {
 		const rulePath = TestFixture.getTestPath("localizations", "MSSQL_user_password_brute");
 		const localizations = Localization.parseFromDirectory(rulePath);
 

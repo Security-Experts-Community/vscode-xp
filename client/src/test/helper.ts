@@ -40,16 +40,27 @@ export class TestFixture {
 		return path.resolve(ExtensionHelper.getExtentionPath(),  ...pathSegments);
 	}
 
+
 	public static getCorrelationPath(name : string) {
 		return path.resolve(__dirname, '../../testFixture', "correlations", name);
 	}
 
-	public static getNormalizationPath(name : string) {
-		return path.resolve(__dirname, '../../testFixture', "normalizations", name);
+	public static getCorrelationFilePath(...name : string[]) {
+		return path.join(path.resolve(__dirname, '../../testFixture', "correlations"), ...name);
 	}
+
 
 	public static getEnrichmentPath(name : string) {
 		return path.resolve(__dirname, '../../testFixture', "enrichments", name);
+	}
+
+	public static getEnrichmentFilePath(...name : string[]) {
+		return path.join(path.resolve(__dirname, '../../testFixture', "enrichments"), ...name);
+	}
+
+
+	public static getNormalizationPath(name : string) {
+		return path.resolve(__dirname, '../../testFixture', "normalizations", name);
 	}
 
 	public static getAggregationsPath(name : string) {

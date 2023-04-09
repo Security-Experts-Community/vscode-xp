@@ -7,7 +7,7 @@ import { ProcessHelper } from '../../helpers/processHelper';
 import { SiemjConfigHelper } from '../siemj/siemjConfigHelper';
 import { TestHelper } from '../../helpers/testHelper';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
-import { SiemJOutputParser } from '../../views/integrationTests/siemJOutputParser';
+import { SiemJOutputParser } from '../siemj/siemJOutputParser';
 import { Configuration } from '../configuration';
 import { RuleBaseItem } from '../content/ruleBaseItem';
 import { IntegrationTest } from './integrationTest';
@@ -78,7 +78,7 @@ export class IntegrationTestRunner {
 		this._config.getOutputChannel().clear();
 		
 		// Типовая команда выглядит так:
-		// "C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
+		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
 		const siemjExePath = this._config.getSiemjPath();
 		const siemJOutput = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
 			siemjExePath,
@@ -98,15 +98,13 @@ export class IntegrationTestRunner {
 			this._config.getOutputChannel().show();
 			this._config.getDiagnosticCollection().clear();
 
-			let ruleFileDiagnostics = this._outputParser.parse(siemJOutput);
+			let ruleFileDiagnostics = await this._outputParser.parse(siemJOutput);
 
 			// Фильтруем диагностики по текущему правилу.
 			ruleFileDiagnostics = ruleFileDiagnostics.filter(rfd => {
 				const path = rfd.Uri.path;
 				return path.includes(rule.getName());
 			});
-
-			ruleFileDiagnostics = await this._outputParser.correctDiagnosticBeginCharRanges(ruleFileDiagnostics);
 
 			for (const rfd of ruleFileDiagnostics) {
 				this._config.getDiagnosticCollection().set(rfd.Uri, rfd.Diagnostics);

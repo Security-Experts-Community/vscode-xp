@@ -7,28 +7,6 @@ import { SiemjConfBuilder } from './siemjConfigBuilder';
 
 export class SiemjConfigHelper {
 
-	public static getBuildAllGraphs(config : Configuration ) : string[] {
-		const kbPaths = Configuration.get().getPathHelper();
-		const roots = kbPaths.getContentRoots();
-
-		return roots.map(root => { 
-			const output_folder = config.getOutputDirectoryPath(path.basename(root));
-			if(!fs.existsSync(output_folder)) {
-				fs.mkdirSync(output_folder, {recursive: true});
-			}
-
-			const configBuilder = new SiemjConfBuilder(config);
-			configBuilder.addNfgraphBuilding();
-			configBuilder.addTablesSchemaBuilding();
-			configBuilder.addTablesDbBuilding();
-			configBuilder.addCfgraphBuilding();
-			configBuilder.addEfgraphBuilding();
-	
-			const siemjConfContent = configBuilder.build();
-			return siemjConfContent;
-		});
-	}
-
 
 	/**
 	 * Получаем конфиг для правила, которое использует сабрули. То есть для него будет дополнительно
