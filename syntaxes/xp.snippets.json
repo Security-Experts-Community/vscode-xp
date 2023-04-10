@@ -646,6 +646,12 @@
 			"\\$category.low = \"$2\""
 		]
 	},
+	"Тактика": {
+		"prefix": ["$category.high"],
+		"body": [
+			"\\$category.high = \"${1|Persistence,Lateral Movement,Defense Evasion,Credential Access,Discovery,Privilege Escalation,Execution,Initial Access,Impact|}\""
+		]
+	},
 	"Метки автовайтлистинга": {
 		"prefix": ["$labels"],
 		"body": [
