@@ -5,7 +5,7 @@
 	"author": "Dmitry Fedosov (@DmitryOffsec)",
 	"icon": "resources/logo.png",
 	"license": "MIT",
-	"version": "3.2.1",
+	"version": "3.2.2",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -563,7 +563,6 @@
 		"@types/glob": "^8.0.0",
 		"@types/js-yaml": "^4.0.5",
 		"@types/mocha": "^8.2.2",
-		"@types/prettier": "^2.7.2",
 		"@typescript-eslint/eslint-plugin": "^4.21.0",
 		"@typescript-eslint/parser": "^4.21.0",
 		"eslint": "^7.23.0",
@@ -592,7 +591,7 @@
 		"util": "^0.12.4",
 		"uuid": "^8.3.2",
 		"xml-serializer-ts": "^1.0.2",
-		"xml2js": "^0.4.23",
+		"xml2js": "^0.5.0",
 		"yaml": "^1.10.2",
 		"zlib": "^1.0.5"
 	}
