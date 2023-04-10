@@ -1,6 +1,4 @@
-import * as vscode from 'vscode';
 import * as assert from 'assert';
-import { getDocUri, activate } from '../helper';
 import { TestHelper } from '../../helpers/testHelper';
 
 suite('TestHelper.addEnvelope', async () => {
@@ -8,7 +6,7 @@ suite('TestHelper.addEnvelope', async () => {
 	test('Событие с важностью medium скопированное через Ctrl+C из SIEM', async () => {
 
 		const compressedRawEvents = 
-`"medium","{"Event":{"xmlns":"http://schemas.microsoft.com/win/2004/08/events/event","System":{"Provider":{"Name":"Microsoft-Windows-Security-Auditing","Guid":"{54849625-5478-4994-a5ba-3e3b0328c30d}"},"EventID":"4670","Version":"0","Level":"0","Task":"13570","Opcode":"0","Keywords":"0x8020000000000000","TimeCreated":{"SystemTime":"2023-03-18T18:46:27.9343688Z"},"EventRecordID":"86895453","Correlation":null,"Execution":{"ProcessID":"4","ThreadID":"16700"},"Channel":"Security","Computer":"dfedosov-nb.ptsecurity.ru","Security":null},"EventData":{"Data":[{"text":"S-1-5-18","Name":"SubjectUserSid"},{"text":"DFEDOSOV-NB$","Name":"SubjectUserName"},{"text":"PTSECURITY","Name":"SubjectDomainName"},{"text":"0x3e7","Name":"SubjectLogonId"},{"text":"Security","Name":"ObjectServer"},{"text":"Token","Name":"ObjectType"},{"text":"-","Name":"ObjectName"},{"text":"0x2898","Name":"HandleId"},{"text":"D:(A;;GA;;;SY)(A;;GA;;;NS)","Name":"OldSd"},{"text":"D:(A;;GA;;;SY)(A;;RC;;;OW)(A;;GA;;;S-1-5-86-615999462-62705297-2911207457-59056572-3668589837)","Name":"NewSd"},{"text":"0x12cc","Name":"ProcessId"},{"text":"C:\\Windows\\System32\\svchost.exe","Name":"ProcessName"}]}}}"`;
+`"medium","{"Event":{"xmlns":"http://schemas.microsoft.com/win/2004/08/events/event","System":{"Provider":{"Name":"Microsoft-Windows-Security-Auditing","Guid":"{54849621-5478-4994-a5ba-3e3b0328c30d}"},"EventID":"4670","Version":"0","Level":"0","Task":"13570","Opcode":"0","Keywords":"0x8020000000000000","TimeCreated":{"SystemTime":"2021-01-11T18:46:27.9343688Z"},"EventRecordID":"86895453","Correlation":null,"Execution":{"ProcessID":"4","ThreadID":"16700"},"Channel":"Security","Computer":"user.company.com","Security":null},"EventData":{"Data":[{"text":"S-1-5-18","Name":"SubjectUserSid"},{"text":"USER-NB$","Name":"SubjectUserName"},{"text":"COMPANY","Name":"SubjectDomainName"},{"text":"0x3e7","Name":"SubjectLogonId"},{"text":"Security","Name":"ObjectServer"},{"text":"Token","Name":"ObjectType"},{"text":"-","Name":"ObjectName"},{"text":"0x2898","Name":"HandleId"},{"text":"D:(A;;GA;;;SY)(A;;GA;;;NS)","Name":"OldSd"},{"text":"D:(A;;GA;;;SY)(A;;RC;;;OW)(A;;GA;;;S-1-5-86-2412512-123-41241-21424-124124)","Name":"NewSd"},{"text":"0x12cc","Name":"ProcessId"},{"text":"C:\\Windows\\System32\\svchost.exe","Name":"ProcessName"}]}}}"`;
 
 		const envelopedRawEvents = TestHelper.addEnvelope(compressedRawEvents, "application/x-pt-eventlog");
 
