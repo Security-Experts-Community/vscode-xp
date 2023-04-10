@@ -19,7 +19,16 @@ export class YamlHelper {
 		localizationDumpOptions.forceQuotes = true;
 
 		const yamlContent = js_yaml.dump(object, localizationDumpOptions);
-		return yamlContent;
+
+		return prettier.format(
+			yamlContent,
+			{
+				'parser': 'yaml',
+				'tabWidth': this.dumpOptions.indent,
+				'aliasDuplicateObjects': false,
+				'singleQuote': true,
+			}
+		);
 	}
 
 	public static stringify(object: any): string {
@@ -30,6 +39,7 @@ export class YamlHelper {
 			{
 				'parser': 'yaml',
 				'tabWidth': this.dumpOptions.indent,
+				'aliasDuplicateObjects': false,
 				// 'maxLineLength': this.dumpOptions.lineWidth,
 			}
 		);

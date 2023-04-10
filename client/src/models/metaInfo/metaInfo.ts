@@ -334,6 +334,7 @@ export class MetaInfo {
 
 		if (this.Name) {
 			metaInfoObject.ContentAutoName = this.Name;
+			if (metaInfoObject.Name) delete metaInfoObject.Name;
 		}
 
 		if (this.EventDescriptions.length != 0) {
