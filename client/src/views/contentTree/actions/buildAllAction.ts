@@ -95,7 +95,7 @@ export class BuildAllAction {
 			configBuilder.addNfgraphBuilding(false);
 			configBuilder.addTablesSchemaBuilding();
 			configBuilder.addTablesDbBuilding();
-			configBuilder.addEfgraphBuilding(false);
+			configBuilder.addEfgraphBuilding();
 			configBuilder.addLocalizationBuilding();
 	
 			const siemjConfContent = configBuilder.build();

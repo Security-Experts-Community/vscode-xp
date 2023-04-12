@@ -91,7 +91,7 @@ export class SiemjManager {
 		configBuilder.addNfgraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
-		configBuilder.addEfgraphBuilding(false);
+		configBuilder.addEfgraphBuilding();
 		configBuilder.addEventsNormalize(rawEventsFilePath);
 		configBuilder.addEventsEnrich();
 		const siemjConfContent = configBuilder.build();

@@ -37,7 +37,7 @@ export class CorrGraphRunner {
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addCfgraphBuilding();
-		configBuilder.addEfgraphBuilding(false);
+		configBuilder.addEfgraphBuilding();
 
 		configBuilder.addEventsNormalize(rawEventsFilePath);
 		configBuilder.addEventsEnrich();

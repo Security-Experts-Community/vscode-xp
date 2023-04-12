@@ -57,7 +57,7 @@ export class IntegrationTestRunner {
 		configBuilder.addNfgraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
-		configBuilder.addEfgraphBuilding(false);
+		configBuilder.addEfgraphBuilding();
 
 		// TODO: временное решения до устранение проблем с вылетом тестов по таймауту.
 		configBuilder.addCfgraphBuilding(true, rule.getPackagePath(this._config));
