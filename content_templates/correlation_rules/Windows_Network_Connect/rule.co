@@ -9,10 +9,10 @@ event Network_Connect:
             (event_src.title == "sysmon" and msgid == "3")
         )
         
-        and filter::CheckWL_Networking("Network_Connect", )
+        and filter::CheckWL_Networking("Windows_Network_Connect", )
     }
 
-rule Network_Connect: Network_Connect
+rule Windows_Network_Connect: Network_Connect
 
     init {
         $labels = "w_auto|CheckWL_Networking"

@@ -6,10 +6,10 @@ event Share_Access:
         and msgid == "5145"
         and event_src.title == "windows"
         
-        and filter::CheckWL_Windows_Shares("Share_Access", )
+        and filter::CheckWL_Windows_Shares("Windows_Share_Access", )
     }
 
-rule Share_Access: Share_Access
+rule Windows_Share_Access: Share_Access
     
     init {
         $labels = "w_auto|CheckWL_Windows_Shares"

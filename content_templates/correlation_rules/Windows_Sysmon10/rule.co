@@ -6,10 +6,10 @@ event AccessProccess:
         and msgid == "10"
         and event_src.title == "sysmon"
 
-        and filter::CheckWL_Process_Access("Sysmon10", )
+        and filter::CheckWL_Process_Access("Windows_Sysmon10", )
     }
 
-rule Sysmon10: AccessProccess
+rule Windows_Sysmon10 : AccessProccess
 
     init {
         $labels = "w_auto|CheckWL_Process_Access" 

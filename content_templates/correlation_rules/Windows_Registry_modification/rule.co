@@ -19,10 +19,10 @@ event Registry_Action:
             )
         )
 
-        and filter::CheckWL_Registry_Actions("Registry_modification", )
+        and filter::CheckWL_Registry_Actions("Windows_Registry_modification", )
     }
 
-rule Registry_modification: Registry_Action
+rule Windows_Registry_modification: Registry_Action
 
     init {
         $labels = "w_auto|CheckWL_Registry_Actions"
