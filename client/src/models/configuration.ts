@@ -310,7 +310,7 @@ export class Configuration {
 	}
 
 	public getTmpDirectoryPath() : string {
-		return path.join(this.getOutputDirectoryPath(""), "temp");
+		return path.join(os.tmpdir(), this.getExtentionDisplayName());
 	}
 
 	public getTmpSiemjConfigPath() : string {
@@ -412,16 +412,27 @@ export class Configuration {
 	public static async init(context : vscode.ExtensionContext) : Promise<Configuration> {
 		this._instance = new Configuration(context);
 
-		let outputDirPath : string;
+		let dirPath : string;
 		try {
-			outputDirPath = this._instance.getOutputDirectoryPath();
-			if(!fs.existsSync(outputDirPath)) {
+			dirPath = this._instance.getOutputDirectoryPath();
+			if(!fs.existsSync(dirPath)) {
 				return this._instance;
 			}
-			await FileSystemHelper.clearDirectory(outputDirPath);
+			await FileSystemHelper.clearDirectory(dirPath);
 		}
 		catch(error) {
-			console.warn(`Не удалось удалить временную директорию '${outputDirPath}'`);
+			console.warn(`Не очистить Output директорию '${dirPath}'`);
+		}
+
+		try {
+			dirPath = this._instance.getTmpDirectoryPath();
+			if(!fs.existsSync(dirPath)) {
+				return this._instance;
+			}
+			await FileSystemHelper.clearDirectory(dirPath);
+		}
+		catch(error) {
+			console.warn(`Не очистить временную директорию '${dirPath}'`);
 		}
 
 		return this._instance;

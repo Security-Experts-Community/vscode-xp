@@ -5,7 +5,7 @@ import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 suite(BuildAllAction.name, () => {
 
 	test('Инициализация', async () => {
-		const baa = new BuildAllAction(
+		new BuildAllAction(
 			Configuration.get(),
 			new SiemJOutputParser()
 		);

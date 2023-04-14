@@ -47,14 +47,14 @@ suite('MetaInfo', () => {
 	});
 
 	test('Минимальная метаинформация, содержащая только ObjectId', () => {
-		const metaInfoPath = TestFixture.getTestPath("metaInfo", "onlyObjectId");
+		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "onlyObjectId");
 		const metaInfo = MetaInfo.fromFile(metaInfoPath);
 
 		assert.strictEqual(metaInfo.getObjectId(), "LOC-ER-1");
 	});
 
 	test('Поле Created = []', () => {
-		const metaInfoPath = TestFixture.getTestPath("metaInfo", "createdIsEmptyArray");
+		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "createdIsEmptyArray");
 		const metaInfo = MetaInfo.fromFile(metaInfoPath);
 
 		assert.strictEqual(metaInfo.getCreatedDate(), undefined);

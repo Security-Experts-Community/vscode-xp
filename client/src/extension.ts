@@ -20,12 +20,12 @@ import { Configuration } from './models/configuration';
 import { XpCompletionItemProvider } from './providers/xpCompletionItemProvider';
 import { ContentTreeProvider } from './views/contentTree/contentTreeProvider';
 import { RunningCorrelationGraphProvider } from './views/сorrelationGraph/runningCorrelationGraphProvider';
-import { TableListsEditorViewProvider } from './views/tableListsEditor/TableListsEditorViewProvider';
+import { TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
 import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvier';
 import { TestsFormatContentMenuExtention } from './ext/contextMenuExtention';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
 import { YamlHelper } from './helpers/yamlHelper';
-import { InitKBRootCommand } from './views/contentTree/commands/InitKBRootCommand';
+import { InitKBRootCommand } from './views/contentTree/commands/initKBRootCommand';
 
 
 let client: LanguageClient;
