@@ -24,8 +24,8 @@ import { DeleteContentItemCommand } from './commands/deleteContentItemCommand';
 import { CreatePackageCommand } from './commands/createPackageCommand';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { BuildAllAction } from './actions/buildAllAction';
-import { PackKbPackageAction } from './actions/packKbPackageAction';
-import { UnpackKbPackageAction } from './actions/unpackKbPackageAction';
+import { PackKbAction } from './actions/packKbAction';
+import { UnpackKbAction } from './actions/unpackKbAction';
 import { ContentType } from '../../contentType/contentType';
 import { ContentTypeChecker } from '../../contentType/contentTypeChecker';
 import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';
@@ -184,7 +184,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 						return;
 					}
 					
-					const action = new UnpackKbPackageAction(config);
+					const action = new UnpackKbAction(config);
 					await action.run(selectedItem);
 				}
 			)
@@ -220,22 +220,34 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
 				ContentTreeProvider.buildKbPackageCommand,
-				async (selectedItem: RuleBaseItem) => {
+				async (selectedPackage: RuleBaseItem) => {
 					const pathHelper = config.getPathHelper();
 					if(!pathHelper.isKbOpened()) {
 						ExtensionHelper.showUserInfo("Нельзя собрать схемы ТС и графы без открытия базы знаний. Сначала откройте базу знаний.");
 						return;
 					}
 					
-					const pkba = new PackKbPackageAction(config);
-					// TODO: вынести логику отображения из бизнес-логики
-					await pkba.run(selectedItem);
+					const pkba = new PackKbAction(config);
+
+					// Выбираем директорию для выгрузки пакета.
+					const packageName = selectedPackage.getName();
+					const fileInfos = await vscode.window.showSaveDialog({
+					filters: {'Knowledge base (*.kb)' : ['kb']},
+						defaultUri: vscode.Uri.file(packageName)
+					});
+
+					if(!fileInfos) {
+						ExtensionHelper.showUserError(`Путь не выбран.`);
+						return;
+					}
+
+					// Удаление существующего файла.
+					const unpackKbFilePath = fileInfos.fsPath; 
+					await pkba.run(selectedPackage, unpackKbFilePath);
 				}
 			)
 		);
-		
 	}
-
 
 	constructor(private _knowledgebaseDirectoryPath: string | undefined, _gitAPI : API, private _config: Configuration) {
 		this._gitAPI = _gitAPI;

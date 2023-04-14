@@ -7,30 +7,16 @@ import { ExtensionHelper } from '../../../helpers/extensionHelper';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { KbHelper } from '../../../helpers/kbHelper';
 import { ProcessHelper } from '../../../helpers/processHelper';
-import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
 import { Configuration } from '../../../models/configuration';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
+import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 
-export class PackKbPackageAction {
+export class PackKbAction {
 	constructor(private _config: Configuration) {
 	}
 
-	public async run(selectedPackage : RuleBaseItem) : Promise<void> {
+	public async run(selectedPackage : RuleBaseItem, unpackKbFilePath : string) : Promise<void> {
 
-		// Выбираем директорию для выгрузки пакета.
-		const packageName = selectedPackage.getName();
-		const fileInfos = await vscode.window.showSaveDialog({
-			filters: {'Knowledge base (*.kb)' : ['kb']},
-			defaultUri: vscode.Uri.file(packageName)
-		});
-
-		if(!fileInfos) {
-			ExtensionHelper.showUserError(`Путь не выбран.`);
-			return;
-		}
-
-		// Удаление существующего файла.
-		const unpackKbFilePath = fileInfos.fsPath; 
 		if(fs.existsSync(unpackKbFilePath)) {
 			await fs.promises.unlink(unpackKbFilePath);
 		}
@@ -47,19 +33,19 @@ export class PackKbPackageAction {
 			cancellable: false
 		}, async (progress) => {
 
-			// Выводим описание задачи.
-			const packageDirPath = selectedPackage.getDirectoryPath();
-			const packageName = path.basename(packageDirPath);
-			progress.report({message: `Сборка пакета '${packageName}'`});
-
-			const tmpSubDirectoryPath = this._config.getRandTmpSubDirectoryPath();
-			await fs.promises.mkdir(tmpSubDirectoryPath);
-
-			// Очищаем окно Output.
-			this._config.getOutputChannel().clear();
-
 			try {
-				// в objects положить пакет для сборке
+				// Выводим описание задачи.
+				const packageDirPath = selectedPackage.getDirectoryPath();
+				const packageName = path.basename(packageDirPath);
+				progress.report({message: `Сборка пакета '${packageName}'`});
+
+				const tmpSubDirectoryPath = this._config.getRandTmpSubDirectoryPath();
+				await fs.promises.mkdir(tmpSubDirectoryPath, {recursive: true});
+
+				// Очищаем окно Output.
+				this._config.getOutputChannel().clear();
+
+				// В objects положить пакет для сборки.
 				const objectsPackageDirPath = path.join(tmpSubDirectoryPath, "packages", packageName);
 				await fs.promises.mkdir(objectsPackageDirPath, {recursive: true});
 				await fse.copy(packageDirPath, objectsPackageDirPath);
@@ -72,7 +58,6 @@ export class PackKbPackageAction {
 					await fs.promises.writeFile(contentfullPath, content);
 				}
 
-				// Нужна ссылка в 
 				const contractsDirPath = path.join(tmpSubDirectoryPath, "contracts");
 				await fs.promises.mkdir(contractsDirPath);
 
@@ -83,7 +68,7 @@ export class PackKbPackageAction {
 				await fse.copy(сontractsDirectoryPath, taxonomyPath);
 
 				// Типовая команда выглядит так:
-				// kbtools.exe pack -s "c:\tmp\pack" -o "c:\tmp\pack\Esc.kb"
+				// kbtools(kbpack).exe pack -s "c:\tmp\pack" -o "c:\tmp\pack\Esc.kb"
 				const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
 					knowledgeBasePackagerCli,
 					[
@@ -103,7 +88,7 @@ export class PackKbPackageAction {
 				this._config.getOutputChannel().show();
 			}
 			catch(error) {
-				ExtensionHelper.showUserError("Произошла неожиданная ошибка.");
+				ExceptionHelper.show(error, "Произошла неожиданная ошибка.");
 			}
 		});
 	}

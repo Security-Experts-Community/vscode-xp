@@ -7,7 +7,7 @@ import { Correlation } from '../../models/content/correlation';
 suite('Локализации', () => {
 	
 	test('Парсинг трех локализаций', () => {
-		const rulePath = TestFixture.getTestPath("localizations", "MSSQL_user_password_brute");
+		const rulePath = TestFixture.getFixturePath("localizations", "MSSQL_user_password_brute");
 		const localizations = Localization.parseFromDirectory(rulePath);
 
 		assert.strictEqual(localizations.length, 3);
@@ -39,7 +39,7 @@ suite('Локализации', () => {
 	});
 
 	test('Добавление новой локализации', async () => {
-		const rulePath = TestFixture.getTestPath("localizations", "MSSQL_user_password_brute");
+		const rulePath = TestFixture.getFixturePath("localizations", "MSSQL_user_password_brute");
 		const correlation = await Correlation.parseFromDirectory(rulePath);
 
 		const newLocalization = 
@@ -75,7 +75,7 @@ suite('Локализации', () => {
 	});
 
 	test('Задание одной локализации поверх имеющихся', async () => {
-		const rulePath = TestFixture.getTestPath("localizations", "MSSQL_user_password_brute");
+		const rulePath = TestFixture.getFixturePath("localizations", "MSSQL_user_password_brute");
 		const correlation = await Correlation.parseFromDirectory(rulePath);
 
 		const newLocalization = Localization.create(

@@ -8,9 +8,9 @@ import { ProcessHelper } from '../../../helpers/processHelper';
 import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
 import { Configuration } from '../../../models/configuration';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
-import { ContentTreeProvider } from '.././contentTreeProvider';
+import { ContentTreeProvider } from '../contentTreeProvider';
 
-export class UnpackKbPackageAction {
+export class UnpackKbAction {
 	constructor(private _config: Configuration) {
 	}
 

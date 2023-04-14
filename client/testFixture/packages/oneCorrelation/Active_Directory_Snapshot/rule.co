@@ -1,0 +1,7 @@
+event Event {
+
+}
+
+rule Active_Directory_Snapshot : Event {
+
+}
