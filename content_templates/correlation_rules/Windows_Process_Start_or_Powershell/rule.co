@@ -19,7 +19,7 @@ event Powershell_Pipeline_Execute:
         and event_src.title == "windows"
         and object == "command"
         
-        and filter::CheckWL_Powershell("Process_Start_Windows_and_Powershell", )
+        and filter::CheckWL_Powershell("Windows_Process_Start_or_Powershell", )
     }
 
 event Powershell_Command_Execute:
@@ -32,10 +32,10 @@ event Powershell_Command_Execute:
         and event_src.title == "windows"
         and object == "command"
         
-        and filter::CheckWL_Powershell("Process_Start_Windows_and_Powershell", )
+        and filter::CheckWL_Powershell("Windows_Process_Start_or_Powershell", )
     }
 
-rule Process_Start_Windows_and_Powershell: Process_Start or Powershell_Pipeline_Execute or Powershell_Command_Execute
+rule Windows_Process_Start_or_Powershell: Process_Start or Powershell_Pipeline_Execute or Powershell_Command_Execute
 
     init {
         $labels = "w_auto"

@@ -6,10 +6,10 @@ event Image_Load:
         and event_src.title == "sysmon"
         and msgid == "7"
 
-        and filter::CheckWL_Process_Access("Image_Load", )
+        and filter::CheckWL_Process_Access("Windows_Image_Load", )
     }
 
-rule Image_Load: Image_Load
+rule Windows_Image_Load: Image_Load
 
     init {
         $labels = "w_auto|CheckWL_Process_Access"

@@ -21,10 +21,10 @@ event Task_Action:
         # Task Modify
         #and msgid == "4702"
 
-        and filter::CheckWL_Tasks("Tasks_actions", )
+        and filter::CheckWL_Tasks("Windows_Tasks_actions", )
     }
 
-rule Tasks_actions: Task_Action
+rule Windows_Tasks_actions : Task_Action
 
     init {
         $labels = "w_auto|CheckWL_Tasks"

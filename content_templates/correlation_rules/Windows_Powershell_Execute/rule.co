@@ -8,7 +8,7 @@ event Powershell_Pipeline_Execute:
         and event_src.title == "windows"
         and object == "command"
         
-        and filter::CheckWL_Powershell("Powershell_Execute_4103_4104", )
+        and filter::CheckWL_Powershell("Windows_Powershell_Execute", )
     }
 
 event Powershell_Command_Execute:
@@ -21,10 +21,10 @@ event Powershell_Command_Execute:
         and event_src.title == "windows"
         and object == "command"
         
-        and filter::CheckWL_Powershell("Powershell_Execute_4103_4104", )
+        and filter::CheckWL_Powershell("Windows_Powershell_Execute", )
     }
 
-rule Powershell_Execute_4103_4104: Powershell_Pipeline_Execute or Powershell_Command_Execute
+rule Windows_Powershell_Execute: Powershell_Pipeline_Execute or Powershell_Command_Execute
 
     init {
         $labels = "w_auto|CheckWL_Powershell"
