@@ -20,6 +20,8 @@ export abstract class PathLocator {
 	public abstract getCorrelationsGraphFileName() : string
 	public abstract getAgregationsGraphFileName() : string
 
+	public abstract getLocalizationsFolder() : string
+
 
 	// KB
 	public abstract getRulesDirFilters() : string

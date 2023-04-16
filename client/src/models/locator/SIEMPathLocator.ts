@@ -71,6 +71,10 @@ export class SIEMPathHelper extends PathLocator {
 		return "aggrules_graph.json";
 	}
 
+	public getLocalizationsFolder() : string {
+		return "langs";
+	}
+
 	// В корневой директории лежат пакеты экспертизы
 	public getContentRoots() : string[] {
 		this.checkKbPath();

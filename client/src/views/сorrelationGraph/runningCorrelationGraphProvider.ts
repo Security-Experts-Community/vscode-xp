@@ -88,17 +88,8 @@ export class RunningCorrelationGraphProvider {
                 if(!rawEvents) {
                     ExtensionHelper.showUserError("Не заполнено поле сырых событий. Заполните его и повторите.");
                     return;
-                }
-
-                // Создаем временную директорию.
-                const tmpDirectoryPath = this._config.getRandTmpSubDirectoryPath();
-                await fs.promises.mkdir(tmpDirectoryPath, {recursive : true});
-
-                // Сохраняет сырые события в конверте на диск.
-                const rawEventsFilePath = path.join(tmpDirectoryPath, "raw_events.json");
-                await FileSystemHelper.writeContentFile(rawEventsFilePath, rawEvents);
-
-				await this.corrGraphRun(rawEventsFilePath);
+                }             
+				await this.corrGraphRun(rawEvents);
                 break;
 			}
             case 'addEnvelope': {
@@ -107,24 +98,34 @@ export class RunningCorrelationGraphProvider {
         }
     }
 
-    private async corrGraphRun(rawEventsPath: string) : Promise<void> {
+    private async corrGraphRun(rawEvents: string) : Promise<void> {
 
         const config = Configuration.get();
-        const roots = config.getContentRoots();
+        const rootPaths = config.getContentRoots();
 
         // Прогоняем событие по графам для каждой из корневых директорий теущего режима
-        roots.forEach(root => {
+        rootPaths.forEach(rootPath => {
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 cancellable: false,
-                title: `Прогон событий по графу корреляций для директории ${path.basename(root)}`
+                title: `Прогон событий по графу корреляций для директории ${path.basename(rootPath)}`
             }, async (progress) => {
                 try {
+                    const rootFolder = path.basename(rootPath);
+
+                     // Создаем временную директорию.
+                    const tmpDirectoryPath = this._config.getRandTmpSubDirectoryPath(rootFolder);
+                    await fs.promises.mkdir(tmpDirectoryPath, {recursive : true});
+
+                    // Сохраняет сырые события в конверте на диск.
+                    const rawEventsFilePath = path.join(tmpDirectoryPath, "raw_events.json");
+                    await FileSystemHelper.writeContentFile(rawEventsFilePath, rawEvents);
+
                     const runner = new CorrGraphRunner(this._config);
-                    const correlatedEventsString = await runner.run(root, rawEventsPath);
+                    const correlatedEventsString = await runner.run(rootPath, rawEventsFilePath);
 
                     if(!correlatedEventsString) {
-                        ExtensionHelper.showUserInfo("По данным событиям не произошло ни одной сработки.");
+                        ExtensionHelper.showUserInfo(`По данным событиям не произошло ни одной сработки корреляций в папке ${rootFolder}.`);
                         return;
                     }
                     
@@ -134,6 +135,8 @@ export class RunningCorrelationGraphProvider {
                         ExtensionHelper.showUserError("Ошибка прогона событий по графу корреляции.");
                         return;
                     }
+
+                    ExtensionHelper.showUserInfo(`Количество сработавших корреляций из папки ${rootFolder}: ${correlationNames.length}`);
 
                     // Отдаем события во front-end.
                     const formatedEvents = TestHelper.formatTestCodeAndEvents(correlatedEventsString);

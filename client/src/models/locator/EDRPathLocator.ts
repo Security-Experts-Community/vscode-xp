@@ -66,6 +66,10 @@ export class EDRPathHelper extends PathLocator {
 		return "aggrules_graph.json";
 	}
 
+	public getLocalizationsFolder() : string {
+		return "";
+	}
+
 	// В корневой директории лежат пакеты экспертизы
 	public getContentRoots() : string[] {
 

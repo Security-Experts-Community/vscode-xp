@@ -26,7 +26,7 @@ export class UnitTestsRunner {
 			fs.mkdirSync(outputFolder);
 		}
 		
-		const tmpDirPath = this._config.getTmpDirectoryPath();
+		const tmpDirPath = this._config.getTmpDirectoryPath(rootFolder);
 		if(!fs.existsSync(tmpDirPath)) {
 			fs.mkdirSync(tmpDirPath);
 		}

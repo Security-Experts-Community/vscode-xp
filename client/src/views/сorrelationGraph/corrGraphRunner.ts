@@ -32,11 +32,11 @@ export class CorrGraphRunner {
 		}
 		
 		const configBuilder = new SiemjConfBuilder(this._config, rootPath);
-		configBuilder.addNormalizationsGraphBuilding(false);
+		configBuilder.addNormalizationsGraphBuilding();
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addCorrelationsGraphBuilding();
-		configBuilder.addEnrichmentsGraphBuilding(false);
+		configBuilder.addEnrichmentsGraphBuilding();
 
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		configBuilder.addEventsEnrichment();
@@ -44,8 +44,8 @@ export class CorrGraphRunner {
 
 		const siemjConfContent = configBuilder.build();
 
-		const randTmpDir = this._config.getRandTmpSubDirectoryPath();
-		await fs.promises.mkdir(randTmpDir);
+		const randTmpDir = this._config.getRandTmpSubDirectoryPath(rootFolder);
+		await fs.promises.mkdir(randTmpDir, {recursive: true});
 
 		// Сохраняем конфигурационный файл для siemj.
 		const siemjConfigPath = path.join(randTmpDir, "siemj.conf");

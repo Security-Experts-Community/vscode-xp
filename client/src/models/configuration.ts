@@ -386,6 +386,10 @@ export class Configuration {
 	public getAgregationsGraphFilePath(rootFolder: string) : string {
 		return path.join(this.getOutputDirectoryPath(rootFolder), this.getAgregationsGraphFileName());
 	}
+
+	public getLocalizationsFolder() : string {
+		return this._pathHelper.getLocalizationsFolder();	
+	}
 	
 	public getFptaDbFileName() : string {
 		return "fpta_db.db";

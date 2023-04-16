@@ -414,8 +414,10 @@ export class IntegrationTestEditorViewProvider  {
 			const modularTestContent = `${integrationalTestSimplifiedContent}\n\n${normalizedEvents}`;
 
 			// Сохраняем модульный тест во временный файл.
-			const randTmpPath = this._config.getRandTmpSubDirectoryPath();
-			await fs.promises.mkdir(randTmpPath);
+			const rootPath = this._config.getRootByPath(currTest.getRuleDirectoryPath());
+			const rootFolder = path.basename(rootPath);
+			const randTmpPath = this._config.getRandTmpSubDirectoryPath(rootFolder);
+			await fs.promises.mkdir(randTmpPath, {recursive: true});
 
 			const fastTestFilePath = path.join(randTmpPath, "fast_test.sc");
 			await FileSystemHelper.writeContentFile(fastTestFilePath, modularTestContent);

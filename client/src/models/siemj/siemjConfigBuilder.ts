@@ -20,7 +20,7 @@ ptsiem_sdk=${this._config.getSiemSdkDirectoryPath()}
 build_tools=${this._config.getBuildToolsDirectoryFullPath()}
 taxonomy=${this._config.getTaxonomyFullPath()}
 output_folder=${outputFolder}
-temp=${this._config.getTmpDirectoryPath()}`;
+temp=${this._config.getTmpDirectoryPath(this._contentRootFolder)}`;
 	}
 
 	/**
@@ -50,7 +50,43 @@ out=\${output_folder}\\${this._config.getNormalizationsGraphFileName()}`;
 		this._scenarios.push("make-nfgraph");
 	}
 
+	/**
+	 * (Пока не используется) Рекурсивная проверка по регулярному выражению наличия файлов в директории 
+	 * @param startPath начальная директория для рекурсивного поиска
+	 * @param fileNameRegexPattern регулярное выражение для поиска
+	 * @returns 
+	 */
+	private checkIfFilesIsExisting(startPath: string, fileNameRegexPattern: RegExp) : boolean {
+		const getFileList = (dirName) : string[] => {
+			let files = [];
+			const items = fs.readdirSync(dirName, { withFileTypes: true });
+
+			for (const item of items) {
+				if (item.isDirectory()) {
+					files = [
+						...files,
+						...(getFileList(`${dirName}/${item.name}`)),
+					];
+				} else {
+					if (fileNameRegexPattern.exec(item.name) != undefined){
+						files.push(`${dirName}/${item.name}`);
+					}
+				}
+			}
+
+			return files;
+		};
+
+		const files = getFileList(startPath);
+		return files.length > 0;
+	}
+
 	public addTablesSchemaBuilding() : void {
+		// Если нет табличных списков, то не собираем схему		
+		// if (!this.checkIfFilesIsExisting(this._contentRootPath, /\.tl$/)){
+		// 	return;
+		// }		
+
 		const contract = this._config.getTablesContract();
 		const tablesSchemaBuildingSection = 
 `
@@ -65,6 +101,13 @@ out=\${output_folder}`;
 	}
 
 	public addTablesDbBuilding() : void {
+
+		// Если нет файла схемы, то не собираем БД
+		// const schemaFilePath = this._config.getSchemaFullPath(this._contentRootFolder);
+		// if(!fs.existsSync(schemaFilePath)) {
+		// 	return;
+		// }
+
 		const tablesDatabaseBuildingSection = 
 `
 [make-tables-db]
@@ -111,7 +154,7 @@ rcc_lang=c
 rules_src=${rulesSrcPath}
 rfilters_src=${rulesFilters}
 table_list_schema=\${output_folder}\\${this._config.getSchemaFileName()}
-out=\${output_folder}\\${this._config.getCorrelatedEventsFileName()}`;
+out=\${output_folder}\\${this._config.getCorrelationsGraphFileName()}`;
 
 		this._siemjConfigSection += cfgraphBuildingSection;
 		this._scenarios.push("make-crgraph");
@@ -154,7 +197,7 @@ out=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}`;
 [make-loca]
 type=BUILD_EVENT_LOCALIZATION
 rules_src=${rulesSrcPathResult}
-out=\${output_folder}\\langs`;
+out=\${output_folder}\\${this._config.getLocalizationsFolder()}`;
 
 		this._siemjConfigSection += localizationBuildingSection;
 		this._scenarios.push("make-loca");
@@ -215,7 +258,7 @@ rules_src=${testsRuleFullPath}`;
 [run-correlate]
 type=CORRELATE
 corrules=\${output_folder}\\${this._config.getCorrelationsGraphFileName()}
-in=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}
+in=\${output_folder}\\${this._config.getEnrichedEventsFileName()}
 table_list_database=\${output_folder}\\${this._config.getFptaDbFileName()}
 out=\${output_folder}\\${this._config.getCorrelatedEventsFileName()}`;
 

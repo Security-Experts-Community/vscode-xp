@@ -62,7 +62,7 @@ export class UnpackKbPackageAction {
 
 			try {
 				const unpackPackagePath = this._config.getRandTmpSubDirectoryPath();
-				await fs.promises.mkdir(unpackPackagePath);
+				await fs.promises.mkdir(unpackPackagePath, {recursive: true});
 
 				const kbFileName = path.parse(kbFilePath).name;
 				const outputDirPath = path.join(unpackPackagePath, kbFileName);

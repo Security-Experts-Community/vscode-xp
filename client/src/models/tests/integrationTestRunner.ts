@@ -52,10 +52,10 @@ export class IntegrationTestRunner {
 		}
 
 		const configBuilder = new SiemjConfBuilder(this._config, rootPath);
-		configBuilder.addNormalizationsGraphBuilding(false);
+		configBuilder.addNormalizationsGraphBuilding();
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
-		configBuilder.addEnrichmentsGraphBuilding(false);
+		configBuilder.addEnrichmentsGraphBuilding();
 
 		// TODO: временное решения до устранение проблем с вылетом тестов по таймауту.
 		configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this._config));
@@ -91,7 +91,7 @@ export class IntegrationTestRunner {
 			// Убираем ошибки по текущему правилу.
 			this._config.getDiagnosticCollection().set(ruleFileUri, []);
 
-			await this.clearTmpFiles(this._config);
+			await this.clearTmpFiles(this._config, rootFolder);
 		} else {
 			this._config.getOutputChannel().show();
 			this._config.getDiagnosticCollection().clear();
@@ -112,15 +112,20 @@ export class IntegrationTestRunner {
 		return integrationTests;
 	}
 
-	private async clearTmpFiles(config : Configuration) : Promise<void> {
-		const siemjConfigPath = config.getTmpDirectoryPath();
+	private async clearTmpFiles(config : Configuration, rootFolder: string) : Promise<void> {
+		const siemjConfigPath = config.getTmpDirectoryPath(rootFolder);
 
-		// Очищаем временные файлы.
-		await fs.promises.access(siemjConfigPath).then(
-			() => { 
-				return fs.promises.unlink(siemjConfigPath); 
-			}
-		);
+		try {
+			// Очищаем временные файлы.
+			await fs.promises.access(siemjConfigPath).then(
+				() => { 
+					return fs.promises.unlink(siemjConfigPath); 
+				}
+			);
+		}
+		catch (error) {
+			//
+		}
 	}
 
 	private readonly TEST_SUCCESS_SUBSTRING = "All tests OK";
