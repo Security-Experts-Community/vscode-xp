@@ -139,14 +139,10 @@ out=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}`;
 		this._scenarios.push("make-ergraph");
 	}
 
-	public addLocalizationBuilding(rulesSrcPath? : string) : void {
-
+	public addLocalizationsBuilding(rulesSrcPath? : string) : void {
 		let rulesSrcPathResult : string;
 		if(!rulesSrcPath) {
-			const pathLocator = this._config.getPathHelper();
-			const contentRoots = pathLocator.getContentRoots();
-
-			rulesSrcPathResult = contentRoots.join(",");
+			rulesSrcPathResult = this._contentRootFolder;
 		} else {
 			rulesSrcPathResult = rulesSrcPath;
 		}
