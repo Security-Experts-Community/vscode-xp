@@ -13,7 +13,9 @@ export enum LocalizationLanguage{
 
 export class Localization {
 
-	private constructor() {}
+	private constructor() {
+		//
+	}
 
 	public setRuDescription(description: string ) {
 		this._ruDescription = description;

@@ -24,7 +24,7 @@ export class LocalizationEditorViewProvider  {
 	public static init(context: vscode.ExtensionContext) {
 
 		const templateFilePath = path.join(
-			ExtensionHelper.getExtentionPath(), "client", "templates", "LocalizationEditor.html");
+			Configuration.get().getExtensionPath(), "client", "templates", "LocalizationEditor.html");
 
 		const provider = new LocalizationEditorViewProvider(templateFilePath);
 	
@@ -96,7 +96,7 @@ export class LocalizationEditorViewProvider  {
 			);
 
 			const config = Configuration.get();
-			const resoucesUri = config.getExtentionUri();
+			const resoucesUri = config.getExtensionUri();
 			const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
 			
 			const templatePlainObject = {

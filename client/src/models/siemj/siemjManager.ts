@@ -26,19 +26,18 @@ export class SiemjManager {
 		}
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
-		const contentRoot = rule.getContentRoot(this._config);
-		const outputDirName = path.basename(contentRoot);
 
-		//const outputDirName = this._config.getPathHelper().getOutputDirName();
-		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
+		const contentRootPath = rule.getContentRootPath(this._config);
+		const contentRootFolder = path.basename(contentRootPath);
+		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
 
 		if(!fs.existsSync(outputFolder)) {
 			fs.mkdirSync(outputFolder);
 		}
 		
 		// Получаем нужный конфиг для нормализации событий.
-		const configBuilder = new SiemjConfBuilder(this._config, contentRoot);
-		configBuilder.addNfgraphBuilding();
+		const configBuilder = new SiemjConfBuilder(this._config, contentRootFolder);
+		configBuilder.addNormalizationsGraphBuilding();
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		const siemjConfContent = configBuilder.build();
 
@@ -57,7 +56,7 @@ export class SiemjManager {
 			this._config.getOutputChannel()
 		);
 
-		const normEventsFilePath = this._config.getNormEventsFilePath(outputDirName);
+		const normEventsFilePath = this._config.getNormalizedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(normEventsFilePath)) {
 			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
 		}
@@ -84,7 +83,7 @@ export class SiemjManager {
 		await SiemjConfigHelper.clearArtifacts(this._config);
 
 		//const outputDirName = this._config.getPathHelper().getOutputDirName();
-		const contentRoot = rule.getContentRoot(this._config);
+		const contentRoot = rule.getContentRootPath(this._config);
 		const outputDirName = path.basename(contentRoot);
 		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
 
@@ -93,12 +92,12 @@ export class SiemjManager {
 		}
 		
 		const configBuilder = new SiemjConfBuilder(this._config, contentRoot);
-		configBuilder.addNfgraphBuilding();
+		configBuilder.addNormalizationsGraphBuilding();
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
-		configBuilder.addEfgraphBuilding();
+		configBuilder.addEnrichmentsGraphBuilding();
 		configBuilder.addEventsNormalization(rawEventsFilePath);
-		configBuilder.addEventsEnrich();
+		configBuilder.addEventsEnrichment();
 		const siemjConfContent = configBuilder.build();
 
 		// Централизованно сохраняем конфигурационный файл для siemj.
@@ -116,7 +115,7 @@ export class SiemjManager {
 			this._config.getOutputChannel()
 		);
 
-		const enrichEventsFilePath = this._config.getEnrichEventsFilePath(outputDirName);
+		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(outputDirName);
 		if(!fs.existsSync(enrichEventsFilePath)) {
 			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
 		}

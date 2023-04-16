@@ -3,8 +3,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { PathLocator } from './pathLocator';
-import { XpException } from '../xpException';
-import { Configuration } from '../configuration';
 
 
 export class EDRPathHelper extends PathLocator {
@@ -27,9 +25,9 @@ export class EDRPathHelper extends PathLocator {
 		return EDRPathHelper._instance;
 	}
 
-	// public getOutputDirName(): string {
-	// 	throw new XpException("Данная функция не поддерживается.");
-	// }
+	public getKbPath() : string {
+		return this.getKbFullPath();
+	}
 
 	public getRootByPath(directory: string): string{
 		if (!directory){
@@ -51,9 +49,21 @@ export class EDRPathHelper extends PathLocator {
 
 		throw new Error(`Путь '${directory}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
 	}
-	
-	public getCorrulesGraphFileName() : string {
+
+	public getNormalizationsGraphFileName() : string {
+		return "formulas_graph.json";
+	}
+
+	public getEnrichmentsGraphFileName() : string {
+		return "enrules_graph.json";
+	}
+
+	public getCorrelationsGraphFileName() : string {
 		return "rules_graph.json";
+	}
+
+	public getAgregationsGraphFileName() : string {
+		return "aggrules_graph.json";
 	}
 
 	// В корневой директории лежат пакеты экспертизы

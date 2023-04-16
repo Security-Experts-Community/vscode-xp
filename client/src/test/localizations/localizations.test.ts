@@ -11,7 +11,7 @@ suite('Локализации', () => {
 			`correlation_name = "MSSQL_user_password_brute" and src.ip != null and newCriteria`,
 			"RuLocalization",
 			"EnLocalization"
-		)
+		);
 	});
 
 	test('Парсинг трех локализаций', () => {

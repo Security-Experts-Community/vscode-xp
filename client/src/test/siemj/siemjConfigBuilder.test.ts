@@ -16,12 +16,12 @@ suite('SiemjConfigBuilder', () => {
 		
 		// TODO: Уточнить тут второй параметр
 		const configBuilder = new SiemjConfBuilder(Configuration.get(), "packages");
-		configBuilder.addNfgraphBuilding();
+		configBuilder.addNormalizationsGraphBuilding();
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
-		configBuilder.addEfgraphBuilding();
+		configBuilder.addEnrichmentsGraphBuilding();
 		configBuilder.addEventsNormalization(rawEventsFilePath);
-		configBuilder.addEventsEnrich();
+		configBuilder.addEventsEnrichment();
 
 		const result = configBuilder.build();
 

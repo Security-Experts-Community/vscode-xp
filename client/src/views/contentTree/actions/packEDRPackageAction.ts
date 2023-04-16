@@ -22,7 +22,7 @@ export class PackEDRPackageAction {
 			outputChannel.clear();
 			outputChannel.show();
 			const packageName = selectedPackage.getName();
-			const rootFolder = path.basename(selectedPackage.getContentRoot(this.config));
+			const rootFolder = path.basename(selectedPackage.getContentRootPath(this.config));
 
 			// Выводим описание задачи.
 			progress.report({message: `Сборка пакета '${packageName}'`});

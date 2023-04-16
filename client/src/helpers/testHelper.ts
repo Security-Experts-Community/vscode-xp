@@ -6,6 +6,7 @@ import { IntegrationTest } from '../models/tests/integrationTest';
 import { RegExpHelper } from './regExpHelper';
 import { XpException } from '../models/xpException';
 
+export type ConvertMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
 export class TestHelper {
 
@@ -256,7 +257,7 @@ export class TestHelper {
 	 * @param mimeType тип событий
 	 * @returns массив сырых событий, в котором каждое событие обёрнуто в конверт заданного типа и начинается с новой строки
 	 */
-	public static addEnvelope(compressedRawEvents : string, mimeType : string) : string[] {
+	public static addEnvelope(compressedRawEvents : string, mimeType : ConvertMimeType) : string[] {
 		// TODO: заменить строку mimeType на enum
 		const newRawEvents = [];
 		

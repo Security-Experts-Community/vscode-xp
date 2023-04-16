@@ -1,12 +1,6 @@
 import * as vscode from 'vscode';
-import { Configuration } from '../models/configuration';
 
 export class ExtensionHelper {
-	static getExtentionPath(): string {
-		const config = Configuration.get();
-		return config.getExtentionPath();
-	}
-
 	/**
 	 * Получить путь к открытому файлу
 	 * @returns путь к открытому файлу или undefined

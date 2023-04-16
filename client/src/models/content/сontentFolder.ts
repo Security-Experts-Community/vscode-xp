@@ -3,9 +3,6 @@ import * as path from "path";
 import * as fs from "fs";
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
-import { KbTreeBaseItem } from './kbTreeBaseItem';
-import { fstat } from 'fs';
 import { RuleBaseItem } from './ruleBaseItem';
 
 export enum ContentFolderType {
@@ -51,13 +48,13 @@ export class ContentFolder extends RuleBaseItem {
 
 		if(type == ContentFolderType.PackageFolder || type == ContentFolderType.ContentRoot) {
 			this.iconPath = {
-				light: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'light', 'package.svg'),
-				dark: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'dark', 'package.svg')
+				light: path.join(this.getResourcesPath(), 'light', 'package.svg'),
+				dark: path.join(this.getResourcesPath(), 'dark', 'package.svg')
 			};
 		} else {
 			this.iconPath = {
-				light: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'light', 'folder.svg'),
-				dark: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'dark', 'folder.svg')
+				light: path.join(this.getResourcesPath(), 'light', 'folder.svg'),
+				dark: path.join(this.getResourcesPath(), 'dark', 'folder.svg')
 			};
 		}
 

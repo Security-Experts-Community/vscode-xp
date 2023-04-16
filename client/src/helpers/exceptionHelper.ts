@@ -6,7 +6,7 @@ export class ExceptionHelper {
 		const errorType = error.constructor.name;
 
 		switch(errorType)  {
-			case "XpExtentionException" : 
+			case "XpExtensionException" : 
 			case "FileNotFoundException" : 
 			case "IncorrectFieldFillingException" :  {
 				const typedError = error as XpException;

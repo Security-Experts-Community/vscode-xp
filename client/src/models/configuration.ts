@@ -1,12 +1,10 @@
-import * as vscode from 'vscode';
-import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
+import * as path from 'path';
+import * as vscode from 'vscode';
 
-import { ExtensionHelper } from '../helpers/extensionHelper';
 import { Guid } from 'guid-typescript';
 import { FileSystemHelper } from '../helpers/fileSystemHelper';
-import { VsCodeApiHelper } from '../helpers/vsCodeApiHelper';
 import { FileNotFoundException } from './fileNotFounException';
 import { XpException as XpException } from './xpException';
 import { ContentType } from '../contentType/contentType';
@@ -24,16 +22,19 @@ export class Configuration {
 		const contentType = this.getContentType();
 		this.setContentType(contentType);
 
-		const extentionName = this.getExtentionDisplayName();
-		this._outputChannel = vscode.window.createOutputChannel(extentionName);
-		this._diagnosticCollection = vscode.languages.createDiagnosticCollection(extentionName);
+		const extensionName = this.getExtensionDisplayName();
+		this._outputChannel = vscode.window.createOutputChannel(extensionName);
+		this._diagnosticCollection = vscode.languages.createDiagnosticCollection(extensionName);
 
 		context.subscriptions.push(this._diagnosticCollection);
 	}
 
-	public getPathHelper(): PathLocator {
-		return this._pathHelper;
-	}
+	public getRulesDirFilters() : string { return this._pathHelper.getRulesDirFilters(); }
+	public getContentRoots() : string[] { return this._pathHelper.getContentRoots(); } 
+	public getPackages(): string[] { return this._pathHelper.getPackages(); }
+	public isKbOpened() : boolean { return this._pathHelper.isKbOpened(); }
+	public getRootByPath(directory: string): string { return this._pathHelper.getRootByPath(directory); } 
+	public getRequiredRootDirectories(): string[] { return this._pathHelper.getRequiredRootDirectories(); }
 
 	public setContentType(contentType: ContentType) {
 		if (contentType === ContentType.EDR) {
@@ -45,6 +46,33 @@ export class Configuration {
 		this._context.workspaceState.update("ContentType", contentType);
 	}
 
+	public getKbFullPath(){ return this._pathHelper.getKbPath(); }
+
+	public static getContentTypeBySubDirectories(subDirectories: string[]): ContentType | undefined {
+		const EDRpathHelper = EDRPathHelper.get();
+		const SIEMpathHelper = SIEMPathHelper.get(); 
+		const EDRrequiredRootDirectories = EDRpathHelper.getRequiredRootDirectories().map(function(d) { 
+			return d.split(path.sep)[0];
+		}).filter((elem, index, self) => {
+			return index === self.indexOf(elem);
+		});
+		const SIEMrequiredRootDirectories = SIEMpathHelper.getRequiredRootDirectories().map(function(d) { 
+			return d.split(path.sep)[0];
+		}).filter((elem, index, self) => {
+			return index === self.indexOf(elem);
+		});
+		
+		if (EDRrequiredRootDirectories.every(folder => subDirectories.includes(folder))) {
+			return ContentType.EDR;
+		}
+
+		if (SIEMrequiredRootDirectories.every(folder => subDirectories.includes(folder))) {
+			return ContentType.SIEM;
+		}
+
+		return undefined;
+	}
+
 	public getDiagnosticCollection() : vscode.DiagnosticCollection {
 		return this._diagnosticCollection;
 	}
@@ -53,7 +81,7 @@ export class Configuration {
 		return this._outputChannel;
 	}
 
-	public getExtentionMode() : vscode.ExtensionMode {
+	public getExtensionMode() : vscode.ExtensionMode {
 		return this._context.extensionMode;
 	}
 
@@ -61,15 +89,15 @@ export class Configuration {
 		return this._context;
 	}
 
-	public getExtentionUri() : vscode.Uri {
+	public getExtensionUri() : vscode.Uri {
 		return this._context.extensionUri;
 	}
 
-	public getExtentionPath() : string {
+	public getExtensionPath() : string {
 		return this._context.extensionPath;
 	}
 
-	public getExtentionDisplayName() : string {
+	public getExtensionDisplayName() : string {
 		return "eXtraction and Processing";
 	}
 
@@ -99,13 +127,13 @@ export class Configuration {
 	 * Возвращает внутреннее имя расширения.
 	 * @returns внутреннее имя расширения.
 	 */
-	public getExtentionSettingsPrefix() : string {
+	public getExtensionSettingsPrefix() : string {
 		// TODO: обновить после переименования
-		return "siem";
+		return "xplang";
 	}
 
 	public getResoucesUri() : vscode.Uri {
-		const templatesUri = vscode.Uri.joinPath(this.getExtentionUri(), "templates");
+		const templatesUri = vscode.Uri.joinPath(this.getExtensionUri(), "templates");
 		return templatesUri;
 	}
 
@@ -252,7 +280,7 @@ export class Configuration {
 		return fullPath;
 	}
 
-	public getOutputDirectoryPath(rootFolder: string) : string {
+	public getBaseOutputDirectoryPath() : string {
 		const extensionSettings = vscode.workspace.getConfiguration("xpConfig");
 		const outputDirectoryPath = extensionSettings.get<string>("outputDirectoryPath");
 
@@ -268,43 +296,98 @@ export class Configuration {
 				outputDirectoryPath);
 		}
 
-		return path.join(outputDirectoryPath, rootFolder);
+		return outputDirectoryPath;
+	}
+
+	public getOutputDirectoryPath(rootFolder: string) : string {
+		return path.join(this.getBaseOutputDirectoryPath(), rootFolder);
+	}
+
+	public getCorrelationDefaultsFileName() : string {
+		return "correlation_defaults.json";
 	}
 
 	public getCorrelationDefaultsFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), "correlation_defaults.json");
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getCorrelationDefaultsFileName());
+	}
+
+	public getSchemaFileName() : string {
+		return "schema.json";
 	}
 
 	public getSchemaFullPath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), "schema.json");
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getSchemaFileName());
 	}
 
-	public getNormEventsFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), "norm_events.json");
+	public getNormalizedEventsFileName() : string {
+		return "norm_events.json";
 	}
 
-	public getEnrichEventsFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), "enrich_events.json");
+	public getNormalizedEventsFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getNormalizedEventsFileName());
 	}
 
-	public getCorrEventsFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), "corr_events.json");
+	public getNotNormalizedEventsFileName() : string {
+		return "not_normalized.json";
 	}
 
-	public getFormulasGraphFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), "formulas_graph.json");
+	public getEnrichedEventsFileName() : string {
+		return "enrich_events.json";
 	}
 
-	public getEnrulesGraphFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), "enrules_graph.json");
+	public getEnrichedEventsFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getEnrichedEventsFileName());
+	}
+	
+	public getCorrelatedEventsFileName() : string {
+		return "corr_events.json";
 	}
 
-	public getCorrulesGraphFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), this._pathHelper.getCorrulesGraphFileName());
+	public getCorrelatedEventsFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getCorrelatedEventsFileName());
+	}
+
+	// Пути к файлам зависят от текущего режима работы
+	// При смене режима SIEM/EDR заменяется реализация _pathHelper
+
+	public getNormalizationsGraphFileName() : string {
+		return this._pathHelper.getNormalizationsGraphFileName();
+	}
+	
+	public getEnrichmentsGraphFileName() : string {
+		return this._pathHelper.getEnrichmentsGraphFileName();
+	}
+
+	public getCorrelationsGraphFileName() : string {
+		return this._pathHelper.getCorrelationsGraphFileName();
+	}
+
+	public getAgregationsGraphFileName() : string {
+		return this._pathHelper.getAgregationsGraphFileName();
+	}
+
+	public getNormalizationsGraphFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder),this._pathHelper.getNormalizationsGraphFileName());
+	}
+	
+	public getEnrichmentsGraphFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getEnrichmentsGraphFileName());
+	}
+
+	public getCorrelationsGraphFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getCorrelationsGraphFileName());
+	}
+
+	public getAgregationsGraphFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getAgregationsGraphFileName());
+	}
+	
+	public getFptaDbFileName() : string {
+		return "fpta_db.db";
 	}
 
 	public getFptaDbFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), "fpta_db.db");
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getFptaDbFileName());
 	}
 
 	public getTmpDirectoryPath() : string {
@@ -442,25 +525,14 @@ export class Configuration {
 	public static async init(context : vscode.ExtensionContext) : Promise<Configuration> {
 		this._instance = new Configuration(context);
 
-		let tmpPath: string;
-		try {
-			tmpPath = this._instance.getTmpDirectoryPath();
+		const baseOutputDirPath = this._instance.getBaseOutputDirectoryPath();
+		try {		
+			if(fs.existsSync(baseOutputDirPath)) {
+				await FileSystemHelper.clearDirectory(baseOutputDirPath);
+			}			
 		}
 		catch(error) {
-			return this._instance;
-		}
-
-		const subDirPaths = FileSystemHelper
-			.readSubDirectories(tmpPath)
-			.map(dn => path.join(tmpPath, dn));
-
-		for(const subDirectoryPath of subDirPaths) {
-			try {
-				await fs.promises.rmdir(subDirectoryPath, {recursive: true});
-			}
-			catch(error) {
-				console.warn(`Не удалось удалить временную директорию '${subDirectoryPath}'`);
-			}
+			console.warn(`Не удалось удалить временную директорию '${baseOutputDirPath}}'`);
 		}
 
 		return this._instance;

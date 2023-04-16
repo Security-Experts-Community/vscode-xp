@@ -7,7 +7,7 @@ import { DateHelper } from '../../helpers/dateHelper';
 import { DataSource } from './dataSource';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { JsHelper } from '../../helpers/jsHelper';
-import { ParseException } from '../ParseException';
+import { ParseException } from '../parseException';
 import { YamlHelper } from '../../helpers/yamlHelper';
 
 export class MetaInfo {
@@ -404,7 +404,7 @@ export class MetaInfo {
 
 	public correctEventIds(metaInfoContent : string) : string {
 
-		const eventIdItemRegExp = /- \'(\d+)\'$/gm;
+		const eventIdItemRegExp = /- '(\d+)'$/gm;
 
 		let curResult: RegExpExecArray | null;
 		while ((curResult = eventIdItemRegExp.exec(metaInfoContent))) {
@@ -416,7 +416,7 @@ export class MetaInfo {
 		return metaInfoContent;
 	}
 
-	public static METAINFO_FILENAME: string = "metainfo.yaml";
+	public static METAINFO_FILENAME = "metainfo.yaml";
 
 	private _directoryPath: string;
 

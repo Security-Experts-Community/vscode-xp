@@ -13,7 +13,7 @@ import { Aggregation } from '../../models/content/aggregation';
 import { Macros } from '../../models/content/macros';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
-import { API, APIState } from '../../@types/vscode.git';
+import { API } from '../../@types/vscode.git';
 import { Configuration } from '../../models/configuration';
 import { OpenKnowledgebaseCommand } from './commands/openKnowledgebaseCommand';
 import { ModularTestsListViewProvider } from '../modularTestsEditor/modularTestsListViewProvider';
@@ -27,7 +27,6 @@ import { BuildAllGraphsAction } from './actions/buildAllGraphsAction';
 import { PackKbPackageAction } from './actions/packKbPackageAction';
 import { UnpackKbPackageAction } from './actions/unpackKbPackageAction';
 import { ContentType } from '../../contentType/contentType';
-import { ContentTypeChecker } from '../../contentType/contentTypeChecker';
 import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';
 import { InitKBRootCommand } from './commands/InitKBRootCommand';
 
@@ -174,8 +173,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 				ContentTreeProvider.unpackKbPackageCommand,
 				async (selectedItem: RuleBaseItem) => {
 	
-					const pathHelper = Configuration.get().getPathHelper();
-					if(!pathHelper.isKbOpened()) {
+					const config = Configuration.get();
+					if(!config.isKbOpened()) {
 						ExtensionHelper.showUserInfo("Нельзя собрать схемы ТС и графы без открытия базы знаний. Сначала откройте базу знаний.");
 						return;
 					}
@@ -202,13 +201,11 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 			vscode.commands.registerCommand(
 				ContentTreeProvider.buildKbPackageCommand,
 				async (selectedItem: RuleBaseItem) => {
-					const pathHelper = Configuration.get().getPathHelper();
-					if(!pathHelper.isKbOpened()) {
+					if(!config.isKbOpened()) {
 						ExtensionHelper.showUserInfo("Нельзя собрать схемы ТС и графы без открытия базы знаний. Сначала откройте базу знаний.");
 						return;
 					}
 					
-					const config = Configuration.get();
 					const bag = new PackKbPackageAction(config);
 					await bag.run(selectedItem);
 				}
@@ -303,14 +300,13 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 	}
 
 	private isContentRoot(dirName: string) {
-		const pathHelper = Configuration.get().getPathHelper();
-		const rootFolders = pathHelper.getContentRoots().map(dir => {return path.basename(dir);});
+		const rootFolders = this._config.getContentRoots().map(dir => {return path.basename(dir);});
 		return rootFolders.includes(dirName);
 	}
 
 	private async initializeRootIfNeeded(subDirectories: string[]) : Promise<void> {
 		// Проверяем тип контента фактический и выбранный и увеломляем если что-то не так.
-		const actualContentType = ContentTypeChecker.getContentTypeBySubDirectories(subDirectories);
+		const actualContentType = Configuration.getContentTypeBySubDirectories(subDirectories);
 		const configContentType = this._config.getContentType();
 		
 		if(!actualContentType){
@@ -327,7 +323,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 
 	private async notifyIfContentTypeIsSelectedIncorrectly(subDirectories: string[]) : Promise<void> {
 		// Проверяем тип контента фактический и выбранный и увеломляем если что-то не так.
-		const actualContentType = ContentTypeChecker.getContentTypeBySubDirectories(subDirectories);
+		const actualContentType = Configuration.getContentTypeBySubDirectories(subDirectories);
 		const configContentType = this._config.getContentType();
 
 		if(actualContentType == ContentType.EDR && configContentType == ContentType.SIEM) {

@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
-import { ExtensionHelper } from '../../../helpers/extensionHelper';
 
+import { ExtensionHelper } from '../../../helpers/extensionHelper';
 import { ProcessHelper } from '../../../helpers/processHelper';
 import { SiemjConfigHelper } from '../../../models/siemj/siemjConfigHelper';
 import { SiemJOutputParser } from '../../integrationTests/siemJOutputParser';

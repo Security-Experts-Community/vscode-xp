@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { workspace, ExtensionContext } from 'vscode';
 
@@ -20,14 +21,16 @@ import { Configuration } from './models/configuration';
 import { XpCompletionItemProvider } from './providers/xpCompletionItemProvider';
 import { ContentTreeProvider } from './views/contentTree/contentTreeProvider';
 import { RunningCorrelationGraphProvider } from './views/сorrelationGraph/runningCorrelationGraphProvider';
-import { TableListsEditorViewProvider } from './views/tableListsEditor/TableListsEditorViewProvider';
+import { TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
 import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvier';
-import { TestsFormatContentMenuExtention } from './ext/contextMenuExtention';
+import { TestsFormatContentMenuExtension } from './ext/contextMenuExtension';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
 import { YamlHelper } from './helpers/yamlHelper';
 import { InitKBRootCommand } from './views/contentTree/commands/InitKBRootCommand';
 import { XPPackingTaskProvider } from './providers/xpCustomTaskProvider';
-
+import { ContentType } from './contentType/contentType';
+import { XpException } from './models/xpException';
+import { FileSystemHelper } from './helpers/fileSystemHelper';
 
 let client: LanguageClient;
 let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
@@ -112,7 +115,7 @@ export async function activate(context: ExtensionContext) {
 
 	
 	// Расширение нативного контекстого меню.
-	TestsFormatContentMenuExtention.init(context);
+	TestsFormatContentMenuExtension.init(context);
 
 	// Подпись функций.
 	const signatureProvider = await XpSignatureHelpProvider.init(context);

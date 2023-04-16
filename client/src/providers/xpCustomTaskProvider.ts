@@ -89,7 +89,7 @@ class CustomBuildTaskTerminal implements vscode.Pseudoterminal {
 			default: throw new Error(`Unexpected XP Mode: ${this.mode}`);
 		}
 
-		for(const pack of config.getPathHelper().getContentRoots()){
+		for(const pack of config.getContentRoots()){
 			await action.run(pack, this.writeEmitter);
 		}
 		this.writeEmitter.fire("----------------------------------------\r\n");

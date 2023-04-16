@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as crc32 from 'crc-32';
 
 export class KbHelper {

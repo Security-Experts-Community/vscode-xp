@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from "path";
+
 import { Configuration } from '../../../models/configuration';
 
 
@@ -23,8 +24,7 @@ export class InitKBRootCommand {
 	}
 
 	static async execute(config: Configuration, rootFolder: string) {
-		const pathHelper = config.getPathHelper();
-		const requiredRootDirectories = pathHelper.getRequiredRootDirectories();
+		const requiredRootDirectories = config.getRequiredRootDirectories();
 		for(const dir of requiredRootDirectories){
 			fs.promises.mkdir(path.join(rootFolder, dir), {recursive: true});
 		}		

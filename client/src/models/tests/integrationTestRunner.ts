@@ -1,16 +1,16 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
 import { SiemjConfigHelper } from '../siemj/siemjConfigHelper';
-import { TestHelper } from '../../helpers/testHelper';
-import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { SiemJOutputParser } from '../../views/integrationTests/siemJOutputParser';
 import { Configuration } from '../configuration';
 import { RuleBaseItem } from '../content/ruleBaseItem';
 import { IntegrationTest } from './integrationTest';
 import { TestStatus } from './testStatus';
+import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
 
 export class IntegrationTestRunner {
 
@@ -42,20 +42,26 @@ export class IntegrationTestRunner {
 			return;
 		}
 
-		// Если у нас в правиле используются сабрули, то надо собрать полный граф корреляций.
-		const ruleCode = await rule.getRuleCode();
-		const isContainsSubrules = TestHelper.isRuleCodeContainsSubrules(ruleCode);
-
 		await SiemjConfigHelper.clearArtifacts(this._config);
 
-		// Если в правиле используются сабрули, тогда собираем весь граф корреляций.
-		let siemjConfContent = "";
-		if(isContainsSubrules) { 
-			siemjConfContent = SiemjConfigHelper.getTestConfigForRuleWithSubrules(rule, this._config);
-
-		} else {
-			siemjConfContent = SiemjConfigHelper.getTestConfig(rule, this._config);
+		const rootPath = rule.getContentRootPath(this._config);
+		const rootFolder = path.basename(rootPath);
+		const outputDirPath = this._config.getOutputDirectoryPath(rootFolder);
+		if(!fs.existsSync(outputDirPath)) {
+			await fs.promises.mkdir(outputDirPath);
 		}
+
+		const configBuilder = new SiemjConfBuilder(this._config, rootFolder);
+		configBuilder.addNormalizationsGraphBuilding(false);
+		configBuilder.addTablesSchemaBuilding();
+		configBuilder.addTablesDbBuilding();
+		configBuilder.addEnrichmentsGraphBuilding(false);
+
+		// TODO: временное решения до устранение проблем с вылетом тестов по таймауту.
+		configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this._config));
+		configBuilder.addTestsRun(rule.getDirectoryPath());
+
+		const siemjConfContent = configBuilder.build();
 
 		if(!siemjConfContent) {
 			ExtensionHelper.showUserError("Не удалось сгенерировать siemj.conf для заданного правила и тестов.");

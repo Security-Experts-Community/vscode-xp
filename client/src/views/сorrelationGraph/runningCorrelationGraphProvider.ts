@@ -7,10 +7,10 @@ import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { CorrGraphRunner } from '../../models/tests/corrGraphRunner';
+import { CorrGraphRunner } from './corrGraphRunner';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
-import { TestHelper } from '../../helpers/testHelper';
+import { ConvertMimeType, TestHelper } from '../../helpers/testHelper';
 
 export class RunningCorrelationGraphProvider {
 
@@ -27,7 +27,7 @@ export class RunningCorrelationGraphProvider {
 
         // Форма создания корреляции.
         const createCorrelationTemplateFilePath = path.join(
-            ExtensionHelper.getExtentionPath(), "client", "templates", "FullGraphRun.html");
+            config.getExtensionPath(), "client", "templates", "FullGraphRun.html");
 
         const reateCorrelationTemplateContent = fs.readFileSync(createCorrelationTemplateFilePath).toString();
         const createCorrelationViewProvider = new RunningCorrelationGraphProvider(
@@ -62,7 +62,7 @@ export class RunningCorrelationGraphProvider {
             this
         );
 
-        const resoucesUri = this._config.getExtentionUri();
+        const resoucesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
         try {
             const templateDefaultContent = {
@@ -106,8 +106,8 @@ export class RunningCorrelationGraphProvider {
 
     private async corrGraphRun(rawEventsPath: string) : Promise<void> {
 
-        const kbPaths = Configuration.get().getPathHelper();
-        const roots = kbPaths.getContentRoots();
+        const config = Configuration.get();
+        const roots = config.getContentRoots();
 
         // Прогоняем событие по графам для каждой из корневых директорий теущего режима
         roots.forEach(root => {
@@ -126,7 +126,7 @@ export class RunningCorrelationGraphProvider {
                     }
                     
                     // Извлекаем имена сработавших корреляций.
-                    const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /(\"correlation_name"\s*:\s*\"(.*?)\")/g);
+                    const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /("correlation_name"\s*:\s*"(.*?)")/g);
                     if(!correlationNames) {
                         ExtensionHelper.showUserError("Ошибка прогона событий по графу корреляции.");
                         return;
@@ -160,7 +160,7 @@ export class RunningCorrelationGraphProvider {
 			return ExtensionHelper.showUserInfo("Конверт для событий уже добавлен.");
 		}
 
-		const mimeType = message?.mimeType as string;
+		const mimeType = message?.mimeType as ConvertMimeType;
 		if(!mimeType) {
 			ExtensionHelper.showUserInfo("Не задан mime. Добавьте задайте его и повторите.");
 			return;
@@ -210,8 +210,8 @@ export class RunningCorrelationGraphProvider {
 	// 		catch(error) {
     //             const errorType = error.constructor.name;
     //             switch(errorType)  {
-    //                 case "XpExtentionException" :  {
-    //                     const typedError = error as XpExtentionException;
+    //                 case "XpExtensionException" :  {
+    //                     const typedError = error as XpExtensionException;
     //                     ExtensionHelper.showError(typedError.message, error.message);
     //                 }
     //                 default: {

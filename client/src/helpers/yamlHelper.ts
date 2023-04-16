@@ -17,12 +17,12 @@ export class YamlHelper {
 		const localizationDumpOptions = Object.assign({}, this.dumpOptions);
 		localizationDumpOptions.forceQuotes = true;
 
-		let yamlContent = js_yaml.dump(object, localizationDumpOptions);
+		const yamlContent = js_yaml.dump(object, localizationDumpOptions);
 		return yamlContent;
 	}
 
 	public static stringify(object: any) : string {
-		let yamlContent = js_yaml.dump(object, this.dumpOptions);
+		const yamlContent = js_yaml.dump(object, this.dumpOptions);
 		return yamlContent;
 	}
 

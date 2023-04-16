@@ -6,6 +6,7 @@ import * as fsExtra from 'fs-extra';
 import { FileSystemHelper } from '../helpers/fileSystemHelper';
 import { ExtensionHelper } from '../helpers/extensionHelper';
 import { YamlHelper } from '../helpers/yamlHelper';
+import { Configuration } from '../models/configuration';
 
 export let doc: vscode.TextDocument;
 export let editor: vscode.TextEditor;
@@ -36,7 +37,8 @@ export class TestFixture {
 	}
 
 	public static getExtensionFilePath(...pathSegments : string[]) {
-		return path.resolve(ExtensionHelper.getExtentionPath(),  ...pathSegments);
+		const config = Configuration.get();
+		return path.resolve(config.getExtensionPath(),  ...pathSegments);
 	}
 
 	public static getCorrelationPath(name : string) {

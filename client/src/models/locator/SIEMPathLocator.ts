@@ -25,6 +25,10 @@ export class SIEMPathHelper extends PathLocator {
 		return SIEMPathHelper._instance;
 	}
 
+	public getKbPath() : string {
+		return this.getKbFullPath();
+	}
+
 	public getOutputDirectoryPath(): string {
 		return path.join(this.getKbFullPath(), "packages");
 	}
@@ -51,13 +55,21 @@ export class SIEMPathHelper extends PathLocator {
 		throw new Error(`Путь '${directory}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
 	}
 
-	// public getOutputDirName(): string {
-	// 	return "packages";
-	// }
+	public getNormalizationsGraphFileName() : string {
+		return "formulas_graph.json";
+	}
 
-	public getCorrulesGraphFileName() : string {
+	public getEnrichmentsGraphFileName() : string {
+		return "enrules_graph.json";
+	}
+
+	public getCorrelationsGraphFileName() : string {
 		return "corrules_graph.json";
-	}	
+	}
+
+	public getAgregationsGraphFileName() : string {
+		return "aggrules_graph.json";
+	}
 
 	// В корневой директории лежат пакеты экспертизы
 	public getContentRoots() : string[] {

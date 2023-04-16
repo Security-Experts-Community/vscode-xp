@@ -2,7 +2,7 @@ import * as vscode  from 'vscode';
 import * as path  from 'path';
 
 import { RuleFileDiagnostics } from '../../views/integrationTests/ruleFileDiagnostics';
-import { ParseException } from '../../models/ParseException';
+import { ParseException } from '../../models/parseException';
 
 export class SiemKBTestsOutputParser {
 	constructor(private _rulePath: string){}

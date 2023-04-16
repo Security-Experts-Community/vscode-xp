@@ -19,7 +19,7 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 	/**
 	 * Переименовывает item.
 	 */
-	public async rename(newName: string) : Promise<void> {}
+	public async rename(newRuleName: string) : Promise<void>{return undefined;}
 
 	/**
 	 * Задает имя метки, которая отображается в дереве.

@@ -24,7 +24,7 @@ export class SetContentTypeCommand {
 			this.Name, 
 			async (newContentType?: ContentType) => {
 				if(newContentType) {
-					return await setContentTypeCommand.updateContentTypeStatusBarItem(contentTypeStatusBarItem, newContentType);
+					return await setContentTypeCommand.updateContentTypeStatusBarItem(contentTypeStatusBarItem, config, newContentType);
 				}
 				const selectedContentType = await vscode.window.showQuickPick(["SIEM", "EDR"], {
 					placeHolder: `Select Content Type`
@@ -36,14 +36,14 @@ export class SetContentTypeCommand {
 		);
 		context.subscriptions.push(command);
 
-		await setContentTypeCommand.updateContentTypeStatusBarItem(contentTypeStatusBarItem);
+		await setContentTypeCommand.updateContentTypeStatusBarItem(contentTypeStatusBarItem, config);
 	}
 
 	private async updateContentTypeStatusBarItem(
 		item: vscode.StatusBarItem,
+		config: Configuration,
 		contentType?: ContentType): Promise<void> {
 
-		const config = Configuration.get();
 		// Если значение не задано, то считываем из хранилища workspace.
 		if (!contentType){
 			// Используем централизованный метод получения текущего типа контента
