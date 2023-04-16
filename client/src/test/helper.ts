@@ -33,7 +33,7 @@ export class TestFixture {
 		return YamlHelper.parse(yamlContent);
 	}
 	
-	public static getTestPath(...pathSegments : string[]) {
+	public static getFixturePath(...pathSegments : string[]) {
 		return path.resolve(__dirname, '../../testFixture', ...pathSegments);
 	}
 
@@ -78,7 +78,7 @@ export class TestFixture {
 	}
 
 	public static getTmpPath() {
-		const tmpDirectory = this.getTestPath("tmp");
+		const tmpDirectory = this.getFixturePath("tmp");
 		return tmpDirectory;
 	}
 

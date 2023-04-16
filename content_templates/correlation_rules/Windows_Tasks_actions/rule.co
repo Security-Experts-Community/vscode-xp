@@ -1,0 +1,87 @@
+event Task_Action:
+    key:
+        event_src.host, object.name
+    filter {
+        filter::NotFromCorrelator()
+        and event_src.title == "windows"
+        # Task Create
+        and
+        (
+            msgid == "4698"
+            or msgid == "602"
+        )
+        
+        # Task Delete
+        #and
+        #(
+        #    msgid == "4699"
+        #    or (msgid == "560" and match(object.value, "*%%1537*"))
+        #)
+
+        # Task Modify
+        #and msgid == "4702"
+
+        and filter::CheckWL_Tasks("Windows_Tasks_actions", )
+    }
+
+rule Windows_Tasks_actions : Task_Action
+
+    init {
+        $labels = "w_auto|CheckWL_Tasks"
+    }
+
+    on Task_Action {
+        $action = action
+
+        $subject.account.id = subject.account.id
+        $subject.account.name = subject.account.name
+        $subject.account.domain = subject.account.domain
+        $subject.account.fullname = subject.account.fullname
+        $subject.account.session_id = datafield1
+
+        $subject.process.id = subject.process.id
+        $subject.process.parent.id = subject.process.parent.id
+        $subject.process.guid = subject.process.guid
+
+        $object.name = object.name
+        $object.type = object.type
+        $object.property = object.property
+        $object.value = object.value
+        $object.vendor = object.vendor
+        $object.state = object.state
+
+        $datafield4 = datafield4
+
+        $event_src.host = event_src.host
+        $event_src.fqdn = event_src.fqdn
+        $event_src.hostname = event_src.hostname
+        $event_src.ip = event_src.ip
+        $event_src.asset = event_src.asset
+        $event_src.vendor = event_src.vendor
+        $event_src.title = event_src.title
+        $event_src.subsys = event_src.subsys
+        $event_src.category = event_src.category
+        $event_src.rule = event_src.rule
+
+        $alert.key = 
+        $alert.context = 
+    }
+
+emit {
+    $correlation_type = ""
+
+    $subject = "account"
+    $object = "task"
+    $status = "success"
+
+    $importance = ""
+
+    $category.generic = "Attack"
+    $category.high = ""
+    $category.low = ""
+
+    $incident.aggregation.key = join([$correlation_name, $event_src.host], "|")
+    $incident.severity = "high"
+    $incident.category = "Undefined"
+    $incident.aggregation.timeout = 2h
+}
