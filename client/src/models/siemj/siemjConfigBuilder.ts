@@ -186,6 +186,7 @@ in=\${output_folder}\\${this._config.getNormalizedEventsFileName()}
 out=\${output_folder}\\${this._config.getEnrichedEventsFileName()}`;
 
 		this._siemjConfigSection += eventEnrichSection;
+		this._scenarios.push("run-enrich");
 	}
 
 	public addTestsRun(testsRuleFullPath: string) : void {
