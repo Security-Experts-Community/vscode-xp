@@ -7,7 +7,6 @@ import { ExtensionHelper } from '../../../helpers/extensionHelper';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { KbHelper } from '../../../helpers/kbHelper';
 import { ProcessHelper } from '../../../helpers/processHelper';
-import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
 import { Configuration } from '../../../models/configuration';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 
@@ -163,6 +162,7 @@ export class PackKbPackageAction {
 
 			try {
 				// в objects положить пакет для сборке
+				// TODO: Проверить корректность названия папки. Утилита сборки ищет папку objects
 				const objectsPackageDirPath = path.join(tmpSubDirectoryPath, "packages", packageName);
 				await fs.promises.mkdir(objectsPackageDirPath, {recursive: true});
 				await fse.copy(packageDirPath, objectsPackageDirPath);
