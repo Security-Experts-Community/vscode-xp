@@ -11,7 +11,7 @@ export class CorrGraphRunner {
 
 	constructor(private _config : Configuration) {}
 
-	public async Run(correlationsFullPath: string, rawEventsFilePath: string) : Promise<string> {
+	public async run(correlationsFullPath: string, rawEventsFilePath: string) : Promise<string> {
 
 		if(!fs.existsSync(rawEventsFilePath)) {
 			throw new XpException(`Файл сырых событий '${rawEventsFilePath}' не доступен.`);
@@ -25,10 +25,10 @@ export class CorrGraphRunner {
 
 		// В зависимости от типа контента получаем нужную выходную директорию.
 		const rootFolder = path.basename(rootPath);
-		const output_folder = this._config.getOutputDirectoryPath(rootFolder);
+		const outputFolder = this._config.getOutputDirectoryPath(rootFolder);
 
-		if(!fs.existsSync(output_folder)) {
-			await fs.promises.mkdir(output_folder);
+		if(!fs.existsSync(outputFolder)) {
+			await fs.promises.mkdir(outputFolder);
 		}
 		
 		const configBuilder = new SiemjConfBuilder(this._config, rootFolder);
@@ -65,7 +65,7 @@ export class CorrGraphRunner {
 		}
 
 		// Типовая команда выглядит так:
-		// "C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
+		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
 		const result = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],

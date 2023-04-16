@@ -94,9 +94,9 @@ export async function activate(context: ExtensionContext) {
 
 	YamlHelper.configure(
 		{
-			lineWidth : -1,
-			indent : 2,
-			noArrayIndent : true
+			lineWidth: -1,
+			indent: 4,
+			noArrayIndent: true
 		}
 	);
 
@@ -124,11 +124,19 @@ export async function activate(context: ExtensionContext) {
 			[
 				{
 					scheme: 'file',
+					language: 'xp'
+				},
+				{
+					scheme: 'file',
 					language: 'co'
 				},
 				{
 					scheme: 'file',
 					language: 'en'
+				},
+				{
+					scheme: 'file',
+					language: 'flt'
 				},
 			],
 			signatureProvider,
@@ -143,11 +151,19 @@ export async function activate(context: ExtensionContext) {
 			[
 				{
 					scheme: 'file',
+					language: 'xp'
+				},
+				{
+					scheme: 'file',
 					language: 'co'
 				},
 				{
 					scheme: 'file',
 					language: 'en'
+				},
+				{
+					scheme: 'file',
+					language: 'flt'
 				},
 			],
 			completionItemProvider,
@@ -175,11 +191,19 @@ export async function activate(context: ExtensionContext) {
 		[
 			{
 				scheme: 'file',
+				language: 'xp'
+			},
+			{
+				scheme: 'file',
 				language: 'co'
 			},
 			{
 				scheme: 'file',
 				language: 'en'
+			},
+			{
+				scheme: 'file',
+				language: 'flt'
 			},
 		],
 		xpDocumentHighlightProvider,

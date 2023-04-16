@@ -1,74 +1,71 @@
 import * as fs from 'fs';
+import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { ExtensionHelper } from '../../../helpers/extensionHelper';
 import { ProcessHelper } from '../../../helpers/processHelper';
 import { SiemjConfigHelper } from '../../../models/siemj/siemjConfigHelper';
-import { SiemJOutputParser } from '../../integrationTests/siemJOutputParser';
+import { SiemJOutputParser } from '../../../models/siemj/siemJOutputParser';
 import { Configuration } from '../../../models/configuration';
-import { ExceptionHelper } from '../../../helpers/exceptionHelper';
+import { SiemjConfBuilder } from '../../../models/siemj/siemjConfigBuilder';
+import { XpException } from '../../../models/xpException';
 
-export class BuildAllGraphsAction {
+export class BuildAllAction {
 	constructor(private _config: Configuration, private _outputParser: SiemJOutputParser) {
 	}
 
-	public async run() : Promise<void> {
+	public async run() : Promise<boolean> {
 
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
-			title: `Сбор графов`
+			title: `Сбор всех артефактов`
 		}, async (progress) => {
 			try {
 				await SiemjConfigHelper.clearArtifacts(this._config);
 				
 				// Если в правиле используются сабрули, тогда собираем весь граф корреляций.
-				const siemjConfContents = SiemjConfigHelper.getBuildAllGraphs(this._config);
-	
+				const siemjConfContents = this.getBuildAllGraphs(this._config);
+				
 				// Очищаем и показываем окно Output.
 				this._config.getOutputChannel().clear();
 				this._config.getDiagnosticCollection().clear();
 				
-				for (const siemjConfContent of siemjConfContents){
+				for (const siemjConfContent of siemjConfContents) {
 					if(!siemjConfContent) {
-						ExtensionHelper.showUserError("Не удалось сгенерировать siemj.conf для заданного правила и тестов.");
-						return;
+						throw new XpException("Не удалось сгенерировать siemj.conf для заданного правила и тестов.");
 					}
 
+					// Cохраняем конфигурационный файл для siemj.
 					const siemjConfigPath = this._config.getTmpSiemjConfigPath();
-					// Централизованно сохраняем конфигурационный файл для siemj.
 					await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 
 					// Типовая команда выглядит так:
-					// "C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
+					// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
 					const siemjExePath = this._config.getSiemjPath();
 					const siemJOutput = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
 						siemjExePath,
 						["-c", siemjConfigPath, "main"],
 						this._config.getOutputChannel());
 
-					if(!siemJOutput.includes(this.SUCCESS_EXIT_CODE_SUBSTRING)) {
-						ExtensionHelper.showUserInfo("Все графы успешно собраны.");
-					} else {
-						ExtensionHelper.showUserError("Ошибка сбора графов. Смотри Output.");
-					}
 
 					// Добавляем новые строки, чтобы разделить разные запуски утилиты
 					this._config.getOutputChannel().append('\n\n\n');
 					this._config.getOutputChannel().show();
 
-					// Разбираем вывод SiemJ и корректируем начало строки с диагностикой (исключаем пробельные символы)
-					let ruleFileDiagnostics = this._outputParser.parse(siemJOutput);
-					ruleFileDiagnostics = await this._outputParser.correctDiagnosticBeginCharRanges(ruleFileDiagnostics);
+					// Разбираем вывод siemJ и корректируем начало строки с диагностикой (исключаем пробельные символы)
+					const ruleFileDiagnostics = await this._outputParser.parse(siemJOutput);
 
 					// Выводим ошибки и замечания для тестируемого правила.
 					for (const rfd of ruleFileDiagnostics) {
 						this._config.getDiagnosticCollection().set(rfd.Uri, rfd.Diagnostics);
 					}
+
+					if(!siemJOutput.includes(this.SUCCESS_EXIT_CODE_SUBSTRING)) {
+						return true;
+					}
+
+					return false;
 				}
-			}
-			catch(error) {
-				ExceptionHelper.show(error, `Ошибка обработки событий: ${error.message} \n ${error.stack}`);
 			}
 			finally {
 				const siemjConfigPath = this._config.getTmpSiemjConfigPath();
@@ -78,6 +75,27 @@ export class BuildAllGraphsAction {
 					() => { return fs.promises.unlink(siemjConfigPath); }
 				);
 			}
+		});
+	}
+
+	private getBuildAllGraphs(config : Configuration ) : string[] {
+		const rootPaths = config.getContentRoots();
+
+		return rootPaths.map(rootPath => { 
+			const rootFolder = config.getOutputDirectoryPath(path.basename(rootPath));
+			if(!fs.existsSync(rootFolder)) {
+				fs.mkdirSync(rootFolder, {recursive: true});
+			}
+
+			const configBuilder = new SiemjConfBuilder(config, rootFolder);
+			configBuilder.addNormalizationsGraphBuilding(false);
+			configBuilder.addTablesSchemaBuilding();
+			configBuilder.addTablesDbBuilding();
+			configBuilder.addEnrichmentsGraphBuilding(false);
+			configBuilder.addLocalizationsBuilding();
+	
+			const siemjConfContent = configBuilder.build();
+			return siemjConfContent;
 		});
 	}
 

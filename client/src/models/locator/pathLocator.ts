@@ -24,6 +24,7 @@ export abstract class PathLocator {
 	// KB
 	public abstract getRulesDirFilters() : string
 	public abstract getContentRoots() : string[]
+	public abstract getRequiredRootDirectories(): string[]
 	public abstract getPackages(): string[]
 	public abstract isKbOpened() : boolean
 	public abstract getRootByPath(directory: string): string
@@ -40,7 +41,7 @@ export abstract class PathLocator {
 		}
 	}
 
-	protected getKbFullPath() : string {
+	public getKbFullPath() : string {
 		return this._kbFullPath;
 	}
 

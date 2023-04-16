@@ -12,11 +12,11 @@ import { YamlHelper } from '../../helpers/yamlHelper';
 
 export class MetaInfo {
 
-	public static parseFromFile(ruleDirFullPath: string) : MetaInfo {
-		
+	public static fromFile(ruleDirFullPath: string): MetaInfo {
+
 		const metaInfoFullPath = path.join(ruleDirFullPath, MetaInfo.METAINFO_FILENAME);
 
-		if(!fs.existsSync(metaInfoFullPath)) {
+		if (!fs.existsSync(metaInfoFullPath)) {
 			// Заполнение по умолчанию.
 			const emptyMetainfo = new MetaInfo();
 			emptyMetainfo.setDirectoryPath(ruleDirFullPath);
@@ -28,39 +28,47 @@ export class MetaInfo {
 		}
 
 		const yamlContent = FileSystemHelper.readContentFileSync(metaInfoFullPath);
-		const metaInfoPlain = YamlHelper.parse(yamlContent);
+		const metaInfoAsInFile = YamlHelper.parse(yamlContent);
 
-		const metaInfo = MetaInfo.create(metaInfoPlain);
+		const metaInfo = MetaInfo.create(metaInfoAsInFile);
 		metaInfo.setDirectoryPath(ruleDirFullPath);
 
 		return metaInfo;
 	}
 
-	public static create(metaInfoPlain: any) : MetaInfo {
-		
+	public static create(metaInfoAsInFile: any): MetaInfo {
 		const metaInfo = new MetaInfo();
-		if(metaInfoPlain.Name) {
-			metaInfo.setName(metaInfoPlain.Name);
+		metaInfo._asInFile = metaInfoAsInFile;
+
+		if (metaInfoAsInFile.Name) {
+			metaInfo.setName(metaInfoAsInFile.Name);
+		}
+		else if (metaInfoAsInFile.ContentAutoName) {
+			metaInfo.setName(metaInfoAsInFile.ContentAutoName);
 		}
 		else {
 			metaInfo.setName("");
 		}
 
-		if(metaInfoPlain.Created && metaInfoPlain.Created.length != 0) {
-			const created = DateHelper.parseDate(metaInfoPlain.Created);
+		const useExpertContext = Boolean(metaInfoAsInFile.ExpertContext);
+
+		const metaDict = useExpertContext ? metaInfoAsInFile.ExpertContext : metaInfoAsInFile;
+
+		if (metaDict.Created && metaDict.Created.length != 0) {
+			const created = DateHelper.parseDate(metaDict.Created);
 			metaInfo.setCreatedDate(created);
 		}
 
-		if(metaInfoPlain.Updated && metaInfoPlain.Updated.length != 0) {
-			const updated = DateHelper.parseDate(metaInfoPlain.Updated);
+		if (metaDict.Updated && metaDict.Updated.length != 0) {
+			const updated = DateHelper.parseDate(metaDict.Updated);
 			metaInfo.setUpdatedDate(updated);
 		}
 
-		const eventDescriptionsPlain = metaInfoPlain.EventDescriptions as any[];
-		if(eventDescriptionsPlain) {
-			const eventDescriptions = eventDescriptionsPlain.map( edp => {
+		const eventDescriptionsPlain = metaInfoAsInFile.EventDescriptions as any[];
+		if (eventDescriptionsPlain) {
+			const eventDescriptions = eventDescriptionsPlain.map(edp => {
 				const eventDesc = new MetaInfoEventDescription();
-				if(!edp.Criteria) {
+				if (!edp.Criteria) {
 					throw new ParseException("Ошибка консистентности критерия локализации.");
 				}
 
@@ -68,43 +76,51 @@ export class MetaInfo {
 				eventDesc.setLocalizationId(edp.LocalizationId);
 				return eventDesc;
 			});
-	
+
 			metaInfo.addEventDescriptions(eventDescriptions);
 		}
 
-		metaInfo.setOrigin(metaInfoPlain.Origin);
-		metaInfo.setObjectId(metaInfoPlain.ObjectId);
+		metaInfo.setObjectId(metaInfoAsInFile.ObjectId);
 
-		if(metaInfoPlain.KnowledgeHolders) {
-			metaInfo._knowledgeHolders = metaInfoPlain.KnowledgeHolders as string[];
+		if (metaDict.KnowledgeHolders) {
+			metaInfo.KnowledgeHolders = metaDict.KnowledgeHolders as string[];
 		}
 
-		if(metaInfoPlain.Usecases) {
-			metaInfo._usecases = metaInfoPlain.Usecases as string[];
-		}
-		
-		if(metaInfoPlain.Falsepositives) {
-			metaInfo._falsepositives = metaInfoPlain.Falsepositives as string[];
+		if (metaDict.Usecases) {
+			metaInfo.Usecases = metaDict.Usecases as string[];
 		}
 
-		if(metaInfoPlain.References) {
-			metaInfo._references = metaInfoPlain.References as string[];
+		if (metaDict.Falsepositives) {
+			metaInfo.Falsepositives = metaDict.Falsepositives as string[];
 		}
 
-		if(metaInfoPlain.Improvements) {
-			metaInfo._improvements = metaInfoPlain.Improvements as string[];
+		if (metaDict.References) {
+			metaInfo.References = metaDict.References as string[];
 		}
 
-		if(metaInfoPlain.DataSources) {
-			metaInfo._dataSources = metaInfoPlain.DataSources as DataSource[];
+		if (metaDict.Improvements) {
+			metaInfo.Improvements = metaDict.Improvements as string[];
 		}
 
-		if(metaInfoPlain.ATTACK) {
-			metaInfo._attacks = Object.keys(metaInfoPlain.ATTACK).map(
+		if (metaDict.DataSources) {
+			metaInfo.DataSources = metaDict.DataSources as DataSource[];
+		}
+
+		let attackDict = metaInfoAsInFile.ATTACK;
+		if (useExpertContext) {
+			try {
+				attackDict = metaInfoAsInFile.ContentRelations.Implements.ATTACK;
+			}
+			catch (e) {
+				if (!(e instanceof TypeError)) throw e;
+			}
+		}
+		if (attackDict) {
+			metaInfo.ATTACK = Object.keys(attackDict).map(
 				tactic => {
 					const ta = new Attack();
 					ta.Tactic = tactic;
-					ta.Techniques = metaInfoPlain.ATTACK[tactic];
+					ta.Techniques = attackDict[tactic];
 					return ta;
 				}
 			);
@@ -113,287 +129,264 @@ export class MetaInfo {
 		return metaInfo;
 	}
 
-	public async toObject() : Promise<any> {
-		
-		// Сохраняем если ранее не был сохранен.
-		const metainfoFilePath = path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
-		if(!fs.existsSync(metainfoFilePath)) {
-			await this.save();
-		}
+	public async toObject(): Promise<any> {
 
-		const metainfoString = await FileSystemHelper.readContentFile(metainfoFilePath);
-		const metaInfo = YamlHelper.parse(metainfoString);
+		// Сохраняем если ранее не был сохранен.
+		//const metainfoFilePath = path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
+		//if (!fs.existsSync(metainfoFilePath)) {
+		//	await this.save();
+		//}
+
+		//const metainfoString = await FileSystemHelper.readContentFile(metainfoFilePath);
+		//const metaInfo = YamlHelper.parse(metainfoString);
 
 		// Модифицируем ATTACK для форматирования корректного.
-		metaInfo.ATTACK = this.getAttacks();
-		return metaInfo;
+		//metaInfo.ATTACK = this.getAttacks();
+		return this; //metaInfo;
 	}
 
-	public setDirectoryPath(dirPath: string) : void {
+	public setDirectoryPath(dirPath: string): void {
 		this._directoryPath = dirPath;
 	}
 
-	public getDirectoryPath() : string {
+	public getDirectoryPath(): string {
 		return this._directoryPath;
 	}
 
-	public setCreatedDate(date: Date) : void {
-		this._createdDate = date;
+	public setCreatedDate(date: Date): void {
+		this.Created = date;
+		this.FormattedCreated = DateHelper.dateToString(date);
 	}
 
-	public getCreatedDate() : Date {
-		return this._createdDate;
+	public getCreatedDate(): Date {
+		return this.Created;
 	}
 
 	public setUpdatedDate(date: Date) {
-		this._updatedDate = date;
+		this.Updated = date;
+		this.FormattedUpdated = DateHelper.dateToString(date);
 	}
 
 	public setName(name: string) {
-		this._name = name;
+		this.Name = name;
 	}
 
-	public getName() : string {
-		return this._name;
+	public getName(): string | undefined {
+		return this.Name;
 	}
 
 	public setObjectId(objectId: string) {
-		this._objectId = objectId;
+		this.ObjectId = objectId;
 	}
 
-	public getObjectId() : string {
-		return this._objectId;
-	}
-
-	public setOrigin(origin: string) {
-		this._origin = origin;
-	}
-
-	public getOrigin() : string {
-		return this._origin;
+	public getObjectId(): string | undefined {
+		return this.ObjectId;
 	}
 
 	public setUseCases(usecase: string[]) {
-		if(!usecase) {
-			this._usecases = [];
+		if (!usecase) {
+			this.Usecases = [];
 			return;
 		}
 
-		if(usecase.length == 1 && usecase[0] == "") {
-			this._usecases = [];
+		if (usecase.length == 1 && usecase[0] == "") {
+			this.Usecases = [];
 			return;
 		}
 
-		this._usecases = usecase;
+		this.Usecases = usecase;
 	}
 
-	public getUseCases() : string [] {
-		return this._usecases;
+	public getUseCases(): string[] {
+		return this.Usecases;
 	}
 
 	public setKnowledgeHolders(knowledgeHolders: string[]) {
-		if(!knowledgeHolders) {
-			this._knowledgeHolders = [];
+		if (!knowledgeHolders) {
+			this.KnowledgeHolders = [];
 			return;
 		}
 
-		if(knowledgeHolders.length == 1 && knowledgeHolders[0] == "") {
-			this._knowledgeHolders = [];
+		if (knowledgeHolders.length == 1 && knowledgeHolders[0] == "") {
+			this.KnowledgeHolders = [];
 			return;
 		}
 
-		this._knowledgeHolders = knowledgeHolders;
+		this.KnowledgeHolders = knowledgeHolders;
 	}
 
-	public getKnowledgeHolders() : string [] {
-		return this._knowledgeHolders;
+	public getKnowledgeHolders(): string[] {
+		return this.KnowledgeHolders;
 	}
 
 	public setImprovements(improvements: string[]) {
-		if(!improvements) {
-			this._improvements = [];
+		if (!improvements) {
+			this.Improvements = [];
 			return;
 		}
 
-		if(improvements.length == 1 && improvements[0] == "") {
-			this._improvements = [];
+		if (improvements.length == 1 && improvements[0] == "") {
+			this.Improvements = [];
 			return;
 		}
 
-		this._improvements = improvements;
+		this.Improvements = improvements;
 	}
 
-	public getImprovements() : string [] {
-		return this._improvements;
+	public getImprovements(): string[] {
+		return this.Improvements;
 	}
 
 	public setDataSources(dataSources: DataSource[]) {
-		if(!dataSources) {
-			this._dataSources = [];
+		if (!dataSources) {
+			this.DataSources = [];
 			return;
 		}
 
-		this._dataSources = dataSources;
+		this.DataSources = dataSources;
 	}
 
-	public getDataSources() : DataSource [] {
-		return this._dataSources;
+	public getDataSources(): DataSource[] {
+		return this.DataSources;
 	}
 
 	public setFalsePositives(falsepositives: string[]) {
-		if(!falsepositives) {
-			this._falsepositives = [];
+		if (!falsepositives) {
+			this.Falsepositives = [];
 			return;
 		}
 
-		if(falsepositives.length == 1 && falsepositives[0] == "") {
-			this._falsepositives = [];
+		if (falsepositives.length == 1 && falsepositives[0] == "") {
+			this.Falsepositives = [];
 			return;
 		}
 
-		this._falsepositives = falsepositives;
+		this.Falsepositives = falsepositives;
 	}
 
-	public getFalsePositives() : string [] {
-		return this._falsepositives;
+	public getFalsePositives(): string[] {
+		return this.Falsepositives;
 	}
 
 	public setReferences(references: string[]) {
-		if(!references) {
-			this._references = [];
+		if (!references) {
+			this.References = [];
 			return;
 		}
 
-		if(references.length == 1 && references[0] == "") {
-			this._references = [];
+		if (references.length == 1 && references[0] == "") {
+			this.References = [];
 			return;
 		}
 
-		this._references = references;
+		this.References = references;
 	}
 
-	public getReferences() : string [] {
-		return this._references;
+	public getReferences(): string[] {
+		return this.References;
 	}
 
-	public setTags(tags: string[]) {
-		if(!tags) {
-			this._tags = [];
-			return;
-		}
-
-		if(tags.length == 1 && tags[0] == "") {
-			this._tags = [];
-			return;
-		}
-
-		this._tags = tags;
+	public getAttacks(): Attack[] {
+		return this.ATTACK;
 	}
 
-	public getTags() : string [] {
-		return this._tags;
+	public setAttacks(attacks: Attack[]) {
+		this.ATTACK = attacks;
 	}
 
-	public getAttacks() : Attack[] {
-		return this._attacks;
+	public addEventDescriptions(eventDescription: MetaInfoEventDescription[]): void {
+		this.EventDescriptions.push(...eventDescription);
 	}
 
-	public setAttacks(attacks: Attack[] ) {
-		this._attacks = attacks;
+	public getEventDescriptions(): MetaInfoEventDescription[] {
+		return this.EventDescriptions;
 	}
 
-	public addEventDescriptions(eventDescription: MetaInfoEventDescription[]) : void {
-		this._eventDescriptions.push(...eventDescription);
+	public clearEventDescriptions(): void {
+		this.EventDescriptions = [];
 	}
 
-	public getEventDescriptions() : MetaInfoEventDescription[] {
-		return this._eventDescriptions;
-	}
-
-	public clearEventDescriptions() : void {
-		this._eventDescriptions = [];
-	}
-
-	public async save(ruleDirectoryFullPath?: string) : Promise<void> {
+	public async save(ruleDirectoryFullPath?: string): Promise<void> {
 
 		let metaInfoFullPath: string;
-		if(ruleDirectoryFullPath) {
+		if (ruleDirectoryFullPath) {
 			metaInfoFullPath = path.join(ruleDirectoryFullPath, MetaInfo.METAINFO_FILENAME);
 		} else {
 			metaInfoFullPath = path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
 		}
-		
+
+		this.setUpdatedDate(new Date());
 
 		// Если дата создания не задана, то будет текущая.
-		const updatedDate = new Date();
-		if(!this._createdDate) {
-			this._createdDate = updatedDate;
+		if (!this.Created) {
+			this.setCreatedDate(this.Updated);
 		}
 
-		const metaInfoObject = {
-			"Created" : DateHelper.dateToString(this._createdDate),
-			"Updated" : DateHelper.dateToString(updatedDate)
-		};
+		// Обновляем метаданные на диске известными нам полями, оставляя другие неизменными
+		const metaInfoObject = this._asInFile;
 
-		if(this._name) {
-			metaInfoObject["Name"] = this._name;
+		if (!metaInfoObject.ExpertContext) {
+			metaInfoObject.ExpertContext = {};
 		}
 
-		if(this._eventDescriptions.length != 0) {
-			metaInfoObject["EventDescriptions"] = 
-				this._eventDescriptions.map( function (ed, index) {
-					return {"Criteria" : ed.getCriteria(), "LocalizationId" : ed.getLocalizationId()};
+		metaInfoObject.ExpertContext.Created = DateHelper.dateToString(this.Created);
+		metaInfoObject.ExpertContext.Updated = DateHelper.dateToString(this.Updated);
+
+		if (this.Name) {
+			metaInfoObject.ContentAutoName = this.Name;
+			if (metaInfoObject.Name) delete metaInfoObject.Name;
+		}
+
+		if (this.EventDescriptions.length != 0) {
+			metaInfoObject["EventDescriptions"] =
+				this.EventDescriptions.map(function (ed, index) {
+					return { "Criteria": ed.getCriteria(), "LocalizationId": ed.getLocalizationId() };
 				});
-		}	
-
-		if(this._origin) {
-			metaInfoObject["Origin"] = this._origin;
 		}
 
-		if(this._objectId) {
-			metaInfoObject["ObjectId"] = this._objectId;
+		if (this.ObjectId) {
+			metaInfoObject.ObjectId = this.ObjectId;
 		}
 
-		if(this._knowledgeHolders.length != 0) {
-			metaInfoObject["KnowledgeHolders"] = this._knowledgeHolders;
-		}
-		
-		if(this._usecases.length != 0) {
-			metaInfoObject["Usecases"] = this._usecases;
-		}
-		
-		if(this._falsepositives.length != 0) {
-			metaInfoObject["Falsepositives"] = this._falsepositives;
-		}
-		
-		if(this._tags.length != 0) {
-			metaInfoObject["Tags"] = this._tags;
-		}
-		
-		if(this._references.length != 0) {
-			metaInfoObject["References"] = this._references;
+		if (this.KnowledgeHolders.length != 0) {
+			metaInfoObject.ExpertContext.KnowledgeHolders = this.KnowledgeHolders;
 		}
 
-		if(this._improvements.length != 0) {
-			metaInfoObject["Improvements"] = this._improvements;
+		if (this.Usecases.length != 0) {
+			metaInfoObject.ExpertContext.Usecases = this.Usecases;
+		}
+
+		if (this.Falsepositives.length != 0) {
+			metaInfoObject.ExpertContext.Falsepositives = this.Falsepositives;
+		}
+
+		if (this.References.length != 0) {
+			metaInfoObject.ExpertContext.References = this.References;
+		}
+
+		if (this.Improvements.length != 0) {
+			metaInfoObject.ExpertContext.Improvements = this.Improvements;
 		}
 
 		const attackPlain = {};
-		this._attacks.forEach( 
+		this.ATTACK.forEach(
 			attack => {
 				const tactic = attack.Tactic as string;
 				const techniques = attack.Techniques as string[];
-				
-				attackPlain[tactic] = techniques;
+
+				if (!attackPlain[tactic]) attackPlain[tactic] = [];
+				attackPlain[tactic] = attackPlain[tactic].concat(techniques);
 			}
 		);
 
-		if(!JsHelper.isEmptyObj(attackPlain)) {
-			metaInfoObject["ATTACK"] = attackPlain;
+		if (!JsHelper.isEmptyObj(attackPlain)) {
+			if (!metaInfoObject.ContentRelations) metaInfoObject.ContentRelations = {};
+			if (!metaInfoObject.ContentRelations.Implements) metaInfoObject.ContentRelations.Implements = {};
+			metaInfoObject.ContentRelations.Implements.ATTACK = attackPlain;
 		}
-		
-		if(this._dataSources.length != 0) {
-			metaInfoObject["DataSources"] = this._dataSources;
+
+		if (this.DataSources.length != 0) {
+			metaInfoObject.ExpertContext.DataSources = this.DataSources;
 		}
 
 		let yamlContent = YamlHelper.stringify(metaInfoObject);
@@ -402,9 +395,9 @@ export class MetaInfo {
 		await FileSystemHelper.writeContentFile(metaInfoFullPath, yamlContent);
 	}
 
-	public correctEventIds(metaInfoContent : string) : string {
+	public correctEventIds(metaInfoContent: string): string {
 
-		const eventIdItemRegExp = /- '(\d+)'$/gm;
+		const eventIdItemRegExp = /- ['"](\d+)['"]$/gm;
 
 		let curResult: RegExpExecArray | null;
 		while ((curResult = eventIdItemRegExp.exec(metaInfoContent))) {
@@ -419,23 +412,24 @@ export class MetaInfo {
 	public static METAINFO_FILENAME = "metainfo.yaml";
 
 	private _directoryPath: string;
+	private _asInFile: any = {};
 
-	private _createdDate: Date;
-	private _updatedDate: Date;
-	private _name: string = undefined
-	private _objectId: string = undefined;
-	private _origin: string = undefined;
+	private Created: Date;
+	private Updated: Date;
+	private FormattedCreated: string;
+	private FormattedUpdated: string;
+	private Name: string | undefined = undefined;
+	private ObjectId: string | undefined = undefined;
 
-	private _knowledgeHolders: string[] = [];
-	private _usecases: string[] = [];
-	private _references: string[] = [];
-	private _falsepositives: string[] = [];
-	private _improvements: string[] = [];
-	private _tags: string[] = [];
+	private KnowledgeHolders: string[] = [];
+	private Usecases: string[] = [];
+	private References: string[] = [];
+	private Falsepositives: string[] = [];
+	private Improvements: string[] = [];
 
-	private _dataSources: DataSource[] = [];
-	private _attacks: Attack [] = [];
-	private _eventDescriptions: MetaInfoEventDescription [] = [];
+	private DataSources: DataSource[] = [];
+	private ATTACK: Attack[] = [];
+	private EventDescriptions: MetaInfoEventDescription[] = [];
 }
 
 

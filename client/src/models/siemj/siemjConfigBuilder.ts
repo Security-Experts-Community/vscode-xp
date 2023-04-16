@@ -21,6 +21,10 @@ output_folder=${outputFolder}
 temp=${this._config.getTmpDirectoryPath()}`;
 	}
 
+	/**
+	 * Добавить сборку графа нормализации
+	 * @param force пересобирать ли ранее собранный	граф
+	 */
 	public addNormalizationsGraphBuilding(force = true) : void {
 		const xpAppendixPath = this._config.getAppendixFullPath();
 
@@ -72,30 +76,6 @@ out=\${output_folder}\\${this._config.getFptaDbFileName()}`;
 		this._scenarios.push("make-tables-db");
 	}
 
-	public addEnrichmentsGraphBuilding(force = true) : void {
-		// Не собираем граф, если он уже есть.
-		if(!force) {
-			const enrichGraphFilePath = this._config.getEnrichmentsGraphFilePath(this._contentRootFolder);
-			if(fs.existsSync(enrichGraphFilePath)) {
-				return;
-			}
-		}
-
-		const rulesFilters = this._config.getRulesDirFilters();
-		const efgraphBuildingSection = 
-`
-[make-ergraph]
-type=BUILD_RULES
-rcc_lang=e
-rules_src=${this._contentRootFolder}
-rfilters_src=${rulesFilters}
-table_list_schema=\${output_folder}\\${this._config.getSchemaFileName()}
-out=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}`;
-
-		this._siemjConfigSection += efgraphBuildingSection;
-		this._scenarios.push("make-ergraph");
-	}
-	
 	/**
 	 * Добавить сборку графа корреляций
 	 * @param force принудительно пересобрать граф корреляций
@@ -135,13 +115,60 @@ out=\${output_folder}\\${this._config.getCorrelatedEventsFileName()}`;
 		this._scenarios.push("make-crgraph");
 	}
 
+	public addEnrichmentsGraphBuilding(force = true) : void {
+		// Не собираем граф, если он уже есть.
+		if(!force) {
+			const enrichGraphFilePath = this._config.getEnrichmentsGraphFilePath(this._contentRootFolder);
+			if(fs.existsSync(enrichGraphFilePath)) {
+				return;
+			}
+		}
+
+		const rulesFilters = this._config.getRulesDirFilters();
+		const efgraphBuildingSection = 
+`
+[make-ergraph]
+type=BUILD_RULES
+rcc_lang=e
+rules_src=${this._contentRootFolder}
+rfilters_src=${rulesFilters}
+table_list_schema=\${output_folder}\\${this._config.getSchemaFileName()}
+out=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}`;
+
+		this._siemjConfigSection += efgraphBuildingSection;
+		this._scenarios.push("make-ergraph");
+	}
+
+	public addLocalizationBuilding(rulesSrcPath? : string) : void {
+
+		let rulesSrcPathResult : string;
+		if(!rulesSrcPath) {
+			const pathLocator = this._config.getPathHelper();
+			const contentRoots = pathLocator.getContentRoots();
+
+			rulesSrcPathResult = contentRoots.join(",");
+		} else {
+			rulesSrcPathResult = rulesSrcPath;
+		}
+
+		const localizationBuildingSection = 
+`
+[make-loca]
+type=BUILD_EVENT_LOCALIZATION
+rules_src=${rulesSrcPathResult}
+out=\${output_folder}\\langs`;
+
+		this._siemjConfigSection += localizationBuildingSection;
+		this._scenarios.push("make-loca");
+	}
+
 	public addEventsNormalization(rawEventsFilePath : string) : void {
 
 		const eventNormalizationSection = 
 `
 [run-normalize]
 type=NORMALIZE
-formulas=\${make-nfgraph:out}
+formulas=\${output_folder}\\${this._config.getNormalizationsGraphFileName()}
 in=${rawEventsFilePath}
 raw_without_envelope=no
 print_statistics=yes
@@ -158,12 +185,11 @@ out=\${output_folder}\\${this._config.getNormalizedEventsFileName()}`;
 `
 [run-enrich]
 type=ENRICH
-enrules=\${make-ergraph:out}
-in=\${run-normalize:out}
+enrules=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}
+in=\${output_folder}\\${this._config.getNormalizedEventsFileName()}
 out=\${output_folder}\\${this._config.getEnrichedEventsFileName()}`;
 
 		this._siemjConfigSection += eventEnrichSection;
-		this._scenarios.push("run-enrich ");
 	}
 
 	public addTestsRun(testsRuleFullPath: string) : void {
@@ -199,7 +225,6 @@ out=\${output_folder}\\${this._config.getCorrelatedEventsFileName()}`;
 	}
 
 	public build() : string {
-		
 		const resultConfig = 
 `${this._siemjConfigSection}
 [main]

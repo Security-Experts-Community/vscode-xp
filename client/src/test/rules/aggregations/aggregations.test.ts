@@ -1,9 +1,7 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
-import * as fs from 'fs';
 
 import { TestFixture } from '../../helper';
-import { Test } from 'mocha';
 import { ContentTreeProvider } from '../../../views/contentTree/contentTreeProvider';
 import { Aggregation } from '../../../models/content/aggregation';
 

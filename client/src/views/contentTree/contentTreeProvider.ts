@@ -22,13 +22,15 @@ import { CreateSubFolderCommand } from './commands/сreateSubFolderCommand';
 import { RenameTreeItemCommand } from './commands/renameTreeItemCommand';
 import { DeleteContentItemCommand } from './commands/deleteContentItemCommand';
 import { CreatePackageCommand } from './commands/createPackageCommand';
-import { SiemJOutputParser } from '../integrationTests/siemJOutputParser';
-import { BuildAllGraphsAction } from './actions/buildAllGraphsAction';
+import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
+import { BuildAllAction } from './actions/buildAllAction';
 import { PackKbPackageAction } from './actions/packKbPackageAction';
 import { UnpackKbPackageAction } from './actions/unpackKbPackageAction';
 import { ContentType } from '../../contentType/contentType';
 import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';
-import { InitKBRootCommand } from './commands/InitKBRootCommand';
+import { GitHooks } from './gitHooks';
+import { InitKBRootCommand } from './commands/initKBRootCommand';
+import { ExceptionHelper } from '../../helpers/exceptionHelper';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolder|RuleBaseItem> {
 
@@ -39,11 +41,13 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 		const context = config.getContext();
 		const gitApi = await VsCodeApiHelper.getScmGitApiCore();
 
+		const gitHooks = new GitHooks(gitApi, config);
 		const kbTreeProvider = new ContentTreeProvider(knowledgebaseDirectoryPath, gitApi, config);
 
 		// Обновляем дерево при смене текущей ветки.
 		gitApi.onDidOpenRepository( (r) => {
 			r.state.onDidChange( (e) => {
+				gitHooks.update();
 				kbTreeProvider.refresh();
 			});
 		});
@@ -191,8 +195,23 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 				async (selectedItem: RuleBaseItem) => {
 	
 					const parser = new SiemJOutputParser();
-					const bag = new BuildAllGraphsAction(config, parser);
-					await bag.run();
+					const bag = new BuildAllAction(config, parser);
+
+					let baResult : boolean;
+					try {
+						baResult = await bag.run();
+					}
+					catch (error) {
+						ExceptionHelper.show(error, this.COMPILATION_ERROR);
+						return;
+					}
+
+					if(!baResult) {
+						ExtensionHelper.showUserError(this.COMPILATION_ERROR);
+						return;
+					}
+					
+					ExtensionHelper.showUserInfo("Компиляция успешно завершена.");
 				}
 			)
 		);
@@ -206,8 +225,9 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 						return;
 					}
 					
-					const bag = new PackKbPackageAction(config);
-					await bag.run(selectedItem);
+					const pkba = new PackKbPackageAction(config);
+					// TODO: вынести логику отображения из бизнес-логики
+					await pkba.run(selectedItem);
 				}
 			)
 		);
@@ -291,7 +311,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 			kbItems.push(kbItem);
 		}
 
-		// Подсвечиваем правила, у которых есть хотя бы один измеменный файл.
+		// Подсвечиваем правила, у которых есть хотя бы один измененный файл.
 		if(this._gitAPI) { 
 			this.highlightsLabelForNewOrEditRules(kbItems);
 		}
@@ -434,6 +454,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 	public static async refresh() : Promise<void> {
 		return vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
 	}
+
+	private static COMPILATION_ERROR = "Ошибка компиляции. Смотри Output.";
 
 	private _gitAPI : API;
 	

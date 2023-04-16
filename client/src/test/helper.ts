@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as assert from 'assert';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as fsExtra from 'fs-extra';
@@ -41,16 +42,27 @@ export class TestFixture {
 		return path.resolve(config.getExtensionPath(),  ...pathSegments);
 	}
 
+
 	public static getCorrelationPath(name : string) {
 		return path.resolve(__dirname, '../../testFixture', "correlations", name);
 	}
 
-	public static getNormalizationPath(name : string) {
-		return path.resolve(__dirname, '../../testFixture', "normalizations", name);
+	public static getCorrelationFilePath(...name : string[]) {
+		return path.join(path.resolve(__dirname, '../../testFixture', "correlations"), ...name);
 	}
+
 
 	public static getEnrichmentPath(name : string) {
 		return path.resolve(__dirname, '../../testFixture', "enrichments", name);
+	}
+
+	public static getEnrichmentFilePath(...name : string[]) {
+		return path.join(path.resolve(__dirname, '../../testFixture', "enrichments"), ...name);
+	}
+
+
+	public static getNormalizationPath(name : string) {
+		return path.resolve(__dirname, '../../testFixture', "normalizations", name);
 	}
 
 	public static getAggregationsPath(name : string) {
@@ -127,4 +139,25 @@ export async function setTestContent(content: string): Promise<boolean> {
 		doc.positionAt(doc.getText().length)
 	);
 	return editor.edit(eb => eb.replace(all, content));
+}
+
+export function toRange(sLine: number, sChar: number, eLine: number, eChar: number) {
+	const start = new vscode.Position(sLine, sChar);
+	const end = new vscode.Position(eLine, eChar);
+	return new vscode.Range(start, end);
+}
+
+export async function testDiagnostics(docUri: vscode.Uri, expectedDiagnostics: vscode.Diagnostic[]) {
+	await activate(docUri);
+
+	const actualDiagnostics = vscode.languages.getDiagnostics(docUri);
+
+	assert.strictEqual(actualDiagnostics.length, expectedDiagnostics.length);
+
+	expectedDiagnostics.forEach((expectedDiagnostic, i) => {
+		const actualDiagnostic = actualDiagnostics[i];
+		assert.strictEqual(actualDiagnostic.message, expectedDiagnostic.message);
+		assert.deepStrictEqual(actualDiagnostic.range, expectedDiagnostic.range);
+		assert.strictEqual(actualDiagnostic.severity, expectedDiagnostic.severity);
+	});
 }

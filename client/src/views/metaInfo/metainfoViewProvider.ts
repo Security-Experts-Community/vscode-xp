@@ -10,10 +10,10 @@ import { MetaInfoUpdater } from './metaInfoUpdater';
 import { Configuration } from '../../models/configuration';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 
-export class MetainfoViewProvider  {
+export class MetainfoViewProvider {
 
 	private _view?: vscode.WebviewPanel;
-	private _rule : RuleBaseItem;
+	private _rule: RuleBaseItem;
 
 	public static readonly viewId = 'MetaInfoView';
 	public static showMetaInfoEditorCommand = "MetaInfoView.showMetaInfoEditor";
@@ -23,32 +23,32 @@ export class MetainfoViewProvider  {
 		private readonly _formater: MustacheFormatter
 	) { }
 
-	public static init(config: Configuration) : MetainfoViewProvider {
+	public static init(config: Configuration): MetainfoViewProvider {
 		const metaInfoTemplateFilePath = path.join(
 			config.getExtensionPath(), "client", "templates", "MetaInfo.html");
 		const metainfoTemplateContent = fs.readFileSync(metaInfoTemplateFilePath).toString();
-	
+
 		const metaInfoViewProvider = new MetainfoViewProvider(
 			config,
 			new MustacheFormatter(metainfoTemplateContent),
 		);
-	
+
 		config.getContext().subscriptions.push(
 			vscode.commands.registerCommand(
-				MetainfoViewProvider.showMetaInfoEditorCommand, 
+				MetainfoViewProvider.showMetaInfoEditorCommand,
 				async (correlation: Correlation) => {
 					metaInfoViewProvider.showMetaInfoEditor(correlation);
 				}
 			)
-		);	
+		);
 
 		return metaInfoViewProvider;
 	}
 
-	public showMetaInfoEditor(rule: RuleBaseItem)  {
+	public showMetaInfoEditor(rule: RuleBaseItem) {
 
 		// Если открыта еще одна метаинформация, то закрываем её перед открытием новой.
-		if(this._view) {
+		if (this._view) {
 			this._view.dispose();
 			this._view = undefined;
 		}
@@ -60,7 +60,7 @@ export class MetainfoViewProvider  {
 			MetainfoViewProvider.viewId,
 			`Метаданные '${rule.getName()}'`,
 			vscode.ViewColumn.One,
-			{retainContextWhenHidden : true});
+			{ retainContextWhenHidden: true });
 
 		this._view.webview.options = {
 			enableScripts: true
@@ -74,12 +74,12 @@ export class MetainfoViewProvider  {
 		try {
 			this.updateWebView();
 		}
-		catch(error) {
+		catch (error) {
 			ExtensionHelper.showError("Ошибка визуализации метаинформации.", error);
 		}
 	}
 
-	private async updateWebView() : Promise<void> {
+	private async updateWebView(): Promise<void> {
 
 		// Данные в таком виде проще шаблонизировать.
 		const metaInfo = await this._rule.getMetaInfo().toObject();

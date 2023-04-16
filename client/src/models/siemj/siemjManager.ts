@@ -37,7 +37,7 @@ export class SiemjManager {
 		
 		// Получаем нужный конфиг для нормализации событий.
 		const configBuilder = new SiemjConfBuilder(this._config, contentRootFolder);
-		configBuilder.addNormalizationsGraphBuilding();
+		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		const siemjConfContent = configBuilder.build();
 
@@ -49,7 +49,7 @@ export class SiemjManager {
 		this._config.getOutputChannel().clear();
 
 		// Типовая команда выглядит так:
-		// "C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
+		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
 		await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
@@ -82,7 +82,6 @@ export class SiemjManager {
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
 
-		//const outputDirName = this._config.getPathHelper().getOutputDirName();
 		const contentRoot = rule.getContentRootPath(this._config);
 		const outputDirName = path.basename(contentRoot);
 		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
@@ -92,10 +91,10 @@ export class SiemjManager {
 		}
 		
 		const configBuilder = new SiemjConfBuilder(this._config, contentRoot);
-		configBuilder.addNormalizationsGraphBuilding();
+		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
-		configBuilder.addEnrichmentsGraphBuilding();
+		configBuilder.addEnrichmentsGraphBuilding(false);
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		configBuilder.addEventsEnrichment();
 		const siemjConfContent = configBuilder.build();
@@ -108,7 +107,7 @@ export class SiemjManager {
 		this._config.getOutputChannel().clear();
 		
 		// Типовая команда выглядит так:
-		// "C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
+		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
 		await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
@@ -128,7 +127,4 @@ export class SiemjManager {
 		await fs.promises.unlink(siemjConfigPath);
 		return enrichEventsContent;
 	}
-
-
-
 }

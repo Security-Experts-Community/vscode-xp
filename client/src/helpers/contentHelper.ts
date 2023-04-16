@@ -7,6 +7,7 @@ import { Correlation } from '../models/content/correlation';
 import { Enrichment } from '../models/content/enrichment';
 import { XpException } from '../models/xpException';
 import { FileSystemHelper } from './fileSystemHelper';
+import { KbHelper } from './kbHelper';
 
 export class ContentHelper {
 
@@ -27,7 +28,7 @@ export class ContentHelper {
     }
 
     public static async createCorrelationFromTemplate(
-        corrName : string,
+        ruleName : string,
         templateName : string,
         config: Configuration) : Promise<Correlation> {
 
@@ -38,7 +39,13 @@ export class ContentHelper {
         // Копируем во временную директорию и переименовываем.
         const templateCorrTmpDirPath = path.join(tmpDirPath, templateName);
         const ruleFromTemplate = await Correlation.parseFromDirectory(templateCorrTmpDirPath);
-        await ruleFromTemplate.rename(corrName);
+        await ruleFromTemplate.rename(ruleName);
+
+        // Задаем ObjectID только при создании корреляции.
+        const contentPrefix = Configuration.get().getContentPrefix();
+		const objectId = KbHelper.generateRuleObjectId(ruleName, contentPrefix);
+		ruleFromTemplate.getMetaInfo().setObjectId(objectId);
+
         return ruleFromTemplate;
     }
 
@@ -55,6 +62,11 @@ export class ContentHelper {
         const templateTmpDirPath = path.join(tmpDirPath, templateName);
         const ruleFromTemplate = await Enrichment.parseFromDirectory(templateTmpDirPath);
         await ruleFromTemplate.rename(ruleName);
+
+        // Задаем ObjectID только при создании обогащения.
+        const contentPrefix = Configuration.get().getContentPrefix();
+        const objectId = KbHelper.generateRuleObjectId(ruleName, contentPrefix);
+        ruleFromTemplate.getMetaInfo().setObjectId(objectId);
         return ruleFromTemplate;
     }
 

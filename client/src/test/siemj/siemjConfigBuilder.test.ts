@@ -1,6 +1,4 @@
-import * as vscode from 'vscode';
 import * as assert from 'assert';
-import * as fs from 'fs';
 
 import { SiemjConfBuilder } from '../../models/siemj/siemjConfigBuilder';
 import { Configuration } from '../../models/configuration';
@@ -8,6 +6,41 @@ import { TestFixture } from '../helper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
 
 suite('SiemjConfigBuilder', () => {
+
+	test('Собрать локализации с путём по умолчанию', async () => {
+		const config = Configuration.get();
+		const configBuilder = new SiemjConfBuilder(config, "packages");
+		configBuilder.addLocalizationsBuilding();
+		const siemJConfig = configBuilder.build();
+
+		// Описание сценария
+		assert.ok(siemJConfig.includes("[make-loca]"));
+		assert.ok(siemJConfig.includes("type=BUILD_EVENT_LOCALIZATION"));
+		assert.ok(siemJConfig.includes(`rules_src=`));
+		assert.ok(siemJConfig.includes("out=${output_folder}\\langs"));
+
+		// Вызов сценария
+		assert.ok(siemJConfig.includes("[main]"));
+		assert.ok(siemJConfig.includes("type=SCENARIO"));
+		assert.ok(siemJConfig.includes("make-loca"));
+	});
+
+	test('Собрать локализации с заданным путём', async () => {
+		const configBuilder = new SiemjConfBuilder(Configuration.get(), "packages");
+		configBuilder.addLocalizationsBuilding("C:\\Content\\knowledgebase\\packages");
+		const result = configBuilder.build();
+
+		// Описание сценария
+		assert.ok(result.includes("[make-loca]"));
+		assert.ok(result.includes("type=BUILD_EVENT_LOCALIZATION"));
+		assert.ok(result.includes("rules_src=C:\\Content\\knowledgebase\\packages"));
+		assert.ok(result.includes("out=${output_folder}\\langs"));
+
+		// Вызов сценария
+		assert.ok(result.includes("[main]"));
+		assert.ok(result.includes("type=SCENARIO"));
+		assert.ok(result.includes("make-loca"));
+	});
 
 	test('Нормализовать и обогатить событие', async () => {
 		const rulePath = TestFixture.getCorrelationPath("Active_Directory_Snapshot");

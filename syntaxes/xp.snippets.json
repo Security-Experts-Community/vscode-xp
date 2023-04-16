@@ -20,8 +20,8 @@
 			"    }"
 		]
 	},
-	"msgid = 1": {
-		"prefix": ["event"],
+	"event Windows_Process_Creation": {
+		"prefix": ["event Process_Creation", "msgid == \"1\""],
 		"body": [
 			"event ${1:eventName}:",
 			"    key:",
@@ -63,6 +63,7 @@
 			"        \\$object.process.meta = object.process.meta",
 			"        \\$object.process.original_name = object.process.original_name",
 			"        \\$object.process.cwd = object.process.cwd",
+			"        \\$object.process.chain = object.process.chain",
 			"",
 			"        \\$object.process.parent.id = object.process.parent.id",
 			"        \\$object.process.parent.name = object.process.parent.name",
@@ -92,8 +93,8 @@
 			""
 		]
 	},
-	"msgid = 13": {
-		"prefix": ["event"],
+	"event Windos_Registry_Actions": {
+		"prefix": ["event Registry_Actions", "msgid == \"13\""],
 		"body": [
 			"event ${1:eventName}:",
 			"    key:",
@@ -103,7 +104,7 @@
 			"        and event_src.title == \"sysmon\"",
 			"        and msgid == \"13\"",
 			"        and status == \"success\"",
-			"        and filter::CheckWL_Registry_Actions(\"$2\", lower(join([object.fullpath, object.new_value], \"|\")))",
+			"        and filter::CheckWL_Registry_Actions(\"${1:eventName}\", lower(join([object.fullpath, object.new_value], \"|\")))",
 			"    }",
 			"",
 			"    # Перенесите блок on внутрь блока rule",
@@ -142,7 +143,7 @@
 		]
 	},
 	"ProcessStart_Windows_any": {
-		"prefix": ["event"],
+		"prefix": ["event ProcessStart_Windows_any", "msgid == \"1\"", "msgid == \"4688\""],
 		"body": [
 			"event ${1:eventName}:",
 			"    key:",
@@ -208,6 +209,199 @@
 			"    }"
 		]
 	},
+
+	"event Unix_OpenOpenat": {
+		"prefix": ["event Unix_OpenOpenat"],
+		"body": [
+			"event ${1:eventName}:",
+			"    key:",
+			"        event_src.host",
+			"    filter {",
+			"        filter::NotFromCorrelator()",
+			"        and filter::OperatingSystem_UNIXLike()",
+			"        and event_src.subsys == \"auditd\"",
+			"        ",
+			"        and filter::CheckWL_Linux_File_Operations(\"${1:eventName}\", )",
+			"    }",
+			"      ",
+			"    on ${1:eventName} {",
+			"        \\$subject.account.name = subject.account.name",
+			"        \\$subject.account.domain = subject.account.domain",
+			"        \\$subject.account.id = subject.account.id",
+			"        \\$subject.account.session_id = subject.account.session_id",
+			"        \\$subject.account.privileges = subject.account.privileges",
+			"",
+			"        \\$subject.process.name = subject.process.name",
+			"        \\$subject.process.id = subject.process.id",
+			"        \\$subject.process.path = subject.process.path",
+			"        \\$subject.process.fullpath = subject.process.fullpath",
+			"        \\$subject.process.cmdline = subject.process.cmdline",
+			"        \\$subject.process.cwd = subject.process.cwd",
+			"        \\$subject.process.meta = subject.process.meta",
+			"        \\$subject.process.parent.id = subject.process.parent.id",
+			"        \\$subject.type = subject.type",
+			"",
+			"        \\$object.account.name = object.account.name",
+			"        \\$object.account.domain = object.account.domain",
+			"        \\$object.account.id = object.account.id",
+			"        \\$object.account.group = object.account.group",
+			"",
+			"        \\$object.name = object.name",
+			"        \\$object.path = object.path",
+			"        \\$object.fullpath = object.fullpath",
+			"        \\$object.id = object.id",
+			"        \\$object.type = object.type",
+			"        \\$object.state = object.state",
+			"",
+			"        \\$datafield1 = datafield1  # Executable Name",
+			"        \\$datafield2 = datafield2  # Owner User Name",
+			"        \\$datafield3 = datafield3  # File Access Mode",
+			"",
+			"        \\$numfield2 = numfield2  # Owner User ID",
+			"",
+			"        \\$event_src.ip = event_src.ip",
+			"        \\$event_src.hostname = event_src.hostname",
+			"        \\$event_src.fqdn = event_src.fqdn",
+			"        \\$event_src.host = event_src.host",
+			"        \\$event_src.asset = event_src.asset",
+			"        \\$event_src.title = event_src.title",
+			"        \\$event_src.subsys = event_src.subsys",
+			"        \\$event_src.vendor = event_src.vendor",
+			"        \\$event_src.category = event_src.category",
+			"        \\$event_src.rule = event_src.rule",
+			"",
+			"        \\$alert.key =",
+			"        \\$alert.context = ",
+			"    }"
+		]
+	},
+	"event Unix_Connect": {
+		"prefix": ["event Unix_Connect"],
+		"body": [
+			"event ${1:eventName}:",
+			"    key:",
+			"        event_src.host",
+			"    filter {",
+			"        filter::NotFromCorrelator()",
+			"        and filter::OperatingSystem_UNIXLike()",
+			"        and event_src.subsys == \"auditd\"",
+			"        ",
+			"        and filter::CheckWL_Linux_Networking(\"${1:eventName}\", )",
+			"    }",
+			"",
+			"    on ${1:eventName} {",
+			"        \\$subject.account.name = subject.account.name",
+			"        \\$subject.account.domain = subject.account.domain",
+			"        \\$subject.account.id = subject.account.id",
+			"        \\$subject.account.session_id = subject.account.session_id",
+			"        \\$subject.account.privileges = subject.account.privileges",
+			"        \\$subject.type = subject.type",
+			"                ",
+			"        \\$subject.process.name = subject.process.name",
+			"        \\$subject.process.id = subject.process.id",
+			"        \\$subject.process.path = subject.process.path",
+			"        \\$subject.process.fullpath = subject.process.fullpath",
+			"        \\$subject.process.meta = subject.process.meta",
+			"        \\$subject.process.parent.id = subject.process.parent.id",
+			"                ",
+			"        \\$object.account.name = object.account.name",
+			"        \\$object.account.domain = object.account.domain",
+			"        \\$object.account.id = object.account.id",
+			"        \\$object.account.group = object.account.group",
+			"",
+			"        \\$object.domain = object.domain",
+			"        \\$object.type = object.type",
+			"        \\$object.property = object.property",
+			"        \\$object.value = object.value",
+			"",
+			"        \\$logon_service = logon_service",
+			"",
+			"        \\$protocol = protocol",
+			"",
+			"        \\$direction = direction",
+			"",
+			"        \\$event_src.ip = event_src.ip",
+			"        \\$event_src.hostname = event_src.hostname",
+			"        \\$event_src.fqdn = event_src.fqdn",
+			"        \\$event_src.host = event_src.host",
+			"        \\$event_src.asset = event_src.asset",
+			"        \\$event_src.title = event_src.title",
+			"        \\$event_src.subsys = event_src.subsys",
+			"        \\$event_src.vendor = event_src.vendor",
+			"        \\$event_src.category = event_src.category",
+			"        \\$event_src.rule = event_src.rule",
+			"",
+			"        \\$alert.key = ",
+			"        \\$alert.context = ",
+			"    }",
+			""
+		]
+	},
+	
+	"event Unix_Execve": {
+		"prefix": ["event Unix_Execve"],
+		"body": [
+			"event ${1:eventName}:",
+			"    key:",
+			"        event_src.host",
+			"    filter {",
+			"        filter::NotFromCorrelator()",
+			"        and filter::OperatingSystem_UNIXLike()",
+			"        and event_src.subsys == \"auditd\"",
+			"        ",
+			"        and filter::CheckWL_Linux_Process_Creation(\"${1:eventName}\", )",
+			"    }",
+			"",
+			"    on ${1:eventName} {",
+			"        \\$subject.account.name = subject.account.name",
+			"        \\$subject.account.domain = subject.account.domain",
+			"        \\$subject.account.id = subject.account.id",
+			"        \\$subject.account.session_id = subject.account.session_id",
+			"        \\$subject.account.privileges = subject.account.privileges",
+			"        \\$subject.type = subject.type",
+			"",
+			"        \\$object.account.name = object.account.name",
+			"        \\$object.account.domain = object.account.domain",
+			"        \\$object.account.id = object.account.id",
+			"        \\$object.account.group = object.account.group",
+			"",
+			"        \\$object.process.name = object.process.name",
+			"        \\$object.process.id = object.process.id",
+			"        \\$object.process.path = object.process.path",
+			"        \\$object.process.fullpath = object.process.fullpath",
+			"        \\$object.process.cmdline = object.process.cmdline",
+			"        \\$object.process.meta = object.process.meta",
+			"        \\$object.process.cwd = object.process.cwd",
+			"        \\$object.process.parent.id = object.process.parent.id",
+			"",
+			"        \\$logon_service = logon_service",
+			"",
+			"        \\$datafield1 = datafield1",
+			"        \\$datafield2 = datafield2",
+			"        \\$datafield3 = datafield3",
+			"        \\$datafield4 = datafield4",
+			"        \\$datafield5 = datafield5",
+			"",
+			"        \\$numfield2 = numfield2",
+			"",
+			"        \\$event_src.ip = event_src.ip",
+			"        \\$event_src.hostname = event_src.hostname",
+			"        \\$event_src.fqdn = event_src.fqdn",
+			"        \\$event_src.host = event_src.host",
+			"        \\$event_src.asset = event_src.asset",
+			"        \\$event_src.title = event_src.title",
+			"        \\$event_src.subsys = event_src.subsys",
+			"        \\$event_src.vendor = event_src.vendor",
+			"        \\$event_src.category = event_src.category",
+			"        \\$event_src.rule = event_src.rule",
+			"               ",
+			"        \\$alert.key =           ",
+			"        \\$alert.context = ",
+			"    }",
+			""
+		]
+	},
+
 	"Макросы вайтлистинга": {
 		"prefix":  ["filter::CheckWL"],
 		"body": [
@@ -334,6 +528,7 @@
 			"\\$object.process.meta = object.process.meta",
 			"\\$object.process.original_name = object.process.original_name",
 			"\\$object.process.cwd = object.process.cwd",
+			"\\$object.process.chain = object.process.chain",
 			"",
 			"\\$object.process.parent.id = object.process.parent.id",
 			"\\$object.process.parent.name = object.process.parent.name",
@@ -380,7 +575,7 @@
 		]
 	},
     "subject action object status": {
-		"prefix": ["$subject"],
+		"prefix": ["$subject, $action, $object, $status"],
 		"body": [
 			"\\$subject = \"${1|account,application,process,system,host|}\"",
 			"\\$action = \"${2|info,modify,access,start,execute,login,detect,send,exclude,disable,initiate,unlock,call,apply,download,bind,remove,create|}\"",
@@ -451,17 +646,16 @@
 			"\\$category.low = \"$2\""
 		]
 	},
+	"Тактика": {
+		"prefix": ["$category.high"],
+		"body": [
+			"\\$category.high = \"${1|Persistence,Lateral Movement,Defense Evasion,Credential Access,Discovery,Privilege Escalation,Execution,Initial Access,Impact|}\""
+		]
+	},
 	"Метки автовайтлистинга": {
 		"prefix": ["$labels"],
 		"body": [
 			"\\$labels = \"w_auto|${1|CheckWL_Specific_Only,CheckWL_Tasks,CheckWL_Web_Access,CheckWL_File_Creation,CheckWL_Windows_Shares,CheckWL_Process_Creation,CheckWL_Powershell,CheckWL_Networking,CheckWL_Registry_Actions,CheckWL_Linux_Specific_Only,CheckWL_Process_Access,CheckWL_Windows_Login,CheckWL_Linux_File_Operations,CheckWL_Linux_Process_Creation,CheckWL_Linux_Login,CheckWL_Linux_Networking,CheckWL_Database_Actions|}\"",
-			""
-		]
-	},
-	"Метки O2": {
-		"prefix": ["$labels"],
-		"body": [
-			"\\$labels = \\$labels + \"|${1|subject_account_to_attacking_assets,subject_account_to_compromised_assets,object_account_to_attacking_assets,object_account_to_compromised_assets,lsass_cache_to_compromised_assets,src_to_attacking_assets,src_to_related_assets,dst_to_attacking_assets,dst_to_compromised_assets,dst_to_related_assets,event_source_to_attacking_assets,event_source_to_related_assets,event_source_to_compromised_assets,powershell_proc_chain_to_event|}\"",
 			""
 		]
 	}

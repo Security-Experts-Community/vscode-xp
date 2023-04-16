@@ -1,21 +1,21 @@
 {
-	"name": "server",
-	"description": "Language server",
-	"version": "1.0.0",
-	"author": "@DmitryOffsec",
-	"license": "MIT",
-	"engines": {
-		"node": "*"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Security-Experts-Community/vscode-xp"
-	},
-	"dependencies": {
-		"vscode-languageserver": "^7.0.0",
-		"vscode-languageserver-textdocument": "^1.0.1",
-		"@types/vscode": "^1.52.0",
-		"vscode-test" : "1.6.1"
-	},
-	"scripts": {}
+    "name": "server",
+    "description": "Language server",
+    "version": "3.2.2",
+    "author": "Dmitry Fedosov (@DmitryOffsec)",
+    "license": "MIT",
+    "engines": {
+        "node": "*"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Security-Experts-Community/vscode-xp"
+    },
+    "dependencies": {
+        "vscode-languageserver": "^7.0.0",
+        "vscode-languageserver-textdocument": "^1.0.1",
+        "@types/vscode": "^1.52.0",
+        "vscode-test": "1.6.1"
+    },
+    "scripts": {}
 }

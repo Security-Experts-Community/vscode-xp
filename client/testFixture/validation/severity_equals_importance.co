@@ -1,0 +1,19 @@
+emit {
+    $correlation_type = "event"
+
+    $subject = "process"
+    $action = "open"
+    $object = "connection"
+    $status = "success"
+
+    $importance = "medium"
+
+    $category.generic = "Attack"
+    $category.high = "Command And Control"
+    $category.low = "External Proxy"
+
+    $incident.aggregation.key = join([$correlation_name, $event_src.host, $src.ip, $dst.ip, string($dst.port)], "|")
+    $incident.severity = $importance
+    $incident.category = "Undefined"
+    $incident.aggregation.timeout = 2h
+}

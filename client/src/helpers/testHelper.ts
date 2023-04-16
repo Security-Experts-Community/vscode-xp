@@ -5,6 +5,7 @@ import { RuleBaseItem } from '../models/content/ruleBaseItem';
 import { IntegrationTest } from '../models/tests/integrationTest';
 import { RegExpHelper } from './regExpHelper';
 import { XpException } from '../models/xpException';
+import { ParseException } from '../models/parseException';
 
 export type ConvertMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
@@ -18,36 +19,36 @@ export class TestHelper {
 	public static cleanTestCode(testCode: string) : string {
 
 		const regexPatterns = [
-			/\s*"generator.version"(\s*):(\s*)"(.*?",)/,
+			/\s*"generator.version"(\s*):(\s*)"(.*?",)/g,
 			
-			/\s*"uuid"(\s*):(\s*)".*?",/,	// в середине json-а
-			/,\s*"uuid"(\s*):(\s*)".*?"/,	// в конце json-а
+			/\s*"uuid"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"uuid"(\s*):(\s*)".*?"/g,	// в конце json-а
 
-			/\s*"time"(\s*):(\s*)".*?",/,	// в середине json-а
-			/,\s*"time"(\s*):(\s*)".*?"/,	// в конце json-а
+			/\s*"time"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"time"(\s*):(\s*)".*?"/g,	// в конце json-а
 
-			/\s*"siem_id"(\s*):(\s*)".*?",/,	// в середине json-а
-			/,\s*"siem_id"(\s*):(\s*)".*?"/,	// в конце json-а
+			/\s*"siem_id"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"siem_id"(\s*):(\s*)".*?"/g,	// в конце json-а
 
-			/\s*"labels"(\s*):(\s*)".*?",/,	// в середине json-а
-			/,\s*"labels"(\s*):(\s*)".*?"/,	// в конце json-а
+			/\s*"labels"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"labels"(\s*):(\s*)".*?"/g,	// в конце json-а
 
-			/\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\],/,
-			/,\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\]/,
+			/\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\]/g,
 
-			/\s*"_objects"(\s*):(\s*)\[[\s\S]*?\],/,
-			/,\s*"_objects"(\s*):(\s*)\[[\s\S]*?\]/,
+			/\s*"_objects"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"_objects"(\s*):(\s*)\[[\s\S]*?\]/g,
 			
-			/\s*"subevents"(\s*):(\s*)\[[\s\S]*?\],/,
-			/,\s*"subevents"(\s*):(\s*)\[[\s\S]*?\]/,
+			/\s*"subevents"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"subevents"(\s*):(\s*)\[[\s\S]*?\]/g,
 
-			/\s*"subevents.time"(\s*):(\s*)\[[\s\S]*?\],/,
-			/,\s*"subevents.time"(\s*):(\s*)\[[\s\S]*?\]/
+			/\s*"subevents.time"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"subevents.time"(\s*):(\s*)\[[\s\S]*?\]/g
 		];
 		
-		regexPatterns.forEach(rp => {
-			testCode = testCode.replace(rp, "");
-		});
+		for (const regexPattern of regexPatterns) {
+			testCode = testCode.replace(regexPattern, "");
+		}
 
 		return testCode;
 	}
@@ -64,9 +65,19 @@ export class TestHelper {
 
 		return diagnostics.map(d => {
 			const lineNumber = d.range.start.line;
-			const errorLine = lines[lineNumber];
 
-			const firstNonWhitespaceCharacterIndex = errorLine.search(/\w/);
+			if(lineNumber >= lines.length) {
+				throw new ParseException(`Ошибка разбора ошибки кода правила по пути ${ruleContent}`);
+			}
+
+			const errorLine = lines[lineNumber];
+			const firstNonWhitespaceCharacterIndex = errorLine.search(/[^\s]/);
+			
+			// Если не удалось скорректировать, тогда возвращем как ест.
+			if(firstNonWhitespaceCharacterIndex === -1) {
+				return d;
+			}
+
 			d.range = new vscode.Range(
 				new vscode.Position(d.range.start.line, firstNonWhitespaceCharacterIndex),
 				d.range.end);
@@ -151,7 +162,7 @@ export class TestHelper {
 			const formatedEvent = comNormEventResult[0];
 			let compressedEvent = formatedEvent
 				.replace(/^[ \t]+/gm, "")
-				.replace(/":\s*/gm, "\": ")
+				.replace(/":\s+/gm, "\": ")
 				.replace(/,\r\n/gm, ", ")
 				.replace(/,\n/gm, ", ");
 
@@ -271,7 +282,9 @@ export class TestHelper {
 				}
 
 				// Убираем пустое поле в начале при копироваине из SIEM-а группы (одного) события
-				const regCorrection = /^"","(.*?)"$/;
+				// importance = low и info добавляет пустое поле
+				// importance = medium добавляет поле medium
+				const regCorrection = /^"(?:medium)?","(.*?)"$/;
 				const regExResult = rawEvent.match(regCorrection);
 				if(regExResult && regExResult.length == 2) {
 					rawEvent = regExResult[1];

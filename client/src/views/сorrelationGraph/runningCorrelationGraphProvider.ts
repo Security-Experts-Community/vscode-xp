@@ -49,9 +49,12 @@ export class RunningCorrelationGraphProvider {
         // Создать и показать панель.
         this._view = vscode.window.createWebviewPanel(
             RunningCorrelationGraphProvider.viewId,
-            'Прогон событий на графе корреляций',
+            'Скоррелировать события',
             vscode.ViewColumn.One,
-            {retainContextWhenHidden : true});
+            {
+                retainContextWhenHidden : true,
+                enableFindWidget : true
+            });
 
         this._view.webview.options = {
             enableScripts: true
@@ -118,7 +121,7 @@ export class RunningCorrelationGraphProvider {
             }, async (progress) => {
                 try {
                     const runner = new CorrGraphRunner(this._config);
-                    const correlatedEventsString = await runner.Run(root, rawEventsPath);
+                    const correlatedEventsString = await runner.run(root, rawEventsPath);
 
                     if(!correlatedEventsString) {
                         ExtensionHelper.showUserInfo("По данным событиям не произошло ни одной сработки.");

@@ -1,0 +1,82 @@
+event Event:
+    key:
+        event_src.host
+    filter {
+        filter::NotFromCorrelator()
+        and filter::OperatingSystem_UNIXLike()
+        and event_src.subsys == "auditd"
+        
+        and filter::CheckWL_Linux_Networking("Unix_Connect", )
+    }
+
+rule Unix_Connect: Event
+
+    init {
+        $labels = "w_auto|CheckWL_Linux_Networking"
+    }
+       
+    on Event {
+        $subject.account.name = subject.account.name
+        $subject.account.domain = subject.account.domain
+        $subject.account.id = subject.account.id
+        $subject.account.session_id = subject.account.session_id
+        $subject.account.privileges = subject.account.privileges
+        $subject.type = subject.type
+                
+        $subject.process.name = subject.process.name
+        $subject.process.id = subject.process.id
+        $subject.process.path = subject.process.path
+        $subject.process.fullpath = subject.process.fullpath
+        $subject.process.meta = subject.process.meta
+        $subject.process.parent.id = subject.process.parent.id
+                
+        $object.account.name = object.account.name
+        $object.account.domain = object.account.domain
+        $object.account.id = object.account.id
+        $object.account.group = object.account.group
+
+        $object.domain = object.domain
+        $object.type = object.type
+        $object.property = object.property
+        $object.value = object.value
+        
+        $logon_service = logon_service
+        
+        $protocol = protocol
+        
+        $direction = direction
+                
+        $event_src.ip = event_src.ip
+        $event_src.hostname = event_src.hostname
+        $event_src.fqdn = event_src.fqdn
+        $event_src.host = event_src.host
+        $event_src.asset = event_src.asset
+        $event_src.title = event_src.title
+        $event_src.subsys = event_src.subsys
+        $event_src.vendor = event_src.vendor
+        $event_src.category = event_src.category
+        $event_src.rule = event_src.rule
+               
+        $alert.key =           
+        $alert.context = 
+    }
+
+emit {  
+    $correlation_type = ""
+
+    $subject = ""
+    $action = ""
+    $object = ""
+    $status = "success"
+
+    $importance = ""
+
+    $category.generic = "Attack"
+    $category.high = ""
+    $category.low = ""
+
+    $incident.aggregation.key = join([$correlation_name, $event_src.host, $alert.key], "|")
+    $incident.severity = $importance
+    $incident.category = "Undefined"
+    $incident.aggregation.timeout = 2h
+}

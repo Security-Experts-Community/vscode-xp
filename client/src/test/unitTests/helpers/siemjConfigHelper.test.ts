@@ -26,11 +26,11 @@
 
 // 		const expectedConfig = 
 // 			"[DEFAULT]\n" +
-// 			"ptsiem_sdk=C:\\Work\\-=SIEM=-\\Tools\\25.0.9349\\vc150\\x86_64\\win\n" + 
-// 			"build_tools=C:\\Work\\-=SIEM=-\\Tools\\0.22.774\\any\\any\\win\n" + 
-// 			"taxonomy=C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\packages\\taxonomy\\develop\\25.0.579\\taxonomy.json\n" + 
-// 			"output_folder=C:\\Work\\-=SIEM=-\\Output\n" + 
-// 			"temp=C:\\Work\\-=SIEM=-\\Output\\temp\n" + 
+// 			"ptsiem_sdk=C:\\Tools\\25.0.9349\\vc150\\x86_64\\win\n" + 
+// 			"build_tools=C:\\Tools\\0.22.774\\any\\any\\win\n" + 
+// 			"taxonomy=C:\\PTSIEMSDK_GUI.4.0.0.738\\packages\\taxonomy\\develop\\25.0.579\\taxonomy.json\n" + 
+// 			"output_folder=C:\\Output\n" + 
+// 			"temp=C:\\Output\\temp\n" + 
 // 			"[make-nfgraph]\n" + 
 // 			"type=BUILD_RULES\n" + 
 // 			"rcc_lang=n\n" + 
@@ -82,11 +82,11 @@
 
 // 		const expectedConfig = 
 // 			"[DEFAULT]\n" +
-// 			"ptsiem_sdk=C:\\Work\\-=SIEM=-\\Tools\\25.0.9349\\vc150\\x86_64\\win\n" + 
-// 			"build_tools=C:\\Work\\-=SIEM=-\\Tools\\0.22.774\\any\\any\\win\n" + 
-// 			"taxonomy=C:\\Work\\-=SIEM=-\\PTSIEMSDK_GUI.4.0.0.738\\packages\\taxonomy\\develop\\25.0.579\\taxonomy.json\n" + 
-// 			"output_folder=C:\\Work\\-=SIEM=-\\Output\n" + 
-// 			"temp=C:\\Work\\-=SIEM=-\\Output\\temp\n" + 
+// 			"ptsiem_sdk=C:\\Tools\\25.0.9349\\vc150\\x86_64\\win\n" + 
+// 			"build_tools=C:\\Tools\\0.22.774\\any\\any\\win\n" + 
+// 			"taxonomy=C:\\PTSIEMSDK_GUI.4.0.0.738\\packages\\taxonomy\\develop\\25.0.579\\taxonomy.json\n" + 
+// 			"output_folder=C:\\Output\n" + 
+// 			"temp=C:\\Output\\temp\n" + 
 // 			"[make-nfgraph]\n" + 
 // 			"type=BUILD_RULES\n" + 
 // 			"rcc_lang=n\n" + 

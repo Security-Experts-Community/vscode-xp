@@ -47,6 +47,8 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		return path.join(this._parentPath, this.getName());
 	}
 
+	public async rename(newName: string) : Promise<void> {}
+
 	/**
 	 * Возвращает путь к пакету, в котором расположеню правило.
 	 * @returns путь к пакету, в котором расположеню правило.
@@ -271,14 +273,14 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 				throw new Error("Ошибка целостности локализаций правила, не задан localizationId");
 			}
 
-			const ruText = loc.getRuLocalizationText();
+			let ruText = loc.getRuLocalizationText();
 			if(!ruText) {
-				throw new Error("Ошибка целостности локализаций правила, не задана русская локализация");
+				ruText = "";
 			}
 			
 			return {
 				"LocalizationId" : locId,
-				"EventDescription" : loc.getRuLocalizationText()
+				"EventDescription" : ruText
 			};
 		});
 
@@ -297,9 +299,9 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 				throw new Error("Ошибка целостности локализации, не задан localizationId");
 			}
 
-			const enText = loc.getEnLocalizationText();
+			let enText = loc.getEnLocalizationText();
 			if(!enText) {
-				throw new Error("Ошибка целостности локализации, не задана английская локализация");
+				enText = "";
 			}
 
 			return {

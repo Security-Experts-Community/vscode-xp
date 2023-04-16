@@ -1,4 +1,3 @@
-import * as vscode from 'vscode';
 import * as assert from 'assert';
 import * as fs from 'fs';
 
@@ -10,26 +9,50 @@ import { Configuration } from '../../models/configuration';
 import { ContentHelper } from '../../helpers/contentHelper';
 
 suite('LocalizationEditorViewProvider', () => {
-	
-	test('Редактор локализаций не упал при открытии', async () => {
-		const localizationTemplatePath = TestFixture.getExtensionFilePath("client", "templates", "IntegrationTestEditor.html");
-		const localizationEditor = new LocalizationEditorViewProvider(localizationTemplatePath);
 
-		const rulePath = TestFixture.getCorrelationPath("Active_Directory_Snapshot");
-		const rule = await Correlation.parseFromDirectory(rulePath);
-		localizationEditor.showLocalizationEditor(rule);
+	test('Допустимо отсутствие английской локализации', async () => {
+
+		const rule = Correlation.create("Correlation");
+		const localization = 
+			Localization.create(
+				`correlation_name = "Correlation" and src.ip != null and newCriteria`,
+				"RuLocalization",
+				"");
+		rule.updateLocalizations([localization]);
+
+		getLocalizationEditorViewProvider().showLocalizationEditor(rule);
 	});
 
-	test('Сохранение одной добавленой локализации к кореляции', async () => {
+	test('Допустимо отсутствие русской локализации', async () => {
+
+		const rule = Correlation.create("Correlation");
+		const localization = 
+			Localization.create(
+				`correlation_name = "Correlation" and src.ip != null and newCriteria`,
+				"",
+				"EnLocalization");
+		rule.updateLocalizations([localization]);
+
+		getLocalizationEditorViewProvider().showLocalizationEditor(rule);
+	});
+	
+	test('Редактор локализаций не упал при открытии', async () => {
+		
+		const rulePath = TestFixture.getCorrelationPath("Active_Directory_Snapshot");
+		const rule = await Correlation.parseFromDirectory(rulePath);
+
+		getLocalizationEditorViewProvider().showLocalizationEditor(rule);
+	});
+
+	test('Сохранение одной добавленой локализации к корреляции', async () => {
 		// Создание корреляции из шаблона и её сохранение.
-		const rule = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper", "Universal", Configuration.get());
+		const rule = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper", "Windows_Universal", Configuration.get());
 
 		const tmpPath = TestFixture.getTmpPath();
 		rule.save(tmpPath);
 
 		// Открытие формы редактирования. 
-		const localizationTemplatePath = TestFixture.getExtensionFilePath("client", "templates", "IntegrationTestEditor.html");
-		const localizationEditor = new LocalizationEditorViewProvider(localizationTemplatePath);
+		const localizationEditor = getLocalizationEditorViewProvider();
 		localizationEditor.showLocalizationEditor(rule);
 
 		// Сохранения корреляции.
@@ -68,3 +91,9 @@ suite('LocalizationEditorViewProvider', () => {
 		}
 	});
 });
+
+function getLocalizationEditorViewProvider() : LocalizationEditorViewProvider {
+	const localizationTemplatePath = TestFixture.getExtensionFilePath("client", "templates", "IntegrationTestEditor.html");
+	const localizationEditor = new LocalizationEditorViewProvider(localizationTemplatePath);
+	return localizationEditor;
+}

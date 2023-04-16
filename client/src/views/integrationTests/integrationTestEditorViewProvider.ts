@@ -18,7 +18,7 @@ import { RegExpHelper } from '../../helpers/regExpHelper';
 import { FastTest } from '../../models/tests/fastTest';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { TestStatus } from '../../models/tests/testStatus';
-import { SiemJOutputParser } from './siemJOutputParser';
+import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { ModuleTestOutputParser } from '../modularTestsEditor/modularTestOutputParser';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { XpException } from '../../models/xpException';

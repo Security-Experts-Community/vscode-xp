@@ -37,7 +37,7 @@ export class UnitTestsRunner {
 		}
 
 		try {
-			// "C:\\Work\\-=SIEM=-\\Tools\\0.22.774\\any\\any\\win\\ecatest.exe" 
+			// "C:\\Tools\\0.22.774\\any\\any\\win\\ecatest.exe" 
 			// 	--sdk "C:\Work\-=SIEM=-\Tools\25.0.9349\vc150\x86_64\win" 
 			// 	--taxonomy "C:\Work\-=SIEM=-\PTSIEMSDK_GUI.4.0.0.738\packages\taxonomy\develop\25.0.579\taxonomy.json" 
 			// 	--temp "C:\Work\Coding\PTSIEMSDK_GUI\PTSIEMSDK_GUI\bin\Debug\temp" 
@@ -52,7 +52,7 @@ export class UnitTestsRunner {
 			this._config.getOutputChannel().show();
 			const ruleFilePath = test.getRuleFullPath();
 
-			// const ecaTestParam = `C:\\Work\\-=SIEM=-\\Tools\\0.22.774\\any\\any\\win\\ecatest.exe`;
+			// const ecaTestParam = `C:\\Tools\\0.22.774\\any\\any\\win\\ecatest.exe`;
 			const ecaTestParam = this._config.getEcatestFullPath();
 			const sdkDirPath = this._config.getSiemSdkDirectoryPath();
 			const taxonomyFilePath= this._config.getTaxonomyFullPath();
