@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
 import { SiemjConfigHelper } from '../siemj/siemjConfigHelper';
-import { SiemJOutputParser } from '../../views/integrationTests/siemJOutputParser';
+import { SiemJOutputParser } from '../siemj/siemJOutputParser';
 import { Configuration } from '../configuration';
 import { RuleBaseItem } from '../content/ruleBaseItem';
 import { IntegrationTest } from './integrationTest';

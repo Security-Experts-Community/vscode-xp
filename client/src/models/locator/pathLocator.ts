@@ -28,7 +28,6 @@ export abstract class PathLocator {
 	public abstract getPackages(): string[]
 	public abstract isKbOpened() : boolean
 	public abstract getRootByPath(directory: string): string
-	public abstract getRequiredRootDirectories(): string[]
 	public abstract getKbPath() : string
 
 	protected checkKbPath() : void {
