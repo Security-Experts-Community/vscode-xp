@@ -299,8 +299,13 @@ export class Configuration {
 		return outputDirectoryPath;
 	}
 
-	public getOutputDirectoryPath(rootFolder: string) : string {
-		return path.join(this.getBaseOutputDirectoryPath(), rootFolder);
+	public getOutputDirectoryPath(rootFolder?: string) : string {
+		if(rootFolder) {
+			return path.join(this.getBaseOutputDirectoryPath(), rootFolder);
+		}
+		else {
+			return this.getBaseOutputDirectoryPath();
+		}
 	}
 
 	public getCorrelationDefaultsFileName() : string {
@@ -390,16 +395,16 @@ export class Configuration {
 		return path.join(this.getOutputDirectoryPath(rootFolder), this.getFptaDbFileName());
 	}
 
-	public getTmpDirectoryPath() : string {
-		return path.join(this.getOutputDirectoryPath(""), "temp");
+	public getTmpDirectoryPath(rootFolder?: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), "temp");
 	}
 
-	public getTmpSiemjConfigPath() : string {
-		return path.join(this.getTmpDirectoryPath(), "siemj.conf");
+	public getTmpSiemjConfigPath(rootFolder: string) : string {
+		return path.join(this.getTmpDirectoryPath(rootFolder), "siemj.conf");
 	}
 
-	public getRandTmpSubDirectoryPath() : string {
-		return path.join(this.getTmpDirectoryPath(), Guid.create().toString());
+	public getRandTmpSubDirectoryPath(rootFolder?: string) : string {
+		return path.join(this.getTmpDirectoryPath(rootFolder), Guid.create().toString());
 	}
 
 

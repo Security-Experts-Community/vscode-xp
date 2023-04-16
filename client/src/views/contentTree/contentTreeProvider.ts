@@ -196,22 +196,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 	
 					const parser = new SiemJOutputParser();
 					const bag = new BuildAllAction(config, parser);
-
-					let baResult : boolean;
-					try {
-						baResult = await bag.run();
-					}
-					catch (error) {
-						ExceptionHelper.show(error, this.COMPILATION_ERROR);
-						return;
-					}
-
-					if(!baResult) {
-						ExtensionHelper.showUserError(this.COMPILATION_ERROR);
-						return;
-					}
-					
-					ExtensionHelper.showUserInfo("Компиляция успешно завершена.");
+					await bag.run();
 				}
 			)
 		);
@@ -454,8 +439,6 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 	public static async refresh() : Promise<void> {
 		return vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
 	}
-
-	private static COMPILATION_ERROR = "Ошибка компиляции. Смотри Output.";
 
 	private _gitAPI : API;
 	

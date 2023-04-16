@@ -36,13 +36,13 @@ export class SiemjManager {
 		}
 		
 		// Получаем нужный конфиг для нормализации событий.
-		const configBuilder = new SiemjConfBuilder(this._config, contentRootFolder);
+		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
 		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		const siemjConfContent = configBuilder.build();
 
 		// Централизованно сохраняем конфигурационный файл для siemj.
-		const siemjConfigPath = this._config.getTmpSiemjConfigPath();
+		const siemjConfigPath = this._config.getTmpSiemjConfigPath(contentRootFolder);
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 		const siemjExePath = this._config.getSiemjPath();
 
@@ -82,15 +82,15 @@ export class SiemjManager {
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
 
-		const contentRoot = rule.getContentRootPath(this._config);
-		const outputDirName = path.basename(contentRoot);
-		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
+		const contentRootPath = rule.getContentRootPath(this._config);
+		const contentRootFolder = path.basename(contentRootPath);
+		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
 
 		if(!fs.existsSync(outputFolder)) {
 			fs.mkdirSync(outputFolder);
 		}
 		
-		const configBuilder = new SiemjConfBuilder(this._config, contentRoot);
+		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
 		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
@@ -100,7 +100,7 @@ export class SiemjManager {
 		const siemjConfContent = configBuilder.build();
 
 		// Централизованно сохраняем конфигурационный файл для siemj.
-		const siemjConfigPath = this._config.getTmpSiemjConfigPath();
+		const siemjConfigPath = this._config.getTmpSiemjConfigPath(contentRootFolder);
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 		const siemjExePath = this._config.getSiemjPath();
 
@@ -114,7 +114,7 @@ export class SiemjManager {
 			this._config.getOutputChannel()
 		);
 
-		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(outputDirName);
+		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(enrichEventsFilePath)) {
 			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
 		}

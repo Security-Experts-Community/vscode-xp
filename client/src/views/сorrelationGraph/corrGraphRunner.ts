@@ -31,7 +31,7 @@ export class CorrGraphRunner {
 			await fs.promises.mkdir(outputFolder);
 		}
 		
-		const configBuilder = new SiemjConfBuilder(this._config, rootFolder);
+		const configBuilder = new SiemjConfBuilder(this._config, rootPath);
 		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();

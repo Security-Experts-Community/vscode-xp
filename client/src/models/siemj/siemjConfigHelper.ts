@@ -16,7 +16,7 @@ export class SiemjConfigHelper {
 				fs.mkdirSync(output_folder, {recursive: true});
 			}
 
-			const configBuilder = new SiemjConfBuilder(config, rootFolder);
+			const configBuilder = new SiemjConfBuilder(config, rootPath);
 			configBuilder.addNormalizationsGraphBuilding();
 			configBuilder.addTablesSchemaBuilding();
 			configBuilder.addTablesDbBuilding();

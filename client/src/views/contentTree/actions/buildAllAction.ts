@@ -8,12 +8,14 @@ import { SiemJOutputParser } from '../../../models/siemj/siemJOutputParser';
 import { Configuration } from '../../../models/configuration';
 import { SiemjConfBuilder } from '../../../models/siemj/siemjConfigBuilder';
 import { XpException } from '../../../models/xpException';
+import { ExtensionHelper } from '../../../helpers/extensionHelper';
+import { Dictionary } from 'lodash';
 
 export class BuildAllAction {
 	constructor(private _config: Configuration, private _outputParser: SiemJOutputParser) {
 	}
 
-	public async run() : Promise<boolean> {
+	public async run() : Promise<void> {
 
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
@@ -30,13 +32,16 @@ export class BuildAllAction {
 				this._config.getOutputChannel().clear();
 				this._config.getDiagnosticCollection().clear();
 				
-				for (const siemjConfContent of siemjConfContents) {
+				for (const siemjConfContentEntity of siemjConfContents) {
+					const rootFolder = siemjConfContentEntity['packagesRoot'];
+					const siemjConfContent = siemjConfContentEntity['configContent'];
+
 					if(!siemjConfContent) {
 						throw new XpException("Не удалось сгенерировать siemj.conf для заданного правила и тестов.");
 					}
 
 					// Cохраняем конфигурационный файл для siemj.
-					const siemjConfigPath = this._config.getTmpSiemjConfigPath();
+					const siemjConfigPath = this._config.getTmpSiemjConfigPath(rootFolder);
 					await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 
 					// Типовая команда выглядит так:
@@ -61,33 +66,35 @@ export class BuildAllAction {
 					}
 
 					if(!siemJOutput.includes(this.SUCCESS_EXIT_CODE_SUBSTRING)) {
-						return true;
+						ExtensionHelper.showUserInfo(`Компиляция пакетов в папке ${rootFolder} успешно завершена.`);
 					}
-
-					return false;
+					else {
+						ExtensionHelper.showUserError(this.COMPILATION_ERROR);
+					}
 				}
 			}
 			finally {
-				const siemjConfigPath = this._config.getTmpSiemjConfigPath();
+				const tmpPath = this._config.getTmpDirectoryPath();
 	
 				// Очищаем временные файлы.
-				await fs.promises.access(siemjConfigPath).then(
-					() => { return fs.promises.unlink(siemjConfigPath); }
+				await fs.promises.access(tmpPath).then(
+					() => { return fs.promises.unlink(tmpPath); }
 				);
 			}
 		});
 	}
 
-	private getBuildAllGraphs(config : Configuration ) : string[] {
+	private getBuildAllGraphs(config : Configuration ) : Dictionary<string>[] {
 		const rootPaths = config.getContentRoots();
 
 		return rootPaths.map(rootPath => { 
-			const rootFolder = config.getOutputDirectoryPath(path.basename(rootPath));
-			if(!fs.existsSync(rootFolder)) {
-				fs.mkdirSync(rootFolder, {recursive: true});
+			const rootFolder = path.basename(rootPath);
+			const outputDirectory = config.getOutputDirectoryPath(rootFolder);
+			if(!fs.existsSync(outputDirectory)) {
+				fs.mkdirSync(outputDirectory, {recursive: true});
 			}
 
-			const configBuilder = new SiemjConfBuilder(config, rootFolder);
+			const configBuilder = new SiemjConfBuilder(config, rootPath);
 			configBuilder.addNormalizationsGraphBuilding(false);
 			configBuilder.addTablesSchemaBuilding();
 			configBuilder.addTablesDbBuilding();
@@ -95,9 +102,10 @@ export class BuildAllAction {
 			configBuilder.addLocalizationsBuilding();
 	
 			const siemjConfContent = configBuilder.build();
-			return siemjConfContent;
+			return {'packagesRoot': rootFolder, 'configContent':siemjConfContent};
 		});
 	}
 
 	private readonly SUCCESS_EXIT_CODE_SUBSTRING = "SUBPROCESS EXIT CODE: 1";
+	private readonly COMPILATION_ERROR = "Ошибка компиляции. Смотри Output.";
 }

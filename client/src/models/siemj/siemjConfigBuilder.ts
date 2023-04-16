@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 
 import { Configuration } from '../configuration';
 
@@ -8,7 +9,8 @@ import { Configuration } from '../configuration';
  */
 export class SiemjConfBuilder {
 
-	constructor(private _config : Configuration, private _contentRootFolder: string) {
+	constructor(private _config : Configuration, private _contentRootPath: string) {
+		this._contentRootFolder = path.basename(this._contentRootPath);
 		const outputFolder = this._config.getOutputDirectoryPath(this._contentRootFolder);
 
 		// Заполнение конфига по умолчанию.
@@ -40,7 +42,7 @@ temp=${this._config.getTmpDirectoryPath()}`;
 [make-nfgraph]
 type=BUILD_RULES
 rcc_lang=n
-rules_src=${this._contentRootFolder}
+rules_src=${this._contentRootPath}
 xp_appendix=${xpAppendixPath}
 out=\${output_folder}\\${this._config.getNormalizationsGraphFileName()}`;
 
@@ -54,7 +56,7 @@ out=\${output_folder}\\${this._config.getNormalizationsGraphFileName()}`;
 `
 [make-tables-schema]
 type=BUILD_TABLES_SCHEMA
-table_list_schema_src=${this._contentRootFolder}
+table_list_schema_src=${this._contentRootPath}
 contract=${contract}
 out=\${output_folder}`;
 
@@ -86,7 +88,7 @@ out=\${output_folder}\\${this._config.getFptaDbFileName()}`;
 		
 		// Не собираем граф, если он уже есть.
 		if(!force) {
-			const enrichGraphFilePath = this._config.getEnrichmentsGraphFilePath(this._contentRootFolder);
+			const enrichGraphFilePath = this._config.getEnrichmentsGraphFilePath(this._contentRootPath);
 			if(fs.existsSync(enrichGraphFilePath)) {
 				return;
 			}
@@ -97,7 +99,7 @@ out=\${output_folder}\\${this._config.getFptaDbFileName()}`;
 			rulesSrcPath = contentSubdirPath;
 		}
 		else {
-			rulesSrcPath = this._contentRootFolder;
+			rulesSrcPath = this._contentRootPath;
 		}
 
 		const rulesFilters = this._config.getRulesDirFilters();
@@ -130,7 +132,7 @@ out=\${output_folder}\\${this._config.getCorrelatedEventsFileName()}`;
 [make-ergraph]
 type=BUILD_RULES
 rcc_lang=e
-rules_src=${this._contentRootFolder}
+rules_src=${this._contentRootPath}
 rfilters_src=${rulesFilters}
 table_list_schema=\${output_folder}\\${this._config.getSchemaFileName()}
 out=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}`;
@@ -142,7 +144,7 @@ out=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}`;
 	public addLocalizationsBuilding(rulesSrcPath? : string) : void {
 		let rulesSrcPathResult : string;
 		if(!rulesSrcPath) {
-			rulesSrcPathResult = this._contentRootFolder;
+			rulesSrcPathResult = this._contentRootPath;
 		} else {
 			rulesSrcPathResult = rulesSrcPath;
 		}
@@ -231,6 +233,7 @@ scenario=${this._scenarios.join(" ")}
 		return resultConfig;
 	}
 
+	private _contentRootFolder : string;
 	private _siemjConfigSection : string;
 	private _scenarios : string[] = [];
 	private _crTimeout = 45;

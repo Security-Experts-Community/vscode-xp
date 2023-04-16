@@ -51,7 +51,7 @@ export class IntegrationTestRunner {
 			await fs.promises.mkdir(outputDirPath);
 		}
 
-		const configBuilder = new SiemjConfBuilder(this._config, rootFolder);
+		const configBuilder = new SiemjConfBuilder(this._config, rootPath);
 		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
@@ -68,7 +68,7 @@ export class IntegrationTestRunner {
 			return;
 		}
 
-		const siemjConfigPath = this._config.getTmpSiemjConfigPath();
+		const siemjConfigPath = this._config.getTmpSiemjConfigPath(rootFolder);
 		// Централизованно сохраняем конфигурационный файл для siemj.
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 
@@ -113,7 +113,7 @@ export class IntegrationTestRunner {
 	}
 
 	private async clearTmpFiles(config : Configuration) : Promise<void> {
-		const siemjConfigPath = config.getTmpSiemjConfigPath();
+		const siemjConfigPath = config.getTmpDirectoryPath();
 
 		// Очищаем временные файлы.
 		await fs.promises.access(siemjConfigPath).then(

@@ -156,7 +156,7 @@ export class PackKbPackageAction {
 			progress.report({message: `Сборка пакета '${packageName}'`});
 
 			const tmpSubDirectoryPath = this._config.getRandTmpSubDirectoryPath();
-			await fs.promises.mkdir(tmpSubDirectoryPath);
+			await fs.promises.mkdir(tmpSubDirectoryPath, {recursive: true});
 
 			// Очищаем окно Output.
 			this._config.getOutputChannel().clear();
