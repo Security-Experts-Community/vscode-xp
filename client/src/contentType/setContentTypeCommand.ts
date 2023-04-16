@@ -31,7 +31,7 @@ export class SetContentTypeCommand {
 				});
 
 				const contentTypeString = ContentType[selectedContentType];
-				await setContentTypeCommand.updateContentTypeStatusBarItem(contentTypeStatusBarItem, contentTypeString);
+				await setContentTypeCommand.updateContentTypeStatusBarItem(contentTypeStatusBarItem, config, contentTypeString);
 			}
 		);
 		context.subscriptions.push(command);

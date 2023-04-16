@@ -31,8 +31,10 @@ export class CorrGraphRunner {
 			await fs.promises.mkdir(outputFolder);
 		}
 		
+		const overwriteStatus = this._config.getNormalizationsOverwtiteStatus();
+
 		const configBuilder = new SiemjConfBuilder(this._config, rootPath);
-		configBuilder.addNormalizationsGraphBuilding();
+		configBuilder.addNormalizationsGraphBuilding(overwriteStatus);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addCorrelationsGraphBuilding();

@@ -494,6 +494,11 @@ export class Configuration {
 		return taxonomyFullPath;
 	}
 
+	public getNormalizationsOverwtiteStatus() : boolean {
+		const configuration = vscode.workspace.getConfiguration("xpConfig");
+		return configuration.get<boolean>("overwriteNormalizationGraphs");
+	}
+
 	/**
 	 * Возвращает путь к файлу русской локализации таксономии. 
 	 * @returns путь к файлу русской локализации таксономии.

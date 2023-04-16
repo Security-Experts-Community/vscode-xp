@@ -551,6 +551,12 @@
 					"default": "LOC",
 					"description": "Префикс ObjectId для определения типа создаваемого контента."
 				},
+				"xpConfig.overwriteNormalizationGraphs": {
+					"scope": "window",
+					"type": "boolean",
+					"default": true,
+					"description": "Перезаписывать существующие графы формул нормализации."
+				},
 				"languageServer.maxNumberOfProblems": {
 					"scope": "resource",
 					"type": "number",

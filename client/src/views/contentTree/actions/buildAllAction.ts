@@ -96,11 +96,14 @@ export class BuildAllAction {
 				fs.mkdirSync(outputDirectory, {recursive: true});
 			}
 
+			const overwriteStatus = this._config.getNormalizationsOverwtiteStatus();
+
 			const configBuilder = new SiemjConfBuilder(config, rootPath);
-			configBuilder.addNormalizationsGraphBuilding();
+			configBuilder.addNormalizationsGraphBuilding(overwriteStatus);
 			configBuilder.addTablesSchemaBuilding();
 			configBuilder.addTablesDbBuilding();
 			configBuilder.addEnrichmentsGraphBuilding();
+			configBuilder.addCorrelationsGraphBuilding();
 			configBuilder.addLocalizationsBuilding();
 	
 			const siemjConfContent = configBuilder.build();

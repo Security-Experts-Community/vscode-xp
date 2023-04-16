@@ -6,28 +6,7 @@ import { SiemjConfBuilder } from './siemjConfigBuilder';
 
 
 export class SiemjConfigHelper {
-
-	public static getBuildAllGraphs(config : Configuration ) : string[] {
-		const contentRootPaths = config.getContentRoots();
-		return contentRootPaths.map(rootPath => { 
-			const rootFolder = path.basename(rootPath);
-			const output_folder = config.getOutputDirectoryPath(rootFolder);
-			if(!fs.existsSync(output_folder)) {
-				fs.mkdirSync(output_folder, {recursive: true});
-			}
-
-			const configBuilder = new SiemjConfBuilder(config, rootPath);
-			configBuilder.addNormalizationsGraphBuilding();
-			configBuilder.addTablesSchemaBuilding();
-			configBuilder.addTablesDbBuilding();
-			configBuilder.addCorrelationsGraphBuilding();
-			configBuilder.addEnrichmentsGraphBuilding();
 	
-			const siemjConfContent = configBuilder.build();
-			return siemjConfContent;
-		});
-	}
-
 	public static async saveSiemjConfig(siemjConfigContent: string, siemjConfigPath: string) : Promise<void> {
 		// Проверяем, что директория для записи файла существует
 		const siemjFolder = path.dirname(siemjConfigPath);
