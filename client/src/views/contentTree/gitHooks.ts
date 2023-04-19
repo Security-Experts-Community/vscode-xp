@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import { Uri } from 'vscode';
 import { API, Branch } from '../../@types/vscode.git';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-
 import { Configuration } from '../../models/configuration';
 
 export class GitHooks {
@@ -27,7 +26,7 @@ export class GitHooks {
 		// Смена ветки или коммита.
 		const commit = currBranch.commit;
 		if(this._branchName != branchName || this._commit != commit) {
-			const outputDirectory = this._config.getOutputDirectoryPath();
+			const outputDirectory = this._config.getBaseOutputDirectoryPath();
 			if(fs.existsSync(outputDirectory)) {
 				await FileSystemHelper.clearDirectory(outputDirectory);
 			}
@@ -39,13 +38,11 @@ export class GitHooks {
 	}
 
 	public getCurrentBranch() : Branch {
-		const ph = this._config.getPathHelper();
-		const kbPath = ph.getKbFullPath();
-
+		const kbPath = this._config.getKbFullPath();
 		const repository = this._git.getRepository(Uri.file(kbPath));
 		return repository.state.HEAD;
 	}
 
 	private _branchName: string;
 	private _commit: string;
-} 
+}

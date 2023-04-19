@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { PathLocator } from './pathLocator';
-import { XpException } from '../xpException';
 
 
 export class EDRPathHelper extends PathLocator {
@@ -12,7 +11,6 @@ export class EDRPathHelper extends PathLocator {
 		super(kbFullPath);
 	}
 	
-	private _prefix = path.join("resources", "build-resources");
 	private static _instance: EDRPathHelper;
 
 	public static get() : EDRPathHelper {
@@ -27,8 +25,8 @@ export class EDRPathHelper extends PathLocator {
 		return EDRPathHelper._instance;
 	}
 
-	public getOutputDirName(): string {
-		throw new XpException("Данная функция не поддерживается.");
+	public getKbPath() : string {
+		return this.getKbFullPath();
 	}
 
 	public getRootByPath(directory: string): string{
@@ -51,9 +49,25 @@ export class EDRPathHelper extends PathLocator {
 
 		throw new Error(`Путь '${directory}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
 	}
-	
-	public getCorrulesGraphFileName() : string {
+
+	public getNormalizationsGraphFileName() : string {
+		return "formulas_graph.json";
+	}
+
+	public getEnrichmentsGraphFileName() : string {
+		return "enrules_graph.json";
+	}
+
+	public getCorrelationsGraphFileName() : string {
 		return "rules_graph.json";
+	}
+
+	public getAgregationsGraphFileName() : string {
+		return "aggrules_graph.json";
+	}
+
+	public getLocalizationsFolder() : string {
+		return "";
 	}
 
 	// В корневой директории лежат пакеты экспертизы
@@ -84,26 +98,14 @@ export class EDRPathHelper extends PathLocator {
 		return packagesDirectories;
 	}
 
-	public getRequiredRootDirectories(): string[]{
-		return [path.join("common", "rules_filters"), path.join('rules', "windows"), path.join('rules', "linux")];
-	}
-
-	public getAppendixPath() : string {
-		this.checkKbPath();
-		const relative_path = path.join(this._prefix, "contracts", "xp_appendix", "appendix.xp");
-		return path.join(this.getKbFullPath(), relative_path);
-	}
-
-	public getTablesContract() : string {
-		this.checkKbPath();
-		const relative_path = path.join(this._prefix, "_extra", "tabular_lists", "tables_contract.yaml");
-		return path.join(this.getKbFullPath(), relative_path);
-	}
-
 	public getRulesDirFilters() : string {
 		this.checkKbPath();
-		const relative_path = path.join(this._prefix, "common", "rules_filters");
+		const relative_path = path.join("common", "rules_filters");
 		return path.join(this.getKbFullPath(), relative_path);
+	}
+
+	public getRequiredRootDirectories(): string[]{
+		return [path.join("common", "rules_filters"), path.join('rules', "windows"), path.join('rules', "linux")];
 	}
 
 	public isKbOpened() : boolean {

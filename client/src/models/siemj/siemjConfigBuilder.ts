@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 
 import { Configuration } from '../configuration';
 
@@ -8,73 +9,90 @@ import { Configuration } from '../configuration';
  */
 export class SiemjConfBuilder {
 
-	constructor(private _config : Configuration) {
-
-		const ptsiemSdk = this._config.getSiemSdkDirectoryPath();
-		const buildTools = this._config.getBuildToolsDirectoryFullPath();
-		const taxonomy = this._config.getTaxonomyFullPath();
-		const temp = this._config.getTmpDirectoryPath();
-
-		const pathHelper = this._config.getPathHelper();
-		const outputDirName = pathHelper.getOutputDirName();
-		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
+	constructor(private _config : Configuration, private _contentRootPath: string) {
+		this._contentRootFolder = path.basename(this._contentRootPath);
+		const outputFolder = this._config.getOutputDirectoryPath(this._contentRootFolder);
 
 		// Заполнение конфига по умолчанию.
 		this._siemjConfigSection = 
 `[DEFAULT]
-ptsiem_sdk=${ptsiemSdk}
-build_tools=${buildTools}
-taxonomy=${taxonomy}
+ptsiem_sdk=${this._config.getSiemSdkDirectoryPath()}
+build_tools=${this._config.getBuildToolsDirectoryFullPath()}
+taxonomy=${this._config.getTaxonomyFullPath()}
 output_folder=${outputFolder}
-temp=${temp}`;
+temp=${this._config.getTmpDirectoryPath(this._contentRootFolder)}`;
 	}
 
 	/**
 	 * Добавить сборку графа нормализации
 	 * @param force пересобирать ли ранее собранный	граф
 	 */
-	public addNfgraphBuilding(force : boolean = true) : void {
-		const pathLocator = this._config.getPathHelper();
-		const xpAppendixPath = pathLocator.getAppendixPath();
-		const contentRoots = pathLocator.getContentRoots();
+	public addNormalizationsGraphBuilding(force = true) : void {
+		const xpAppendixPath = this._config.getAppendixFullPath();
 
-		// Не собираем граф, если он уже есть.
-		if(!force) {
-			const normGraphFilePath = this._config.getNormGraphFilePath();
+		if (!force){
+			const normGraphFilePath = this._config.getNormalizationsGraphFilePath(this._contentRootFolder);
 			if(fs.existsSync(normGraphFilePath)) {
 				return;
 			}
 		}
-		
-		// Собираем граф нормализации из всех источников контента, их несколько для EDR.
-		const rulesSrcPath = contentRoots.join(",");
 
 		const nfgraphBuildingSection = 
 `
 [make-nfgraph]
 type=BUILD_RULES
 rcc_lang=n
-rules_src=${rulesSrcPath}
+rules_src=${this._contentRootPath}
 xp_appendix=${xpAppendixPath}
-out=\${output_folder}\\formulas_graph.json`;
+out=\${output_folder}\\${this._config.getNormalizationsGraphFileName()}`;
 
 		this._siemjConfigSection += nfgraphBuildingSection;
 		this._scenarios.push("make-nfgraph");
 	}
 
+	/**
+	 * (Пока не используется) Рекурсивная проверка по регулярному выражению наличия файлов в директории 
+	 * @param startPath начальная директория для рекурсивного поиска
+	 * @param fileNameRegexPattern регулярное выражение для поиска
+	 * @returns 
+	 */
+	private checkIfFilesIsExisting(startPath: string, fileNameRegexPattern: RegExp) : boolean {
+		const getFileList = (dirName) : string[] => {
+			let files = [];
+			const items = fs.readdirSync(dirName, { withFileTypes: true });
+
+			for (const item of items) {
+				if (item.isDirectory()) {
+					files = [
+						...files,
+						...(getFileList(`${dirName}/${item.name}`)),
+					];
+				} else {
+					if (fileNameRegexPattern.exec(item.name) != undefined){
+						files.push(`${dirName}/${item.name}`);
+					}
+				}
+			}
+
+			return files;
+		};
+
+		const files = getFileList(startPath);
+		return files.length > 0;
+	}
+
 	public addTablesSchemaBuilding() : void {
-		const pathLocator = this._config.getPathHelper();
-		const contentRoots = pathLocator.getContentRoots();
-		const contract = pathLocator.getTablesContract();
+		// Если нет табличных списков, то не собираем схему		
+		// if (!this.checkIfFilesIsExisting(this._contentRootPath, /\.tl$/)){
+		// 	return;
+		// }		
 
-		// Собираем граф нормализации из всех источников контента, их несколько для EDR.
-		const rulesSrcPath = contentRoots.join(",");
-
+		const contract = this._config.getTablesContract();
 		const tablesSchemaBuildingSection = 
 `
 [make-tables-schema]
 type=BUILD_TABLES_SCHEMA
-table_list_schema_src=${rulesSrcPath}
+table_list_schema_src=${this._contentRootPath}
 contract=${contract}
 out=\${output_folder}`;
 
@@ -83,14 +101,21 @@ out=\${output_folder}`;
 	}
 
 	public addTablesDbBuilding() : void {
+
+		// Если нет файла схемы, то не собираем БД
+		// const schemaFilePath = this._config.getSchemaFullPath(this._contentRootFolder);
+		// if(!fs.existsSync(schemaFilePath)) {
+		// 	return;
+		// }
+
 		const tablesDatabaseBuildingSection = 
 `
 [make-tables-db]
 type=BUILD_TABLES_DATABASE
 table_list_filltype=All
-table_list_schema=\${output_folder}\\schema.json
-table_list_defaults=\${output_folder}\\correlation_defaults.json
-out=\${output_folder}\\fpta_db.db`;
+table_list_schema=\${output_folder}\\${this._config.getSchemaFileName()}
+table_list_defaults=\${output_folder}\\${this._config.getCorrelationDefaultsFileName()}
+out=\${output_folder}\\${this._config.getFptaDbFileName()}`;
 
 		this._siemjConfigSection += tablesDatabaseBuildingSection;
 		this._scenarios.push("make-tables-db");
@@ -102,14 +127,11 @@ out=\${output_folder}\\fpta_db.db`;
 	 * @param contentSubdirPath собирать определенную часть контента
 	 * @returns 
 	 */
-	public addCfgraphBuilding(force : boolean = true, contentSubdirPath? : string) : void {
-		const pathLocator = this._config.getPathHelper();
-		const rulesFilters = pathLocator.getRulesDirFilters();
-		const contentRoots = pathLocator.getContentRoots();
-
+	public addCorrelationsGraphBuilding(force = true, contentSubdirPath? : string) : void {
+		
 		// Не собираем граф, если он уже есть.
 		if(!force) {
-			const enrichGraphFilePath = this._config.getEnrulesGraphFilePath();
+			const enrichGraphFilePath = this._config.getEnrichmentsGraphFilePath(this._contentRootPath);
 			if(fs.existsSync(enrichGraphFilePath)) {
 				return;
 			}
@@ -120,10 +142,10 @@ out=\${output_folder}\\fpta_db.db`;
 			rulesSrcPath = contentSubdirPath;
 		}
 		else {
-			// Собираем граф нормализации из всех источников контента, их несколько для EDR.
-			rulesSrcPath = contentRoots.join(",");
+			rulesSrcPath = this._contentRootPath;
 		}
 
+		const rulesFilters = this._config.getRulesDirFilters();
 		const cfgraphBuildingSection = 
 `
 [make-crgraph]
@@ -131,51 +153,41 @@ type=BUILD_RULES
 rcc_lang=c
 rules_src=${rulesSrcPath}
 rfilters_src=${rulesFilters}
-table_list_schema=\${output_folder}\\schema.json
-out=\${output_folder}\\corrules_graph.json`;
+table_list_schema=\${output_folder}\\${this._config.getSchemaFileName()}
+out=\${output_folder}\\${this._config.getCorrelationsGraphFileName()}`;
 
 		this._siemjConfigSection += cfgraphBuildingSection;
 		this._scenarios.push("make-crgraph");
 	}
 
-	public addEfgraphBuilding(force : boolean = true) : void {
-		const pathLocator = this._config.getPathHelper();
-		const rulesFilters = pathLocator.getRulesDirFilters();
-		const contentRoots = pathLocator.getContentRoots();
-
+	public addEnrichmentsGraphBuilding(force = true) : void {
 		// Не собираем граф, если он уже есть.
 		if(!force) {
-			const enrichGraphFilePath = this._config.getEnrulesGraphFilePath();
+			const enrichGraphFilePath = this._config.getEnrichmentsGraphFilePath(this._contentRootFolder);
 			if(fs.existsSync(enrichGraphFilePath)) {
 				return;
 			}
 		}
-		
-		// Собираем граф нормализации из всех источников контента, их несколько для EDR.
-		const rulesSrcPath = contentRoots.join(",");
 
+		const rulesFilters = this._config.getRulesDirFilters();
 		const efgraphBuildingSection = 
 `
 [make-ergraph]
 type=BUILD_RULES
 rcc_lang=e
-rules_src=${rulesSrcPath}
+rules_src=${this._contentRootPath}
 rfilters_src=${rulesFilters}
-table_list_schema=\${output_folder}\\schema.json
-out=\${output_folder}\\enrules_graph.json`;
+table_list_schema=\${output_folder}\\${this._config.getSchemaFileName()}
+out=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}`;
 
 		this._siemjConfigSection += efgraphBuildingSection;
 		this._scenarios.push("make-ergraph");
 	}
 
-	public addLocalizationBuilding(rulesSrcPath? : string) : void {
-
+	public addLocalizationsBuilding(rulesSrcPath? : string) : void {
 		let rulesSrcPathResult : string;
 		if(!rulesSrcPath) {
-			const pathLocator = this._config.getPathHelper();
-			const contentRoots = pathLocator.getContentRoots();
-
-			rulesSrcPathResult = contentRoots.join(",");
+			rulesSrcPathResult = this._contentRootPath;
 		} else {
 			rulesSrcPathResult = rulesSrcPath;
 		}
@@ -185,38 +197,38 @@ out=\${output_folder}\\enrules_graph.json`;
 [make-loca]
 type=BUILD_EVENT_LOCALIZATION
 rules_src=${rulesSrcPathResult}
-out=\${output_folder}\\langs`;
+out=\${output_folder}\\${this._config.getLocalizationsFolder()}`;
 
 		this._siemjConfigSection += localizationBuildingSection;
 		this._scenarios.push("make-loca");
 	}
 
-	public addEventsNormalize(rawEventsFilePath : string) : void {
+	public addEventsNormalization(rawEventsFilePath : string) : void {
 
 		const eventNormalizationSection = 
 `
 [run-normalize]
 type=NORMALIZE
-formulas=\${output_folder}\\formulas_graph.json
+formulas=\${output_folder}\\${this._config.getNormalizationsGraphFileName()}
 in=${rawEventsFilePath}
 raw_without_envelope=no
 print_statistics=yes
-not_norm_events=\${output_folder}\\not_normalized.json
-out=\${output_folder}\\norm_events.json`;
+not_norm_events=\${output_folder}\\${this._config.getNotNormalizedEventsFileName()}
+out=\${output_folder}\\${this._config.getNormalizedEventsFileName()}`;
 
 		this._siemjConfigSection += eventNormalizationSection;
 		this._scenarios.push("run-normalize");
 	}
 
-	public addEventsEnrich() : void {
+	public addEventsEnrichment() : void {
 
 		const eventEnrichSection = 
 `
 [run-enrich]
 type=ENRICH
-enrules=\${output_folder}\\enrules_graph.json
-in=\${output_folder}\\norm_events.json
-out=\${output_folder}\\enrich_events.json`;
+enrules=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}
+in=\${output_folder}\\${this._config.getNormalizedEventsFileName()}
+out=\${output_folder}\\${this._config.getEnrichedEventsFileName()}`;
 
 		this._siemjConfigSection += eventEnrichSection;
 		this._scenarios.push("run-enrich");
@@ -229,11 +241,11 @@ out=\${output_folder}\\enrich_events.json`;
 [rules-tests]
 type=TEST_RULES
 cr_timeout=${this._crTimeout}
-formulas=\${output_folder}\\formulas_graph.json
-enrules=\${output_folder}\\enrules_graph.json
-corrules=\${output_folder}\\corrules_graph.json
-table_list_defaults=\${output_folder}\\correlation_defaults.json
-rules_src=${testsRuleFullPath}`
+formulas=\${output_folder}\\${this._config.getNormalizationsGraphFileName()}
+enrules=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}
+corrules=\${output_folder}\\${this._config.getCorrelationsGraphFileName()}
+table_list_defaults=\${output_folder}\\${this._config.getCorrelationDefaultsFileName()}
+rules_src=${testsRuleFullPath}`;
 
 		this._siemjConfigSection += rulesTestsSection;
 		this._scenarios.push("rules-tests");
@@ -245,10 +257,10 @@ rules_src=${testsRuleFullPath}`
 `
 [run-correlate]
 type=CORRELATE
-corrules=\${output_folder}\\corrules_graph.json
-in=\${output_folder}\\enrich_events.json
-table_list_database=\${output_folder}\\fpta_db.db
-out=\${output_folder}\\corr_events.json`;
+corrules=\${output_folder}\\${this._config.getCorrelationsGraphFileName()}
+in=\${output_folder}\\${this._config.getEnrichedEventsFileName()}
+table_list_database=\${output_folder}\\${this._config.getFptaDbFileName()}
+out=\${output_folder}\\${this._config.getCorrelatedEventsFileName()}`;
 
 		this._siemjConfigSection += eventEnrichSection;
 		this._scenarios.push("run-correlate");
@@ -264,7 +276,8 @@ scenario=${this._scenarios.join(" ")}
 		return resultConfig;
 	}
 
+	private _contentRootFolder : string;
 	private _siemjConfigSection : string;
 	private _scenarios : string[] = [];
-	private _crTimeout : number = 45;
+	private _crTimeout = 45;
 }

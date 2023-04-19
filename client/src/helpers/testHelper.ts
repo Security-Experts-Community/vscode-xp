@@ -7,6 +7,7 @@ import { RegExpHelper } from './regExpHelper';
 import { XpException } from '../models/xpException';
 import { ParseException } from '../models/parseException';
 
+export type ConvertMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
 export class TestHelper {
 
@@ -59,8 +60,8 @@ export class TestHelper {
 	 * @returns список ошибок, в котором задан начальный символ строки первым непробельным символом.
 	 */
 	public static correctWhitespaceCharacterFromErrorLines(ruleContent : string, diagnostics : vscode.Diagnostic[]) : vscode.Diagnostic[] {
-
-		const lines = ruleContent.split(EOL);
+		const fixedContent = ruleContent.replace(/(\r\n)/gm, "\n");
+		const lines = fixedContent.split('\n');
 
 		return diagnostics.map(d => {
 			const lineNumber = d.range.start.line;
@@ -267,7 +268,7 @@ export class TestHelper {
 	 * @param mimeType тип событий
 	 * @returns массив сырых событий, в котором каждое событие обёрнуто в конверт заданного типа и начинается с новой строки
 	 */
-	public static addEnvelope(compressedRawEvents : string, mimeType : string) : string[] {
+	public static addEnvelope(compressedRawEvents : string, mimeType : ConvertMimeType) : string[] {
 		// TODO: заменить строку mimeType на enum
 		const newRawEvents = [];
 		

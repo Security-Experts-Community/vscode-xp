@@ -1,11 +1,10 @@
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as vscode from 'vscode';
 
 import { ContentTreeProvider } from '../contentTreeProvider';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { KbHelper } from '../../../helpers/kbHelper';
-import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
 import { ExtensionHelper } from '../../../helpers/extensionHelper';
 
 export class RenameTreeItemCommand {

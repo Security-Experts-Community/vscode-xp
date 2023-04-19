@@ -20,12 +20,12 @@ export class UnpackKbAction {
 		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();
 		if(!fs.existsSync(knowledgeBasePackagerCli)) {
 			ExtensionHelper.showUserError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку.");
-			await VsCodeApiHelper.openSettings(this._config.getExtentionSettingsPrefix());
+			await VsCodeApiHelper.openSettings(this._config.getExtensionSettingsPrefix());
 			return;
 		}
 
-		const pathHelper = Configuration.get().getPathHelper();
-		if(!pathHelper.isKbOpened()) {
+		const config = Configuration.get();
+		if(!config.isKbOpened()) {
 			ExtensionHelper.showUserInfo("Нельзя распаковать пакет(ы) без открытия существующей базы знаний. Сначала откройте базу знаний.");
 			return;
 		}
@@ -44,7 +44,7 @@ export class UnpackKbAction {
 		const kbFilePath = kbUris[0].fsPath; 
 
 		// Получаем путь к директории пакетов.
-		const exportDirPath = selectedPackage.getContentRoot(Configuration.get());
+		const exportDirPath = selectedPackage.getContentRootPath(Configuration.get());
 
 		if(!fs.existsSync(exportDirPath)) {
 			ExtensionHelper.showUserError(`Не существует директория для пакетов.`);
@@ -62,7 +62,7 @@ export class UnpackKbAction {
 
 			try {
 				const unpackPackagePath = this._config.getRandTmpSubDirectoryPath();
-				await fs.promises.mkdir(unpackPackagePath);
+				await fs.promises.mkdir(unpackPackagePath, {recursive: true});
 
 				const kbFileName = path.parse(kbFilePath).name;
 				const outputDirPath = path.join(unpackPackagePath, kbFileName);
@@ -108,7 +108,7 @@ export class UnpackKbAction {
 				await ContentTreeProvider.refresh();
 			}
 			catch(error) {
-				ExtensionHelper.showUserError("Произошла неожиданная ошибка.");
+				ExtensionHelper.showUserError(`Произошла неожиданная ошибка: ${error.message}`);
 			}
 		});
 	}

@@ -21,7 +21,7 @@ export class XpDocumentHighlightProvider implements vscode.DocumentSemanticToken
 				.map(s => classTransformer.plainToInstance(CompleteSignature, s))
 				.map(s => s.name);
 
-		return new XpDocumentHighlightProvider(functionNames, legend)
+		return new XpDocumentHighlightProvider(functionNames, legend);
 	}	
 
 	constructor(private _fuctionNames: string[], private _legend: vscode.SemanticTokensLegend) {
@@ -34,7 +34,7 @@ export class XpDocumentHighlightProvider implements vscode.DocumentSemanticToken
 
 		const tokensBuilder = new vscode.SemanticTokensBuilder(this._legend);
 
-		for(let currLine: number = 0; currLine < document.lineCount ; currLine++) {
+		for(let currLine = 0; currLine < document.lineCount ; currLine++) {
 			const line = document.lineAt(currLine);
 			const functionCalls = RegExpHelper.parseFunctionCalls(line.text, currLine, this._fuctionNames);
 

@@ -5,8 +5,6 @@ import * as vscode from 'vscode';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
 import { SiemjConfigHelper } from '../siemj/siemjConfigHelper';
-import { TestHelper } from '../../helpers/testHelper';
-import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { SiemJOutputParser } from '../siemj/siemJOutputParser';
 import { Configuration } from '../configuration';
 import { RuleBaseItem } from '../content/ruleBaseItem';
@@ -46,21 +44,21 @@ export class IntegrationTestRunner {
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
 
-		const outputDirname = this._config.getPathHelper().getOutputDirName();
-		const outputDirPath = path.join(this._config.getOutputDirectoryPath(), outputDirname);
+		const rootPath = rule.getContentRootPath(this._config);
+		const rootFolder = path.basename(rootPath);
+		const outputDirPath = this._config.getOutputDirectoryPath(rootFolder);
 		if(!fs.existsSync(outputDirPath)) {
 			await fs.promises.mkdir(outputDirPath);
 		}
-		
-		// Если в правиле используются сабрули, тогда собираем весь граф корреляций.
-		const configBuilder = new SiemjConfBuilder(this._config);
-		configBuilder.addNfgraphBuilding(false);
+
+		const configBuilder = new SiemjConfBuilder(this._config, rootPath);
+		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
-		configBuilder.addEfgraphBuilding();
+		configBuilder.addEnrichmentsGraphBuilding();
 
 		// TODO: временное решения до устранение проблем с вылетом тестов по таймауту.
-		configBuilder.addCfgraphBuilding(true, rule.getPackagePath(this._config));
+		configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this._config));
 		configBuilder.addTestsRun(rule.getDirectoryPath());
 
 		const siemjConfContent = configBuilder.build();
@@ -70,7 +68,7 @@ export class IntegrationTestRunner {
 			return;
 		}
 
-		const siemjConfigPath = this._config.getTmpSiemjConfigPath();
+		const siemjConfigPath = this._config.getTmpSiemjConfigPath(rootFolder);
 		// Централизованно сохраняем конфигурационный файл для siemj.
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 
@@ -93,7 +91,7 @@ export class IntegrationTestRunner {
 			// Убираем ошибки по текущему правилу.
 			this._config.getDiagnosticCollection().set(ruleFileUri, []);
 
-			await this.clearTmpFiles(this._config);
+			await this.clearTmpFiles(this._config, rootFolder);
 		} else {
 			this._config.getOutputChannel().show();
 			this._config.getDiagnosticCollection().clear();
@@ -114,15 +112,20 @@ export class IntegrationTestRunner {
 		return integrationTests;
 	}
 
-	private async clearTmpFiles(config : Configuration) : Promise<void> {
-		const siemjConfigPath = config.getTmpSiemjConfigPath();
+	private async clearTmpFiles(config : Configuration, rootFolder: string) : Promise<void> {
+		const siemjConfigPath = config.getTmpDirectoryPath(rootFolder);
 
-		// Очищаем временные файлы.
-		await fs.promises.access(siemjConfigPath).then(
-			() => { 
-				return fs.promises.unlink(siemjConfigPath); 
-			}
-		);
+		try {
+			// Очищаем временные файлы.
+			await fs.promises.access(siemjConfigPath).then(
+				() => { 
+					return fs.promises.unlink(siemjConfigPath); 
+				}
+			);
+		}
+		catch (error) {
+			//
+		}
 	}
 
 	private readonly TEST_SUCCESS_SUBSTRING = "All tests OK";

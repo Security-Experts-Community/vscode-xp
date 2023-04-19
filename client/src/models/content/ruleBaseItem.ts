@@ -12,8 +12,6 @@ import { Configuration } from '../configuration';
 import { YamlHelper } from '../../helpers/yamlHelper';
 import { ArgumentException } from '../argumentException';
 import { XpException } from '../xpException';
-import { ContentHelper } from '../../helpers/contentHelper';
-import { KbHelper } from '../../helpers/kbHelper';
 
 /**
  * Базовый класс для всех правил.
@@ -23,6 +21,10 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	constructor(name: string, parentDirectoryPath? : string) {
 		super(name);
 		this._parentPath = parentDirectoryPath;
+	}
+
+	protected getResourcesPath(){
+		return path.join(Configuration.get().getExtensionPath(), 'resources');
 	}
 
 	public static getRuleDirectoryPath(parentDirPath : string, ruleName : string ) : string {
@@ -57,8 +59,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		}
 
 		const pathEntities = this.getDirectoryPath().split(path.sep);
-		const kbPaths = config.getPathHelper();
-		const roots = kbPaths.getContentRoots().map(folder => {return path.basename(folder);});
+		const roots = config.getContentRoots().map(folder => {return path.basename(folder);});
 		for (const root of roots){
 			const  packagesDirectoryIndex = pathEntities.findIndex( pe => pe.toLocaleLowerCase() === root);
 			if(packagesDirectoryIndex === -1){
@@ -75,16 +76,15 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		throw new Error(`Путь к правилу '${this.getName()}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
 	}
 
-	public getContentRoot(config: Configuration): string{
+	public getContentRootPath(config: Configuration): string{
 		if(!this._parentPath) {
 			throw new ArgumentException(`Не задан путь к директории правила '${this.getName()}'.`);
 		}
 
 		const pathEntities = this.getDirectoryPath().split(path.sep);
-		const kbPaths = config.getPathHelper();
-		const roots = kbPaths.getContentRoots().map(folder => {return path.basename(folder);});
-		for (const root of roots){
-			const  packagesDirectoryIndex = pathEntities.findIndex( pe => pe.toLocaleLowerCase() === root);
+		const rootPaths = config.getContentRoots().map(folder => {return path.basename(folder);});
+		for (const rootPath of rootPaths){
+			const  packagesDirectoryIndex = pathEntities.findIndex( pe => pe.toLocaleLowerCase() === rootPath);
 			if(packagesDirectoryIndex === -1){
 				continue;
 			}
@@ -95,7 +95,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			return packageDirectoryPath;
 		}
 
-		throw new Error(`Путь к правилу '${this.getName()}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
+		throw new Error(`Путь к правилу '${this.getName()}' не содержит ни одну из корневых директорий: [${rootPaths.join(", ")}].`);
 	}
 
 	public getMetaInfoFilePath(): string {

@@ -21,7 +21,7 @@ export class TableListsEditorViewProvider  {
 	public static init(context: Configuration) {
 
 		const templateFilePath = path.join(
-			ExtensionHelper.getExtentionPath(), "client", "templates", "TableListEditor.html");
+			Configuration.get().getExtensionPath(), "client", "templates", "TableListEditor.html");
 
 		const provider = new TableListsEditorViewProvider(templateFilePath);
 	
@@ -60,7 +60,7 @@ export class TableListsEditorViewProvider  {
 			);
 
 			const config = Configuration.get();
-			const resoucesUri = config.getExtentionUri();
+			const resoucesUri = config.getExtensionUri();
 			const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
 			
 			const templatePlainObject = {

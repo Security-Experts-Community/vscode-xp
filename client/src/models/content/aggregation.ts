@@ -1,7 +1,6 @@
 import * as path from "path";
 import * as fs from 'fs';
 
-import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { RuleBaseItem } from './ruleBaseItem';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 
@@ -67,8 +66,8 @@ export class Aggregation extends RuleBaseItem {
 	}
 
 	iconPath = {
-		light: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'light', 'rule.svg'),
-		dark: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'dark', 'rule.svg')
+		light: path.join(this.getResourcesPath(), 'light', 'rule.svg'),
+		dark: path.join(this.getResourcesPath(), 'dark', 'rule.svg')
 	};
 
 	contextValue = 'Aggregation';

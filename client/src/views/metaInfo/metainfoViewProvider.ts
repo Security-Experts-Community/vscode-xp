@@ -8,7 +8,6 @@ import { Correlation } from '../../models/content/correlation';
 import { MustacheFormatter } from '../mustacheFormatter';
 import { MetaInfoUpdater } from './metaInfoUpdater';
 import { Configuration } from '../../models/configuration';
-import { IncorrectFieldFillingException } from '../incorrectFieldFillingException';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 
 export class MetainfoViewProvider {
@@ -26,7 +25,7 @@ export class MetainfoViewProvider {
 
 	public static init(config: Configuration): MetainfoViewProvider {
 		const metaInfoTemplateFilePath = path.join(
-			ExtensionHelper.getExtentionPath(), "client", "templates", "MetaInfo.html");
+			config.getExtensionPath(), "client", "templates", "MetaInfo.html");
 		const metainfoTemplateContent = fs.readFileSync(metaInfoTemplateFilePath).toString();
 
 		const metaInfoViewProvider = new MetainfoViewProvider(
@@ -86,7 +85,7 @@ export class MetainfoViewProvider {
 		const metaInfo = await this._rule.getMetaInfo().toObject();
 
 		// Подгружаем базовую ссылку для внешних ресурсов.
-		const resoucesUri = this._config.getExtentionUri();
+		const resoucesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
 		metaInfo.ExtensionBaseUri = extensionBaseUri;
 

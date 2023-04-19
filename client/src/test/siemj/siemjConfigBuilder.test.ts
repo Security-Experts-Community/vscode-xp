@@ -9,8 +9,8 @@ suite('SiemjConfigBuilder', () => {
 
 	test('Собрать локализации с путём по умолчанию', async () => {
 		const config = Configuration.get();
-		const configBuilder = new SiemjConfBuilder(config);
-		configBuilder.addLocalizationBuilding();
+		const configBuilder = new SiemjConfBuilder(config, "packages");
+		configBuilder.addLocalizationsBuilding();
 		const siemJConfig = configBuilder.build();
 
 		// Описание сценария
@@ -26,8 +26,8 @@ suite('SiemjConfigBuilder', () => {
 	});
 
 	test('Собрать локализации с заданным путём', async () => {
-		const configBuilder = new SiemjConfBuilder(Configuration.get());
-		configBuilder.addLocalizationBuilding("C:\\Content\\knowledgebase\\packages");
+		const configBuilder = new SiemjConfBuilder(Configuration.get(), "packages");
+		configBuilder.addLocalizationsBuilding("C:\\Content\\knowledgebase\\packages");
 		const result = configBuilder.build();
 
 		// Описание сценария
@@ -47,13 +47,14 @@ suite('SiemjConfigBuilder', () => {
 		const actualTests = IntegrationTest.parseFromRuleDirectory(rulePath);
 		const rawEventsFilePath = actualTests[0].getRawEventsFilePath();
 		
-		const configBuilder = new SiemjConfBuilder(Configuration.get());
-		configBuilder.addNfgraphBuilding();
+		// TODO: Уточнить тут второй параметр
+		const configBuilder = new SiemjConfBuilder(Configuration.get(), "packages");
+		configBuilder.addNormalizationsGraphBuilding();
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
-		configBuilder.addEfgraphBuilding();
-		configBuilder.addEventsNormalize(rawEventsFilePath);
-		configBuilder.addEventsEnrich();
+		configBuilder.addEnrichmentsGraphBuilding();
+		configBuilder.addEventsNormalization(rawEventsFilePath);
+		configBuilder.addEventsEnrichment();
 
 		const result = configBuilder.build();
 

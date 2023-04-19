@@ -1,9 +1,9 @@
-import * as vscode from 'vscode'
+import * as vscode from 'vscode';
 import { ExtensionHelper } from '../helpers/extensionHelper';
 import { TestHelper } from '../helpers/testHelper';
 import { VsCodeApiHelper } from '../helpers/vsCodeApiHelper';
 
-export class TestsFormatContentMenuExtention {
+export class TestsFormatContentMenuExtension {
 
 	public static init(context : vscode.ExtensionContext) {
 		// Упаковка тестов перед сохранением.

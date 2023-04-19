@@ -35,6 +35,24 @@
 		"definitionProvider": "true"
 	},
 	"contributes": {
+		"taskDefinitions": [
+			{
+				"type": "XP",
+				"required": [
+					"mode"
+				],
+				"properties": {
+					"mode": {
+						"type": "string",
+						"description": "Mode of XP SDK"
+					},
+					"package": {
+						"type": "string",
+						"description": "Package name to pack"
+					}
+				}
+			}
+		],
 		"languages": [
 			{
 				"id": "yaml",

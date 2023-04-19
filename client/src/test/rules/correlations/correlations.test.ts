@@ -74,7 +74,7 @@ suite('Корреляции', () => {
 		let rule = Correlation.create("SavedOnDiskCorrelation", tmpPath);
 
 		const modTest = new CorrelationUnitTest();
-		modTest.setTestCode("test code")
+		modTest.setTestCode("test code");
 		rule.addModularTests([modTest]);
 		await rule.save();
 

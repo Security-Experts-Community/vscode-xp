@@ -5,9 +5,7 @@ import { Configuration } from '../models/configuration';
 import { Correlation } from '../models/content/correlation';
 
 import { Enrichment } from '../models/content/enrichment';
-import { Localization } from '../models/content/localization';
 import { XpException } from '../models/xpException';
-import { ExtensionHelper } from './extensionHelper';
 import { FileSystemHelper } from './fileSystemHelper';
 import { KbHelper } from './kbHelper';
 
@@ -20,7 +18,7 @@ export class ContentHelper {
 
     public static getTemplateNames(config : Configuration, contentDirectory : string) : string[] {
         const templatesPath = path.join(
-            config.getExtentionPath(), "content_templates", contentDirectory);
+            config.getExtensionPath(), "content_templates", contentDirectory);
 
         const templateNames = 
             FileSystemHelper.getRecursiveDirPathSync(templatesPath)
@@ -34,7 +32,7 @@ export class ContentHelper {
         templateName : string,
         config: Configuration) : Promise<Correlation> {
 
-        const templatesPath = path.join(config.getExtentionPath(), this.CONTENT_TEMPLATES_DIRECTORY_NAME, this.CORRELATIONS_DIRECTORY_NAME);
+        const templatesPath = path.join(config.getExtensionPath(), this.CONTENT_TEMPLATES_DIRECTORY_NAME, this.CORRELATIONS_DIRECTORY_NAME);
         const tmpDirPath = config.getRandTmpSubDirectoryPath();
         await this.copyContentTemplateToTmpDirectory(templateName, templatesPath, tmpDirPath);
 
@@ -56,7 +54,7 @@ export class ContentHelper {
         templateName : string,
         config: Configuration) : Promise<Correlation> {
 
-        const templatesPath = path.join(config.getExtentionPath(), this.CONTENT_TEMPLATES_DIRECTORY_NAME, this.ENRICHMENTS_DIRECTORY_NAME);
+        const templatesPath = path.join(config.getExtensionPath(), this.CONTENT_TEMPLATES_DIRECTORY_NAME, this.ENRICHMENTS_DIRECTORY_NAME);
         const tmpDirPath = config.getRandTmpSubDirectoryPath();
         await this.copyContentTemplateToTmpDirectory(templateName, templatesPath, tmpDirPath);
 

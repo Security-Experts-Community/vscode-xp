@@ -1,11 +1,9 @@
 import * as path from "path";
 import * as fs from "fs";
-import * as crc32 from 'crc-32';
 
 import { RuleBaseItem } from './ruleBaseItem';
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { CorrelationUnitTest } from '../tests/correlationUnitTest';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Configuration } from '../configuration';
@@ -170,8 +168,8 @@ export class Enrichment extends RuleBaseItem {
 	}
 
 	iconPath = {
-		light: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'light', 'rule.svg'),
-		dark: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'dark', 'rule.svg')
+		light: path.join(this.getResourcesPath(), 'light', 'rule.svg'),
+		dark: path.join(this.getResourcesPath(), 'dark', 'rule.svg')
 	};
 
 	contextValue = 'Enrichment';

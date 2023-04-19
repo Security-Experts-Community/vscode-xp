@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as path from 'path';
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
@@ -26,21 +27,22 @@ export class SiemjManager {
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
 
-		const outputDirName = this._config.getPathHelper().getOutputDirName();
-		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
+		const contentRootPath = rule.getContentRootPath(this._config);
+		const contentRootFolder = path.basename(contentRootPath);
+		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
 
 		if(!fs.existsSync(outputFolder)) {
 			fs.mkdirSync(outputFolder);
 		}
 		
 		// Получаем нужный конфиг для нормализации событий.
-		const configBuilder = new SiemjConfBuilder(this._config);
-		configBuilder.addNfgraphBuilding(false);
-		configBuilder.addEventsNormalize(rawEventsFilePath);
+		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
+		configBuilder.addNormalizationsGraphBuilding(false);
+		configBuilder.addEventsNormalization(rawEventsFilePath);
 		const siemjConfContent = configBuilder.build();
 
 		// Централизованно сохраняем конфигурационный файл для siemj.
-		const siemjConfigPath = this._config.getTmpSiemjConfigPath();
+		const siemjConfigPath = this._config.getTmpSiemjConfigPath(contentRootFolder);
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 		const siemjExePath = this._config.getSiemjPath();
 
@@ -54,7 +56,7 @@ export class SiemjManager {
 			this._config.getOutputChannel()
 		);
 
-		const normEventsFilePath = this._config.getNormEventsFilePath(outputDirName);
+		const normEventsFilePath = this._config.getNormalizedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(normEventsFilePath)) {
 			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
 		}
@@ -80,24 +82,25 @@ export class SiemjManager {
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
 
-		const outputDirName = this._config.getPathHelper().getOutputDirName();
-		const outputFolder = this._config.getOutputDirectoryPath(outputDirName);
+		const contentRootPath = rule.getContentRootPath(this._config);
+		const contentRootFolder = path.basename(contentRootPath);
+		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
 
 		if(!fs.existsSync(outputFolder)) {
 			fs.mkdirSync(outputFolder);
 		}
 		
-		const configBuilder = new SiemjConfBuilder(this._config);
-		configBuilder.addNfgraphBuilding(false);
+		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
+		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
-		configBuilder.addEfgraphBuilding();
-		configBuilder.addEventsNormalize(rawEventsFilePath);
-		configBuilder.addEventsEnrich();
+		configBuilder.addEnrichmentsGraphBuilding();
+		configBuilder.addEventsNormalization(rawEventsFilePath);
+		configBuilder.addEventsEnrichment();
 		const siemjConfContent = configBuilder.build();
 
 		// Централизованно сохраняем конфигурационный файл для siemj.
-		const siemjConfigPath = this._config.getTmpSiemjConfigPath();
+		const siemjConfigPath = this._config.getTmpSiemjConfigPath(contentRootFolder);
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 		const siemjExePath = this._config.getSiemjPath();
 
@@ -111,7 +114,7 @@ export class SiemjManager {
 			this._config.getOutputChannel()
 		);
 
-		const enrichEventsFilePath = this._config.getEnrichEventsFilePath(outputDirName);
+		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(enrichEventsFilePath)) {
 			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
 		}
@@ -124,7 +127,4 @@ export class SiemjManager {
 		await fs.promises.unlink(siemjConfigPath);
 		return enrichEventsContent;
 	}
-
-
-
 }

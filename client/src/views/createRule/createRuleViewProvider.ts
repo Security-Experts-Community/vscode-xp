@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import * as fse from 'fs-extra';
 
 import { MustacheFormatter } from '../mustacheFormatter';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
@@ -27,7 +26,7 @@ export class CreateRuleViewProvider {
 
         // Форма создания корреляции.
         const createCorrelationTemplateFilePath = path.join(
-            ExtensionHelper.getExtentionPath(), "client", "templates", "CreateRule.html");
+            config.getExtensionPath(), "client", "templates", "CreateRule.html");
         const reateCorrelationTemplateContent = await FileSystemHelper.readContentFile(createCorrelationTemplateFilePath);
 
         const createCorrelationViewProvider = new CreateRuleViewProvider(
@@ -108,7 +107,7 @@ export class CreateRuleViewProvider {
             this
         );
 
-        const resoucesUri = this._config.getExtentionUri();
+        const resoucesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
         try {
             const templateDefaultContent = {

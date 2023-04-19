@@ -10,7 +10,7 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { CorrGraphRunner } from './corrGraphRunner';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
-import { TestHelper } from '../../helpers/testHelper';
+import { ConvertMimeType, TestHelper } from '../../helpers/testHelper';
 
 export class RunningCorrelationGraphProvider {
 
@@ -27,7 +27,7 @@ export class RunningCorrelationGraphProvider {
 
         // Форма создания корреляции.
         const createCorrelationTemplateFilePath = path.join(
-            ExtensionHelper.getExtentionPath(), "client", "templates", "FullGraphRun.html");
+            config.getExtensionPath(), "client", "templates", "FullGraphRun.html");
 
         const reateCorrelationTemplateContent = fs.readFileSync(createCorrelationTemplateFilePath).toString();
         const createCorrelationViewProvider = new RunningCorrelationGraphProvider(
@@ -65,7 +65,7 @@ export class RunningCorrelationGraphProvider {
             this
         );
 
-        const resoucesUri = this._config.getExtentionUri();
+        const resoucesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
         try {
             const templateDefaultContent = {
@@ -88,17 +88,8 @@ export class RunningCorrelationGraphProvider {
                 if(!rawEvents) {
                     ExtensionHelper.showUserError("Не заполнено поле сырых событий. Заполните его и повторите.");
                     return;
-                }
-
-                // Создаем временную директорию.
-                const tmpDirectoryPath = this._config.getRandTmpSubDirectoryPath();
-                await fs.promises.mkdir(tmpDirectoryPath, {recursive : true});
-
-                // Сохраняет сырые события в конверте на диск.
-                const rawEventsFilePath = path.join(tmpDirectoryPath, "raw_events.json");
-                await FileSystemHelper.writeContentFile(rawEventsFilePath, rawEvents);
-
-				await this.corrGraphRun(rawEventsFilePath);
+                }             
+				await this.corrGraphRun(rawEvents);
                 break;
 			}
             case 'addEnvelope': {
@@ -107,33 +98,45 @@ export class RunningCorrelationGraphProvider {
         }
     }
 
-    private async corrGraphRun(rawEventsPath: string) : Promise<void> {
+    private async corrGraphRun(rawEvents: string) : Promise<void> {
 
-        const kbPaths = Configuration.get().getPathHelper();
-        const roots = kbPaths.getContentRoots();
+        const config = Configuration.get();
+        const rootPaths = config.getContentRoots();
 
         // Прогоняем событие по графам для каждой из корневых директорий теущего режима
-        roots.forEach(root => {
+        rootPaths.forEach(rootPath => {
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 cancellable: false,
-                title: `Прогон событий по графу корреляций для директории ${path.basename(root)}`
+                title: `Прогон событий по графу корреляций для директории ${path.basename(rootPath)}`
             }, async (progress) => {
                 try {
+                    const rootFolder = path.basename(rootPath);
+
+                     // Создаем временную директорию.
+                    const tmpDirectoryPath = this._config.getRandTmpSubDirectoryPath(rootFolder);
+                    await fs.promises.mkdir(tmpDirectoryPath, {recursive : true});
+
+                    // Сохраняет сырые события в конверте на диск.
+                    const rawEventsFilePath = path.join(tmpDirectoryPath, "raw_events.json");
+                    await FileSystemHelper.writeContentFile(rawEventsFilePath, rawEvents);
+
                     const runner = new CorrGraphRunner(this._config);
-                    const correlatedEventsString = await runner.run(root, rawEventsPath);
+                    const correlatedEventsString = await runner.run(rootPath, rawEventsFilePath);
 
                     if(!correlatedEventsString) {
-                        ExtensionHelper.showUserInfo("По данным событиям не произошло ни одной сработки.");
+                        ExtensionHelper.showUserInfo(`По данным событиям не произошло ни одной сработки корреляций в папке ${rootFolder}.`);
                         return;
                     }
                     
                     // Извлекаем имена сработавших корреляций.
-                    const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /(\"correlation_name"\s*:\s*\"(.*?)\")/g);
+                    const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /("correlation_name"\s*:\s*"(.*?)")/g);
                     if(!correlationNames) {
                         ExtensionHelper.showUserError("Ошибка прогона событий по графу корреляции.");
                         return;
                     }
+
+                    ExtensionHelper.showUserInfo(`Количество сработавших корреляций из папки ${rootFolder}: ${correlationNames.length}`);
 
                     // Отдаем события во front-end.
                     const formatedEvents = TestHelper.formatTestCodeAndEvents(correlatedEventsString);
@@ -163,7 +166,7 @@ export class RunningCorrelationGraphProvider {
 			return ExtensionHelper.showUserInfo("Конверт для событий уже добавлен.");
 		}
 
-		const mimeType = message?.mimeType as string;
+		const mimeType = message?.mimeType as ConvertMimeType;
 		if(!mimeType) {
 			ExtensionHelper.showUserInfo("Не задан mime. Добавьте задайте его и повторите.");
 			return;
@@ -213,8 +216,8 @@ export class RunningCorrelationGraphProvider {
 	// 		catch(error) {
     //             const errorType = error.constructor.name;
     //             switch(errorType)  {
-    //                 case "XpExtentionException" :  {
-    //                     const typedError = error as XpExtentionException;
+    //                 case "XpExtensionException" :  {
+    //                     const typedError = error as XpExtensionException;
     //                     ExtensionHelper.showError(typedError.message, error.message);
     //                 }
     //                 default: {

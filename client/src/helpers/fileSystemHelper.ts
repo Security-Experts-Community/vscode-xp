@@ -143,7 +143,7 @@ export class FileSystemHelper {
 	 * @returns список полных путей вложенных директорий.
 	 */
 	public static getRecursiveDirPathSync(dirPath : string) : string[] {
-		let results : string [] = [];
+		const results : string [] = [];
 		const list = fs.readdirSync(dirPath);
 
 		list.forEach(function(file : string) {

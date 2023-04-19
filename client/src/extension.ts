@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as fs from 'fs';
 import * as vscode from 'vscode';
 import { workspace, ExtensionContext } from 'vscode';
 
@@ -22,13 +23,17 @@ import { ContentTreeProvider } from './views/contentTree/contentTreeProvider';
 import { RunningCorrelationGraphProvider } from './views/сorrelationGraph/runningCorrelationGraphProvider';
 import { TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
 import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvier';
-import { TestsFormatContentMenuExtention } from './ext/contextMenuExtention';
+import { TestsFormatContentMenuExtension } from './ext/contextMenuExtension';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
 import { YamlHelper } from './helpers/yamlHelper';
 import { InitKBRootCommand } from './views/contentTree/commands/initKBRootCommand';
-
+import { XPPackingTaskProvider } from './providers/xpCustomTaskProvider';
+import { ContentType } from './contentType/contentType';
+import { XpException } from './models/xpException';
+import { FileSystemHelper } from './helpers/fileSystemHelper';
 
 let client: LanguageClient;
+let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
 
 export async function activate(context: ExtensionContext) {
 
@@ -106,8 +111,11 @@ export async function activate(context: ExtensionContext) {
 	SetContentTypeCommand.init(config);
 	InitKBRootCommand.init(config);
 
+	siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(XPPackingTaskProvider.Type, new XPPackingTaskProvider(config));
+
+	
 	// Расширение нативного контекстого меню.
-	TestsFormatContentMenuExtention.init(context);
+	TestsFormatContentMenuExtension.init(context);
 
 	// Подпись функций.
 	const signatureProvider = await XpSignatureHelpProvider.init(context);
@@ -206,6 +214,10 @@ export async function activate(context: ExtensionContext) {
 export async function deactivate(): Promise<void> | undefined {
 	if (!client) {
 		return undefined;
+	}
+
+	if(siemCustomPackingTaskProvider){
+		siemCustomPackingTaskProvider.dispose();
 	}
 
 	return client.stop();

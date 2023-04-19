@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { extensions} from 'vscode';
 
-import { API, Git, GitExtension } from '../@types/vscode.git';
+import { API, GitExtension } from '../@types/vscode.git';
 import { RuleBaseItem } from '../models/content/ruleBaseItem';
 import { FileSystemHelper } from './fileSystemHelper';
 
@@ -35,7 +35,7 @@ export class VsCodeApiHelper {
 
 			if(openFilePath.startsWith(path)) {
 				// Закрываем открытый файл.
-				await vscode.window.showTextDocument(td.uri, {preview: true, preserveFocus: false})
+				await vscode.window.showTextDocument(td.uri, {preview: true, preserveFocus: false});
 				await VsCodeApiHelper.closeActiveEditor();
 			}
 		}

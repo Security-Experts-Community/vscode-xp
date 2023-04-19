@@ -1,11 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
 import { Configuration } from '../../models/configuration';
-import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { XpException } from '../../models/xpException';
 import { SiemjConfBuilder } from '../../models/siemj/siemjConfigBuilder';
 
@@ -23,30 +21,31 @@ export class CorrGraphRunner {
 			throw new XpException(`Директория контента '${correlationsFullPath}' не существует.`);
 		}
 
+		const rootPath = this._config.getRootByPath(correlationsFullPath);
+
 		// В зависимости от типа контента получаем нужную выходную директорию.
-		const root = this._config.getPathHelper().getRootByPath(correlationsFullPath);
-		const rootFolder = path.basename(root);
+		const rootFolder = path.basename(rootPath);
 		const outputFolder = this._config.getOutputDirectoryPath(rootFolder);
 
 		if(!fs.existsSync(outputFolder)) {
 			await fs.promises.mkdir(outputFolder);
 		}
 		
-		const configBuilder = new SiemjConfBuilder(this._config);
-		configBuilder.addNfgraphBuilding(false);
+		const configBuilder = new SiemjConfBuilder(this._config, rootPath);
+		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
-		configBuilder.addCfgraphBuilding();
-		configBuilder.addEfgraphBuilding();
+		configBuilder.addCorrelationsGraphBuilding();
+		configBuilder.addEnrichmentsGraphBuilding();
 
-		configBuilder.addEventsNormalize(rawEventsFilePath);
-		configBuilder.addEventsEnrich();
+		configBuilder.addEventsNormalization(rawEventsFilePath);
+		configBuilder.addEventsEnrichment();
 		configBuilder.addEventsCorrelate();
-		
+
 		const siemjConfContent = configBuilder.build();
 
-		const randTmpDir = this._config.getRandTmpSubDirectoryPath();
-		await fs.promises.mkdir(randTmpDir);
+		const randTmpDir = this._config.getRandTmpSubDirectoryPath(rootFolder);
+		await fs.promises.mkdir(randTmpDir, {recursive: true});
 
 		// Сохраняем конфигурационный файл для siemj.
 		const siemjConfigPath = path.join(randTmpDir, "siemj.conf");
@@ -60,7 +59,7 @@ export class CorrGraphRunner {
 		}
 		
 		// Удаляем скорреклированные события, если такие были.
-		const corrEventFilePath = this._config.getCorrEventsFilePath(rootFolder);
+		const corrEventFilePath = this._config.getCorrelatedEventsFilePath(rootFolder);
 		if(fs.existsSync(corrEventFilePath)) {
 			await fs.promises.unlink(corrEventFilePath);
 		}
@@ -72,7 +71,7 @@ export class CorrGraphRunner {
 			["-c", siemjConfigPath, "main"],
 			this._config.getOutputChannel());
 
-		const corrEventsFilePath = this._config.getCorrEventsFilePath(rootFolder);
+		const corrEventsFilePath = this._config.getCorrelatedEventsFilePath(rootFolder);
 		if(!fs.existsSync(corrEventsFilePath)) {
 			throw new XpException("Ошибка прогона события на графе корреляций.");
 		}

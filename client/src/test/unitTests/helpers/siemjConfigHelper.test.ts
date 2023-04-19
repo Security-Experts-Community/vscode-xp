@@ -19,7 +19,7 @@
 		
 // 		const config = Configuration.get();
 // 		const rule = Correlation.create("ESC_TestCorrelation", `C:\\KnowledgeBase\\`);
-// 		const testKnowlegabase = path.join(ExtensionHelper.getExtentionPath(), "client", "testFixture");
+// 		const testKnowlegabase = path.join(ExtensionHelper.getExtensionPath(), "client", "testFixture");
 // 		const kbPath = new KbPaths(testKnowlegabase);
 
 // 		const actualConfig = SiemjConfigHelper.getTestConfig(rule, config);
@@ -75,7 +75,7 @@
 		
 // 		const config = Configuration.get();
 // 		const rule = Correlation.create("ESC_TestCorrelation", `C:\\KnowledgeBase\\packages\\esc`);
-// 		const testKnowlegabase = path.join(ExtensionHelper.getExtentionPath(), "client", "testFixture");
+// 		const testKnowlegabase = path.join(ExtensionHelper.getExtensionPath(), "client", "testFixture");
 // 		const kbPath = new KbPaths(testKnowlegabase);
 
 // 		const actualConfig = SiemjConfigHelper.getTestConfigForRuleWithSubrules(rule, config);

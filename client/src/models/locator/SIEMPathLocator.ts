@@ -25,6 +25,10 @@ export class SIEMPathHelper extends PathLocator {
 		return SIEMPathHelper._instance;
 	}
 
+	public getKbPath() : string {
+		return this.getKbFullPath();
+	}
+
 	public getOutputDirectoryPath(): string {
 		return path.join(this.getKbFullPath(), "packages");
 	}
@@ -51,13 +55,25 @@ export class SIEMPathHelper extends PathLocator {
 		throw new Error(`Путь '${directory}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
 	}
 
-	public getOutputDirName(): string {
-		return "packages";
+	public getNormalizationsGraphFileName() : string {
+		return "formulas_graph.json";
 	}
 
-	public getCorrulesGraphFileName() : string {
+	public getEnrichmentsGraphFileName() : string {
+		return "enrules_graph.json";
+	}
+
+	public getCorrelationsGraphFileName() : string {
 		return "corrules_graph.json";
-	}	
+	}
+
+	public getAgregationsGraphFileName() : string {
+		return "aggrules_graph.json";
+	}
+
+	public getLocalizationsFolder() : string {
+		return "langs";
+	}
 
 	// В корневой директории лежат пакеты экспертизы
 	public getContentRoots() : string[] {
@@ -67,35 +83,23 @@ export class SIEMPathHelper extends PathLocator {
 
 	public getPackages() : string[]{
 		const contentRoots = this.getContentRoots();
-		const packagesDirectories = [];
-		for(const root in contentRoots){
-			packagesDirectories.concat(fs.readdirSync(root, { withFileTypes: true })
+		let packagesDirectories = [];
+		for(const root of contentRoots){
+			packagesDirectories = packagesDirectories.concat(fs.readdirSync(root, { withFileTypes: true })
 			.filter(dir => dir.isDirectory())
 			.map(dir => dir.name));
 		}		
 		return packagesDirectories;
 	}
 
-	public getRequiredRootDirectories(): string[]{
-		return [path.join("common", "rules_filters"), "packages"];
-	}
-
-	public getAppendixPath() : string {
-		this.checkKbPath();
-		const relative_path = path.join("contracts", "xp_appendix", "appendix.xp");
-		return path.join(this.getKbFullPath(), relative_path);
-	}
-
-	public getTablesContract() : string {
-		this.checkKbPath();
-		const relative_path = path.join("_extra", "tabular_lists", "tables_contract.yaml");
-		return path.join(this.getKbFullPath(), relative_path);
-	}
-
 	public getRulesDirFilters() : string {
 		this.checkKbPath();
 		const relative_path = path.join("common", "rules_filters");
 		return path.join(this.getKbFullPath(), relative_path);
+	}
+
+	public getRequiredRootDirectories(): string[]{
+		return [path.join("common", "rules_filters"), "packages"];
 	}
 
 	public isKbOpened() : boolean {

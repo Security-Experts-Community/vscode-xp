@@ -1,9 +1,7 @@
-import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from 'fs';
 
 import { RuleBaseItem } from './ruleBaseItem';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 
@@ -74,8 +72,8 @@ export class Table extends RuleBaseItem {
 	}
 
 	iconPath = {
-		light: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'light', 'rule.svg'),
-		dark: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'dark', 'rule.svg')
+		light: path.join(this.getResourcesPath(), 'light', 'rule.svg'),
+		dark: path.join(this.getResourcesPath(), 'dark', 'rule.svg')
 	};
 
 	contextValue = 'Table';

@@ -4,7 +4,6 @@ import * as fs from 'fs';
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { Localization } from './localization';
 import { IntegrationTest } from '../tests/integrationTest';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { RuleBaseItem } from './ruleBaseItem';
 import { CorrelationUnitTest } from '../tests/correlationUnitTest';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
@@ -196,8 +195,8 @@ export class Correlation extends RuleBaseItem {
 
 
 	iconPath = {
-		light: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'light', 'rule.svg'),
-		dark: path.join(ExtensionHelper.getExtentionPath(), 'resources', 'dark', 'rule.svg')
+		light: path.join(this.getResourcesPath(), 'light', 'rule.svg'),
+		dark: path.join(this.getResourcesPath(), 'dark', 'rule.svg')
 	};
 
 	contextValue = 'Correlation';

@@ -1,5 +1,6 @@
-import * as path from "path";
 import * as fs from 'fs';
+import * as path from "path";
+
 import { TestStatus } from './testStatus';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { ExtensionHelper } from '../../helpers/extensionHelper';

@@ -14,21 +14,23 @@ export abstract class PathLocator {
 		this._kbFullPath = kbFullPath;
 	}
 
-	// Config
-	// Пока не убрали отличие в именах файлов графов корреляций
-	// оставляем эти функции
-	public abstract getCorrulesGraphFileName() : string
+	// Получение имён файлов в графами
+	public abstract getNormalizationsGraphFileName() : string
+	public abstract getEnrichmentsGraphFileName() : string
+	public abstract getCorrelationsGraphFileName() : string
+	public abstract getAgregationsGraphFileName() : string
+
+	public abstract getLocalizationsFolder() : string
+
 
 	// KB
-	public abstract getAppendixPath() : string
-	public abstract getTablesContract() : string
 	public abstract getRulesDirFilters() : string
 	public abstract getContentRoots() : string[]
 	public abstract getRequiredRootDirectories(): string[]
 	public abstract getPackages(): string[]
 	public abstract isKbOpened() : boolean
 	public abstract getRootByPath(directory: string): string
-	public abstract getOutputDirName(): string
+	public abstract getKbPath() : string
 
 	protected checkKbPath() : void {
 		if(!this._kbFullPath) {
