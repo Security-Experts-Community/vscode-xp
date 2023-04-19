@@ -21,6 +21,7 @@ rule Unix_OpenOpenat: Event
         $subject.account.id = subject.account.id
         $subject.account.session_id = subject.account.session_id
         $subject.account.privileges = subject.account.privileges
+        $subject.type = subject.type
                 
         $subject.process.name = subject.process.name
         $subject.process.id = subject.process.id
@@ -30,7 +31,6 @@ rule Unix_OpenOpenat: Event
         $subject.process.cwd = subject.process.cwd
         $subject.process.meta = subject.process.meta
         $subject.process.parent.id = subject.process.parent.id
-        $subject.type = subject.type
                 
         $object.account.name = object.account.name
         $object.account.domain = object.account.domain
