@@ -114,7 +114,7 @@ export class PackSIEMAllPackagesAction {
 	}
 }
 
-export class PackKbPackageAction {
+export class PackKbAction {
 	constructor(private _config: Configuration) {
 	}
 
@@ -142,13 +142,12 @@ export class PackKbPackageAction {
 				const packageName = path.basename(packageDirPath);
 				progress.report({message: `Сборка пакета '${packageName}'`});
 
-			const tmpSubDirectoryPath = this._config.getRandTmpSubDirectoryPath();
-			await fs.promises.mkdir(tmpSubDirectoryPath, {recursive: true});
+				const tmpSubDirectoryPath = this._config.getRandTmpSubDirectoryPath();
+				await fs.promises.mkdir(tmpSubDirectoryPath, {recursive: true});
 
 				// Очищаем окно Output.
 				this._config.getOutputChannel().clear();
 
-			try {
 				// в objects положить пакет для сборке
 				// TODO: Проверить корректность названия папки. Утилита сборки ищет папку objects
 				const objectsPackageDirPath = path.join(tmpSubDirectoryPath, "packages", packageName);

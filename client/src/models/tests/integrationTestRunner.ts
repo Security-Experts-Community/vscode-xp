@@ -51,10 +51,8 @@ export class IntegrationTestRunner {
 			await fs.promises.mkdir(outputDirPath);
 		}
 
-		const overwriteStatus = this._config.getNormalizationsOverwtiteStatus();
-
 		const configBuilder = new SiemjConfBuilder(this._config, rootPath);
-		configBuilder.addNormalizationsGraphBuilding(overwriteStatus);
+		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();

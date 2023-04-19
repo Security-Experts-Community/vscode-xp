@@ -37,8 +37,7 @@ export class SiemjManager {
 		
 		// Получаем нужный конфиг для нормализации событий.
 		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
-		const overwriteStatus = this._config.getNormalizationsOverwtiteStatus();
-		configBuilder.addNormalizationsGraphBuilding(overwriteStatus);
+		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		const siemjConfContent = configBuilder.build();
 
@@ -91,10 +90,8 @@ export class SiemjManager {
 			fs.mkdirSync(outputFolder);
 		}
 		
-		const overwriteStatus = this._config.getNormalizationsOverwtiteStatus();
-
 		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
-		configBuilder.addNormalizationsGraphBuilding(overwriteStatus);
+		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();

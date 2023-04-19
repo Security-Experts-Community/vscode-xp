@@ -204,7 +204,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
 				ContentTreeProvider.buildKbPackageCommand,
-				async (selectedItem: RuleBaseItem) => {
+				async (selectedPackage: RuleBaseItem) => {
 					if(!config.isKbOpened()) {
 						ExtensionHelper.showUserInfo("Нельзя собрать схемы ТС и графы без открытия базы знаний. Сначала откройте базу знаний.");
 						return;
