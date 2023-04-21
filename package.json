@@ -5,7 +5,7 @@
 	"author": "Dmitry Fedosov (@DmitryOffsec)",
 	"icon": "resources/logo.png",
 	"license": "MIT",
-	"version": "3.2.4",
+	"version": "3.2.5",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
