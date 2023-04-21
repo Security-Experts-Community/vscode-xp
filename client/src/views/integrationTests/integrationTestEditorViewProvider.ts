@@ -346,12 +346,12 @@ export class IntegrationTestEditorViewProvider  {
 		}, async (progress) => {
 
 			try {
-				const normalizer = new SiemjManager(this._config);
+				const siemjManager = new SiemjManager(this._config);
 				let normEvents : string;
 				if(enrich) {
-					normEvents = await normalizer.normalizeAndEnrich(this._rule, rawEventsFilePath);
+					normEvents = await siemjManager.normalizeAndEnrich(this._rule, rawEventsFilePath);
 				} else {
-					normEvents = await normalizer.normalize(this._rule, rawEventsFilePath);
+					normEvents = await siemjManager.normalize(this._rule, rawEventsFilePath);
 				}
 				
 				test.setNormalizedEvents(normEvents);

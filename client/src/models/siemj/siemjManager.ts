@@ -38,6 +38,7 @@ export class SiemjManager {
 		// Получаем нужный конфиг для нормализации событий.
 		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
 		configBuilder.addNormalizationsGraphBuilding(false);
+		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		const siemjConfContent = configBuilder.build();
 
