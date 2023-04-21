@@ -28,9 +28,6 @@ import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
 import { YamlHelper } from './helpers/yamlHelper';
 import { InitKBRootCommand } from './views/contentTree/commands/initKBRootCommand';
 import { XPPackingTaskProvider } from './providers/xpCustomTaskProvider';
-import { ContentType } from './contentType/contentType';
-import { XpException } from './models/xpException';
-import { FileSystemHelper } from './helpers/fileSystemHelper';
 
 let client: LanguageClient;
 let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
