@@ -25,7 +25,7 @@ export class YamlHelper {
 			{
 				'parser': 'yaml',
 				'tabWidth': this.dumpOptions.indent,
-				'aliasDuplicateObjects': false,
+				//'aliasDuplicateObjects': false,
 				'singleQuote': true,
 			}
 		);
@@ -39,7 +39,7 @@ export class YamlHelper {
 			{
 				'parser': 'yaml',
 				'tabWidth': this.dumpOptions.indent,
-				'aliasDuplicateObjects': false,
+				//'aliasDuplicateObjects': false,
 				// 'maxLineLength': this.dumpOptions.lineWidth,
 			}
 		);

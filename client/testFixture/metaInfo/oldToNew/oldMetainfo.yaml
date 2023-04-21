@@ -1,0 +1,31 @@
+EventDescriptions:
+  - Criteria: crit1
+    LocalizationId: loc1
+  - Criteria: crit2
+    LocalizationId: loc2
+ObjectId: CR-ID-1337
+Name: SampleName
+Created: 05.04.2023
+Updated: 14.04.2023
+KnowledgeHolders:
+  - Ivan Ivanov
+  - Petr Petrov
+Usecases:
+  - UseCase description
+Falsepositives:
+  - FP description
+References:
+  - https://example.com/link1
+  - https://example.com/link2
+ATTACK:
+  persistence:
+    - T1337
+  privilege_escalation:
+    - T1337
+DataSources:
+  - Provider: auditd
+    EventID:
+      - open
+      - rename
+ContentLabels:
+  - ContentLabel1

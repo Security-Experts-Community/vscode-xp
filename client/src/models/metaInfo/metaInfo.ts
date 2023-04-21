@@ -12,9 +12,9 @@ import { YamlHelper } from '../../helpers/yamlHelper';
 
 export class MetaInfo {
 
-	public static fromFile(ruleDirFullPath: string): MetaInfo {
+	public static fromFile(ruleDirFullPath: string, metainfoFilename: string = this.METAINFO_FILENAME): MetaInfo {
 
-		const metaInfoFullPath = path.join(ruleDirFullPath, MetaInfo.METAINFO_FILENAME);
+		const metaInfoFullPath = path.join(ruleDirFullPath, metainfoFilename);
 
 		if (!fs.existsSync(metaInfoFullPath)) {
 			// Заполнение по умолчанию.
@@ -38,7 +38,6 @@ export class MetaInfo {
 
 	public static create(metaInfoAsInFile: any): MetaInfo {
 		const metaInfo = new MetaInfo();
-		metaInfo._asInFile = metaInfoAsInFile;
 
 		if (metaInfoAsInFile.Name) {
 			metaInfo.setName(metaInfoAsInFile.Name);
@@ -104,6 +103,10 @@ export class MetaInfo {
 
 		if (metaDict.DataSources) {
 			metaInfo.DataSources = metaDict.DataSources as DataSource[];
+		}
+
+		if (metaDict.ContentLabels) {
+			metaInfo.ContentLabels = metaDict.ContentLabels as string[];
 		}
 
 		let attackDict = metaInfoAsInFile.ATTACK;
@@ -322,50 +325,28 @@ export class MetaInfo {
 			this.setCreatedDate(this.Updated);
 		}
 
-		// Обновляем метаданные на диске известными нам полями, оставляя другие неизменными
-		const metaInfoObject = this._asInFile;
+		const metaInfoObject = {};
 
-		if (!metaInfoObject.ExpertContext) {
-			metaInfoObject.ExpertContext = {};
-		}
+		if (this.Name) metaInfoObject["ContentAutoName"] = this.Name;
 
-		metaInfoObject.ExpertContext.Created = DateHelper.dateToString(this.Created);
-		metaInfoObject.ExpertContext.Updated = DateHelper.dateToString(this.Updated);
 
-		if (this.Name) {
-			metaInfoObject.ContentAutoName = this.Name;
-			if (metaInfoObject.Name) delete metaInfoObject.Name;
-		}
+		metaInfoObject["ExpertContext"] = {};
+		metaInfoObject["ExpertContext"]["Created"] = DateHelper.dateToString(this.Created);
+		metaInfoObject["ExpertContext"]["Updated"] = DateHelper.dateToString(this.Updated);
+
+		if (this.ObjectId) metaInfoObject["ObjectId"] = this.ObjectId;
+		if (this.KnowledgeHolders.length != 0) metaInfoObject["ExpertContext"]["KnowledgeHolders"] = this.KnowledgeHolders;
+		if (this.Usecases.length != 0) metaInfoObject["ExpertContext"]["Usecases"] = this.Usecases;
+		if (this.Falsepositives.length != 0) metaInfoObject["ExpertContext"]["Falsepositives"] = this.Falsepositives;
+		if (this.References.length != 0) metaInfoObject["ExpertContext"]["References"] = this.References;
+		if (this.Improvements.length != 0) metaInfoObject["ExpertContext"]["Improvements"] = this.Improvements;
+		if (this.ContentLabels.length != 0) metaInfoObject["ContentLabels"] = this.ContentLabels;
 
 		if (this.EventDescriptions.length != 0) {
 			metaInfoObject["EventDescriptions"] =
 				this.EventDescriptions.map(function (ed, index) {
 					return { "Criteria": ed.getCriteria(), "LocalizationId": ed.getLocalizationId() };
 				});
-		}
-
-		if (this.ObjectId) {
-			metaInfoObject.ObjectId = this.ObjectId;
-		}
-
-		if (this.KnowledgeHolders.length != 0) {
-			metaInfoObject.ExpertContext.KnowledgeHolders = this.KnowledgeHolders;
-		}
-
-		if (this.Usecases.length != 0) {
-			metaInfoObject.ExpertContext.Usecases = this.Usecases;
-		}
-
-		if (this.Falsepositives.length != 0) {
-			metaInfoObject.ExpertContext.Falsepositives = this.Falsepositives;
-		}
-
-		if (this.References.length != 0) {
-			metaInfoObject.ExpertContext.References = this.References;
-		}
-
-		if (this.Improvements.length != 0) {
-			metaInfoObject.ExpertContext.Improvements = this.Improvements;
 		}
 
 		const attackPlain = {};
@@ -380,13 +361,12 @@ export class MetaInfo {
 		);
 
 		if (!JsHelper.isEmptyObj(attackPlain)) {
-			if (!metaInfoObject.ContentRelations) metaInfoObject.ContentRelations = {};
-			if (!metaInfoObject.ContentRelations.Implements) metaInfoObject.ContentRelations.Implements = {};
-			metaInfoObject.ContentRelations.Implements.ATTACK = attackPlain;
+			metaInfoObject["ContentRelations"] = { "Implements": {} };
+			metaInfoObject["ContentRelations"]["Implements"]["ATTACK"] = attackPlain;
 		}
 
 		if (this.DataSources.length != 0) {
-			metaInfoObject.ExpertContext.DataSources = this.DataSources;
+			metaInfoObject["ExpertContext"]["DataSources"] = this.DataSources;
 		}
 
 		let yamlContent = YamlHelper.stringify(metaInfoObject);
@@ -412,7 +392,6 @@ export class MetaInfo {
 	public static METAINFO_FILENAME = "metainfo.yaml";
 
 	private _directoryPath: string;
-	private _asInFile: any = {};
 
 	private Created: Date;
 	private Updated: Date;
@@ -430,6 +409,7 @@ export class MetaInfo {
 	private DataSources: DataSource[] = [];
 	private ATTACK: Attack[] = [];
 	private EventDescriptions: MetaInfoEventDescription[] = [];
+	private ContentLabels: string[] = [];
 }
 
 
