@@ -15,7 +15,7 @@ export class LowerFunctionResultValidator extends IValidator {
 		super(["co"]);
 	}
 
-	async validate(textDocument: TextDocument) : Promise<Diagnostic[]> {
+	async validateImpl(textDocument: TextDocument) : Promise<Diagnostic[]> {
 
 		if(!this._languageIds.includes(textDocument.languageId)) {
 			return [];
@@ -39,7 +39,7 @@ export class LowerFunctionResultValidator extends IValidator {
 			for(let literalChar of stringLiteral) {
 				// В литерале есть большая буква, добавляем ошибку.
 				if(this.isUpperCase(literalChar)) {
-					const diagnostic = this.getDiagnostic(
+					const diagnostic = this.getDiagnosticByRegExpResult(
 						lowerCallResult,
 						textDocument,
 						"Данное условие некорректно, так как регистр левого и правого операнда не совпадает.",

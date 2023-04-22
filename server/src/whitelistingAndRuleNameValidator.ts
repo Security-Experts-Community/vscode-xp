@@ -15,7 +15,7 @@ export class WhitelistingAndRuleNameValidator extends IValidator {
 		super(["co"]);
 	}
 
-	async validate(textDocument: TextDocument) : Promise<Diagnostic[]> {
+	async validateImpl(textDocument: TextDocument) : Promise<Diagnostic[]> {
 
 		if(!this._languageIds.includes(textDocument.languageId)) {
 			return [];
