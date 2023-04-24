@@ -1,6 +1,5 @@
 import { EOL } from 'os';
 import * as vscode from 'vscode';
-import * as xml_js from 'xml-js';
 import * as xml2json_light from 'xml2json-light';
 
 
@@ -11,7 +10,7 @@ import { RegExpHelper } from './regExpHelper';
 import { XpException } from '../models/xpException';
 import { ParseException } from '../models/parseException';
 
-export type ConvertMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
+export type EventMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
 export class TestHelper {
 
@@ -103,10 +102,6 @@ export class TestHelper {
 		}
 
 		const compressedNormalizedEventReg = /{\s*[\s\S]*?\n}/gm;
-
-		// if(!rawEvents.endsWith("\n")) {
-		// 	rawEvents += "\n";
-		// }
 
 		let comressedRawEvents = "";
 		let comNormEventResult: RegExpExecArray | null;
@@ -225,7 +220,7 @@ export class TestHelper {
 		return formattedTestCode;
 	}
 
-	public static convertXmlEventToJsonObject(xmlRawEvent : string) : any {
+	public static convertXmlRawEventToJsonObject(xmlRawEvent : string) : any {
 
 		const xmlRawEventCorrected = xmlRawEvent
 			.replace(/^- <Event /gm, "<Event ")
@@ -242,11 +237,14 @@ export class TestHelper {
 		return jsonEventObject;
 	}
 
+	public static isRawEventXml(rawEvent : string) : any {
+		const xmlCheckRegExp = /<Event [\s\S]*?<\/Event>/gm;
+		return xmlCheckRegExp.test(rawEvent);
+	}
+
 	public static isEnvelopedEvents(rawEvents : string) : boolean {
-		
 		rawEvents = rawEvents.trim();
 
-		// Одно событие.
 		if(!rawEvents.includes("\n")) {
 			try {
 				const newRawEvent = JSON.parse(rawEvents);
@@ -289,8 +287,7 @@ export class TestHelper {
 	 * @param mimeType тип событий
 	 * @returns массив сырых событий, в котором каждое событие обёрнуто в конверт заданного типа и начинается с новой строки
 	 */
-	public static addEnvelope(compressedRawEvents : string, mimeType : ConvertMimeType) : string[] {
-		// TODO: заменить строку mimeType на enum
+	public static addEventsToEnvelope(compressedRawEvents : string, mimeType : EventMimeType) : string[] {
 		const newRawEvents = [];
 		
 		const trimmedCompressedRawEvents = compressedRawEvents.trim();
@@ -329,7 +326,6 @@ export class TestHelper {
 				};
 		
 				const newRawEvent = JSON.stringify(envelopedRawEvents);
-				// newRawEvents = `${newRawEvents}${newRawEvent}\n`;
 				newRawEvents.push(newRawEvent);
 			}
 		);

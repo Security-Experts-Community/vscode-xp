@@ -43,7 +43,7 @@ suite('TestHelper.convertXmlEventToJson', async () => {
 </EventData>
 </Event>`;
 
-		const jsonEvent = TestHelper.convertXmlEventToJsonObject(xmlEvent);
+		const jsonEvent = TestHelper.convertXmlRawEventToJsonObject(xmlEvent);
 
 		assert.ok(jsonEvent);
 		assert.ok(jsonEvent.Event);
@@ -99,7 +99,7 @@ suite('TestHelper.convertXmlEventToJson', async () => {
 </EventData>
 </Event>`;
 
-		const jsonEvent = TestHelper.convertXmlEventToJsonObject(xmlEvent);
+		const jsonEvent = TestHelper.convertXmlRawEventToJsonObject(xmlEvent);
 
 		assert.ok(jsonEvent);
 		assert.ok(jsonEvent.Event);
