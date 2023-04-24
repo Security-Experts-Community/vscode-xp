@@ -1,5 +1,9 @@
 import { EOL } from 'os';
 import * as vscode from 'vscode';
+import * as xml_js from 'xml-js';
+import * as xml2json_light from 'xml2json-light';
+
+
 import { v4 as uuidv4 } from 'uuid';
 import { RuleBaseItem } from '../models/content/ruleBaseItem';
 import { IntegrationTest } from '../models/tests/integrationTest';
@@ -219,6 +223,23 @@ export class TestHelper {
 		}
 
 		return formattedTestCode;
+	}
+
+	public static convertXmlEventToJsonObject(xmlRawEvent : string) : any {
+
+		const xmlRawEventCorrected = xmlRawEvent
+			.replace(/^- <Event /gm, "<Event ")
+			.replace(/^- <System>/gm, "<System>")
+			.replace(/^- <EventData>/gm, "<EventData>")
+
+		const jsonEvent = xml2json_light.xml2json(xmlRawEventCorrected);
+		let jsonEventString = JSON.stringify(jsonEvent);
+
+		// Меняем имя атрибута на ожидамое значение text.
+		jsonEventString = jsonEventString.replace(/_@ttribute/gm, "text");
+		const jsonEventObject = JSON.parse(jsonEventString);
+		
+		return jsonEventObject;
 	}
 
 	public static isEnvelopedEvents(rawEvents : string) : boolean {
