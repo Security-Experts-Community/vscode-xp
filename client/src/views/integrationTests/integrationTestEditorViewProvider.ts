@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
-import { ConvertMimeType, TestHelper } from '../../helpers/testHelper';
+import { EventMimeType as EventMimeType, TestHelper } from '../../helpers/testHelper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
 import { Correlation } from '../../models/content/correlation';
 import { Enrichment } from '../../models/content/enrichment';
@@ -22,6 +22,7 @@ import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { ModuleTestOutputParser } from '../modularTestsEditor/modularTestOutputParser';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { XpException } from '../../models/xpException';
+import { Enveloper } from '../../models/enveloper';
 
 export class IntegrationTestEditorViewProvider  {
 
@@ -254,7 +255,10 @@ export class IntegrationTestEditorViewProvider  {
 			}
 
 			case 'addEnvelope': {
-				return this.addEnvelope(message);
+				let rawEvents = message?.rawEvents as string;
+				const mimeType = message?.mimeType as EventMimeType;
+
+				return this.addEnvelope(rawEvents, mimeType);
 			}
 
 			case 'cleanTestCode': {
@@ -306,28 +310,16 @@ export class IntegrationTestEditorViewProvider  {
 		}
 	}
 
-	private async addEnvelope(message: any) {
+	public async addEnvelope(rawEvents: string, mimeType: EventMimeType) {
 		
-		let rawEvents = message?.rawEvents as string;
-		if(!rawEvents) {
-			return ExtensionHelper.showUserInfo("Не заданы сырые события для теста. Добавьте их и повторите.");
+		let envelopedRawEventsString : string;
+		try {
+			envelopedRawEventsString = await Enveloper.addEnvelope(rawEvents, mimeType);
 		}
-
-		rawEvents = rawEvents.trim();
-		if(TestHelper.isEnvelopedEvents(rawEvents)) {
-			return ExtensionHelper.showUserInfo("Конверт для событий уже добавлен.");
-		}
-
-		const mimeType = message?.mimeType as ConvertMimeType;
-		if(!mimeType) {
-			ExtensionHelper.showUserInfo("Не задан mime. Добавьте задайте его и повторите.");
+		catch(error) {
+			ExceptionHelper.show(error, "Ошибка добавления конверта.");
 			return;
 		}
-
-		// Сжали список событий и обернули в конверт.
-		const compressedRawEvents = TestHelper.compressRawEvents(rawEvents);
-		const envelopedRawEvents = TestHelper.addEnvelope(compressedRawEvents, mimeType);
-		const envelopedRawEventsString = envelopedRawEvents.join('\n');
 
 		this._view.webview.postMessage({
 			'command': 'updateRawEvents',

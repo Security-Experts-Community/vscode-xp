@@ -10,7 +10,8 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { CorrGraphRunner } from './corrGraphRunner';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
-import { ConvertMimeType, TestHelper } from '../../helpers/testHelper';
+import { EventMimeType, TestHelper } from '../../helpers/testHelper';
+import { Enveloper } from '../../models/enveloper';
 
 export class RunningCorrelationGraphProvider {
 
@@ -162,11 +163,11 @@ export class RunningCorrelationGraphProvider {
 		}
 
 		rawEvents = rawEvents.trim();
-		if(TestHelper.isEnvelopedEvents(rawEvents)) {
+		if(Enveloper.isEnvelopedEvents(rawEvents)) {
 			return ExtensionHelper.showUserInfo("Конверт для событий уже добавлен.");
 		}
 
-		const mimeType = message?.mimeType as ConvertMimeType;
+		const mimeType = message?.mimeType as EventMimeType;
 		if(!mimeType) {
 			ExtensionHelper.showUserInfo("Не задан mime. Добавьте задайте его и повторите.");
 			return;
@@ -174,7 +175,7 @@ export class RunningCorrelationGraphProvider {
 
 		// Сжали список событий и обернули в конверт.
 		const compressedRawEvents = TestHelper.compressRawEvents(rawEvents);
-		const envelopedRawEvents = TestHelper.addEnvelope(compressedRawEvents, mimeType);
+		const envelopedRawEvents = Enveloper.addEventsToEnvelope(compressedRawEvents, mimeType);
 		const envelopedRawEventsString = envelopedRawEvents.join('\n');
 
 		this._view.webview.postMessage({
