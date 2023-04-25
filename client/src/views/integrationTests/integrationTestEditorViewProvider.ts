@@ -22,7 +22,7 @@ import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { ModuleTestOutputParser } from '../modularTestsEditor/modularTestOutputParser';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { XpException } from '../../models/xpException';
-import { Enveloper } from './enveloper';
+import { Enveloper } from '../../models/enveloper';
 
 export class IntegrationTestEditorViewProvider  {
 

@@ -15,20 +15,11 @@
 		"Snippets",
 		"Formatters"
 	],
-	"activationEvents": [
-		"onLanguage:xp",
-		"onLanguage:en",
-		"onLanguage:co",
-		"onLanguage:test",
-		"onLanguage:agr",
-		"onLanguage:flt",
-		"onView:KnowledgebaseTree"
-	],
 	"keywords": [
 		"xdr edr soldr xp maxpatrol siem"
 	],
 	"engines": {
-		"vscode": "^1.74.0"
+		"vscode": "^1.75.0"
 	},
 	"main": "./client/out/extension",
 	"capabilities": {
