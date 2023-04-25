@@ -2,6 +2,10 @@ import { CorrelationUnitTest } from './correlationUnitTest';
 
 export class FastTest extends CorrelationUnitTest {
 
+	// public async close(): Promise<void>{
+	// 	//
+	// }
+
 	public getTestPath() {
 		return this._testFilePath;
 	}

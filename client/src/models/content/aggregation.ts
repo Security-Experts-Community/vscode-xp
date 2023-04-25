@@ -3,15 +3,39 @@ import * as fs from 'fs';
 
 import { RuleBaseItem } from './ruleBaseItem';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
+import { BaseUnitTest } from '../tests/baseUnitTest';
+import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
+import { UnitTestRunner } from '../tests/unitTestsRunner';
 
 export class Aggregation extends RuleBaseItem {
+	protected getLocalizationPrefix(): string {
+		return "aggregation";
+	}
+	public clearUnitTests(): void {
+		throw new Error('Method not implemented.');
+	}
+	public getUnitTestRunner(): UnitTestRunner {
+		throw new Error('Method not implemented.');
+	}
+	public getUnitTestOutputParser(): UnitTestOutputParser {
+		throw new Error('Method not implemented.');
+	}
+	public reloadUnitTests(): void {
+		throw new Error('Method not implemented.');
+	}
+	public convertUnitTestFromObject(object: any): BaseUnitTest {
+		throw new Error('Method not implemented.');
+	}
+	public createNewUnitTest(): BaseUnitTest {
+		throw new Error('Method not implemented.');
+	}
 	public async rename(newName: string): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
 
 	private constructor(name: string, parentDirectoryPath? : string) {
 		super(name, parentDirectoryPath);
-		this.setRuleFileName('rule.agr');
+		this.setFileName('rule.agr');
 	}
 	
 	public static async parseFromDirectory(directoryPath: string, fileName?: string) : Promise<Aggregation> {
@@ -29,7 +53,7 @@ export class Aggregation extends RuleBaseItem {
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
 		if (fileName){
-			aggregation.setRuleFileName(fileName);
+			aggregation.setFileName(fileName);
 		}
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
@@ -52,7 +76,7 @@ export class Aggregation extends RuleBaseItem {
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
 		if (fileName){
-			aggregation.setRuleFileName(fileName);
+			aggregation.setFileName(fileName);
 		}
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
@@ -64,11 +88,6 @@ export class Aggregation extends RuleBaseItem {
 
 		return aggregation;
 	}
-
-	iconPath = {
-		light: path.join(this.getResourcesPath(), 'light', 'rule.svg'),
-		dark: path.join(this.getResourcesPath(), 'dark', 'rule.svg')
-	};
 
 	contextValue = 'Aggregation';
 }

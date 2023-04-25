@@ -30,4 +30,12 @@ suite('Нормализация', () => {
 		const commandResult = await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, normalization);
 		assert.ok(commandResult);
 	});
+
+	test('Перименование нормализации без кода', async () => {
+		const rulePath = TestFixture.getCorrelationPath("empty_normalization_code");
+		const normalization = await Normalization.parseFromDirectory(rulePath);
+		const newName = "NEW_NORMALIZATION_NAME";
+		normalization.rename(newName);
+		assert.strictEqual(normalization.getName(), newName);
+	});
 });

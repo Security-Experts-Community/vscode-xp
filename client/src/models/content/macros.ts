@@ -1,9 +1,9 @@
 import * as path from "path";
 
-import { RuleBaseItem } from './ruleBaseItem';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
+import { KbTreeBaseItem } from './kbTreeBaseItem';
 
-export class Macros extends RuleBaseItem {
+export class Macros extends KbTreeBaseItem {
 	public rename(newName: string): Promise<void> {
 		throw new Error('Method not implemented.');
 	}
@@ -13,8 +13,7 @@ export class Macros extends RuleBaseItem {
 	}
 
 	constructor(macrosDirPath: string) {
-		super(path.basename(macrosDirPath));
-		this.setRuleFileName("filter.flt");
+		super("filter.flt", path.basename(macrosDirPath));
 
 		const name = path.basename(macrosDirPath);
 		this.setName(name);
@@ -29,7 +28,7 @@ export class Macros extends RuleBaseItem {
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
 		if (fileName){
-			marcos.setRuleFileName(fileName);			
+			marcos.setName(fileName);			
 		}
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
@@ -43,7 +42,7 @@ export class Macros extends RuleBaseItem {
 	}
 
 	public getRuleFilePath(): string {
-		return path.join(this.getDirectoryPath(), this.getRuleFileName());
+		return path.join(this.getDirectoryPath(), this.getName());
 	}
 
 	iconPath = {

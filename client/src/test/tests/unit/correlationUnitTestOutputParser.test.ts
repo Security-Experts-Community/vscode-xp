@@ -1,12 +1,11 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
-
-import { ModuleTestOutputParser } from '../../../views/modularTestsEditor/modularTestOutputParser';
+import { CorrelationUnitTestOutputParser } from '../../../models/tests/correlationUnitTestOutputParser';
 
 suite('ModuleTestOutputParser', () => {
 
 	test('Одна строка', () => {
-		const parser = new ModuleTestOutputParser();
+		const parser = new CorrelationUnitTestOutputParser();
 		const output = 
 `
 [ERROR] Compilation failed:
@@ -19,7 +18,7 @@ Total errors: 1
 [INFO] Creating temp directory C:\\Output\\temp\\2022-10-24_10-43-03_25.0.9349
 
 Must exit due to some critical errors!
-Removing temp directory C:\\Output\\temp\\2022-10-24_10-43-03_25.0.9349`
+Removing temp directory C:\\Output\\temp\\2022-10-24_10-43-03_25.0.9349`;
 
 		const diagnostics = parser.parse(output);
 

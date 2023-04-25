@@ -1,0 +1,4 @@
+Description: Description
+EventDescriptions:
+    - LocalizationId: LocalizationId
+      EventDescription: 'EventDescription'

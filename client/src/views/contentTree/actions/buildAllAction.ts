@@ -76,11 +76,15 @@ export class BuildAllAction {
 				}
 				finally {
 					const tmpPath = this._config.getTmpDirectoryPath(rootFolder);
-		
-					// Очищаем временные файлы.
-					await fs.promises.access(tmpPath).then(
-						() => { return fs.promises.unlink(tmpPath); }
-					);
+					try {
+						// Очищаем временные файлы.
+						await fs.promises.access(tmpPath).then(
+							() => { return fs.promises.unlink(tmpPath); }
+						);
+					}
+					catch(e){
+						//
+					}
 				}
 			}
 		});

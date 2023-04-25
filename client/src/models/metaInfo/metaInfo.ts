@@ -167,6 +167,10 @@ export class MetaInfo {
 		this.FormattedUpdated = DateHelper.dateToString(date);
 	}
 
+	public getUpdatedDate(): Date {
+		return this.Updated;
+	}
+
 	public setName(name: string) {
 		this.Name = name;
 	}
@@ -294,12 +298,25 @@ export class MetaInfo {
 		this.ATTACK = attacks;
 	}
 
-	public addEventDescriptions(eventDescription: MetaInfoEventDescription[]): void {
-		this.EventDescriptions.push(...eventDescription);
+	public addEventDescriptions(eventDescriptions: MetaInfoEventDescription[]): void {
+		const existingLocalizations = this.EventDescriptions.map((metainfoED) => {
+			return metainfoED.getLocalizationId();
+		});
+		eventDescriptions.forEach((ed) => {
+			if (!existingLocalizations.includes(ed.getLocalizationId())) {
+				this.EventDescriptions.push(ed);
+			}
+		});
+		//this.EventDescriptions.push(...eventDescription);
 	}
 
 	public getEventDescriptions(): MetaInfoEventDescription[] {
 		return this.EventDescriptions;
+	}
+
+	public setEventDescriptions(eventDescriptions: MetaInfoEventDescription[]): void {
+		this.EventDescriptions = [];
+		this.addEventDescriptions(eventDescriptions);
 	}
 
 	public clearEventDescriptions(): void {
@@ -396,7 +413,7 @@ export class MetaInfo {
 	}
 
 	public correctEventIds(metaInfoContent: string): string {
-
+		if (!metaInfoContent) { return ""; }
 		const eventIdItemRegExp = /- ['"](\d+)['"]$/gm;
 
 		let curResult: RegExpExecArray | null;

@@ -1,7 +1,8 @@
 import * as vscode  from 'vscode';
 import { EOL } from 'os';
+import { UnitTestOutputParser } from './unitTestOutputParser';
 
-export class ModuleTestOutputParser {
+export class CorrelationUnitTestOutputParser implements UnitTestOutputParser {
 	/**
 	 * Разбирает ошибки из вывода модульных тестов.
 	 * @param testOutput вывод модульных тестов.
@@ -15,6 +16,7 @@ export class ModuleTestOutputParser {
 		const pattern = /\[ERROR\] Compilation failed:\s*(\S+?):(\d+):(\d+):([\S ]+)/gm;
 		let m: RegExpExecArray | null;
 
+		// eslint-disable-next-line no-cond-assign
 		while (m = pattern.exec(testOutput)) {
 
 			const ruleLineNumber = parseInt(m[2]) - 1;

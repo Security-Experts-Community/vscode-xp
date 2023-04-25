@@ -1,0 +1,4 @@
+# Вайтлист
+table_list default
+table_list {"Common_whitelist_auto":[{"rule":"Active_Directory_Snapshot","specific_value": "pushkin|172.16.222.132"}]}
+expect not {"correlation_name": "Active_Directory_Snapshot"}

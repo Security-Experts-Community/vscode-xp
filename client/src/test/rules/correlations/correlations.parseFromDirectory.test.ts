@@ -3,6 +3,7 @@ import { StringHelper } from '../../../helpers/stringHelper';
 
 import { Correlation } from '../../../models/content/correlation';
 import { TestFixture } from '../../helper';
+import { XpException } from '../../../models/xpException';
 
 suite('Correlations.parseFromDirectory', () => {
 
@@ -94,9 +95,19 @@ suite('Correlations.parseFromDirectory', () => {
 		const expectedTestCode2 =
 			`# Вайтлист
 table_list default
-table_list {\"Common_whitelist_auto\":[{\"rule\":\"Active_Directory_Snapshot\",\"specific_value\": \"pushkin|172.16.222.132\"}]}
-expect not {\"correlation_name\": \"Active_Directory_Snapshot\"}`;
+table_list {"Common_whitelist_auto":[{"rule":"Active_Directory_Snapshot","specific_value": "pushkin|172.16.222.132"}]}
+expect not {"correlation_name": "Active_Directory_Snapshot"}`;
 
 		assert.strictEqual(StringHelper.textToOneLine(testCode2), StringHelper.textToOneLine(expectedTestCode2));
 	});
+
+	test('Парсинг правила с несовпадающими LocalizationId', async() => {
+		const rulePath = TestFixture.getCorrelationPath("incompatible_localizationid");
+		assert.rejects(async () => 
+			await Correlation.parseFromDirectory(rulePath), 
+			Error, 
+			"Наборы идентификаторов локализаций в файле метаинформации и файлах локализаций не совпадают."
+		);
+	});
+
 });

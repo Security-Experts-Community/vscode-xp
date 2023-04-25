@@ -7,10 +7,57 @@ import * as fsExtra from 'fs-extra';
 import { Correlation } from '../../../models/content/correlation';
 import { TestFixture } from '../../helper';
 import { ContentTreeProvider } from '../../../views/contentTree/contentTreeProvider';
-import { ModuleTestOutputParser } from '../../../views/modularTestsEditor/modularTestOutputParser';
 import { CorrelationUnitTest } from '../../../models/tests/correlationUnitTest';
+import { XpException } from '../../../models/xpException';
+import { MetaInfo } from '../../../models/metaInfo/metaInfo';
 
 suite('Корреляции', () => {
+
+	test('Проверка корректности создания дубликата корреляционного правила', async() => {
+		const rulePath = TestFixture.getCorrelationPath("with_unit_test");
+		const templateRule = await Correlation.parseFromDirectory(rulePath);
+		const newRuleName = "modified_test";
+		const rule = await templateRule.duplicate(newRuleName, TestFixture.getTmpPath());
+
+		assert.strictEqual(rule.getParentPath(), TestFixture.getTmpPath());
+		assert.strictEqual(rule.getName(), newRuleName);		
+		const newRuleDir = path.join(TestFixture.getTmpPath(), newRuleName);
+		assert.strictEqual(rule.getDirectoryPath(), newRuleDir);
+		assert.strictEqual(rule.getFileName(), templateRule.getFileName());
+		assert.strictEqual(rule.getFilePath(), path.join(newRuleDir, templateRule.getFileName()));
+
+		assert.strictEqual(rule.getEnDescription(), templateRule.getEnDescription());
+		assert.strictEqual(rule.getRuDescription(), templateRule.getRuDescription());
+		
+		assert.strictEqual(rule.getTestsPath(), path.join(newRuleDir, "tests"));
+		assert.deepStrictEqual(rule.getUnitTestOutputParser(), templateRule.getUnitTestOutputParser());
+		assert.deepStrictEqual(rule.getUnitTestRunner(), templateRule.getUnitTestRunner());		
+		rule.getUnitTests().forEach((unitTest) => {
+			assert.strictEqual(unitTest.getRule(), rule);
+			assert.strictEqual(unitTest.getRuleDirectoryPath(), rule.getDirectoryPath());
+			assert.strictEqual(unitTest.getRuleFullPath(), rule.getFilePath());
+			assert.strictEqual(unitTest.getTestsDirPath(), rule.getTestsPath());
+		});
+
+		rule.getIntegrationTests().forEach((interationTest) => {
+			assert.strictEqual(interationTest.getRuleDirectoryPath(), rule.getDirectoryPath());
+			assert.strictEqual(interationTest.getRuleFullPath(), rule.getFilePath());
+		});
+
+		const expectedCommand = {
+			command: ContentTreeProvider.onRuleClickCommand,
+			title: "Open File",
+			arguments: [rule]
+		};
+		assert.deepStrictEqual(rule.getCommand(), expectedCommand);
+
+		const localization = rule.getLocalizations()[0];
+		assert.deepStrictEqual(localization.getLocalizationId(), newRuleName);
+		assert.strictEqual(rule.getMetaInfoFilePath(), path.join(newRuleDir, MetaInfo.METAINFO_FILENAME));
+
+		assert.strictEqual(await rule.getRuleCode(), await templateRule.getRuleCode());
+		assert.strictEqual(rule.getRuleFilePath(), path.join(newRuleDir, templateRule.getFileName()));
+	});
 
 	test('ObjectID остается такой же после переименования', async () => {
 		// Копируем корреляцию во временную директорию.
@@ -57,7 +104,7 @@ suite('Корреляции', () => {
 		assert.ok(!testCode2.includes(oldRuleName));
 
 		// Модульные тесты.
-		const modTests = correlation.getModularTests();
+		const modTests = correlation.getUnitTests();
 		assert.strictEqual(modTests.length, 0);
 	});
 
@@ -71,18 +118,35 @@ suite('Корреляции', () => {
 	
 	test('Корректное сохранение добавленного модульного теста на диск', async () => {
 		const tmpPath = TestFixture.getTmpPath();
-		let rule = Correlation.create("SavedOnDiskCorrelation", tmpPath);
+		const rule = Correlation.create("SavedOnDiskCorrelation", tmpPath);
 
-		const modTest = new CorrelationUnitTest();
-		modTest.setTestCode("test code");
-		rule.addModularTests([modTest]);
+		const modTest = rule.createNewUnitTest();
+		modTest.setTestExpectation('expect 1 {"code": "test code"}');
+		rule.addUnitTests([modTest]);
 		await rule.save();
-
-		rule = await Correlation.parseFromDirectory(rule.getDirectoryPath());
-		const modularTests = rule.getModularTests();
-
+		const readedRule = await Correlation.parseFromDirectory(rule.getDirectoryPath());
+		const modularTests = readedRule.getUnitTests();
+		
 		assert.ok(modularTests.length == 1);
-		assert.strictEqual(modularTests[0].getTestCode(), "test code");
+		assert.strictEqual(modularTests[0].getTestExpectation(), 'expect 1 {"code": "test code"}');
+		assert.strictEqual(modularTests[0].getTestInputData(), '# Здесь укажи какие нормализованные события ты подаёшь на вход корреляци\n');
+		assert.strictEqual(modularTests[0].getNumber(), 1);
+	});
+
+	test('Корректное сохранение добавленного модульного теста на диск с некорректным условием', async () => {
+		const tmpPath = TestFixture.getTmpPath();
+		const rule = Correlation.create("BrokenCorrelation", tmpPath);
+
+		const modTest = rule.createNewUnitTest();
+		modTest.setTestExpectation('test code');
+		rule.addUnitTests([modTest]);
+		await rule.save();
+		const readedRule = await Correlation.parseFromDirectory(rule.getDirectoryPath());
+		const modularTests = readedRule.getUnitTests();
+		
+		assert.ok(modularTests.length == 1);
+		assert.strictEqual(modularTests[0].getTestExpectation(), `# Тут будет твой тест. В секции expect укажи сколько и каких корреляционных событий ты ожидаешь\nexpect 1 {}\n`);	
+		assert.strictEqual(modularTests[0].getTestInputData(), '# Здесь укажи какие нормализованные события ты подаёшь на вход корреляци\n');
 		assert.strictEqual(modularTests[0].getNumber(), 1);
 	});
 
@@ -92,6 +156,15 @@ suite('Корреляции', () => {
 		assert.throws(() => rule.createIntegrationTest(), Error);
 	});
 
+	test('Перименование корреляции без кода', async () => {
+		const rulePath = TestFixture.getCorrelationPath("empty_correlation_code");
+		const correlation = await Correlation.parseFromDirectory(rulePath);
+		const newName = "NEW_CORRELATION_NAME";
+		correlation.rename(newName);
+		assert.strictEqual(correlation.getName(), newName);
+	});
+
+
 	// Удаляем созданные корреляции.
 	setup( () => {
 		const tmpPath = TestFixture.getTmpPath();
@@ -100,7 +173,7 @@ suite('Корреляции', () => {
 		}
 	});
 
-	// Удаляем созданные корреляции.
+	// // Удаляем созданные корреляции.
 	teardown(() => {
 		const tmpPath = TestFixture.getTmpPath();
 		if(fs.existsSync(tmpPath)) {

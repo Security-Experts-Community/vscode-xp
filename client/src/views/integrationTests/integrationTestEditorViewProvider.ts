@@ -11,7 +11,7 @@ import { Enrichment } from '../../models/content/enrichment';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
 import { SiemjManager } from '../../models/siemj/siemjManager';
-import { UnitTestsRunner } from '../../models/tests/unitTestsRunner';
+import { CorrelationUnitTestsRunner } from '../../models/tests/correlationUnitTestsRunner';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
 import { RegExpHelper } from '../../helpers/regExpHelper';
@@ -19,7 +19,6 @@ import { FastTest } from '../../models/tests/fastTest';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { TestStatus } from '../../models/tests/testStatus';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
-import { ModuleTestOutputParser } from '../modularTestsEditor/modularTestOutputParser';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { XpException } from '../../models/xpException';
 
@@ -424,16 +423,10 @@ export class IntegrationTestEditorViewProvider  {
 
 			// Создаем временный модульный тест для быстрого тестирования.
 			const fastTest = new FastTest();
-			fastTest.setRuleDirectoryPath(currTest.getRuleDirectoryPath());
 			fastTest.setTestPath(fastTestFilePath);
-			
-			const testFileName = this._rule.getRuleFileName();
-			fastTest.setRuleFileName(testFileName);
 			fastTest.setRule(this._rule);
 
-			const parser = new ModuleTestOutputParser();
-			const testRunner = new UnitTestsRunner(this._config, parser);
-
+			const testRunner = this._rule.getUnitTestRunner();
 			try {
 				const resultTest = await testRunner.run(fastTest);
 
@@ -522,7 +515,7 @@ export class IntegrationTestEditorViewProvider  {
 
 	async saveTest(message: any) : Promise<IntegrationTest> {
 		// Обновляем и сохраняем тест.
-		const test = await TestHelper.saveTest(this._rule, message);
+		const test = await TestHelper.saveIntegrationTest(this._rule, message);
 		ExtensionHelper.showUserInfo(`Сохранение теста №${test.getNumber()} успешно завершено.`);
 		return test;
 	}

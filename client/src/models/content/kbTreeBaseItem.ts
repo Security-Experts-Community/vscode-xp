@@ -1,11 +1,18 @@
+import * as path from "path";
 import * as vscode from "vscode";
+import { XpException } from '../xpException';
+import { ArgumentException } from '../argumentException';
+import { MetaInfo } from '../metaInfo/metaInfo';
+import { Configuration } from '../configuration';
 
 /**
  * Базовый класс для всех item-ом из дерева контента.
  */
 export abstract class KbTreeBaseItem extends vscode.TreeItem {
-	constructor(protected _name : string) {
+	constructor(protected _name : string, 
+		protected _parentPath : string) {
 		super(_name, vscode.TreeItemCollapsibleState.None);
+		this.label = _name;
 	}
 
 	public setCommand(command: vscode.Command) : void {
@@ -38,6 +45,24 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 		return this._name;
 	}
 
+	/**
+	 * TODO:
+	 */
+	public setFileName(fielName:string) : void {
+		this._fileName = fielName;
+	}
+
+	/**
+	 * TODO: 
+	 */
+	public getFileName() :string {
+		return this._fileName;
+	}
+
+	public getFilePath(): string {
+		return path.join(this._parentPath, this._name, this._fileName);
+	}
+
 	public setLabel(label:string) : void {
 		this.label = label;
 	}
@@ -48,7 +73,39 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 		};
 	}
 
+	public setParentPath(parentPath: string) : void{
+		this._parentPath = parentPath;
+	}
+
+	public getParentPath() : string{
+		return this._parentPath;
+	}
+
+	public getMetaInfoFilePath(): string {
+		return path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
+	}
+
+	public setMetaInfo(metaInfo : MetaInfo) {
+		this._metaInfo = metaInfo;
+	}
+
+	public getDirectoryPath() : string {
+		if(!this._parentPath) {
+			throw new XpException(`Не задан путь к директории для элемента '${this.getName()}'.`);
+		}
+
+		return path.join(this._parentPath, this.getName());
+	}
+
 	protected getRuleEncoding() : BufferEncoding {
 		return "utf-8";
 	}
+
+	protected getResourcesPath(){
+		return path.join(Configuration.get().getExtensionPath(), 'resources');
+	}
+
+	private _fileName : string;
+
+	protected _metaInfo: MetaInfo = new MetaInfo();
 }

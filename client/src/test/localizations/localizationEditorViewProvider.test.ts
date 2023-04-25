@@ -18,7 +18,7 @@ suite('LocalizationEditorViewProvider', () => {
 				`correlation_name = "Correlation" and src.ip != null and newCriteria`,
 				"RuLocalization",
 				"");
-		rule.updateLocalizations([localization]);
+		rule.addLocalization(localization);
 
 		getLocalizationEditorViewProvider().showLocalizationEditor(rule);
 	});
@@ -31,7 +31,7 @@ suite('LocalizationEditorViewProvider', () => {
 				`correlation_name = "Correlation" and src.ip != null and newCriteria`,
 				"",
 				"EnLocalization");
-		rule.updateLocalizations([localization]);
+		rule.addLocalization(localization);
 
 		getLocalizationEditorViewProvider().showLocalizationEditor(rule);
 	});

@@ -6,6 +6,7 @@ import { IntegrationTest } from '../models/tests/integrationTest';
 import { RegExpHelper } from './regExpHelper';
 import { XpException } from '../models/xpException';
 import { ParseException } from '../models/parseException';
+import { BaseUnitTest } from '../models/tests/baseUnitTest';
 
 export type ConvertMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
@@ -17,7 +18,7 @@ export class TestHelper {
 	 * @returns код теста, очищенный от тегов
 	 */
 	public static cleanTestCode(testCode: string) : string {
-
+        if (!testCode) { return ""; }
 		const regexPatterns = [
 			/\s*"generator.version"(\s*):(\s*)"(.*?",)/g,
 			
@@ -60,6 +61,7 @@ export class TestHelper {
 	 * @returns список ошибок, в котором задан начальный символ строки первым непробельным символом.
 	 */
 	public static correctWhitespaceCharacterFromErrorLines(ruleContent : string, diagnostics : vscode.Diagnostic[]) : vscode.Diagnostic[] {
+		if (!ruleContent) { return []; }
 		const fixedContent = ruleContent.replace(/(\r\n)/gm, "\n");
 		const lines = fixedContent.split('\n');
 
@@ -221,6 +223,42 @@ export class TestHelper {
 		return formattedTestCode;
 	}
 
+	public static minifyTestCodeAndEvents(testCode: string) {
+		const compressedNormalizedEventReg = /\{[^#]*?\}$/gms;
+
+		let formattedTestCode = testCode;
+		let comNormEventResult: RegExpExecArray | null;
+		while ((comNormEventResult = compressedNormalizedEventReg.exec(testCode))) {
+			if (comNormEventResult.length != 1) {
+				continue;
+			}
+
+			const compessedEvent = comNormEventResult[0];
+			const escapedCompessedEvent = TestHelper.escapeRawEvent(compessedEvent);
+
+			// Форматируем событие и сортируем поля объекта, чтобы поля групп типа subject.* были рядом.
+			try {
+				const compressEventJson = JSON.parse(escapedCompessedEvent);
+				const orderedCompressEventJson = Object.keys(compressEventJson).sort().reduce(
+					(obj, key) => { 
+						obj[key] = compressEventJson[key]; 
+						return obj;
+					}, 
+					{}
+				);
+				const formatedEvent = JSON.stringify(orderedCompressEventJson);
+				formattedTestCode = formattedTestCode.replace(compessedEvent, formatedEvent);
+			}
+			catch (error) {
+				// Если не удалось отформатировать, пропускаем и пишем в лог.
+				console.warn(`Ошибка сжатия события ${compessedEvent}.`);
+				continue;
+			}
+		}
+
+		return formattedTestCode;
+	}
+
 	public static isEnvelopedEvents(rawEvents : string) : boolean {
 		
 		rawEvents = rawEvents.trim();
@@ -316,7 +354,7 @@ export class TestHelper {
 		return newRawEvents;
 	}
 
-	public static async saveTest(rule : RuleBaseItem, message: any) {
+	public static async saveIntegrationTest(rule : RuleBaseItem, message: any) {
 		
 		// Новый тест или уже существующий.
 		let test : IntegrationTest;
@@ -363,6 +401,51 @@ export class TestHelper {
 		return test;
 	}
 
+	public static async saveUnitTest(rule : RuleBaseItem, message: any) {
+		
+		// Новый тест или уже существующий.
+		let test : BaseUnitTest;
+		if(message?.test) {
+			test = rule.convertUnitTestFromObject(message.test);
+		} else {
+			test = rule.createNewUnitTest();
+		}
+		
+		// Сырые события.
+		const rawEvent = message?.newValues?.rawEvent;
+		if(!rawEvent) {
+			throw new Error(`Не заданы сырые события для теста №${test.getNumber()}. Добавьте их и повторите.`);
+		}
+
+		// Если обновляем сырые событиях, то разумно убрать нормализованные события, если такие есть.
+		test.setTestInputData(rawEvent);
+
+		// Сохраняем код теста.
+		// Когда хотим получить нормализованное событие, код теста не задаем, поэтому позволяю сохранить без него.
+		const expectation = message?.newValues?.expectation;
+		if(expectation) {
+			const compressedTestCode = TestHelper.compressTestCode(expectation);
+			test.setTestExpectation(compressedTestCode);
+		}
+
+		// Номер активного теста.
+		const activeTestNumberString = message?.activeTestNumber;
+		if(!activeTestNumberString) {
+			throw new Error(`Не задан номер активного теста.`);
+		}
+
+		// Обновление или добавление теста.
+		const tests = rule.getUnitTests();
+		const testIndex = tests.findIndex( it => it.getNumber() == test.getNumber());
+		if(testIndex == -1) {
+			tests.push(test);
+		} else {
+			tests[testIndex] = test;
+		}
+
+		test.save();
+		return test;
+	}
 	/**
 	 * Проверяет по специфичным конструкциям, использует ли правило subrules.
 	 * @param ruleCode код правила
@@ -446,7 +529,7 @@ export class TestHelper {
 
 		return rule.clearIntegrationTests().then( () => {
 			rule.addIntegrationTests(tests);
-			rule.saveIntegrationTest();
+			rule.saveIntegrationTests();
 			return rule;
 		});
 	}

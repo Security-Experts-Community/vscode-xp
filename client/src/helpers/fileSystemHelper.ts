@@ -37,6 +37,10 @@ export class FileSystemHelper {
 		return fs.promises.writeFile(filePath, fileContent, FileSystemHelper._fileEncoding);
 	}
 
+	public static appendContentFile(filePath: string, fileContent: string) : Promise<void> {
+		return fs.promises.appendFile(filePath, fileContent, FileSystemHelper._fileEncoding);
+	}
+
 	public static readContentFileSync(filePath:string): string {
 		
 		let file: string;

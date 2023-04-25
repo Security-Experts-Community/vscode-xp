@@ -3,12 +3,14 @@ import * as path from "path";
 
 import { TestStatus } from './testStatus';
 import { Configuration } from '../configuration';
+import { RuleBaseItem } from '../content/ruleBaseItem';
+import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 
 export abstract class BaseUnitTest extends vscode.TreeItem {
 
-	public abstract getTestPath() : string;
-
-	public abstract save(testsDirFullPath?: string) : Promise<void>;
+	public abstract save() : Promise<void>;
+	// public abstract show() : Promise<void>;
+	// public abstract close(): Promise<void>;
 
 	constructor(number: number) {
 		super(number.toString());
@@ -25,40 +27,32 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 		return this._number;
 	}
 
+	public setCommand(command: any): void {
+		this.command = command;
+	}
+
 	public getRuleFullPath(): string {
-		if(!this._ruleDirectoryPath) {
-			throw new Error("Путь к директории правила не задан.");
-		}
-
-		if(!this._ruleFileName) {
-			throw new Error("Имя файла правила не задано.");
-		}
-
-		return path.join(this._ruleDirectoryPath, this._ruleFileName);
+		return this._rule.getFilePath();
 	}
 
 	public getTestsDirPath() : string {
 		return path.join(this.getRuleDirectoryPath(), "tests");
 	}
 
-	public setRuleDirectoryPath(ruleDirectoryPath: string) {
-		this._ruleDirectoryPath = ruleDirectoryPath;
-	}
+	public abstract getTestExpectationPath() : string;
+
+	public abstract getTestInputDataPath() : string;
 
 	public getRuleDirectoryPath() {
-		return this._ruleDirectoryPath;
+		return this._rule.getDirectoryPath();
 	}
 
-	public setRuleFileName(ruleFileName: string) {
-		this._ruleFileName = ruleFileName;
+	public setTestExpectation(testExpectation: string) {
+		this._testExpectation = testExpectation;
 	}
 
-	public setTestCode(testCode: string) {
-		this._testCode = testCode;
-	}
-
-	public getTestCode() : string {
-		return this._testCode;
+	public getTestExpectation() : string {
+		return this._testExpectation;
 	}
 
 	public setStatus(status: TestStatus) : void {
@@ -106,10 +100,28 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 		return this._output;
 	}
 
+	public setTestInputData(inputData : string) : void {
+		this._inputData = inputData;
+	}
+
+	public getTestInputData() : string {
+		return this._inputData;
+	}
+
+	public setRule(rule: RuleBaseItem){
+		this._rule = rule;
+	}
+
+	public getRule(): RuleBaseItem{
+		return this._rule;
+	}
+
+	protected _rule : RuleBaseItem;
+
 	private _number: number;
-	private _ruleDirectoryPath : string;
-	private _ruleFileName : string;
-	private _testCode : string;
+
+	private _testExpectation : string;
+	private _inputData : string;
 
 	private _output : string;
 	private _status : TestStatus;

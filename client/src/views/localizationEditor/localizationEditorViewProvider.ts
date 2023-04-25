@@ -175,13 +175,13 @@ export class LocalizationEditorViewProvider  {
 					});
 
 					// Обновляем локализации и сохраняем их.
-					this._rule.updateLocalizations(localizations);
+					this._rule.setLocalizations(localizations);
 					this._rule.saveLocalizations();
 
 					ExtensionHelper.showUserInfo(`Локализация для правила ${this._rule.getName()} успешно сохранена.`);
 				}
 				catch (error) {
-					ExtensionHelper.showError("Ошибка сохранения локализации.", error.message);
+					ExtensionHelper.showError("Ошибка сохранения локализации.", error);
 				}
 			}
 		}
