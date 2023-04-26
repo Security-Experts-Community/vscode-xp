@@ -12,7 +12,7 @@ import { DocumentSettings, getDocumentSettings } from './server';
 
 export class FilterEqualsValidator extends IValidator {
 	constructor() {
-		super(["co"]);
+		super(["co", "en"]);
 	}
 
 	async validateImpl(textDocument: TextDocument) : Promise<Diagnostic[]> {
