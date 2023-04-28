@@ -1,8 +1,7 @@
-
 import * as vscode from 'vscode';
 import * as assert from 'assert';
 
-import { getDocUri, activate, TestFixture, toRange, testDiagnostics } from '../helper';
+import { activate, TestFixture} from '../helper';
 
 suite('Сравнение в блоке filter', async () => {
 

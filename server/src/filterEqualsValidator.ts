@@ -46,7 +46,7 @@ export class FilterEqualsValidator extends IValidator {
 
 		let problems = 0;
 		const diagnostics : Diagnostic[] = [];
-		const incorrectEqualsRegEx = /(\s+\S+\s+=\s+"\S+")/gm;
+		const incorrectEqualsRegEx = /(\s+\S+\s+=\s+"\S*")/gm;
 
 		let incorrectEqualsResult: RegExpExecArray | null;
 		while ((incorrectEqualsResult = incorrectEqualsRegEx.exec(filterBlock)) && problems < settings.maxNumberOfProblems) {

@@ -37,8 +37,7 @@ connection.onInitialize((params: InitializeParams) => {
 	// Инициализируем валидаторы кода.
 	validators.push(
 		new LowerFunctionResultValidator(), 
-		// TODO: улучшить логику 
-		// new WhitelistingAndAlertKeyValidator(),
+		new WhitelistingAndAlertKeyValidator(),
 		new WhitelistingAndRuleNameValidator(),
 		new NestedLowerValidator(),
 		new ImportanceAndSeverityValidator(),
