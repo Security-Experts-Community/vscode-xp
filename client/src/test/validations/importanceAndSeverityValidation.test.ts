@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
 
-import { activate, TestFixture, testDiagnostics, toRange } from '../helper';
+import { activate, TestFixture} from '../helper';
 
 suite('Валидация равенства $importance и $incident.severity', async () => {
 

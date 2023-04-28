@@ -5,12 +5,13 @@ event Subrule_PC_Access:
     filter {
         filter::NotFromCorrelator()
         and match(lower(datafield3), "Upn=*")
-        and filter::CheckWL_Windows_Login("Unauthorized_Access", lower(subject.account.name) + "|" + lower(event_src.host) + "|" + lower(src.host) + "|" + lower(src.ip))
+        and filter::CheckWL_Windows_Login("Unauthorized_Access", lower(join([subject.account.name, event_src.host, src.host,src.ip], "|")) )
     }
 
 rule Unauthorized_Access: Subrule_PC_Access+ timer 1m
 
     on Subrule_PC_Access {
+        $alert.key = lower(join([subject.account.name, event_src.host, src.host,src.ip], "|"))
     }
 
 emit {

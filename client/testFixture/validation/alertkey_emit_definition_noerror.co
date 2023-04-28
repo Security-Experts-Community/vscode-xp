@@ -1,0 +1,16 @@
+event EventA:
+    key:
+        event_src.host
+    filter {
+        filter::CheckWL_Linux_File_Operations("Rule", lower(join([subject.account.name, subject.process.name], "|")))
+    }
+
+rule Rule: EventA
+    
+    on EventA {
+	
+	}
+
+emit {
+    $alert.key = lower(join([$subject.account.name, $subject.process.name], "|"))
+}    
