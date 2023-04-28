@@ -15,7 +15,7 @@ export class WhitelistingAndAlertKeyValidator extends IValidator {
 		super(["co"]);
 	}
 
-	async validate(textDocument: TextDocument) : Promise<Diagnostic[]> {
+	async validateImpl(textDocument: TextDocument) : Promise<Diagnostic[]> {
 
 		if(!this._languageIds.includes(textDocument.languageId)) {
 			return [];
@@ -33,7 +33,7 @@ export class WhitelistingAndAlertKeyValidator extends IValidator {
 		let alertKey = alertKeyResult[1];
 	
 		// Ищем вайтлистинг правила.
-		const whitelistingPattern = /filter::(?:CheckWL_Specific_Only|CheckWL_File_Creation|CheckWL_Networking|CheckWL_Powershell|CheckWL_Process_Access|CheckWL_Process_Creation|CheckWL_Registry_Actions|CheckWL_Tasks|CheckWL_Windows_Shares|CheckWL_Windows_Login|CheckWL_Web_Access)\(\s*"\S+"\s*,\s*(.*)\s*\)/gm;
+		const whitelistingPattern = /filter::CheckWL_\S+?\(\s*"\S+"\s*,\s*(.*)\s*\)/gm;
 		const settings = await getDocumentSettings(textDocument.uri);
 		let problems = 0;
 		let whitelistingResult: RegExpExecArray | null;

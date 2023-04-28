@@ -39,6 +39,21 @@ rule Unix_Connect: Event
         $object.type = object.type
         $object.property = object.property
         $object.value = object.value
+
+        $src.host = src.host
+        $src.ip = src.ip
+        $src.hostname = src.hostname
+        $src.fqdn = src.fqdn
+        $src.port = src.port
+        $src.mac = src.mac
+        $src.asset = src.asset
+
+        $dst.host = dst.host
+        $dst.ip = dst.ip
+        $dst.hostname = dst.hostname
+        $dst.fqdn = dst.fqdn
+        $dst.port = dst.port
+        $dst.asset = dst.asset
         
         $logon_service = logon_service
         

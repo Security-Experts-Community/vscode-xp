@@ -22,6 +22,7 @@ import { WhitelistingAndAlertKeyValidator } from './whitelistingAndAlertkeyValid
 import { WhitelistingAndRuleNameValidator } from './whitelistingAndRuleNameValidator';
 import { NestedLowerValidator } from './nestedLowerValidator';
 import { ImportanceAndSeverityValidator } from './importanceAndSeverityValidator';
+import { FilterEqualsValidator } from './filterEqualsValidator';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -40,7 +41,8 @@ connection.onInitialize((params: InitializeParams) => {
 		// new WhitelistingAndAlertKeyValidator(),
 		new WhitelistingAndRuleNameValidator(),
 		new NestedLowerValidator(),
-		new ImportanceAndSeverityValidator()
+		new ImportanceAndSeverityValidator(),
+		new FilterEqualsValidator()
 	);
 
 	const capabilities = params.capabilities;
@@ -86,20 +88,20 @@ connection.onInitialized(() => {
 	}
 });
 
-interface ExampleSettings {
+export interface DocumentSettings {
 	maxNumberOfProblems: number;
 }
 
-const defaultSettings: ExampleSettings = { maxNumberOfProblems: 1000 };
-let globalSettings: ExampleSettings = defaultSettings;
+const defaultSettings: DocumentSettings = { maxNumberOfProblems: 1000 };
+let globalSettings: DocumentSettings = defaultSettings;
 
-const documentSettings: Map<string, Thenable<ExampleSettings>> = new Map();
+const documentSettings: Map<string, Thenable<DocumentSettings>> = new Map();
 
 connection.onDidChangeConfiguration(change => {
 	if (hasConfigurationCapability) {
 		documentSettings.clear();
 	} else {
-		globalSettings = <ExampleSettings>(
+		globalSettings = <DocumentSettings>(
 			(change.settings.languageServerExample || defaultSettings)
 		);
 	}
@@ -108,7 +110,7 @@ connection.onDidChangeConfiguration(change => {
 	documents.all().forEach(validateTextDocument);
 });
 
-export function getDocumentSettings(resource: string): Thenable<ExampleSettings> {
+export function getDocumentSettings(resource: string): Thenable<DocumentSettings> {
 	if (!hasConfigurationCapability) {
 		return Promise.resolve(globalSettings);
 	}

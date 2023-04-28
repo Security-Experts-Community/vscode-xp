@@ -8,14 +8,13 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import { IValidator } from './IValidator';
-import { getDocumentSettings } from './server';
 
 export class ImportanceAndSeverityValidator extends IValidator {
 	constructor() {
 		super(["co"]);
 	}
 
-	async validate(textDocument: TextDocument) : Promise<Diagnostic[]> {
+	async validateImpl(textDocument: TextDocument) : Promise<Diagnostic[]> {
 
 		if(!this._languageIds.includes(textDocument.languageId)) {
 			return [];
@@ -54,7 +53,7 @@ export class ImportanceAndSeverityValidator extends IValidator {
 			return [];
 		}
 
-		const diagnostic = this.getDiagnostic(
+		const diagnostic = this.getDiagnosticByRegExpResult(
 			severityResult,
 			textDocument,
 			"Важность сработки $importance и важность инцидента $incident.severity отличается.",

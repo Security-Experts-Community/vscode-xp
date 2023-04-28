@@ -16,7 +16,6 @@ import { XpRenameProvide } from './providers/xpRenameProvider';
 import { UnitTestContentEditorViewProvider } from './views/unitTestEditor/unitTestEditorViewProvider';
 import { UnitTestsListViewProvider } from './views/unitTestEditor/unitTestsListViewProvider';
 import { IntegrationTestEditorViewProvider } from './views/integrationTests/integrationTestEditorViewProvider';
-//import { NormalizationTestEditorViewProvider } from './views/integrationTests/normalizationTestEditorViewProvider';
 import { MetainfoViewProvider } from './views/metaInfo/metainfoViewProvider';
 import { Configuration } from './models/configuration';
 import { XpCompletionItemProvider } from './providers/xpCompletionItemProvider';
@@ -108,7 +107,6 @@ export async function activate(context: ExtensionContext) {
 		UnitTestContentEditorViewProvider.init(config);
 		UnitTestsListViewProvider.init(config);
 		IntegrationTestEditorViewProvider.init(config);
-		//NormalizationTestEditorViewProvider.init(config);
 		MetainfoViewProvider.init(config);
 		RunningCorrelationGraphProvider.init(config);
 		TableListsEditorViewProvider.init(config);

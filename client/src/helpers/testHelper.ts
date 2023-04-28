@@ -1,6 +1,6 @@
 import { EOL } from 'os';
 import * as vscode from 'vscode';
-import { v4 as uuidv4 } from 'uuid';
+
 import { RuleBaseItem } from '../models/content/ruleBaseItem';
 import { IntegrationTest } from '../models/tests/integrationTest';
 import { RegExpHelper } from './regExpHelper';
@@ -8,7 +8,7 @@ import { XpException } from '../models/xpException';
 import { ParseException } from '../models/parseException';
 import { BaseUnitTest } from '../models/tests/baseUnitTest';
 
-export type ConvertMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
+export type EventMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
 export class TestHelper {
 
@@ -101,10 +101,6 @@ export class TestHelper {
 		}
 
 		const compressedNormalizedEventReg = /{\s*[\s\S]*?\n}/gm;
-
-		// if(!rawEvents.endsWith("\n")) {
-		// 	rawEvents += "\n";
-		// }
 
 		let comressedRawEvents = "";
 		let comNormEventResult: RegExpExecArray | null;
@@ -257,101 +253,6 @@ export class TestHelper {
 		}
 
 		return formattedTestCode;
-	}
-
-	public static isEnvelopedEvents(rawEvents : string) : boolean {
-		
-		rawEvents = rawEvents.trim();
-
-		// Одно событие.
-		if(!rawEvents.includes("\n")) {
-			try {
-				const newRawEvent = JSON.parse(rawEvents);
-				if(newRawEvent.body) {
-					return true;
-				}
-				return false;
-			}
-			catch (error) {
-				return false;
-			}
-		}
-
-		const isEnvelopedEvent = rawEvents.split("\n").some(
-			(rawEventLine, index) => {
-
-				if(rawEventLine === "") {
-					return;
-				}
-				
-				try {
-					const newRawEvent = JSON.parse(rawEventLine);
-					if(newRawEvent.body) {
-						return true;
-					}
-					return false;
-				}
-				catch (error) {
-					return false;
-				}
-			}
-		);
-
-		return isEnvelopedEvent;
-	}
-
-	/**
-	 * Оборачивает сжатые сырые события в конверт.
-	 * @param compressedRawEvents список сырых событий в строке
-	 * @param mimeType тип событий
-	 * @returns массив сырых событий, в котором каждое событие обёрнуто в конверт заданного типа и начинается с новой строки
-	 */
-	public static addEnvelope(compressedRawEvents : string, mimeType : ConvertMimeType) : string[] {
-		// TODO: заменить строку mimeType на enum
-		const newRawEvents = [];
-		
-		const trimmedCompressedRawEvents = compressedRawEvents.trim();
-
-		trimmedCompressedRawEvents.split("\n").forEach(
-			(rawEvent, index) => {
-
-				if(rawEvent === "") {
-					return;
-				}
-
-				// Убираем пустое поле в начале при копироваине из SIEM-а группы (одного) события
-				// importance = low и info добавляет пустое поле
-				// importance = medium добавляет поле medium
-				const regCorrection = /^"(?:medium)?","(.*?)"$/;
-				const regExResult = rawEvent.match(regCorrection);
-				if(regExResult && regExResult.length == 2) {
-					rawEvent = regExResult[1];
-				}
-				
-				// '2012-11-04T14:51:06.157Z'
-				const date = new Date().toISOString();
-				const uuidSeed = index + 1;
-
-				const envelopedRawEvents = {
-					body : rawEvent,
-					recv_ipv4 : "127.0.0.1",
-					recv_time : date.toString(),
-					task_id : '00000000-0000-0000-0000-000000000000',
-					tag : "some_tag",
-					mime : mimeType,
-					normalized : false,
-					input_id : "00000000-0000-0000-0000-000000000000",
-					type : "raw",
-					uuid : uuidv4(uuidSeed)
-				};
-		
-				const newRawEvent = JSON.stringify(envelopedRawEvents);
-				// newRawEvents = `${newRawEvents}${newRawEvent}\n`;
-				newRawEvents.push(newRawEvent);
-			}
-		);
-
-		return newRawEvents;
 	}
 
 	public static async saveIntegrationTest(rule : RuleBaseItem, message: any) {

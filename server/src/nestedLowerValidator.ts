@@ -15,7 +15,7 @@ export class NestedLowerValidator extends IValidator {
 		super(["co"]);
 	}
 
-	async validate(textDocument: TextDocument) : Promise<Diagnostic[]> {
+	async validateImpl(textDocument: TextDocument) : Promise<Diagnostic[]> {
 
 		if(!this._languageIds.includes(textDocument.languageId)) {
 			return [];
@@ -49,7 +49,7 @@ export class NestedLowerValidator extends IValidator {
 				for(const char of stringLiteral) {
 					// В литерале есть большая буква, добавляем ошибку.
 					if(this.isUpperCase(char)) {
-						const diagnostic = this.getDiagnostic(
+						const diagnostic = this.getDiagnosticByRegExpResult(
 							lowerCallResult,
 							textDocument,
 							"Данное условие некорректно, так как регистр первого параметра отличается от второго параметра.",

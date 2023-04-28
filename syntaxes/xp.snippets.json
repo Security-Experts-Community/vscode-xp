@@ -150,7 +150,7 @@
 			"    filter {",
 			"        filter::NotFromCorrelator()",
 			"        and filter::ProcessStart_Windows_any()",
-			"        and filter::CheckWL_Process_Creation(\"${2}\", lower(object.process.cmdline))",
+			"        and filter::CheckWL_Process_Creation(\"${2:ruleName}\", lower(object.process.cmdline))",
 			"    }",
 			"",
 			"    on ${1:eventName} {",
@@ -220,7 +220,7 @@
 			"        and filter::OperatingSystem_UNIXLike()",
 			"        and event_src.subsys == \"auditd\"",
 			"        ",
-			"        and filter::CheckWL_Linux_File_Operations(\"${1:eventName}\", )",
+			"        and filter::CheckWL_Linux_File_Operations(\"${2:ruleName}\", )",
 			"    }",
 			"      ",
 			"    on ${1:eventName} {",
@@ -285,7 +285,7 @@
 			"        and filter::OperatingSystem_UNIXLike()",
 			"        and event_src.subsys == \"auditd\"",
 			"        ",
-			"        and filter::CheckWL_Linux_Networking(\"${1:eventName}\", )",
+			"        and filter::CheckWL_Linux_Networking(\"${2:ruleName}\", )",
 			"    }",
 			"",
 			"    on ${1:eventName} {",
@@ -348,7 +348,7 @@
 			"        and filter::OperatingSystem_UNIXLike()",
 			"        and event_src.subsys == \"auditd\"",
 			"        ",
-			"        and filter::CheckWL_Linux_Process_Creation(\"${1:eventName}\", )",
+			"        and filter::CheckWL_Linux_Process_Creation(\"${2:ruleName}\", )",
 			"    }",
 			"",
 			"    on ${1:eventName} {",
@@ -394,14 +394,15 @@
 			"        \\$event_src.vendor = event_src.vendor",
 			"        \\$event_src.category = event_src.category",
 			"        \\$event_src.rule = event_src.rule",
-			"               ",
-			"        \\$alert.key =           ",
+			"",
+			"        \\$alert.key = ",
 			"        \\$alert.context = ",
 			"    }",
 			""
 		]
 	},
 
+	"_comment" : "TODO: подгружать макросы автоматически из файлов .flt",
 	"Макросы вайтлистинга": {
 		"prefix":  ["filter::CheckWL"],
 		"body": [
@@ -413,11 +414,12 @@
 		"body": [
 			"filter::${1|NotFromCorrelator,FileCreate_Windows,LoginSuccessful_Windows,LoginSuccessful_Unix,LoginFailed_Windows,LoginFailed_Unix,OperatingSystem_UNIXLike,ProcessStart,ProcessStart_Linux,ProcessStart_Windows,ProcessStart_Windows_any,ProcessStart_Windows_cmd_meta,ProcessStart_Windows_commandline,SystemAccount_Windows,UserAccount_Windows|}()"
 		]
-	},		
+	},
+
 	"Пустое правило": {
 		"prefix": ["rule"],
 		"body": [
-			"rule ${1}: ${2:eventName}",
+			"rule ${1:ruleName}: ${2:eventName}",
 			"",
 			"    init {",
 			"        \\$labels = \"w_auto\"",
@@ -449,11 +451,23 @@
 			""
 		]
 	},
-	"alert" : {
-		"prefix": ["$alert", "$key", "$context"],
+	"Алерт" : {
+		"prefix": ["$alert.*"],
 		"body": [
 			"\\$alert.key = $1",
 			"\\$alert.context = $2"
+		]
+	},
+	"Ключ алерта" : {
+		"prefix": ["$alert.key"],
+		"body": [
+			"\\$alert.key = $1"
+		]
+	},
+	"Контекст алерта" : {
+		"prefix": ["$alert.context"],
+		"body": [
+			"\\$alert.context = $1"
 		]
 	},
 	"Поля хоста источника события": {
@@ -583,30 +597,62 @@
 			"\\$status = \"${4|success,failure|}\""
 		]
 	},
-	"subject": {
+	"on subject": {
 		"prefix": ["$subject"],
 		"body": [
 			"\\$subject = \"${1|account,application,process,system,host|}\""
 		]
 	},
-    "action": {
+	"filter subject": {
+		"prefix": ["subject"],
+		"body": [
+			"subject == \"${1|account,application,process,system,host|}\"",
+			"${2|and,or|} "
+		]
+	},
+
+    "on action": {
 		"prefix": ["$action"],
 		"body": [
-			"\\$action = \"${2|info,modify,access,start,execute,login,detect,send,exclude,disable,initiate,unlock,call,apply,download,bind,remove,create|}\""
+			"\\$action = \"${1|info,modify,access,start,execute,login,detect,send,exclude,disable,initiate,unlock,call,apply,download,bind,remove,create|}\""
 		]
 	},
-    "object": {
+	"filter action": {
+		"prefix": ["action"],
+		"body": [
+			"action == \"${1|info,modify,access,start,execute,login,detect,send,exclude,disable,initiate,unlock,call,apply,download,bind,remove,create|}\"",
+			"${2|and,or|} "
+		]
+	},
+
+    "on object": {
 		"prefix": ["$object"],
 		"body": [
-			"\\$object = \"${3|file_object,reg_object,account,process,ds_object,resource,command,configuration,malware,message,module,db_object,service,virtual_machine,socket|}\""
+			"\\$object = \"${1|file_object,reg_object,account,process,ds_object,resource,command,configuration,malware,message,module,db_object,service,virtual_machine,socket|}\""
 		]
 	},
-    "status": {
+	"filter object": {
+		"prefix": ["object"],
+		"body": [
+			"object == \"${1|file_object,reg_object,account,process,ds_object,resource,command,configuration,malware,message,module,db_object,service,virtual_machine,socket|}\"",
+			"${2|and,or|} "
+		]
+	},
+
+    "on status": {
 		"prefix": ["$status"],
 		"body": [
 			"\\$status = \"${1|success,failure|}\""
 		]
 	},
+	"filter status": {
+		"prefix": ["status"],
+		"body": [
+			"status == \"${1|success,failure|}\"",
+			"${2|and,or|} "
+		]
+	},
+	
 	"Cекция emit": {
 		"prefix": ["emit {"],
 		"body": [
@@ -617,6 +663,15 @@
 			""
 		]
 	},
+
+	"correlation_name": {
+		"prefix": ["correlation_name"],
+		"body": [
+			"correlation_name == \"${1:ruleName}\"",
+			"and "
+		]
+	},
+
 	"correlation_type": {
 		"prefix": ["$correlation_type"],
 		"body": [

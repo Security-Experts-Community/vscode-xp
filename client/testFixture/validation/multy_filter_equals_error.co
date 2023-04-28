@@ -1,0 +1,16 @@
+event EqualErrorEvent:
+    key:
+        event_src.host
+    filter {
+        filter::NotFromCorrelator()
+        and event_src.subsys = "auditd"
+    }
+
+event EqualErrorEvent:
+    key:
+        event_src.host
+    filter {
+        filter::NotFromCorrelator()
+        and event_src.subsys == "auditd"
+        and status = "failure"
+    }

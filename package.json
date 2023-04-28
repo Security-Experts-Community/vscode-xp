@@ -5,30 +5,22 @@
 	"author": "Dmitry Fedosov (@DmitryOffsec)",
 	"icon": "resources/logo.png",
 	"license": "MIT",
-	"version": "3.2.4",
+	"version": "3.2.7",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
 	},
 	"publisher": "Security-Experts-Community",
+	"activationEvents": [],
 	"categories": [
 		"Snippets",
 		"Formatters"
-	],
-	"activationEvents": [
-		"onLanguage:xp",
-		"onLanguage:en",
-		"onLanguage:co",
-		"onLanguage:test",
-		"onLanguage:agr",
-		"onLanguage:flt",
-		"onView:KnowledgebaseTree"
 	],
 	"keywords": [
 		"xdr edr soldr xp maxpatrol siem"
 	],
 	"engines": {
-		"vscode": "^1.74.0"
+		"vscode": "^1.75.0"
 	},
 	"main": "./client/out/extension",
 	"capabilities": {
@@ -613,6 +605,7 @@
 		"uuid": "^8.3.2",
 		"xml-serializer-ts": "^1.0.2",
 		"xml2js": "^0.5.0",
+		"xml2json-light": "^1.0.6",
 		"yaml": "^1.10.2",
 		"zlib": "^1.0.5"
 	}
