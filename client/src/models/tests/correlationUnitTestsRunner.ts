@@ -5,7 +5,6 @@ import * as path from 'path';
 import { EOL } from 'os';
 import { ProcessHelper } from '../../helpers/processHelper';
 import { TestHelper } from '../../helpers/testHelper';
-import { CorrelationUnitTest } from './correlationUnitTest';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { Configuration } from '../configuration';
 import { TestStatus } from './testStatus';
@@ -13,7 +12,6 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { BaseUnitTest } from './baseUnitTest';
 import { UnitTestRunner } from './unitTestsRunner';
 import { UnitTestOutputParser } from './unitTestOutputParser';
-import { diffJson } from 'diff';
 
 export class CorrelationUnitTestsRunner implements UnitTestRunner {
 
@@ -91,24 +89,25 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			if(output.includes(this.SUCCESS_TEST_SUBSTRING)) {
 				// Так как тест успешный, то можно сохранить отформатированный результат.
 				test.setStatus(TestStatus.Success);
+				test.setOutput(this._outputParser.parseSuccessOutput(output));
 
-				const pattern = /(\{.*\})(?:\s*(\{.*\}))*/m.exec(output).filter((s): s is string => !!s);
+				// const pattern = /(\{.*\})(?:\s*(\{.*\}))*/m.exec(output).filter((s): s is string => !!s);
 
-				if (pattern && pattern.length > 1) {
-					const results = pattern.slice(1);
-					// if (results.length == 1) {
-					// 	test.setOutput(results[0]);
-					// } else {						
-					// 	test.setOutput(output);
-					// }	
-					const result = results.map(json => {
-						const correlation = JSON.parse(json);
-						delete correlation._objects;
-						delete correlation._subjects;
-						return TestHelper.formatTestCodeAndEvents(JSON.stringify(correlation));
-					}).join('\n');
-					test.setOutput(result);
-				}
+				// if (pattern && pattern.length > 1) {
+				// 	const results = pattern.slice(1);
+				// 	// if (results.length == 1) {
+				// 	// 	test.setOutput(results[0]);
+				// 	// } else {						
+				// 	// 	test.setOutput(output);
+				// 	// }	
+				// 	const result = results.map(json => {
+				// 		const correlation = JSON.parse(json);
+				// 		delete correlation._objects;
+				// 		delete correlation._subjects;
+				// 		return TestHelper.formatTestCodeAndEvents(JSON.stringify(correlation));
+				// 	}).join('\n');
+				// 	test.setOutput(result);
+				// }
 
 				// if (results.length == 1) {
 				// 	test.setOutput(results[0]);
@@ -132,44 +131,46 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			}
 
 			test.setStatus(TestStatus.Failed);
+			const expectation = test.getTestExpectation();
+			test.setOutput(this._outputParser.parseFailedOutput(output, expectation));
 	
-			const pattern = /(?:Got these results:\s*)(\{.*\})(?:\s*(\{.*\}))*/m.exec(output).filter((s): s is string => !!s);
-			if (pattern && pattern.length > 1){
-				const results = pattern.slice(1);
-				const expectation = test.getTestExpectation();
-				const expected = /\{.*?\}/m.exec(expectation);
-				const multipleExpectatoin = !!/expect.*expect/sm.exec(expectation);
-				if (results.length == 1 && !multipleExpectatoin){
-					const result = JSON.parse(results[0]);
-					if (expected) {
-						const expectedJson = JSON.parse(expected[0]);
-						const expectedKeys = Object.keys(expectedJson);
-						const filteredResult = Object.keys(result)
-							.filter(key => expectedKeys.includes(key) && !!result[key])
-							.reduce((obj, key) => {
-								obj[key] = result[key];
-								return obj;
-						}, {});
+			// const pattern = /(?:Got these results:\s*)(\{.*\})(?:\s*(\{.*\}))*/m.exec(output).filter((s): s is string => !!s);
+			// if (pattern && pattern.length > 1){
+			// 	const results = pattern.slice(1);
+			// 	const expectation = test.getTestExpectation();
+			// 	const expected = /\{.*?\}/m.exec(expectation);
+			// 	const multipleExpectatoin = !!/expect.*expect/sm.exec(expectation);
+			// 	if (results.length == 1 && !multipleExpectatoin){
+			// 		const result = JSON.parse(results[0]);
+			// 		if (expected) {
+			// 			const expectedJson = JSON.parse(expected[0]);
+			// 			const expectedKeys = Object.keys(expectedJson);
+			// 			const filteredResult = Object.keys(result)
+			// 				.filter(key => expectedKeys.includes(key) && !!result[key])
+			// 				.reduce((obj, key) => {
+			// 					obj[key] = result[key];
+			// 					return obj;
+			// 			}, {});
 
-						const difference = diffJson(filteredResult, expectedJson);
+			// 			const difference = diffJson(filteredResult, expectedJson);
 			
-						let result_diff = "";
-						for (const part of difference) {
-							const sign = part.added ? '+' :	(part.removed ? '-' : ' ');
-							const lines = part.value.split(/\r?\n/).filter((line)=>{return line != '';});
-							for (const line of lines){
-								result_diff += sign + line + '\n';
-							}
-						}
-						test.setOutput(result_diff);
-					} else {
+			// 			let result_diff = "";
+			// 			for (const part of difference) {
+			// 				const sign = part.added ? '+' :	(part.removed ? '-' : ' ');
+			// 				const lines = part.value.split(/\r?\n/).filter((line)=>{return line != '';});
+			// 				for (const line of lines){
+			// 					result_diff += sign + line + '\n';
+			// 				}
+			// 			}
+			// 			test.setOutput(result_diff);
+			// 		} else {
 
-						test.setOutput(results[0]);
-					}
-				} else {
-					test.setOutput(output);
-				}	
-			}					
+			// 			test.setOutput(results[0]);
+			// 		}
+			// 	} else {
+			// 		test.setOutput(output);
+			// 	}	
+			// }					
 			
 
 			// Парсим ошибки из вывода.

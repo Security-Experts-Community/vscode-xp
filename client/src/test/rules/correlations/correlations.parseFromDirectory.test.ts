@@ -110,4 +110,21 @@ expect not {"correlation_name": "Active_Directory_Snapshot"}`;
 		);
 	});
 
+	test('Парсинг корреляции с модульным тестом без коррелируемых событий', async() => {
+		const rulePath = TestFixture.getCorrelationPath("unit_test_without_input_events");
+		const correlation = await Correlation.parseFromDirectory(rulePath);
+		const unitTests = correlation.getUnitTests();
+		assert.strictEqual(unitTests.length, 1);
+		const unitTest = unitTests[0];
+
+		assert.strictEqual(unitTest.getTestInputData(), unitTest.getDefaultInputData());
+
+		const expectedCondition = `# Comment 1
+# Comment 2
+# Comment 3
+table_list default
+table_list {"tl_name":[{"rule":"unit_test_without_input_events","specific_value":"pushkin|172.16.222.132"}]}
+expect 1 {"correlation_name":"unit_test_without_input_events","subject.account.name":"username"}`;
+		assert.strictEqual(unitTest.getTestExpectation(), expectedCondition);
+	});
 });

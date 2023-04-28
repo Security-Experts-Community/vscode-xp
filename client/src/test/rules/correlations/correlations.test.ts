@@ -2,13 +2,10 @@ import * as vscode from 'vscode';
 import * as assert from 'assert';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as fsExtra from 'fs-extra';
 
 import { Correlation } from '../../../models/content/correlation';
 import { TestFixture } from '../../helper';
 import { ContentTreeProvider } from '../../../views/contentTree/contentTreeProvider';
-import { CorrelationUnitTest } from '../../../models/tests/correlationUnitTest';
-import { XpException } from '../../../models/xpException';
 import { MetaInfo } from '../../../models/metaInfo/metaInfo';
 
 suite('Корреляции', () => {
@@ -128,7 +125,7 @@ suite('Корреляции', () => {
 		const modularTests = readedRule.getUnitTests();
 		
 		assert.ok(modularTests.length == 1);
-		assert.strictEqual(modularTests[0].getTestExpectation(), 'expect 1 {"code": "test code"}');
+		assert.strictEqual(modularTests[0].getTestExpectation(), 'expect 1 {"code":"test code"}');
 		assert.strictEqual(modularTests[0].getTestInputData(), '# Здесь укажи какие нормализованные события ты подаёшь на вход корреляци\n');
 		assert.strictEqual(modularTests[0].getNumber(), 1);
 	});
@@ -142,12 +139,13 @@ suite('Корреляции', () => {
 		rule.addUnitTests([modTest]);
 		await rule.save();
 		const readedRule = await Correlation.parseFromDirectory(rule.getDirectoryPath());
-		const modularTests = readedRule.getUnitTests();
+		const unitTests = readedRule.getUnitTests();
 		
-		assert.ok(modularTests.length == 1);
-		assert.strictEqual(modularTests[0].getTestExpectation(), `# Тут будет твой тест. В секции expect укажи сколько и каких корреляционных событий ты ожидаешь\nexpect 1 {}\n`);	
-		assert.strictEqual(modularTests[0].getTestInputData(), '# Здесь укажи какие нормализованные события ты подаёшь на вход корреляци\n');
-		assert.strictEqual(modularTests[0].getNumber(), 1);
+		assert.ok(unitTests.length == 1);
+		const unitTest = unitTests[0];
+		assert.strictEqual(unitTest.getTestExpectation(), "test code\n\n"+unitTest.getDefaultInputData());	
+		assert.strictEqual(unitTest.getTestInputData(), "");
+		assert.strictEqual(unitTest.getNumber(), 1);
 	});
 
 	test('Неудачная попытка создать тест для правила без пути', () => {

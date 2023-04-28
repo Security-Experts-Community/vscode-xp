@@ -4,13 +4,12 @@ import * as path from "path";
 import { TestStatus } from './testStatus';
 import { Configuration } from '../configuration';
 import { RuleBaseItem } from '../content/ruleBaseItem';
-import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 
 export abstract class BaseUnitTest extends vscode.TreeItem {
+	public abstract getDefaultInputData(): string;
+	public abstract getDefaultExpectation(): string;
 
 	public abstract save() : Promise<void>;
-	// public abstract show() : Promise<void>;
-	// public abstract close(): Promise<void>;
 
 	constructor(number: number) {
 		super(number.toString());

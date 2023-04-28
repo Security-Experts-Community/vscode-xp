@@ -25,13 +25,13 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	}
 
 	public abstract convertUnitTestFromObject(object: any) : BaseUnitTest;
-
 	public abstract createNewUnitTest(): BaseUnitTest;
-
+	public abstract clearUnitTests() : void;
 	public abstract getUnitTestRunner(): UnitTestRunner;
-		
 	public abstract getUnitTestOutputParser(): UnitTestOutputParser;
 	
+	protected abstract getLocalizationPrefix() : string;
+
 	public addNewUnitTest(): void{
 		const newUnitTest = this.createNewUnitTest();
 		this.addUnitTests([newUnitTest]);
@@ -48,8 +48,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 
 		return path.join(parentDirPath, ruleName);
 	}
-
-	//public async rename(newName: string) : Promise<void> {}
 
 	/**
 	 * Возвращает путь к пакету, в котором расположеню правило.
@@ -104,7 +102,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		return path.join(this.getDirectoryPath(), 'tests');
 	}
 
-	public abstract clearUnitTests() : void;
 
 
 	public async saveUnitTests(): Promise<void> {	
@@ -124,31 +121,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			await mt.save();
 		});
 	}
-
-	// public async saveModularTests(ruleFullPath?: string) : Promise<void> {
-
-	// 	if(!ruleFullPath) {
-	// 		ruleFullPath = this.getDirectoryPath();
-	// 	}
-
-	// 	// Создаем или очищаем директорию с тестами.
-	// 	const testDirPath = path.join(ruleFullPath, "tests");
-	// 	if(!fs.existsSync(testDirPath)) {
-	// 		await fs.promises.mkdir(testDirPath);
-	// 	} else {
-	// 		// Удаляем все модульные тесты, оставляя интеграционные.
-	// 		(await fs.promises.readdir(testDirPath))
-	// 			.map(f => path.join(testDirPath, f))
-	// 			.filter(f => f.endsWith(".sc"))
-	// 			.forEach(f => fs.unlinkSync(f));
-	// 	}
-
-	// 	// Сохраняем тесты и перезаписываем.
-	// 	this._unitTests.forEach( async (mt, index) => {
-	// 		mt.setNumber(index + 1);
-	// 		await mt.save();
-	// 	});
-	// }
 
 	/**
 	 * Добавляет модульные тесты к правилу.
@@ -353,7 +325,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		}
 	}
 
-	
 	private alreadyHaveSuchALocalization(localization : Localization) : boolean{
 		const localizations = this.getLocalizations();
 		for(const loc of localizations) {
@@ -363,10 +334,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		}
 		return false;
 	}
-
-	// protected checkLocalizationConsistency() : boolean {
-	// 	return this._checkLocalizationConsistency(this.getLocalizations(), this.getMetaInfo());
-	// }
 
 	protected checkLocalizationConsistency(localizations: Localization[], metaInfo: MetaInfo) : boolean {
 		const metaLocIds = metaInfo.getEventDescriptions().map((ed) => {
@@ -409,72 +376,13 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			this._localizations.push(localization);
 		}
 
-		// const existingEventDescriptions = metaInfo.getEventDescriptions();
-		// for (const eventDesc of existingEventDescriptions){
-		// 	if (eventDesc.getCriteria() === localization.getCriteria()){
-		// 		if (eventDesc.getLocalizationId() !== localization.getLocalizationId()) {
-		// 			throw new XpException("Для одного критерия заданы разные LocalizationId.");
-		// 		}
-
-		// 		// Если всё совпало, то не добавляем
-		// 		return;
-		// 	}
-		// }
-		
 		// Добавляем в метаинформацию связку localizationId и criteria
-		
 		const eventDesc = new MetaInfoEventDescription();
 		eventDesc.setCriteria(localization.getCriteria());
 		eventDesc.setLocalizationId(locId);
 		metaInfo.addEventDescriptions([eventDesc]);
 	}
 	
-
-	// /**
-	//  * Обновляет (удаляет, добавляет) локализации и нужную метаинформации.
-	//  * @param localizations новые локализации
-	//  */
-	// public updateLocalizations(localizations : Localization[]) {
-
-	// 	// TODO: Обсудить такое решение
-	// 	// Очищаем все метаданные о локализациях.
-	// 	const metaInfo = this.getMetaInfo();
-	// 	// metaInfo.clearEventDescriptions();
-
-	// 	const updatedLocalizations : Localization[] = [];
-	// 	for (const localization of localizations) {
-
-	// 		let locId = localization.getLocalizationId();
-
-	// 		// Локализация без индетификатора локализации - новая локализация. 
-	// 		if(locId) {
-	// 			// Если есть LocalizationId, тогда добавляем как есть.
-	// 			updatedLocalizations.push(localization);
-	// 		} else {
-	// 			locId = this.generateLocalizationId(updatedLocalizations);
-
-	// 			// Добавляем связку в виде LocalizationId
-	// 			localization.setLocalizationId(locId);
-	
-	// 			// Дублируем описание в локализацию и добавляем её в новый список.
-	// 			localization.setRuDescription(this.getRuDescription());
-	// 			localization.setEnDescription(this.getEnDescription());
-	// 			updatedLocalizations.push(localization);
-	// 		}
-
-	// 		// TODO: Обсудить такое решение
-	// 		// Добавляем в метаинформацию связку localizationId и criteria
-	// 		const eventDesc = new MetaInfoEventDescription();
-	// 		eventDesc.setCriteria(localization.getCriteria());
-	// 		eventDesc.setLocalizationId(locId);
-
-	// 		metaInfo.getEventDescriptions().push(eventDesc);
-	// 	}
-
-	// 	this._localizations = updatedLocalizations;
-	// }
-
-	protected abstract getLocalizationPrefix() : string;
 
 	/**
 	 * Генерирует свободный идентификатор локализации
@@ -537,8 +445,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	};
 
 	protected _localizations: Localization [] = [];
-
-	// Тесты
 	protected _unitTests: BaseUnitTest [] = [];
 	protected _integrationTests : IntegrationTest [] = [];
 	
@@ -547,5 +453,4 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 
 	protected _ruleCode : string;
 	contextValue = "BaseRule";
-	//private _fileName: string;
 }

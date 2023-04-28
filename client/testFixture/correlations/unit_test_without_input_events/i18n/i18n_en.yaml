@@ -1,0 +1,4 @@
+Description: Snapshot of Active Directory
+EventDescriptions:
+- LocalizationId: unit_test_without_input_events
+  EventDescription: User {subject.account.name} created an Active Directory snapshot with AdExplorer.exe from host {src.ip}

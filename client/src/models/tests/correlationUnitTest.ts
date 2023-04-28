@@ -1,6 +1,5 @@
 import * as path from "path";
 import * as fs from 'fs';
-import * as vscode from 'vscode';
 
 import { UnitTestContentEditorViewProvider } from '../../views/unitTestEditor/unitTestEditorViewProvider';
 import { BaseUnitTest } from './baseUnitTest';
@@ -13,18 +12,14 @@ import { EnrichmentUnitTest } from './enrichmentUnitTest';
 import { TestHelper } from '../../helpers/testHelper';
 
 export class CorrelationUnitTest extends BaseUnitTest {
-	// public async show(): Promise<void> {
-	// 	const testUri = vscode.Uri.file(this.getTestExpectationPath());
-	// 	const testDocument = await vscode.workspace.openTextDocument(testUri);
-	// 	await vscode.window.showTextDocument(testDocument, vscode.ViewColumn.Two);
-	// }
 
-	// public async close(): Promise<void> {
-	// 	// const testUri = vscode.Uri.file(this.getTestExpectationPath());
-	// 	// const testDocument = await vscode.workspace.openTextDocument(testUri);
-	// 	// await vscode.window.showTextDocument(testDocument);
-	// 	return;
-	// }
+	public getDefaultExpectation(): string {
+		return `# Тут будет твой тест. В секции expect укажи сколько и каких корреляционных событий ты ожидаешь\nexpect 1 {"correlation_name":"${this._rule.getName()}"}\n`;
+	}
+
+	public getDefaultInputData(): string {
+		return `# Здесь укажи какие нормализованные события ты подаёшь на вход корреляци\n`;
+	}
 
 	public static containsInputData(fileContent) : boolean {
 		const inputData = /(?:^\{.*?\}$)/gms.exec(fileContent);
@@ -45,15 +40,12 @@ export class CorrelationUnitTest extends BaseUnitTest {
 	public static readFromFile(filePath: string, rule: RuleBaseItem): CorrelationUnitTest {
 		if (!fs.existsSync(filePath)){
 			throw new XpException(`Невозможно создать тест. Файла ${filePath} нет на диске`);
-		}
-		
-		let testFileContent = fs.readFileSync(filePath, "utf8");	
-		const unitTest = rule.createNewUnitTest();
-
+		}		
+		let testFileContent = fs.readFileSync(filePath, "utf8");
 		testFileContent = TestHelper.minifyTestCodeAndEvents(testFileContent);
-		
+
+		const unitTest = rule.createNewUnitTest();
 		if (this.containsInputData(testFileContent)) {
-			// const pattern = /(?:^#.*$|\r?\n)*^(?:\{.*?\}$)/m;
 			const pattern = /(?:^#.*$|\r?\n)*^(?:\{.*?\}$)(?:\s*(?:^\{.*?\}$))*/m;
 			const inputData = pattern.exec(testFileContent);
 			let data = inputData[0].replace(/\r/gms, '');
@@ -71,27 +63,12 @@ export class CorrelationUnitTest extends BaseUnitTest {
 			unitTest.setTestExpectation(data.trim());
 		}
 
-		if (!unitTest.getTestExpectation() && !unitTest.getTestInputData())
-		{
-			unitTest.setTestExpectation(testFileContent);
-		}
-
-
-		//const inputData = /^(?:\{.*?\})$/gms.exec(testFileContent);
-		// TODO: Fix for multievent tests
-		// if (!inputData || inputData.length != 1){
-		// 	return;
-		// }
-		
-		
-		// // TODO: Fix for tests with several expectations
-		// if (!expectation || expectation.length != 1){
-		// 	return;
-		// }
-
-		// // const unitTest = rule.createNewUnitTest();					
-		// unitTest.setTestInputData(inputData[0]);
-		
+		// TODO: возможно, в этом случае нужно предложить пользователю дефолтное заполнение
+        if (unitTest.getTestExpectation() === unitTest.getDefaultExpectation()
+         && unitTest.getTestInputData() === unitTest.getDefaultInputData()) {
+            unitTest.setTestExpectation(testFileContent);
+            unitTest.setTestInputData("");
+        }	
 
 		unitTest.command = { 
 			command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,  
@@ -121,51 +98,6 @@ export class CorrelationUnitTest extends BaseUnitTest {
 		return tests;
 	}
 
-	// public static parseFromRuleDirectory(rule: Correlation) : CorrelationUnitTest [] {
-	// 	const ruleDirectoryFullPath = rule.getDirectoryPath();
-	// 	const testsFullPath = path.join(ruleDirectoryFullPath, "tests");
-	// 	if (!fs.existsSync(testsFullPath)){
-	// 		return [];
-	// 	}
-
-	// 	const tests = fs.readdirSync(testsFullPath)
-	// 		.map(f => path.join(testsFullPath, f))
-	// 		.filter(f => f.endsWith(".sc"))
-	// 		.filter(f => fs.existsSync(f))
-	// 		.map((f, _) => {
-	// 			const expectedNormalizedEvent = fs.readFileSync(f, "utf8");
-	// 			const regex = /test_(\d+)\.sc/.exec(f);
-	// 			if (regex && regex.length > 0) {					
-					
-	// 				const inputData = /^(?:\{.*?\})$/gms.exec(expectedNormalizedEvent);
-	// 				// TODO: Fix for multievent tests
-	// 				if (!inputData || inputData.length != 1){
-	// 					return;
-	// 				}
-					
-	// 				const expectation = /(?:^expect\s+(?:\d+|not)\s+\{.*?\})$/gms.exec(expectedNormalizedEvent);
-	// 				// TODO: Fix for tests with several expectations
-	// 				if (!expectation || expectation.length != 1){
-	// 					return;
-	// 				}
-
-	// 				const unitTest = rule.createNewUnitTest();					
-	// 				unitTest.setTestInputData(inputData[0]);
-	// 				unitTest.setTestExpectation(expectation[0]);
-
-	// 				unitTest.command = { 
-	// 					command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,  
-	// 					title: "ModularTestContentEditorViewProvider.onTestSelectionChangeCommand", 
-	// 					arguments: [unitTest] 
-	// 				};
-
-	// 				return unitTest;
-	// 			}
-	// 		});
-
-	// 	return tests;
-	// }
-
 	public static create(rule: RuleBaseItem) : CorrelationUnitTest {
 		const baseDirFullPath = rule.getDirectoryPath();
 		const testsFullPath = path.join(baseDirFullPath, "tests");
@@ -176,9 +108,9 @@ export class CorrelationUnitTest extends BaseUnitTest {
 				continue;
 
 			const test = new CorrelationUnitTest();
-			test.setTestExpectation(`# Тут будет твой тест. В секции expect укажи сколько и каких корреляционных событий ты ожидаешь\nexpect 1 {}\n`);
-			test.setTestInputData(`# Здесь укажи какие нормализованные события ты подаёшь на вход корреляци\n`);
 			test.setRule(rule);
+			test.setTestExpectation(test.getDefaultExpectation());
+			test.setTestInputData(test.getDefaultInputData());			
 			test.command = { 
 				command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,  
 				title: "Open File", 

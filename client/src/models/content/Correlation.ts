@@ -59,61 +59,56 @@ export class Correlation extends RuleBaseItem {
 	}
 
 	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Correlation> {
-		// try {
-			if (!fs.existsSync(directoryPath)) {
-				throw new Error(`Директория '${directoryPath}' не существует.`);
-			}
+		if (!fs.existsSync(directoryPath)) {
+			throw new Error(`Директория '${directoryPath}' не существует.`);
+		}
 
-			// Получаем имя корреляции и родительский путь.
-			const correlationName = path.basename(directoryPath);
-			const parentDirectoryPath = path.dirname(directoryPath);
-			const correlation = new Correlation(correlationName, parentDirectoryPath);
+		// Получаем имя корреляции и родительский путь.
+		const correlationName = path.basename(directoryPath);
+		const parentDirectoryPath = path.dirname(directoryPath);
+		const correlation = new Correlation(correlationName, parentDirectoryPath);
 
-			// Если явно указано имя файла, то сохраняем его.
-			// Иначе используем заданное в конструкторе
-			if (fileName) {
-				correlation.setFileName(fileName);
-			}
+		// Если явно указано имя файла, то сохраняем его.
+		// Иначе используем заданное в конструкторе
+		if (fileName) {
+			correlation.setFileName(fileName);
+		}
 
-			// Парсим основные метаданные.
-			const metaInfo = MetaInfo.fromFile(directoryPath);
-			correlation.setMetaInfo(metaInfo);
+		// Парсим основные метаданные.
+		const metaInfo = MetaInfo.fromFile(directoryPath);
+		correlation.setMetaInfo(metaInfo);
 
-			const ruleFilePath = correlation.getRuleFilePath();
-			const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
-			correlation.setRuleCode(ruleCode);
+		const ruleFilePath = correlation.getRuleFilePath();
+		const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
+		correlation.setRuleCode(ruleCode);
 
-			// Парсим описания на разных языках.
-			const ruDescription = await Localization.parseRuDescription(directoryPath);
-			correlation.setRuDescription(ruDescription);
+		// Парсим описания на разных языках.
+		const ruDescription = await Localization.parseRuDescription(directoryPath);
+		correlation.setRuDescription(ruDescription);
 
-			const enDescription = await Localization.parseEnDescription(directoryPath);
-			correlation.setEnDescription(enDescription);
+		const enDescription = await Localization.parseEnDescription(directoryPath);
+		correlation.setEnDescription(enDescription);
 
-			const localizations = Localization.parseFromDirectory(directoryPath);
-			if(!correlation.checkLocalizationConsistency(localizations, correlation.getMetaInfo())) {
-				throw new XpException("Наборы идентификаторов локализаций в файле метаинформации и файлах локализаций не совпадают.");
-			}
-			correlation.setLocalizations(localizations);
-			
-			const modularTests = CorrelationUnitTest.parseFromRuleDirectory(correlation);
-			correlation.addUnitTests(modularTests);
+		const localizations = Localization.parseFromDirectory(directoryPath);
+		if(!correlation.checkLocalizationConsistency(localizations, correlation.getMetaInfo())) {
+			throw new XpException("Наборы идентификаторов локализаций в файле метаинформации и файлах локализаций не совпадают.");
+		}
+		correlation.setLocalizations(localizations);
+		
+		const modularTests = CorrelationUnitTest.parseFromRuleDirectory(correlation);
+		correlation.addUnitTests(modularTests);
 
-			const integrationalTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
-			correlation.addIntegrationTests(integrationalTests);
+		const integrationalTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
+		correlation.addIntegrationTests(integrationalTests);
 
-			// Добавляем команду, которая пробрасываем параметром саму рубрику.
-			correlation.setCommand({
-				command: ContentTreeProvider.onRuleClickCommand,
-				title: "Open File",
-				arguments: [correlation]
-			});
+		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		correlation.setCommand({
+			command: ContentTreeProvider.onRuleClickCommand,
+			title: "Open File",
+			arguments: [correlation]
+		});
 
-			return correlation;
-		// }
-		// catch(error){
-		// 	throw new XpException("Ошибка парсинга директории с корреляцией", error);
-		// }
+		return correlation;
 	}
 
 	public async duplicate(newName: string, newParentPath?: string) : Promise<Correlation> {

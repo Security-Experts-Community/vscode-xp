@@ -5,20 +5,15 @@ import { UnitTestContentEditorViewProvider } from '../../views/unitTestEditor/un
 import { BaseUnitTest } from './baseUnitTest';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Normalization } from '../content/normalization';
-import { Configuration } from '../configuration';
 
 export class NormalizationUnitTest extends BaseUnitTest {
-	// public async show(): Promise<void> {		
-	// 	const config = Configuration.get();
-	// 	const unitTestEditorViewProvider = config.getUnitTestEditorViewProvider();
-	// 	unitTestEditorViewProvider.showEditor(this);
-	// }
+	public getDefaultExpectation(): string {
+		return `# Запиши сюда ожидаемое нормализованное событие\n`;
+	}
 
-	// public async close(): Promise<void> {		
-	// 	const config = Configuration.get();
-	// 	const unitTestEditorViewProvider = config.getUnitTestEditorViewProvider();
-	// 	unitTestEditorViewProvider.closeEditor();
-	// }
+	public getDefaultInputData(): string {
+		return `# Здесь укажи какие сырые события ты подаёшь на вход нормализации\n`;
+	}
 
 	public static parseFromRuleDirectory(rule: Normalization) : NormalizationUnitTest [] {
 		
@@ -78,7 +73,8 @@ export class NormalizationUnitTest extends BaseUnitTest {
 
 			const test = new NormalizationUnitTest(testNumber);
 			test.setRule(rule);
-			test.setTestExpectation(`# Запиши сюда ожидаемое нормализованное событие.`);
+			test.setTestExpectation(test.getDefaultExpectation());
+			test.setTestInputData(test.getDefaultInputData());
 
 			test.command = { 
 				command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,  

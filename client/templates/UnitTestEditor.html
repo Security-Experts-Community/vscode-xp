@@ -106,12 +106,9 @@ p code {
 	<body>
 		<!-- Common Panel -->
 		<div id="header">
-		{{#UnitTest}}	
-			<!-- <div id="navigation"> -->
+		{{#UnitTest}}
 			<input id="run_test" class="run {{TestStatus}}" name="run-test" type="button" value="&#9654;   Запустить тест  ">	
 		{{/UnitTest}}
-				<!-- <button class="tablinks {{testStatus}}" name="run-test">&#9654;   Запустить тест</button> -->
-			<!-- </div> -->
 			<input id="save_test" class="save" name="save-test" type="button" value="Сохранить">
 	    </div>
 
@@ -122,6 +119,7 @@ p code {
 			<!-- Raw Events -->
 			<div class="test_block">			
 				<div class="block_header">
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
 					<label for="raw-event" class="label">Сырое событие:</label>
 				</div>
 				
@@ -139,13 +137,12 @@ p code {
 				<!-- Test Conditions -->
 				<div class="test_block">
 					<div class="block_header">
+						<div class="scrolldown" onclick="toggleCode(this)">ᐯ</div>
 						<label for="expect" class="label">Ожидаемый результат:</label>
 					</div>
 					<div class="text block">
-						<!-- Если кода текста нет, выводим дефолтное заполнение 
-						<textarea rows="20" name="expect">{{TestExpectation}}</textarea>-->
 						<div id="expectation">
-							<textarea name="expect" placeholder="Enter HTML Source Code" id="editing" spellcheck="false" oninput="update(this.value); sync_scroll(this);" onscroll="sync_scroll(this);" onkeydown="check_tab(this, event);">{{TestExpectation}}</textarea>
+							<textarea name="expect" id="editing" spellcheck="false" oninput="update(this.value); sync_scroll(this);" onscroll="sync_scroll(this);" onkeydown="check_tab(this, event);">{{TestExpectation}}</textarea>
 							<pre id="highlighting" aria-hidden="true">
 								<code class="language-json" id="highlighting-content">{{TestExpectation}}</code>
 							</pre>
@@ -157,6 +154,7 @@ p code {
 				<!-- Test Conditions -->
 				<div class="result_block">
 					<div class="block_header">
+						<div class="scrolldown" onclick="toggleCode(this)">ᐯ</div>
 						<label for="result" class="label">Полученный результат:</label>
 					</div>
 					<div class="block">

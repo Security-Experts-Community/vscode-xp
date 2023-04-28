@@ -48,6 +48,31 @@ function wrap(check) {
 	}
 }
 
+function toggleTextarea(arrow) {
+	labels = arrow.parentNode.parentNode.children[1];
+	txt = arrow.parentNode.parentNode.children[2];
+	if (txt.hidden == true) {
+		txt.hidden = false;
+		labels.hidden = false;
+		arrow.innerHTML = "ᐯ";
+	} else {
+		txt.hidden = true;
+		labels.hidden = true;
+		arrow.innerHTML = "❯";
+	}
+}
+
+function toggleCode(arrow) {
+	txt = arrow.parentNode.parentNode.children[1];
+	if (txt.style.display == 'none') {
+		txt.style.display = '';
+		arrow.innerHTML = "ᐯ";
+	} else {
+		txt.style.display = 'none';
+		arrow.innerHTML = "❯";
+	}
+}
+
 var vscode = acquireVsCodeApi();
 
 // Получение команд от расширения.
@@ -83,6 +108,10 @@ window.addEventListener(
 				break;
 			}
 		}
+});
+
+$('textarea').on('focusin', function() {
+	$(this).height(this.scrollHeight);
 });
 
 $(document).ready(function() {

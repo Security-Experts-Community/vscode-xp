@@ -41,9 +41,6 @@ suite('Модульный тест корреляции', () => {
 	test('Проверка парсинга модульного теста', async() => {
 		
 		const rulePath = TestFixture.getCorrelationPath("with_unit_test");
-		// const srcPath = path.join(rulePath, "tests", "test_1.bak");
-		// const dstPath = path.join(rulePath, "tests", "test_1.sc");
-		// fs.copyFile(srcPath, dstPath, (error) => {console.log(error.message);});
 		const rule = await Correlation.parseFromDirectory(rulePath);
 		
 		const unitTests = rule.getUnitTests();
@@ -58,7 +55,7 @@ suite('Модульный тест корреляции', () => {
 
 		const expectedCondition = `# Comment 1\n# Comment 2\n# Comment 3
 table_list default
-table_list {"tl_name":[{"rule":"modified_test","specific_value": "pushkin|172.16.222.132"}]}
+table_list {"tl_name":[{"rule":"with_unit_test","specific_value":"pushkin|172.16.222.132"}]}
 expect 1 {"correlation_name":"with_unit_test","subject.account.name":"username"}`;
 		const actualCondition = unitTest.getTestExpectation();
 		assert.strictEqual(actualCondition, expectedCondition);
@@ -82,8 +79,8 @@ expect 1 {"correlation_name":"with_unit_test","subject.account.name":"username"}
 
 		const expectedTestContent = `# Comment 1\n# Comment 2\n# Comment 3
 table_list default
-table_list {"tl_name":[{"rule":"modified_test","specific_value": "pushkin|172.16.222.132"}]}
-expect 1 {"correlation_name":"with_unit_test","subject.account.name":"username"}
+table_list {"tl_name":[{"rule":"modified_test","specific_value":"pushkin|172.16.222.132"}]}
+expect 1 {"correlation_name":"modified_test","subject.account.name":"username"}
 
 # Comment input 1\n# Comment input2\n# Тут будет твой тест.
 {"msgid":"4624","normalized":true,"object":"system","object.property":"session","object.value":"0","recv_ipv4":"127.0.0.1"}`;
