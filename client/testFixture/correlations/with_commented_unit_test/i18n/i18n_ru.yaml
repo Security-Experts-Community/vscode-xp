@@ -1,0 +1,4 @@
+Description: Создание снепшота структуры Active Directory
+EventDescriptions:
+- LocalizationId: with_commented_unit_test
+  EventDescription: Пользователь {subject.account.name} создал снепшот структуры Active Directory с помощью AdExplorer.exe с узла {src.ip}

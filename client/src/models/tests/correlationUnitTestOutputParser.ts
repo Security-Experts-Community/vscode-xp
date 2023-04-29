@@ -23,7 +23,8 @@ export class CorrelationUnitTestOutputParser implements UnitTestOutputParser {
 						const expectedJson = JSON.parse(expected[0]);
 						const expectedKeys = Object.keys(expectedJson);
 						const filteredResult = Object.keys(result)
-							.filter(key => expectedKeys.includes(key) && !!result[key])
+							// .filter(key => expectedKeys.includes(key) && !!result[key])
+							.filter(key => expectedKeys.includes(key))
 							.reduce((obj, key) => {
 								obj[key] = result[key];
 								return obj;

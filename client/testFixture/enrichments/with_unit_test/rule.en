@@ -1,0 +1,16 @@
+event Event:
+    filter {
+        filter::NotFromCorrelator()
+        
+    }
+
+enrichment EmptyEnrichment
+    
+    enrich Event:
+        enrich_fields {
+
+        }
+
+    insert_into _ if $_ == true {
+        column::_ = _
+    }

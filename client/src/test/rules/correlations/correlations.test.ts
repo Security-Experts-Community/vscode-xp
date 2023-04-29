@@ -126,7 +126,7 @@ suite('Корреляции', () => {
 		
 		assert.ok(modularTests.length == 1);
 		assert.strictEqual(modularTests[0].getTestExpectation(), 'expect 1 {"code":"test code"}');
-		assert.strictEqual(modularTests[0].getTestInputData(), '# Здесь укажи какие нормализованные события ты подаёшь на вход корреляци\n');
+		assert.strictEqual(modularTests[0].getTestInputData(), modularTests[0].getDefaultInputData());
 		assert.strictEqual(modularTests[0].getNumber(), 1);
 	});
 
@@ -143,8 +143,8 @@ suite('Корреляции', () => {
 		
 		assert.ok(unitTests.length == 1);
 		const unitTest = unitTests[0];
-		assert.strictEqual(unitTest.getTestExpectation(), "test code\n\n"+unitTest.getDefaultInputData());	
-		assert.strictEqual(unitTest.getTestInputData(), "");
+		assert.strictEqual(unitTest.getTestExpectation(), unitTest.getDefaultExpectation());	
+		assert.strictEqual(unitTest.getTestInputData(), unitTest.getDefaultInputData());
 		assert.strictEqual(unitTest.getNumber(), 1);
 	});
 
