@@ -278,6 +278,7 @@ export class Correlation extends RuleBaseItem {
 			integrationTest => {
 				const testCode = integrationTest.getTestCode();
 				const newTestCode = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testCode);
+				integrationTest.setTestCode(newTestCode);
 			}
 		);
 		this.getUnitTests().forEach(

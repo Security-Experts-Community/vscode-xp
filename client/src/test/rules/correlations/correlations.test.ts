@@ -96,7 +96,7 @@ suite('Корреляции', () => {
 		const testCode1 = intTests1.getTestCode();
 		assert.ok(!testCode1.includes(oldRuleName));
 
-		const intTests2 = intTests[0];
+		const intTests2 = intTests[1];
 		const testCode2 = intTests2.getTestCode();
 		assert.ok(!testCode2.includes(oldRuleName));
 
