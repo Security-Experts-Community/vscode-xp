@@ -14,6 +14,44 @@ export class SiemjManager {
 
 	constructor(private _config : Configuration) {}
 
+	public async buildSchema(rule: RuleBaseItem) : Promise<void> {
+
+		await SiemjConfigHelper.clearArtifacts(this._config);
+
+		const contentRootPath = rule.getContentRootPath(this._config);
+		const contentRootFolder = path.basename(contentRootPath);
+		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
+
+		if(!fs.existsSync(outputFolder)) {
+			fs.mkdirSync(outputFolder);
+		}
+		
+		// Получаем нужный конфиг для нормализации событий.
+		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
+		configBuilder.addTablesSchemaBuilding();
+		const siemjConfContent = configBuilder.build();
+
+		// Централизованно сохраняем конфигурационный файл для siemj.
+		const siemjConfigPath = this._config.getTmpSiemjConfigPath(contentRootFolder);
+		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
+		const siemjExePath = this._config.getSiemjPath();
+
+		this._config.getOutputChannel().clear();
+
+		// Типовая команда выглядит так:
+		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
+		await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+			siemjExePath,
+			["-c", siemjConfigPath, "main"],
+			this._config.getOutputChannel()
+		);
+
+		const schemaFilePath = this._config.getSchemaFullPath(contentRootFolder);
+		if(!fs.existsSync(schemaFilePath)) {
+			throw new XpException("Ошибка компиляции схемы БД. Результирующий файл не создан.");
+		}
+	}
+
 	public async normalize(rule: RuleBaseItem, rawEventsFilePath: string) : Promise<string> {
 
 		if(!fs.existsSync(rawEventsFilePath)) {

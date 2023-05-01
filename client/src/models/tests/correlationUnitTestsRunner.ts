@@ -91,36 +91,6 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 				test.setStatus(TestStatus.Success);
 				test.setOutput(this._outputParser.parseSuccessOutput(output));
 
-				// const pattern = /(\{.*\})(?:\s*(\{.*\}))*/m.exec(output).filter((s): s is string => !!s);
-
-				// if (pattern && pattern.length > 1) {
-				// 	const results = pattern.slice(1);
-				// 	// if (results.length == 1) {
-				// 	// 	test.setOutput(results[0]);
-				// 	// } else {						
-				// 	// 	test.setOutput(output);
-				// 	// }	
-				// 	const result = results.map(json => {
-				// 		const correlation = JSON.parse(json);
-				// 		delete correlation._objects;
-				// 		delete correlation._subjects;
-				// 		return TestHelper.formatTestCodeAndEvents(JSON.stringify(correlation));
-				// 	}).join('\n');
-				// 	test.setOutput(result);
-				// }
-
-				// if (results.length == 1) {
-				// 	test.setOutput(results[0]);
-				// } else {
-				// 	test.setOutput(output);
-				// }	
-
-				// const correlatedEvent = JSON.parse(/\{.*\}/is.exec(output)[0]);
-				
-
-				// const formatedOutput = TestHelper.formatTestCodeAndEvents(JSON.stringify(correlatedEvent));
-				// test.setOutput(formatedOutput);
-
 				// Очищаем неформатированный вывод и добавляем отформатированный.
 				this._config.getOutputChannel().clear();
 				this._config.getOutputChannel().append(test.getOutput());
@@ -132,46 +102,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 
 			test.setStatus(TestStatus.Failed);
 			const expectation = test.getTestExpectation();
-			test.setOutput(this._outputParser.parseFailedOutput(output, expectation));
-	
-			// const pattern = /(?:Got these results:\s*)(\{.*\})(?:\s*(\{.*\}))*/m.exec(output).filter((s): s is string => !!s);
-			// if (pattern && pattern.length > 1){
-			// 	const results = pattern.slice(1);
-			// 	const expectation = test.getTestExpectation();
-			// 	const expected = /\{.*?\}/m.exec(expectation);
-			// 	const multipleExpectatoin = !!/expect.*expect/sm.exec(expectation);
-			// 	if (results.length == 1 && !multipleExpectatoin){
-			// 		const result = JSON.parse(results[0]);
-			// 		if (expected) {
-			// 			const expectedJson = JSON.parse(expected[0]);
-			// 			const expectedKeys = Object.keys(expectedJson);
-			// 			const filteredResult = Object.keys(result)
-			// 				.filter(key => expectedKeys.includes(key) && !!result[key])
-			// 				.reduce((obj, key) => {
-			// 					obj[key] = result[key];
-			// 					return obj;
-			// 			}, {});
-
-			// 			const difference = diffJson(filteredResult, expectedJson);
-			
-			// 			let result_diff = "";
-			// 			for (const part of difference) {
-			// 				const sign = part.added ? '+' :	(part.removed ? '-' : ' ');
-			// 				const lines = part.value.split(/\r?\n/).filter((line)=>{return line != '';});
-			// 				for (const line of lines){
-			// 					result_diff += sign + line + '\n';
-			// 				}
-			// 			}
-			// 			test.setOutput(result_diff);
-			// 		} else {
-
-			// 			test.setOutput(results[0]);
-			// 		}
-			// 	} else {
-			// 		test.setOutput(output);
-			// 	}	
-			// }					
-			
+			test.setOutput(this._outputParser.parseFailedOutput(output, expectation));		
 
 			// Парсим ошибки из вывода.
 			let diagnostics = this._outputParser.parse(output);

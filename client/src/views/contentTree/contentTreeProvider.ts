@@ -106,23 +106,6 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 	
 					await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
 
-					const isRule = (item: RuleBaseItem | Table | Macros) : item is RuleBaseItem => {
-						return (item as RuleBaseItem).createNewUnitTest !== undefined;
-					};
-
-					if (isRule(this._selectedItem)){
-						// Если это правило, то проверяем наличие у него модульных тестов
-						// Если модульные тесты есть, то открываем первый
-						const rule = this._selectedItem as RuleBaseItem;
-						// await vscode.commands.executeCommand(UnitTestContentEditorViewProvider.closeEditorCommand, config);
-						const unitTests = rule.getUnitTests();						
-						if(unitTests && unitTests.length > 0){
-							const unitTest = unitTests[0];							
-							await vscode.commands.executeCommand(UnitTestContentEditorViewProvider.showEditorCommand, unitTest);
-						}
-						vscode.commands.executeCommand(UnitTestsListViewProvider.setRuleCommand, rule);
-					}					
-	
 					// Выделяем только что созданное правило.
 					await kbTree.reveal(
 						item, 
