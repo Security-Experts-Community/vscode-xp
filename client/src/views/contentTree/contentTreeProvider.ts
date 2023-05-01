@@ -123,6 +123,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 						vscode.commands.executeCommand(UnitTestsListViewProvider.setRuleCommand, rule);
 					}					
 	
+					await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
+
 					// Выделяем только что созданное правило.
 					await kbTree.reveal(
 						item, 

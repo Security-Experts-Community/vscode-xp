@@ -24,15 +24,7 @@ export class WhitelistingAndAlertKeyValidator extends IValidator {
 		const text = textDocument.getText();
 		const diagnostics: Diagnostic[] = [];
 	
-		// Ищем имя правила.
-		const alertKeyPattern = /\$alert.key\s*=\s(.+)$/gm;
-		const alertKeyResult = alertKeyPattern.exec(text);
-		if(!alertKeyResult) {
-			return diagnostics;
-		}
-		let alertKey = alertKeyResult[1];
-	
-		// Ищем вайтлистинг правила.
+		// Для каждого вызова максора вайтлистинга ищем хотя бы один alert.key с таким же значением.
 		const whitelistingPattern = /filter::CheckWL_\S+?\(\s*"\S+"\s*,\s*(.*)\s*\)/gm;
 		const settings = await getDocumentSettings(textDocument.uri);
 		let problems = 0;
@@ -47,30 +39,17 @@ export class WhitelistingAndAlertKeyValidator extends IValidator {
 			let whitelistingKeyName = whitelistingResult[1];
 			const spacesRegEx = /(\s+)/g;
 			whitelistingKeyName = whitelistingKeyName.replace(spacesRegEx, "");
-	
-			const dollarRegEx = /(\s+)|(?:(\$)[a-zA-Z0-9_.]+)/g;
-			alertKey = alertKey.replace(dollarRegEx, "");
-	
-			// Проброс alert.key из сабруля, всё ок.
-			if(whitelistingKeyName === "lower(alert.key)") {
+
+			if(this.findAlertKey(text, whitelistingKeyName)) {
 				continue;
 			}
-	
-			if(alertKey === "alert.key") {
-				continue;
-			}
-		
-			// Если совпадение, тогда всё ок идёт дальше.
-			if(alertKey === whitelistingKeyName) {
-				continue;
-			}
-		
+
 			// Получение позиции ошибки.
-			const commonMatch = whitelistingResult[0];
-			const groupMatch = whitelistingResult[1];
+			const whitelistingMacrosCall = whitelistingResult[0];
+			const firstParam = whitelistingResult[1];
 		
-			const startPosition = whitelistingResult.index + commonMatch.indexOf(groupMatch);
-			const endPosition = startPosition + groupMatch.length;
+			const startPosition = whitelistingResult.index + whitelistingMacrosCall.indexOf(firstParam);
+			const endPosition = startPosition + firstParam.length;
 		
 			const diagnostic: Diagnostic = {
 				severity: DiagnosticSeverity.Warning,
@@ -78,13 +57,46 @@ export class WhitelistingAndAlertKeyValidator extends IValidator {
 					start: textDocument.positionAt(startPosition),
 					end: textDocument.positionAt(endPosition)
 				},
-				message: "Отличается ключ вайтлистинга в макросе и значение alert.key",
+				message: "Отличается ключ вайтлистинга в макросе и значение alert.key или alert.key не задан",
 				source: 'xp'
 			};
 	
 			diagnostics.push(diagnostic);
-		}
+}
 	
 		return diagnostics;
+	}
+
+	private findAlertKey(text: string,  whitelistingKeyName: string ) : boolean {
+		// Ищем хотя бы один такой же $alert.key
+		const alertKeyPattern = /\$alert.key\s*=\s(.+)$/gm;
+		let alertKeyResult: RegExpExecArray | null;
+		while (alertKeyResult = alertKeyPattern.exec(text)) {
+			
+			if(alertKeyResult.length != 2) {
+				continue;
+			}
+			
+			let alertKeyValue = alertKeyResult[1];
+
+			// Очищаем от пробелов и $
+			const dollarRegEx = /(\$|\s+)/g;
+			alertKeyValue = alertKeyValue.replace(dollarRegEx, "");
+	
+			// Проброс alert.key из сабруля, всё ок.
+			if(whitelistingKeyName === "lower(alert.key)") {
+				return true;
+			}
+	
+			if(alertKeyValue === "alert.key") {
+				return true;
+			}
+		
+			// Если совпадение, тогда всё ок идёт дальше.
+			if(alertKeyValue === whitelistingKeyName) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

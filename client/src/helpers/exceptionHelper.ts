@@ -18,7 +18,7 @@ export class ExceptionHelper {
 				if(userInfo) {
 					return ExtensionHelper.showError(userInfo, error);
 				}
-				return ExtensionHelper.showError("Неожиданная ошибка, обратитесь к разработчикам.", error);
+				return ExtensionHelper.showError("Неожиданная ошибка.", error);
 			}
 		}
 	}

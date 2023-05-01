@@ -10,6 +10,7 @@ import { TestStatus } from '../../models/tests/testStatus';
 import { BaseUnitTest } from '../../models/tests/baseUnitTest';
 import { Table } from '../../models/content/table';
 import { Macros } from '../../models/content/macros';
+import { SiemjManager } from '../../models/siemj/siemjManager';
 
 /**
  * Список тестов в отдельной вьюшке.
@@ -178,8 +179,20 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 		vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
-			title: `Выполняются модульные тесты`
 		}, async (progress) => {
+			// Схема БД необходима для запуска юнит-тестов.
+			const rule = tests[0].getRule();
+			const root = this._config.getRootByPath(rule.getDirectoryPath());
+			const rootFolder = path.basename(root);
+			const schemaFullPath = this._config.getSchemaFullPath(rootFolder);
+
+			if(!fs.existsSync(schemaFullPath)) {
+				progress.report( {message : "Сборка схемы БД, которая необходима для запуска тестов."});
+				const siemjManager = new SiemjManager(this._config);
+				await siemjManager.buildSchema(rule);
+			}
+
+			progress.report( {message : `Выполняются модульные тесты`});
 			await tests.reduce(
 				(p, t) => 
 					p.then(_ => testHandler(t)),

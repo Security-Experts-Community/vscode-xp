@@ -11,28 +11,21 @@ import { MustacheFormatter } from '../mustacheFormatter';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { UnitTestsListViewProvider } from './unitTestsListViewProvider';
+import { SiemjManager } from '../../models/siemj/siemjManager';
 
 export class UnitTestContentEditorViewProvider  {
 
 	public static readonly viewId = 'ModularTestContentEditorView';
 
 	public static readonly showEditorCommand = "ModularTestContentEditorView.showEditor";
-	// public static readonly closeEditorCommand = "ModularTestContentEditorView.closeEditor";
 	public static readonly onTestSelectionChangeCommand = "ModularTestContentEditorView.onTestSelectionChange";
 
 	private _view?: vscode.WebviewPanel;
 	private _test: BaseUnitTest;
-	// private _templatePath: string;
 
 	public constructor(
 		private readonly _config: Configuration,
 		private readonly _templatePath: string) {
-		
-		// Форма создания визуалиации интеграционных тестов.
-		// this._templatePath = path.join(
-		// 	this._config.getExtensionPath(), 
-		// 	path.join("client", "templates", "UnitTestEditor.html")
-		// );
 	}
 
 	public static init(config: Configuration) {
@@ -62,18 +55,6 @@ export class UnitTestContentEditorViewProvider  {
 			)
 		);	
 
-		// context.subscriptions.push(
-		// 	vscode.commands.registerCommand(
-		// 		UnitTestContentEditorViewProvider.closeEditorCommand, 
-		// 		async (config: Configuration) => {
-		// 			const test = config.getUnitTestEditorViewProvider()._test;
-		// 			if (test) {
-		// 				test.close();
-		// 			}
-		// 		}
-		// 	)
-		// );	
-
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
 				UnitTestContentEditorViewProvider.onTestSelectionChangeCommand, 
@@ -95,13 +76,6 @@ export class UnitTestContentEditorViewProvider  {
 		);
 	}
 
-	// public closeEditor(): void {
-	// 	if(this._view) {
-	// 		this._test = null;
-	// 		this._view.dispose();
-	// 	}
-	// }
-
 	public async showEditor(unitTest: BaseUnitTest)  {
 
 		if(this._view) {
@@ -121,7 +95,7 @@ export class UnitTestContentEditorViewProvider  {
 		this._view = vscode.window.createWebviewPanel(
 			UnitTestContentEditorViewProvider.viewId,
 			viewTitle,
-			vscode.ViewColumn.Two, 
+			vscode.ViewColumn.One, 
 			{
 				retainContextWhenHidden : true,
 				enableFindWidget : true
@@ -204,7 +178,7 @@ export class UnitTestContentEditorViewProvider  {
 
 			case 'runTest': {
 				this.saveTest(message);
-				this.runUnitTest(message);
+				await this.runUnitTest(message);
 				return;
 			}
 
@@ -240,10 +214,32 @@ export class UnitTestContentEditorViewProvider  {
 			ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите.");
 			return;
 		}
-		
+
 		const rule = this._test.getRule();
-		const runner = rule.getUnitTestRunner();
-		this._test = await runner.run(this._test);			
-		this.updateView();
+		const root = this._config.getRootByPath(rule.getDirectoryPath());
+		const rootFolder = path.basename(root);
+		const schemaFullPath = this._config.getSchemaFullPath(rootFolder);
+
+		return vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			cancellable: false
+		}, async (progress) => {
+			try {
+				// Схема БД необходима для запуска юнит-тестов.
+				if(!fs.existsSync(schemaFullPath)) {
+					progress.report( {message : "Сборка схемы БД, которая необходима для запуска тестов."});
+					const siemjManager = new SiemjManager(this._config);
+					await siemjManager.buildSchema(rule);
+				}
+				
+				progress.report( {message : `Выполнение теста №${this._test.getNumber()}'`});
+				const runner = rule.getUnitTestRunner();
+				this._test = await runner.run(this._test);			
+				this.updateView();
+			}
+			catch(error) {
+				ExceptionHelper.show(error);
+			}
+		});
 	}
 }

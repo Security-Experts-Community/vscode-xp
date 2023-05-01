@@ -116,20 +116,18 @@ export class Enrichment extends RuleBaseItem {
 
 		// Замена в тестах.
 		this.getIntegrationTests().forEach( 
-			it => {
-				//it.setRuleDirectoryPath(newRuleDirectoryPath);
-				const testCode = it.getTestCode();
+			integrationTest => {
+				const testCode = integrationTest.getTestCode();
 				const newTestCode = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testCode);
-				it.setTestCode(newTestCode);
+				integrationTest.setTestCode(newTestCode);
 			}
 		);
 
 		this.getUnitTests().forEach( 
-			it => {
-				//it.setRuleDirectoryPath(newRuleDirectoryPath);
-				const testCode = it.getTestExpectation();
+			unitTest => {
+				const testCode = unitTest.getTestExpectation();
 				const newTestCode = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testCode);
-				it.setTestExpectation(newTestCode);
+				unitTest.setTestExpectation(newTestCode);
 			}
 		);
 

@@ -64,7 +64,7 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 			case TestStatus.Unknown: {
 				this.iconPath = {
 					light: path.join(extenstionResources, 'light', 'document.svg'),
-					dark: path.join(extenstionResources, 'resources', 'dark', 'document.svg')
+					dark: path.join(extenstionResources, 'dark', 'document.svg')
 				};
 				return;
 			}

@@ -171,7 +171,7 @@ suite('Корреляции', () => {
 		}
 	});
 
-	// // Удаляем созданные корреляции.
+	// Удаляем созданные корреляции.
 	teardown(() => {
 		const tmpPath = TestFixture.getTmpPath();
 		if(fs.existsSync(tmpPath)) {
