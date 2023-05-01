@@ -47,7 +47,7 @@ suite('Модульный тест корреляции', () => {
 
 		const expectedInputData = `# Comment 1\n# Comment 2\n# Comment 3
 table_list default
-table_list {"tl_name":[{"rule":"with_unit_test","specific_value":"pushkin|172.16.222.132"}]}
+table_list {"tl_name":[{"rule":"with_unit_test","specific_value": "pushkin|172.16.222.132"}]}
 # Comment input 1\n# Comment input2\n# Тут будет твой тест.
 {"msgid":"4624","normalized":true,"object":"system","object.property":"session","object.value":"0","recv_ipv4":"127.0.0.1"}`;
 		const actualInputData = unitTest.getTestInputData();
@@ -74,7 +74,7 @@ table_list {"tl_name":[{"rule":"with_unit_test","specific_value":"pushkin|172.16
 
 		const expectedTestContent = `# Comment 1\n# Comment 2\n# Comment 3
 table_list default
-table_list {"tl_name":[{"rule":"modified_test","specific_value":"pushkin|172.16.222.132"}]}
+table_list {"tl_name":[{"rule":"modified_test","specific_value": "pushkin|172.16.222.132"}]}
 # Comment input 1\n# Comment input2\n# Тут будет твой тест.
 {"msgid":"4624","normalized":true,"object":"system","object.property":"session","object.value":"0","recv_ipv4":"127.0.0.1"}
 

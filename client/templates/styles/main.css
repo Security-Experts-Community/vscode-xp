@@ -23,20 +23,6 @@ body {
 	float: left;
 }
 
-#navigation {
-	width: 50%;
-	float: left;
-}
-
-/* 
-#navigation input[type=button] {
-	float:right;
-	height: 27px;
-	min-width: 100px;
-	margin: 0 3px;
-}
-*/
-
 .save[type=button]{
 	width: 15%;
 	min-width: 100px;
@@ -57,6 +43,8 @@ body {
 	background-color: var(--vscode-button-secondaryBackground);
 	color: var(--vscode-button-secondaryForeground);
 	min-width: 100px;
+	height: 27px;
+	margin: 5px 5px;
 	border: none;
 	cursor: pointer;
 }

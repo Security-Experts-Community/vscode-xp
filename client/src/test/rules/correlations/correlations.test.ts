@@ -125,7 +125,7 @@ suite('Корреляции', () => {
 		const modularTests = readedRule.getUnitTests();
 		
 		assert.ok(modularTests.length == 1);
-		assert.strictEqual(modularTests[0].getTestExpectation(), 'expect 1 {"code":"test code"}');
+		assert.strictEqual(modularTests[0].getTestExpectation(), 'expect 1 {"code": "test code"}');
 		assert.strictEqual(modularTests[0].getTestInputData(), modularTests[0].getDefaultInputData());
 		assert.strictEqual(modularTests[0].getNumber(), 1);
 	});

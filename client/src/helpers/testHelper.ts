@@ -236,8 +236,10 @@ export class TestHelper {
 		}, {});
 	}
 
-	public static minifyTestCodeAndEvents(testCode: string) : string {
-		const compressedNormalizedEventReg = /\{.*?^\}$/gms;
+	// Пока не используется, может пригодиться в дальнейшем. 
+	// Если при сжатии понадобится сортировка.
+	public static minifyJSONInText(testCode: string) : string {
+		const compressedNormalizedEventReg = /\{.*?\}$/gms;
 
 		let formattedTestCode = testCode;
 		let comNormEventResult: RegExpExecArray | null;

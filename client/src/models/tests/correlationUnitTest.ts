@@ -49,7 +49,7 @@ export class CorrelationUnitTest extends BaseUnitTest {
 			throw new XpException(`Невозможно создать тест. Файла ${filePath} нет на диске`);
 		}		
 		let testFileContent = fs.readFileSync(filePath, "utf8");
-		testFileContent = TestHelper.minifyTestCodeAndEvents(testFileContent);
+		testFileContent = TestHelper.compressTestCode(testFileContent);
 
 		const unitTest = rule.createNewUnitTest();
 		
@@ -146,9 +146,9 @@ export class CorrelationUnitTest extends BaseUnitTest {
 		// }
 
 		// Модульные тесты корреляций содержат условия и начальные данные в одном файле
-		const minifiedTestInput = TestHelper.minifyTestCodeAndEvents(this.getTestInputData());
+		const minifiedTestInput = TestHelper.compressTestCode(this.getTestInputData());
 		this.setTestInputData(minifiedTestInput);
-		const mitifiedTestExpectation = TestHelper.minifyTestCodeAndEvents(this.getTestExpectation());
+		const mitifiedTestExpectation = TestHelper.compressTestCode(this.getTestExpectation());
 		this.setTestExpectation(mitifiedTestExpectation);
 
 		const fileContent = minifiedTestInput + '\n\n' + mitifiedTestExpectation;

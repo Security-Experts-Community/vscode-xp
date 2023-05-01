@@ -121,10 +121,10 @@ expect not {"correlation_name": "Active_Directory_Snapshot"}`;
 # Comment 2
 # Comment 3
 table_list default
-table_list {"tl_name":[{"rule":"unit_test_without_input_events","specific_value":"pushkin|172.16.222.132"}]}`;
+table_list {"tl_name":[{"rule": "unit_test_without_input_events","specific_value": "pushkin|172.16.222.132"}]}`;
 		assert.strictEqual(unitTest.getTestInputData(), expectedInputData);
 
-		const expectedCondition = `expect 1 {"correlation_name":"unit_test_without_input_events","subject.account.name":"username"}`;
+		const expectedCondition = `expect 1 {"correlation_name": "unit_test_without_input_events","subject.account.name":"username"}`;
 		assert.strictEqual(unitTest.getTestExpectation(), expectedCondition);
 	});
 
