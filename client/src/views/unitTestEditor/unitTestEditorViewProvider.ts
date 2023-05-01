@@ -95,7 +95,7 @@ export class UnitTestContentEditorViewProvider  {
 		this._view = vscode.window.createWebviewPanel(
 			UnitTestContentEditorViewProvider.viewId,
 			viewTitle,
-			vscode.ViewColumn.Two, 
+			vscode.ViewColumn.One, 
 			{
 				retainContextWhenHidden : true,
 				enableFindWidget : true
