@@ -16,7 +16,7 @@ import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { API } from '../../@types/vscode.git';
 import { Configuration } from '../../models/configuration';
 import { OpenKnowledgebaseCommand } from './commands/openKnowledgebaseCommand';
-import { ModularTestsListViewProvider } from '../modularTestsEditor/modularTestsListViewProvider';
+import { UnitTestsListViewProvider } from '../unitTestEditor/unitTestsListViewProvider';
 import { CreateRuleViewProvider } from '../createRule/createRuleViewProvider';
 import { CreateSubFolderCommand } from './commands/сreateSubFolderCommand';
 import { RenameTreeItemCommand } from './commands/renameTreeItemCommand';
@@ -31,8 +31,10 @@ import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';
 import { GitHooks } from './gitHooks';
 import { InitKBRootCommand } from './commands/initKBRootCommand';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
+import { KbTreeBaseItem } from '../../models/content/kbTreeBaseItem';
+import { UnitTestContentEditorViewProvider } from '../unitTestEditor/unitTestEditorViewProvider';
 
-export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolder|RuleBaseItem> {
+export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseItem> {
 
 	static async init(
 		config: Configuration,
@@ -79,17 +81,17 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 		// Изменение выбора правила с открытием визуализацием нужных данных.
 		vscode.commands.registerCommand(
 			ContentTreeProvider.onRuleClickCommand,
-			async (item: RuleBaseItem) : Promise<boolean> => {
+			async (item: RuleBaseItem|Table|Macros) : Promise<boolean> => {
 	
 				try {
 					// Открываем код правила.
-					const ruleFilePath = item.getRuleFilePath();
+					const ruleFilePath = item.getFilePath();
 	
 					if (ruleFilePath && !fs.existsSync(ruleFilePath)) {
 						// Попытка открыть несуществующее правило. 
 						// Возможно при переключении веток репозитория или ручной модификации репозитория.
 						ContentTreeProvider.setSelectedItem(null);
-						await vscode.commands.executeCommand(ModularTestsListViewProvider.refreshCommand);
+						await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
 	
 						kbTreeProvider.refresh();
 						return false;
@@ -100,9 +102,26 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 					// Открываем код правила
 					const elementUri = vscode.Uri.file(ruleFilePath);
 					const contentDocument = await vscode.workspace.openTextDocument(elementUri);
-					await vscode.window.showTextDocument(contentDocument);
+					await vscode.window.showTextDocument(contentDocument, vscode.ViewColumn.One);
 	
-					await vscode.commands.executeCommand(ModularTestsListViewProvider.refreshCommand);
+					await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
+
+					const isRule = (item: RuleBaseItem | Table | Macros) : item is RuleBaseItem => {
+						return (item as RuleBaseItem).createNewUnitTest !== undefined;
+					};
+
+					if (isRule(this._selectedItem)){
+						// Если это правило, то проверяем наличие у него модульных тестов
+						// Если модульные тесты есть, то открываем первый
+						const rule = this._selectedItem as RuleBaseItem;
+						// await vscode.commands.executeCommand(UnitTestContentEditorViewProvider.closeEditorCommand, config);
+						const unitTests = rule.getUnitTests();						
+						if(unitTests && unitTests.length > 0){
+							const unitTest = unitTests[0];							
+							await vscode.commands.executeCommand(UnitTestContentEditorViewProvider.showEditorCommand, unitTest);
+						}
+						vscode.commands.executeCommand(UnitTestsListViewProvider.setRuleCommand, rule);
+					}					
 	
 					// Выделяем только что созданное правило.
 					await kbTree.reveal(
@@ -115,6 +134,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 					);
 				}
 				catch(error) {
+					ExceptionHelper.show(error, `Ошибка во время обработки файла ${item.getFilePath()}`);
 					return false;
 				}
 	
@@ -244,7 +264,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 		return element;
 	}
 
-	async getChildren(element?: ContentFolder|RuleBaseItem): Promise<(ContentFolder|RuleBaseItem)[]> {
+	async getChildren(element?: ContentFolder|RuleBaseItem): Promise<KbTreeBaseItem[]> {
 
 		if (!this._knowledgebaseDirectoryPath) {
 			return Promise.resolve([]);
@@ -273,7 +293,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 
 		// Получаем список поддиректорий.
 		const subFolderPath = element.getDirectoryPath();
-		const kbItems : (RuleBaseItem)[]= [];
+		const kbItems : (KbTreeBaseItem)[]= [];
 
 		const subDirectories = FileSystemHelper.readSubDirectories(subFolderPath);
 		this.notifyIfContentTypeIsSelectedIncorrectly(subDirectories);
@@ -366,7 +386,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 		}
 	}
 
-	private highlightsLabelForNewOrEditRules(items: RuleBaseItem[]) : void {
+	private highlightsLabelForNewOrEditRules(items: KbTreeBaseItem[]) : void {
 		const kbUri = vscode.Uri.file(this._knowledgebaseDirectoryPath);
 		const repo = this._gitAPI.getRepository(kbUri);
 
@@ -390,7 +410,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 		}
 	}
 
-	public async getParent(element: RuleBaseItem) : Promise<RuleBaseItem> {
+	public async getParent(element: RuleBaseItem) : Promise<KbTreeBaseItem> {
 
 		// Дошли до корня контента, заканчиваем обход.
 		const contentRoot = ContentFolderType[ContentFolderType.ContentRoot];
@@ -440,11 +460,11 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 		return ContentFolder.create(elementDirectoryPath, ContentFolderType.AnotherFolder);
 	}
 
-	private static setSelectedItem(selectedItem : RuleBaseItem) : void {
+	private static setSelectedItem(selectedItem : RuleBaseItem | Table | Macros) : void {
 		this._selectedItem = selectedItem;
 	}
 
-	public static getSelectedItem() : RuleBaseItem {
+	public static getSelectedItem() : RuleBaseItem | Table | Macros {
 		return this._selectedItem;
 	}
 
@@ -461,7 +481,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentFolde
 	public static readonly buildKbPackageCommand = 'KnowledgebaseTree.buildKbPackage';
 	public static readonly unpackKbPackageCommand = 'KnowledgebaseTree.unpackKbPackage';
 
-	private static _selectedItem : RuleBaseItem;
+	private static _selectedItem : RuleBaseItem | Table | Macros;
 
 	public static readonly refreshTreeCommmand = 'SiemContentEditor.refreshKbTree';
 

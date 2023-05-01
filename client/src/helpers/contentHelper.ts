@@ -12,6 +12,7 @@ import { KbHelper } from './kbHelper';
 export class ContentHelper {
 
     public static replaceAllRuleNamesWithinString(oldRuleName : string, newRuleName : string, ruleCode : string): string {
+        if (!ruleCode) { return ""; }
         ruleCode = ruleCode.replace(new RegExp(oldRuleName, "gm"), `${newRuleName}`);
         return ruleCode;
     }
@@ -52,7 +53,7 @@ export class ContentHelper {
     public static async createEnrichmentFromTemplate(
         ruleName : string,
         templateName : string,
-        config: Configuration) : Promise<Correlation> {
+        config: Configuration) : Promise<Enrichment> {
 
         const templatesPath = path.join(config.getExtensionPath(), this.CONTENT_TEMPLATES_DIRECTORY_NAME, this.ENRICHMENTS_DIRECTORY_NAME);
         const tmpDirPath = config.getRandTmpSubDirectoryPath();
@@ -88,6 +89,8 @@ export class ContentHelper {
     }
 
     public static replaceAllCorrelantionNameWithinCode(newRuleName : string, ruleCode : string): string {
+        if (!ruleCode) { return ""; }
+
         const parseRuleNameReg = /rule\s+(\S+?)\s*:/gm;
         const ruleNameParseResult = parseRuleNameReg.exec(ruleCode);
 

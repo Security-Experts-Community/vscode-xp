@@ -8,7 +8,7 @@ export class Enveloper {
 	public static async addEnvelope(rawEvents: string, mimeType : EventMimeType) {
 		
 		if(!rawEvents) {
-			throw new XpException("Не заданы сырые события для теста. Добавьте их и повторите.")
+			throw new XpException("Не заданы сырые события для теста. Добавьте их и повторите.");
 		}
 
 		if(!mimeType) {
@@ -137,7 +137,7 @@ export class Enveloper {
 		const xmlRawEventCorrected = xmlRawEvent
 			.replace(/^- <Event /gm, "<Event ")
 			.replace(/^- <System>/gm, "<System>")
-			.replace(/^- <EventData>/gm, "<EventData>")
+			.replace(/^- <EventData>/gm, "<EventData>");
 
 		const jsonEvent = xml2json_light.xml2json(xmlRawEventCorrected);
 		let jsonEventString = JSON.stringify(jsonEvent);

@@ -4,8 +4,9 @@ import * as fs from 'fs';
 import { RuleBaseItem } from './ruleBaseItem';
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
+import { KbTreeBaseItem } from './kbTreeBaseItem';
 
-export class Table extends RuleBaseItem {
+export class Table extends KbTreeBaseItem {
 
 	public async rename(newName: string): Promise<void> {
 		throw new Error('Method not implemented.');
@@ -17,7 +18,7 @@ export class Table extends RuleBaseItem {
 
 	private constructor(name: string, parentDirectoryPath?: string) {
 		super(name, parentDirectoryPath);
-		this.setRuleFileName("table.tl");
+		this.setFileName("table.tl");
 	}
 
 	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Table> {
@@ -35,7 +36,7 @@ export class Table extends RuleBaseItem {
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
 		if (fileName) {
-			table.setRuleFileName(fileName);
+			table.setFileName(fileName);
 		}
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
@@ -54,7 +55,7 @@ export class Table extends RuleBaseItem {
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
 		if (fileName) {
-			table.setRuleFileName(fileName);
+			table.setName(fileName);
 		}
 
 		// Парсим основные метаданные.

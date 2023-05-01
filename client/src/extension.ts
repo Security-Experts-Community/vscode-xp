@@ -13,8 +13,8 @@ import {
 import { LocalizationEditorViewProvider } from './views/localizationEditor/localizationEditorViewProvider';
 import { XpSignatureHelpProvider } from './providers/signature/xpSignatureHelpProvider';
 import { XpRenameProvide } from './providers/xpRenameProvider';
-import { ModularTestContentEditorViewProvider } from './views/modularTestsEditor/modularTestContentEditorViewProvider';
-import { ModularTestsListViewProvider } from './views/modularTestsEditor/modularTestsListViewProvider';
+import { UnitTestContentEditorViewProvider } from './views/unitTestEditor/unitTestEditorViewProvider';
+import { UnitTestsListViewProvider } from './views/unitTestEditor/unitTestsListViewProvider';
 import { IntegrationTestEditorViewProvider } from './views/integrationTests/integrationTestEditorViewProvider';
 import { MetainfoViewProvider } from './views/metaInfo/metainfoViewProvider';
 import { Configuration } from './models/configuration';
@@ -28,96 +28,168 @@ import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
 import { YamlHelper } from './helpers/yamlHelper';
 import { InitKBRootCommand } from './views/contentTree/commands/initKBRootCommand';
 import { XPPackingTaskProvider } from './providers/xpCustomTaskProvider';
+import { ContentType } from './contentType/contentType';
+import { XpException } from './models/xpException';
+import { FileSystemHelper } from './helpers/fileSystemHelper';
+import { ExceptionHelper } from './helpers/exceptionHelper';
 
 let client: LanguageClient;
 let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
 
 export async function activate(context: ExtensionContext) {
 
-	// Инициализация реестр глобальных параметров.
-	const config = await Configuration.init(context);
+	try{
+		// Инициализация реестр глобальных параметров.
+		const config = await Configuration.init(context);
 
-	// Конфигурирование LSP.
-	const serverModule = context.asAbsolutePath(
-		path.join('server', 'out', 'server.js')
-	);
+		// Конфигурирование LSP.
+		const serverModule = context.asAbsolutePath(
+			path.join('server', 'out', 'server.js')
+		);
 
-	const debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
-	const serverOptions: ServerOptions = {
-		run: { module: serverModule, transport: TransportKind.ipc },
-		debug: {
-			module: serverModule,
-			transport: TransportKind.ipc,
-			options: debugOptions
-		}
-	};
-
-	// Конфигурирование клиента для доступа к LSP.
-	const clientOptions: LanguageClientOptions = {
-		// Заменяем поддерживаемый формат на наш.
-		documentSelector: [
-			{
-				scheme: 'file',
-				language: 'xp'
-			},
-			{
-				scheme: 'file',
-				language: 'co'
-			},
-			{
-				scheme: 'file',
-				language: 'en'
+		const debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };
+		const serverOptions: ServerOptions = {
+			run: { module: serverModule, transport: TransportKind.ipc },
+			debug: {
+				module: serverModule,
+				transport: TransportKind.ipc,
+				options: debugOptions
 			}
-		],
-		synchronize: {
-			// Notify the server about file changes to '.clientrc files contained in the workspace
-			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-		}
-	};
+		};
 
-	// Создаем клиент, запускаем его и сервер.
-	client = new LanguageClient(
-		'languageServer',
-		'Language Server',
-		serverOptions,
-		clientOptions
-	);
-	client.start();
+		// Конфигурирование клиента для доступа к LSP.
+		const clientOptions: LanguageClientOptions = {
+			// Заменяем поддерживаемый формат на наш.
+			documentSelector: [
+				{
+					scheme: 'file',
+					language: 'xp'
+				},
+				{
+					scheme: 'file',
+					language: 'co'
+				},
+				{
+					scheme: 'file',
+					language: 'en'
+				}
+			],
+			synchronize: {
+				// Notify the server about file changes to '.clientrc files contained in the workspace
+				fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+			}
+		};
 
-	const rootPath =
-		(vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
-			? vscode.workspace.workspaceFolders[0].uri.fsPath
-			: undefined;
+		// Создаем клиент, запускаем его и сервер.
+		client = new LanguageClient(
+			'languageServer',
+			'Language Server',
+			serverOptions,
+			clientOptions
+		);
+		client.start();
 
-	YamlHelper.configure(
-		{
-			lineWidth: -1,
-			indent: 4,
-			noArrayIndent: true
-		}
-	);
+		const rootPath =
+			(vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
+				? vscode.workspace.workspaceFolders[0].uri.fsPath
+				: undefined;
 
-	ContentTreeProvider.init(config, rootPath);
-	LocalizationEditorViewProvider.init(context);
-	ModularTestContentEditorViewProvider.init(context);
-	ModularTestsListViewProvider.init(config);
-	IntegrationTestEditorViewProvider.init(config);
-	MetainfoViewProvider.init(config);
-	RunningCorrelationGraphProvider.init(config);
-	TableListsEditorViewProvider.init(config);
-	SetContentTypeCommand.init(config);
-	InitKBRootCommand.init(config);
+		YamlHelper.configure(
+			{
+				lineWidth: -1,
+				indent: 4,
+				noArrayIndent: true
+			}
+		);
 
-	siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(XPPackingTaskProvider.Type, new XPPackingTaskProvider(config));
+		ContentTreeProvider.init(config, rootPath);
+		LocalizationEditorViewProvider.init(context);
+		UnitTestContentEditorViewProvider.init(config);
+		UnitTestsListViewProvider.init(config);
+		IntegrationTestEditorViewProvider.init(config);
+		MetainfoViewProvider.init(config);
+		RunningCorrelationGraphProvider.init(config);
+		TableListsEditorViewProvider.init(config);
+		SetContentTypeCommand.init(config);
+		InitKBRootCommand.init(config);
 
-	
-	// Расширение нативного контекстого меню.
-	TestsFormatContentMenuExtension.init(context);
+		siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(XPPackingTaskProvider.Type, new XPPackingTaskProvider(config));
 
-	// Подпись функций.
-	const signatureProvider = await XpSignatureHelpProvider.init(context);
-	context.subscriptions.push(
-		vscode.languages.registerSignatureHelpProvider(
+		
+		// Расширение нативного контекстого меню.
+		TestsFormatContentMenuExtension.init(context);
+
+		// Подпись функций.
+		const signatureProvider = await XpSignatureHelpProvider.init(context);
+		context.subscriptions.push(
+			vscode.languages.registerSignatureHelpProvider(
+				[
+					{
+						scheme: 'file',
+						language: 'xp'
+					},
+					{
+						scheme: 'file',
+						language: 'co'
+					},
+					{
+						scheme: 'file',
+						language: 'en'
+					},
+					{
+						scheme: 'file',
+						language: 'flt'
+					},
+				],
+				signatureProvider,
+				'(', ','
+			)
+		);
+
+		// Автодополнение функций.
+		const completionItemProvider = await XpCompletionItemProvider.init(context, config);
+		context.subscriptions.push(
+			vscode.languages.registerCompletionItemProvider(
+				[
+					{
+						scheme: 'file',
+						language: 'xp'
+					},
+					{
+						scheme: 'file',
+						language: 'co'
+					},
+					{
+						scheme: 'file',
+						language: 'en'
+					},
+					{
+						scheme: 'file',
+						language: 'flt'
+					},
+				],
+				completionItemProvider,
+				"$"
+			)
+		);
+
+		context.subscriptions.push(
+			vscode.languages.registerRenameProvider(
+				{
+					scheme: 'file',
+					language: 'co'
+				},
+				new XpRenameProvide()
+			)
+		);
+
+		// Не очень понятно как тут сделать разумно.
+		const tokenModifiers = ['declaration', 'documentation'];
+		const tokenTypes = ['function', 'variable'];
+		const legend = new vscode.SemanticTokensLegend(tokenTypes, tokenModifiers);
+
+		const xpDocumentHighlightProvider = await XpDocumentHighlightProvider.init(config, legend);
+		vscode.languages.registerDocumentSemanticTokensProvider(
 			[
 				{
 					scheme: 'file',
@@ -136,76 +208,13 @@ export async function activate(context: ExtensionContext) {
 					language: 'flt'
 				},
 			],
-			signatureProvider,
-			'(', ','
-		)
-	);
-
-	// Автодополнение функций.
-	const completionItemProvider = await XpCompletionItemProvider.init(context, config);
-	context.subscriptions.push(
-		vscode.languages.registerCompletionItemProvider(
-			[
-				{
-					scheme: 'file',
-					language: 'xp'
-				},
-				{
-					scheme: 'file',
-					language: 'co'
-				},
-				{
-					scheme: 'file',
-					language: 'en'
-				},
-				{
-					scheme: 'file',
-					language: 'flt'
-				},
-			],
-			completionItemProvider,
-			"$"
-		)
-	);
-
-	context.subscriptions.push(
-		vscode.languages.registerRenameProvider(
-			{
-				scheme: 'file',
-				language: 'co'
-			},
-			new XpRenameProvide()
-		)
-	);
-
-	// Не очень понятно как тут сделать разумно.
-	const tokenModifiers = ['declaration', 'documentation'];
-	const tokenTypes = ['function', 'variable'];
-	const legend = new vscode.SemanticTokensLegend(tokenTypes, tokenModifiers);
-
-	const xpDocumentHighlightProvider = await XpDocumentHighlightProvider.init(config, legend);
-	vscode.languages.registerDocumentSemanticTokensProvider(
-		[
-			{
-				scheme: 'file',
-				language: 'xp'
-			},
-			{
-				scheme: 'file',
-				language: 'co'
-			},
-			{
-				scheme: 'file',
-				language: 'en'
-			},
-			{
-				scheme: 'file',
-				language: 'flt'
-			},
-		],
-		xpDocumentHighlightProvider,
-		legend
-	);
+			xpDocumentHighlightProvider,
+			legend
+		);
+	}
+	catch(error){
+		ExceptionHelper.show(error, "Ошибка активации расширения");
+	}
 }
 
 export async function deactivate(): Promise<void> | undefined {

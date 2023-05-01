@@ -3,6 +3,7 @@ import * as assert from 'assert';
 import { TestFixture } from '../helper';
 import { Localization } from '../../models/content/localization';
 import { Correlation } from '../../models/content/correlation';
+import { XpException } from '../../models/xpException';
 
 suite('Локализации', () => {
 	
@@ -45,13 +46,10 @@ suite('Локализации', () => {
 		const newLocalization = 
 		Localization.create(
 			`correlation_name = "MSSQL_user_password_brute" and src.ip != null and newCriteria`,
-			"RuLocalization",
-			"EnLocalization");
+			"NewRuLocalization",
+			"NewEnLocalization");
 
-		const oldLocalizations = correlation.getLocalizations();
-		oldLocalizations.push(newLocalization);
-
-		correlation.updateLocalizations(oldLocalizations);
+		correlation.addLocalization(newLocalization);
 
 		// Проверяем локализации.
 		const actualLocalizations = correlation.getLocalizations();
@@ -59,10 +57,10 @@ suite('Локализации', () => {
 
 		// Проверям добавленную локализацию.
 		const localization4 = actualLocalizations[3];
-		assert.strictEqual(localization4.getLocalizationId(), `corrname_MSSQL_user_password_brute_3`);
+		assert.strictEqual(localization4.getLocalizationId(), `corrname_MSSQL_user_password_brute_4`);
 		assert.strictEqual(localization4.getCriteria(), `correlation_name = "MSSQL_user_password_brute" and src.ip != null and newCriteria`);
-		assert.strictEqual(localization4.getRuLocalizationText(), `RuLocalization`);
-		assert.strictEqual(localization4.getEnLocalizationText(), `EnLocalization`);
+		assert.strictEqual(localization4.getRuLocalizationText(), `NewRuLocalization`);
+		assert.strictEqual(localization4.getEnLocalizationText(), `NewEnLocalization`);
 
 		// Проверяем метаинформацию.
 		const eventDescriptions = correlation.getMetaInfo().getEventDescriptions();
@@ -70,8 +68,30 @@ suite('Локализации', () => {
 
 		// Проверям добавленную метаинформацию.
 		const eventDescriptions4 = eventDescriptions[3];
-		assert.strictEqual(eventDescriptions4.getLocalizationId(), `corrname_MSSQL_user_password_brute_3`);
+		assert.strictEqual(eventDescriptions4.getLocalizationId(), `corrname_MSSQL_user_password_brute_4`);
 		assert.strictEqual(eventDescriptions4.getCriteria(), `correlation_name = "MSSQL_user_password_brute" and src.ip != null and newCriteria`);
+	});
+
+	test('Добавление уже существующей локализации', async () => {
+		const rulePath = TestFixture.getFixturePath("localizations", "MSSQL_user_password_brute");
+		const correlation = await Correlation.parseFromDirectory(rulePath);
+
+		const newLocalization = 
+		Localization.create(
+			`correlation_name = "MSSQL_user_password_brute" and subject.account.name == null`,
+			"NewRuLocalization",
+			"NewEnLocalization");
+
+		const expectedMessage = "Не могу добавить локализацию. Такой критерий уже присутствует.";
+		assert.throws(() => correlation.addLocalization(newLocalization), XpException, expectedMessage);
+
+		// Проверяем локализации.
+		const actualLocalizations = correlation.getLocalizations();
+		assert.strictEqual(actualLocalizations.length, 3);
+
+		// Проверяем метаинформацию.
+		const eventDescriptions = correlation.getMetaInfo().getEventDescriptions();
+		assert.strictEqual(eventDescriptions.length, 3);
 	});
 
 	test('Задание одной локализации поверх имеющихся', async () => {
@@ -83,7 +103,7 @@ suite('Локализации', () => {
 			"RuLocalization",
 			"EnLocalization");
 			
-		correlation.updateLocalizations([newLocalization]);
+		correlation.setLocalizations([newLocalization]);
 
 		const actualLocalizations = correlation.getLocalizations();
 		assert.strictEqual(actualLocalizations.length, 1);
@@ -113,7 +133,7 @@ suite('Локализации', () => {
 			"EnLocalization");
 		newLocalization.setLocalizationId("corrname_ESC_Super_Duper_Correlation_custom");
 
-		correlation.updateLocalizations([newLocalization]);
+		correlation.addLocalization(newLocalization);
 
 		const actualLocalizations = correlation.getLocalizations();
 		assert.strictEqual(actualLocalizations.length, 1);

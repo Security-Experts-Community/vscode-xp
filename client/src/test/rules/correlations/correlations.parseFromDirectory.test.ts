@@ -3,6 +3,7 @@ import { StringHelper } from '../../../helpers/stringHelper';
 
 import { Correlation } from '../../../models/content/correlation';
 import { TestFixture } from '../../helper';
+import { XpException } from '../../../models/xpException';
 
 suite('Correlations.parseFromDirectory', () => {
 
@@ -94,9 +95,36 @@ suite('Correlations.parseFromDirectory', () => {
 		const expectedTestCode2 =
 			`# Вайтлист
 table_list default
-table_list {\"Common_whitelist_auto\":[{\"rule\":\"Active_Directory_Snapshot\",\"specific_value\": \"pushkin|172.16.222.132\"}]}
-expect not {\"correlation_name\": \"Active_Directory_Snapshot\"}`;
+table_list {"Common_whitelist_auto":[{"rule":"Active_Directory_Snapshot","specific_value": "pushkin|172.16.222.132"}]}
+expect not {"correlation_name": "Active_Directory_Snapshot"}`;
 
 		assert.strictEqual(StringHelper.textToOneLine(testCode2), StringHelper.textToOneLine(expectedTestCode2));
+	});
+
+	test('Парсинг правила с несовпадающими LocalizationId', async() => {
+		const rulePath = TestFixture.getCorrelationPath("incompatible_localizationid");
+		assert.rejects(async () => 
+			await Correlation.parseFromDirectory(rulePath), 
+			Error, 
+			"Наборы идентификаторов локализаций в файле метаинформации и файлах локализаций не совпадают."
+		);
+	});
+
+	test('Парсинг корреляции с модульным тестом без коррелируемых событий', async() => {
+		const rulePath = TestFixture.getCorrelationPath("unit_test_without_input_events");
+		const correlation = await Correlation.parseFromDirectory(rulePath);
+		const unitTests = correlation.getUnitTests();
+		assert.strictEqual(unitTests.length, 1);
+		const unitTest = unitTests[0];
+
+		assert.strictEqual(unitTest.getTestInputData(), unitTest.getDefaultInputData());
+
+		const expectedCondition = `# Comment 1
+# Comment 2
+# Comment 3
+table_list default
+table_list {"tl_name":[{"rule":"unit_test_without_input_events","specific_value":"pushkin|172.16.222.132"}]}
+expect 1 {"correlation_name":"unit_test_without_input_events","subject.account.name":"username"}`;
+		assert.strictEqual(unitTest.getTestExpectation(), expectedCondition);
 	});
 });

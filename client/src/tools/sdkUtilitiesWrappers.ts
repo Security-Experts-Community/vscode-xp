@@ -1,11 +1,13 @@
 // import * as fs from 'fs';
-// import * as vscode from 'vscode';
-// import * as path from 'path';
+import * as vscode from 'vscode';
+import * as path from 'path';
 
-// import { Configuration} from '../models/configuration';
+import { Configuration} from '../models/configuration';
+import { Normalization } from '../models/content/normalization';
+import { NormalizationUnitTest } from '../models/tests/normalizationUnitTest';
 // import { RuleFileDiagnostics } from '../views/integrationTests/ruleFileDiagnostics';
-// import { ProcessHelper } from '../helpers/processHelper';
-// import { ExtensionHelper } from '../helpers/extensionHelper';
+import { ProcessHelper } from '../helpers/processHelper';
+import { ExtensionHelper } from '../helpers/extensionHelper';
 // import { RuleBaseItem } from '../models/content/ruleBaseItem';
 // import { BuildLocsOutputParser, FillFPTAOutputParser } from './outputParsers/fillFptaOutputParser';
 // import { RCCOutputParser } from './outputParsers/rccOutputParser';
@@ -13,14 +15,97 @@
 // import { SiemKBTestsOutputParser } from './outputParsers/siemKBTestsOutputParser';
 // import { XpException } from '../models/xpException';
 
-// /** Класс для запуска утилит SDK
-//  * 
-//  * @param config - глобальные настройки расширения
-//  * 
-//  */
-// export class SDKUtilitiesWrappers {
-// 	constructor(private config: Configuration) {}
+/** Класс для запуска утилит SDK
+ * 
+ * @param config - глобальные настройки расширения
+ * 
+ */
+export class SDKUtilitiesWrappers {
+	constructor(private config: Configuration) {}
+	
+	/** Функция запуска утилиты создания грфов формул нормализации
+	 * 
+	 * @param buildDirectory - путь до корня директории сборки
+	 * @returns true - успех, продолжаем цепочку выполнения
+	 * 			false - ошибка, прерываем цепочку выполнения
+	 */
+	public async testNormalization(unitTest: NormalizationUnitTest): Promise<string> {
+		const rule = unitTest.getRule();
+		return vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			cancellable: false,
+			title: `Запуск теста №${unitTest.getNumber()} формулы нормализации '${rule.getName()}'`
+		}, async (progress) => {
+			try {
+				const outputChannel = this.config.getOutputChannel();
+				outputChannel.appendLine("----------------------------------------");
+				outputChannel.appendLine(`XP :: Запуск теста №${unitTest.getNumber()} формулы нормализации '${rule.getName()}'`);
+				outputChannel.appendLine("----------------------------------------");
 
+				/** Типовая команда выглядит так:
+				 * 
+				 * ptsiem-sdk\release-25.0\25.0.10201\normalize.exe 
+				 *   --sdk "ptsiem-sdk\release-25.1\25.1.11776" 
+				 *   --temp "temp" 
+				 *   -t "taxonomy\release-25.0\25.0.214\taxonomy.json" 
+				 *   -s "temp\formula.xp" 
+				 *   -r "temp\raw.txt" 
+				 *   -e
+				 */
+
+				// Формируем параметры запуска утилиты
+				const normalizeExePath = this.config.getNormalizer();
+				const sdkPath = this.config.getSiemSdkDirectoryPath();
+				const rootPath = rule.getContentRootPath(this.config);
+				const rootFolder = path.basename(rootPath);
+				const tempPath = this.config.getTmpDirectoryPath(rootFolder);				
+				const taxonomyPath = this.config.getTaxonomyFullPath();
+				const appendixPath = this.config.getAppendixFullPath();
+				const formulaPath = rule.getFilePath();
+				const rawEventPath = unitTest.getTestInputDataPath();
+
+				process.env.PTSIEM_SDK_ROOT = this.config.getSiemSdkDirectoryPath();
+
+				// Запускаем утилиту с параметрами
+				// TODO: Возможно есть смысл отслеживать неуспешные запуски по кодам ошибки от дочернего процесса
+				const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+					normalizeExePath,
+					[
+						"--sdk", sdkPath,
+						"--temp", tempPath,
+						"-t", taxonomyPath,
+						"-s", formulaPath,
+						"-r", rawEventPath,
+						"-x", appendixPath,
+						"-e"
+					],
+					outputChannel);
+
+				outputChannel.appendLine("XP :: Нормализация тестового события завершена");
+				outputChannel.appendLine("");
+
+				return output;
+
+				// Анализируем вывод утилиты на наличие ошибок и предупреждений
+				// TODO: Возможно паттернов вывода больше. Нужно описать разные ситуации.
+				// const outputParser = new RCCOutputParser();
+				//const ruleFileDiagnostics = outputParser.parse(output);
+
+				// Выводим ошибки и замечания для тестируемого правила.
+				//for (const rfd of ruleFileDiagnostics) {
+				//	this.config.getDiagnosticCollection().set(rfd.Uri, rfd.Diagnostics);
+				//}
+
+				// Если есть ошибки, то прерываем цепочку выполнения
+				//return this.not_contains_errors(ruleFileDiagnostics);
+			}
+			catch(error) {
+				ExtensionHelper.showUserError(`Произошла неожиданная ошибка: ${error.message}`);
+				return "";
+			}
+		});
+	}
+}
 // 	/** Функция проверки отсутствия ошибок в диагностических сообщениях
 // 	 * 
 // 	 * @param diagnostics - набор диагностических сообщений

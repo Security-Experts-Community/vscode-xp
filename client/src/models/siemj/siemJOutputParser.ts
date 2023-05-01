@@ -19,8 +19,7 @@ export class SiemJOutputParser {
 		// c:\Work\-=SIEM=-\Content\knowledgebase\packages\esc\correlation_rules\active_directory\Active_Directory_Snapshot\rule.co:27:29: syntax error, unexpected '='
 		const pattern = /BUILD_RULES \[Err\] :: (\S+?):(\d+):(\d+):([\S ]+)/gm;
 		let m: RegExpExecArray | null;
-
-		while (m = pattern.exec(testOutput)) {
+		while ((m = pattern.exec(testOutput))) {
 
 			if(m.length != 5) {
 				continue;

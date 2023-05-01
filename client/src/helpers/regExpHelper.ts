@@ -28,7 +28,7 @@ export class RegExpHelper {
 	 * @returns результирующая строка.
 	 */
 	public static replaceAllStrings(inputText : string, regExp: RegExp) : string {
-
+		if (!inputText) { return ""; }
 		let curResult: RegExpExecArray | null;
 		while ((curResult = regExp.exec(inputText))) {
 			const arrayElement = curResult[0];

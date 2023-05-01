@@ -4,6 +4,7 @@ import * as fs from "fs";
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { RuleBaseItem } from './ruleBaseItem';
+import { KbTreeBaseItem } from './kbTreeBaseItem';
 
 export enum ContentFolderType {
 	ContentRoot = 1,
@@ -16,7 +17,7 @@ export enum ContentFolderType {
 	AnotherFolder,
 }
 
-export class ContentFolder extends RuleBaseItem {
+export class ContentFolder extends KbTreeBaseItem {
 
 	public async rename(newName: string): Promise<void> {
 		throw new Error('Method not implemented.');
@@ -44,7 +45,7 @@ export class ContentFolder extends RuleBaseItem {
 
 	constructor(directoryName: string, type: ContentFolderType, hasNestedElements: boolean) {
 		
-		super(directoryName);
+		super(directoryName, path.basename(directoryName));
 
 		if(type == ContentFolderType.PackageFolder || type == ContentFolderType.ContentRoot) {
 			this.iconPath = {

@@ -101,6 +101,7 @@ export class ProcessHelper {
 
 		return new Promise(function(resolve, reject) {
 			let child; 
+			outputChannel.append(`${command} ${params.join(' ')} `);
 			try {
 				child = child_process.spawn(command, params);
 			} 

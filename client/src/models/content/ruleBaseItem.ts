@@ -3,7 +3,6 @@ import * as fs from 'fs';
 
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { Localization, LocalizationLanguage } from './localization';
-import { CorrelationUnitTest } from '../tests/correlationUnitTest';
 import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { IntegrationTest } from '../tests/integrationTest';
 import { KbTreeBaseItem } from './kbTreeBaseItem';
@@ -12,6 +11,9 @@ import { Configuration } from '../configuration';
 import { YamlHelper } from '../../helpers/yamlHelper';
 import { ArgumentException } from '../argumentException';
 import { XpException } from '../xpException';
+import { BaseUnitTest } from '../tests/baseUnitTest';
+import { UnitTestRunner } from '../tests/unitTestsRunner';
+import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 
 /**
  * Базовый класс для всех правил.
@@ -19,12 +21,20 @@ import { XpException } from '../xpException';
 export abstract class RuleBaseItem extends KbTreeBaseItem {
 
 	constructor(name: string, parentDirectoryPath? : string) {
-		super(name);
-		this._parentPath = parentDirectoryPath;
+		super(name, parentDirectoryPath);
 	}
 
-	protected getResourcesPath(){
-		return path.join(Configuration.get().getExtensionPath(), 'resources');
+	public abstract convertUnitTestFromObject(object: any) : BaseUnitTest;
+	public abstract createNewUnitTest(): BaseUnitTest;
+	public abstract clearUnitTests() : void;
+	public abstract getUnitTestRunner(): UnitTestRunner;
+	public abstract getUnitTestOutputParser(): UnitTestOutputParser;
+	
+	protected abstract getLocalizationPrefix() : string;
+
+	public addNewUnitTest(): void{
+		const newUnitTest = this.createNewUnitTest();
+		this.addUnitTests([newUnitTest]);
 	}
 
 	public static getRuleDirectoryPath(parentDirPath : string, ruleName : string ) : string {
@@ -33,21 +43,11 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		}
 
 		if(!ruleName) {
-			throw new ArgumentException(`Не задано имя корреляции.`);
+			throw new ArgumentException(`Не задано имя правила.`);
 		}
 
 		return path.join(parentDirPath, ruleName);
 	}
-
-	public getDirectoryPath() : string {
-		if(!this._parentPath) {
-			throw new XpException(`Не задан путь к директории правила '${this.getName()}'.`);
-		}
-
-		return path.join(this._parentPath, this.getName());
-	}
-
-	public async rename(newName: string) : Promise<void> {}
 
 	/**
 	 * Возвращает путь к пакету, в котором расположеню правило.
@@ -98,36 +98,27 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		throw new Error(`Путь к правилу '${this.getName()}' не содержит ни одну из корневых директорий: [${rootPaths.join(", ")}].`);
 	}
 
-	public getMetaInfoFilePath(): string {
-		return path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
+	public getTestsPath():string {
+		return path.join(this.getDirectoryPath(), 'tests');
 	}
 
-	public setMetaInfo(metaInfo : MetaInfo) {
-		this._metaInfo = metaInfo;
-	}
 
-	public async saveModularTests(ruleFullPath?: string) : Promise<void> {
 
-		if(!ruleFullPath) {
-			ruleFullPath = this.getDirectoryPath();
-		}
-
+	public async saveUnitTests(): Promise<void> {	
 		// Создаем или очищаем директорию с тестами.
-		const testDirPath = path.join(ruleFullPath, "tests");
+		const testDirPath = this.getTestsPath();
 		if(!fs.existsSync(testDirPath)) {
 			await fs.promises.mkdir(testDirPath);
-		} else {
-			// Удаляем все модульные тесты, оставляя интеграционные.
-			(await fs.promises.readdir(testDirPath))
-				.map(f => path.join(testDirPath, f))
-				.filter(f => f.endsWith(".sc"))
-				.forEach(f => fs.unlinkSync(f));
+		} 
+		else {
+			// Удаляем файлы, которые относятся к модульным тестам
+			this.clearUnitTests();
 		}
 
 		// Сохраняем тесты и перезаписываем.
-		this._modularTests.forEach( async (mt, index) => {
+		this._unitTests.forEach( async (mt, index) => {
 			mt.setNumber(index + 1);
-			await mt.save(testDirPath);
+			await mt.save();
 		});
 	}
 
@@ -135,28 +126,26 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	 * Добавляет модульные тесты к правилу.
 	 * @param tests модульные тесты
 	 */
-	public addModularTests(tests: CorrelationUnitTest[]) : void {
-		const startIndex = this._modularTests.length;
+	public addUnitTests(tests: BaseUnitTest[]) : void {
+		
+		if (!tests){ return; }
+
+		const startIndex = this._unitTests.length;
 		
 		tests.forEach( (t, index) => {
-			t.setRuleDirectoryPath(this.getDirectoryPath());
-
 			const newNumber = index + startIndex + 1;
 			t.setNumber(newNumber);
-
-			this._modularTests.push(t);
+			this._unitTests.push(t);
 		});
 	}
 
-	public setModularTests(tests: CorrelationUnitTest[]) : void {
-		this._modularTests = [];
-		tests.forEach( (t, index) => {
-			t.setRuleDirectoryPath(this.getDirectoryPath());
-
+	public setUnitTests(tests: BaseUnitTest[]) : void {
+		this._unitTests = [];
+		tests.forEach( (unitTest, index) => {
 			const newNumber = index + 1;
-			t.setNumber(newNumber);
-
-			this._modularTests.push(t);
+			unitTest.setNumber(newNumber);
+			unitTest.setRule(this);
+			this._unitTests.push(unitTest);
 		});
 	}
 
@@ -164,15 +153,11 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	 * Получает модульные тесты правила.
 	 * @returns модульные тесты.
 	 */
-	public getModularTests() : CorrelationUnitTest[] {
-		return this._modularTests;
+	public getUnitTests() : BaseUnitTest[] {
+		return this._unitTests;
 	}
 
-	public reloadModularTests() : void {
-		const modularTests = CorrelationUnitTest.parseFromRuleDirectory(this.getDirectoryPath(), this);
-		this._modularTests = [];
-		this.addModularTests(modularTests);
-	}
+	public abstract reloadUnitTests() : void;
 
 	public addIntegrationTests(tests: IntegrationTest[]) : void {
 		const ruleDirectoryPath = this.getDirectoryPath();
@@ -202,7 +187,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		this._integrationTests = [];
 	}
 
-	public getIntegrationTests() : IntegrationTest [] {
+	public getIntegrationTests() : IntegrationTest[] {
 		return this._integrationTests;
 	}
 
@@ -213,7 +198,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		this.addIntegrationTests(integrationTests);
 	}
 
-	public async saveIntegrationTest(ruleDirPath?: string) : Promise<void> {
+	public async saveIntegrationTests(ruleDirPath?: string) : Promise<void> {
 		for (const it of this._integrationTests)  {
 			if(ruleDirPath) {
 				it.setRuleDirectoryPath(ruleDirPath);
@@ -243,6 +228,14 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	public getLocalizations() : Localization[] {
 		return this._localizations;
 	}
+	
+	public setLocalizations(localizations: Localization[]) : void {
+		this._localizations = [];
+		this._metaInfo.setEventDescriptions([]);
+		localizations.forEach((loc) => {
+			this.addLocalization(loc);
+		});
+	}
 
 	public async saveLocalizations() : Promise<void> {
 
@@ -270,7 +263,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		const ruEventDescriptions = this._localizations.map( function(loc) {
 			const locId = loc.getLocalizationId();
 			if(!locId) {
-				throw new Error("Ошибка целостности локализаций правила, не задан localizationId");
+				throw new Error(`Ошибка целостности локализаций правила ${fullPath}, не задан localizationId`);
 			}
 
 			let ruText = loc.getRuLocalizationText();
@@ -332,65 +325,79 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		}
 	}
 
-	/**
-	 * Обновляет (удаляет, добавляет) локализации и нужную метаинформации.
-	 * @param localizations новые локализации
-	 */
-	public updateLocalizations(localizations : Localization[]) {
-
-		// Очищаем все метаданные о локализациях.
-		const metaInfo = this.getMetaInfo();
-		metaInfo.clearEventDescriptions();
-
-		const updatedLocalizations : Localization[] = [];
-		for (const localization of localizations) {
-
-			let locId = localization.getLocalizationId();
-
-			// Локализация без индетификатора локализации - новая локализация. 
-			if(locId) {
-				// Если есть LocalizationId, тогда добавляем как есть.
-				updatedLocalizations.push(localization);
-			} else {
-				locId = this.generateLocalizationId(updatedLocalizations);
-
-				// Добавляем связку в виде LocalizationId
-				localization.setLocalizationId(locId);
-	
-				// Дублируем описание в локализацию и добавляем её в новый список.
-				localization.setRuDescription(this.getRuDescription());
-				localization.setEnDescription(this.getEnDescription());
-				updatedLocalizations.push(localization);
+	private alreadyHaveSuchALocalization(localization : Localization) : boolean{
+		const localizations = this.getLocalizations();
+		for(const loc of localizations) {
+			if (loc.getCriteria() === localization.getCriteria()) {
+				return true;
 			}
-
-			// Добавляем в метаинформацию связку localizationId и criteria
-			const eventDesc = new MetaInfoEventDescription();
-			eventDesc.setCriteria(localization.getCriteria());
-			eventDesc.setLocalizationId(locId);
-
-			metaInfo.getEventDescriptions().push(eventDesc);
 		}
-
-		this._localizations = updatedLocalizations;
+		return false;
 	}
 
+	protected checkLocalizationConsistency(localizations: Localization[], metaInfo: MetaInfo) : boolean {
+		const metaLocIds = metaInfo.getEventDescriptions().map((ed) => {
+			return ed.getLocalizationId();
+		});
+
+		const localizationLocIds = localizations.map((loc) => {
+			return loc.getLocalizationId();
+		});
+
+		return metaLocIds.sort().join('_') === localizationLocIds.sort().join('_');
+	}
+
+	/**
+	 * Добавляет локализацию и нужную метаинформацию.
+	 * @param localization новая локализация
+	 */
+	public addLocalization(localization : Localization) {
+		const metaInfo = this.getMetaInfo();
+
+		// Если уже есть такая локализация
+		if (this.alreadyHaveSuchALocalization(localization)){
+			throw new XpException("Не могу добавить локализацию. Такой критерий уже присутствует.");
+		}
+
+		let locId = localization.getLocalizationId();
+
+		// Локализация без индетификатора локализации - новая локализация. 
+		if(locId) {
+			// Если есть LocalizationId, тогда добавляем как есть.
+			this._localizations.push(localization);
+		} else {
+			// Добавляем связку в виде LocalizationId
+			locId = this.generateLocalizationId();
+			localization.setLocalizationId(locId);
+
+			// Дублируем описание в локализацию и добавляем её в новый список.
+			localization.setRuDescription(this.getRuDescription());
+			localization.setEnDescription(this.getEnDescription());
+			this._localizations.push(localization);
+		}
+
+		// Добавляем в метаинформацию связку localizationId и criteria
+		const eventDesc = new MetaInfoEventDescription();
+		eventDesc.setCriteria(localization.getCriteria());
+		eventDesc.setLocalizationId(locId);
+		metaInfo.addEventDescriptions([eventDesc]);
+	}
+	
 
 	/**
 	 * Генерирует свободный идентификатор локализации
 	 * @returns возвращает свободный идентификатор локализации
 	 */
-	private generateLocalizationId(updatedLocalizations : Localization []) : string {
-
+	private generateLocalizationId() : string {
 		let name = this.getName();
-		if(!name) {
-			name = "name";
-		}
+		if(!name) { name = "name"; }
 
-		if(updatedLocalizations.length == 0) {
-			return `corrname_${name}`;	
+		const localizations = this.getLocalizations();
+
+		if(localizations.length == 0) {
+			return `${this.getLocalizationPrefix()}_${name}`;	
 		} else {
-			const locNumber: number = updatedLocalizations.length;
-			return `corrname_${name}_${locNumber}`;
+			return `${this.getLocalizationPrefix()}_${name}_${localizations.length + 1}`;
 		}
 	}
 	
@@ -400,7 +407,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	}
 
 	public getRuleFilePath(): string {
-		return path.join(this.getDirectoryPath(), this.getRuleFileName());
+		return path.join(this.getDirectoryPath(), this.getFileName());
 	}
 
 	/**
@@ -417,45 +424,33 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			return this._ruleCode;
 		}
 
-		throw new XpException("Отсутствует код правила.");
-	}
+		return "";
 
-	public setRuleFileName(fileName: string) {
-		this._fileName = fileName;
-	}
-
-	public getRuleFileName() : string {
-		return this._fileName;
+		// TODO: Обсудить нужно ли тут исключение
+		// при создании правила оно пустое и его можно переименовать
+		//throw new XpException("Отсутствует код правила.");
 	}
 
 	public async save(fullPath?: string) : Promise<void> {
 		throw new XpException("Сохранение данного типа контента не реализовано.");
 	}
 
-	public setParentPath(parentPath: string) : void{
-		this._parentPath = parentPath;
-	}
-
-	public getParentPath() : string{
-		return this._parentPath;
-	}
-
 	public setRuleCode(text: string): void {
 		this._ruleCode = text;
 	}
 
-	protected _metaInfo: MetaInfo = new MetaInfo();
+	iconPath = {
+		light: path.join(this.getResourcesPath(), 'light', 'rule.svg'),
+		dark: path.join(this.getResourcesPath(), 'dark', 'rule.svg')
+	};
 
 	protected _localizations: Localization [] = [];
-
-	// Тесты
-	protected _modularTests: CorrelationUnitTest [] = [];
+	protected _unitTests: BaseUnitTest [] = [];
 	protected _integrationTests : IntegrationTest [] = [];
 	
-	private _parentPath: string;
 	private _ruDescription : string;
 	private _enDescription : string;
 
 	protected _ruleCode : string;
-	private _fileName: string;
+	contextValue = "BaseRule";
 }

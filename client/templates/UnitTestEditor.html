@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+
+	<!--
+		Use a content security policy to only allow loading images from https or from our extension directory,
+		and only allow scripts that have a specific nonce.
+	-->
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Тесты</title>
+
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/main.css">
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/tests.css">
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/prism.css">
+
+</head>
+<style>
+	/* Please see the article */
+
+#editing, #highlighting {
+  /* Both elements need the same text and space styling so they are directly on top of each other */
+  margin: 10px;
+  padding: 10px;
+  border: 0;
+  width: calc(100% - 32px);
+  height: 100%;
+}
+#editing, #highlighting, #highlighting * {
+  /* Also add text styles to highlighing tokens */
+  font-size: 10pt;
+  font-family: monospace;
+  line-height: 1.5;
+  tab-size: 2;
+}
+
+
+#expectation {
+  /* In the same place */
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1000px;
+}
+
+#editing, #highlighting {
+  /* In the same place */
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+
+/* Move the textarea in front of the result */
+
+#editing {
+  z-index: 1;
+}
+#highlighting {
+  z-index: 0;
+}
+
+
+/* Make textarea almost completely transparent */
+
+#editing {
+  color: transparent;
+  background: transparent;
+  caret-color: white; /* Or choose your favourite color */
+}
+
+/* Can be scrolled */
+#editing, #highlighting {
+  overflow: auto;
+  white-space: nowrap; /* Allows textarea to scroll horizontally */
+}
+
+/* No resize on textarea */
+#editing {
+  resize: none;
+}
+
+/* Paragraphs; First Image */
+* {
+  font-family: "Fira Code", monospace;
+}
+p code {
+  border-radius: 2px;
+  background-color: #eee;
+  color: #111;
+}
+
+.norm-wrapper {
+  display: flex;
+}
+
+.block {
+  display: inline-block;
+  width: 500px;
+  margin: 2px;
+}
+
+</style>
+	<body>
+		<!-- Common Panel -->
+		<div id="header">
+		{{#UnitTest}}
+			<input id="run_test" class="run {{TestStatus}}" name="run-test" type="button" value="&#9654;   Запустить тест  ">	
+		{{/UnitTest}}
+			<input id="save_test" class="save" name="save-test" type="button" value="Сохранить">
+	    </div>
+
+		<!-- Tab content -->
+		<div id="main-body" class="unit-test">
+		{{#UnitTest}}
+		<div id="{{TestNumber}}" name="test" data-test="{{JsonedTestObject}}" class="tabcontent">
+			<!-- Raw Events -->
+			<div class="test_block">			
+				<div class="block_header">
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
+					<label for="raw-event" class="label">Сырое событие:</label>
+				</div>
+				
+				<div class="manage_buttons">
+					<input type="checkbox" name="word-wrap" onclick="wrap(this);" checked>
+					<label for="word-wrap">Переносить по словам</label>
+				</div>
+
+				<div class="text">
+					<textarea name="raw-event">{{TestInput}}</textarea>
+				</div>	
+			</div>
+
+			<div class="norm-wrapper">  
+				<!-- Test Conditions -->
+				<div class="test_block">
+					<div class="block_header">
+						<div class="scrolldown" onclick="toggleCode(this)">ᐯ</div>
+						<label for="expect" class="label">Ожидаемый результат:</label>
+					</div>
+					<div class="text block">
+						<div id="expectation">
+							<textarea name="expect" id="editing" spellcheck="false" oninput="update(this.value); sync_scroll(this);" onscroll="sync_scroll(this);" onkeydown="check_tab(this, event);">{{TestExpectation}}</textarea>
+							<pre id="highlighting" aria-hidden="true">
+								<code class="language-json" id="highlighting-content">{{TestExpectation}}</code>
+							</pre>
+						</div>
+					</div>
+				</div>
+
+				{{#TestOutput}}
+				<!-- Test Conditions -->
+				<div class="result_block">
+					<div class="block_header">
+						<div class="scrolldown" onclick="toggleCode(this)">ᐯ</div>
+						<label for="result" class="label">Полученный результат:</label>
+					</div>
+					<div class="block">
+						<div id="result">
+							<pre class="language-diff-json">
+								<code class="diff-highlight">{{TestOutput}}</code>
+							</pre>
+						</div>
+					</div>
+				</div>
+				{{/TestOutput}}
+			</div>
+		</div>
+		{{/UnitTest}}
+		</div>
+		
+		<!-- Для отладки в браузере добавляю прямую ссылку на JQuery. -->
+		<script	src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
+		<script src="{{{ExtensionBaseUri}}}/client/templates/js/prism.js"></script>
+		<script src="{{{ExtensionBaseUri}}}/client/templates/js/unittest/code.js"></script>
+
+		<!-- <script>
+			function update(text) {
+				let result_element = document.querySelector("#highlighting-content");
+				// Handle final newlines (see article)
+				if(text[text.length-1] == "\n") {
+					text += " ";
+				}
+				// Update code
+				result_element.innerHTML = text.replace(new RegExp("&", "g"), "&amp;").replace(new RegExp("<", "g"), "&lt;"); /* Global RegExp */
+				// Syntax Highlight
+				Prism.highlightElement(result_element);
+			}
+
+			function sync_scroll(element) {
+				/* Scroll result to scroll coords of event - sync with textarea */
+				let result_element = document.querySelector("#highlighting");
+				// Get and set x and y
+				result_element.scrollTop = element.scrollTop;
+				result_element.scrollLeft = element.scrollLeft;
+			}
+
+			function check_tab(element, event) {
+				let code = element.value;
+				if(event.key == "Tab") {
+					/* Tab key pressed */
+					event.preventDefault(); // stop normal
+					let before_tab = code.slice(0, element.selectionStart); // text before tab
+					let after_tab = code.slice(element.selectionEnd, element.value.length); // text after tab
+					let cursor_pos = element.selectionStart + 1; // where cursor moves after tab - moving forward by 1 char to after tab
+					element.value = before_tab + "\t" + after_tab; // add tab char
+					// move cursor
+					element.selectionStart = cursor_pos;
+					element.selectionEnd = cursor_pos;
+					update(element.value); // Update text to include indent
+				}
+			}
+
+			// word wrap/unwrap with button
+			function wrap(check) {
+				const textField = check.parentNode.parentNode.children[2].children[0];
+				if (textField.wrap == "off") {
+					check.checked = true;
+					textField.wrap = "on";
+					textField.style.height = textField.scrollHeight + "px";
+				} else {
+					check.checked = false;
+					textField.wrap = "off";
+					//textField.focus();
+				}
+			}
+
+			var vscode = acquireVsCodeApi();
+
+			// Получение команд от расширения.
+			window.addEventListener(
+				'message', 
+				(event) => {
+					const message = event.data; 
+					switch (message.command) {
+						case 'updateRawEvent': {
+							const rawEvent = message.rawEvent;
+							if(!rawEvent) {
+								alert("Ошибка обновления сырых событий.");
+								return;
+							}
+							
+							// Задаем новое значение сырых событий.
+							baseTestElement = "#main-body";
+							baseTestElement.find('[name="raw_event"]').val(rawEvents);
+							break;
+						}
+						case 'updateExpectation': {
+							const expectation = message.expectation;
+							if(!expectation) {
+								alert("Ошибка обновления кода теста событий.");
+								return;
+							}
+							baseTestElement = "#main-body";
+							baseTestElement.find('[name="expect"]').val(expectation);
+							break;
+						}
+					}
+			});
+
+			$(document).ready(function() {
+				// Грязный хак, позволяющий убрать ошибку двойного копирование по сочетаниям Ctrl+C и Ctrl+V.
+				var ctrlDown = false,
+				ctrlKey = 17,
+				cmdKey = 91,
+				vKey = 86,
+				cKey = 67;
+
+				$(document).keydown(function(e) {
+					if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
+				}).keyup(function(e) {
+					if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
+				});
+
+				// Document Ctrl + C/V 
+				$(document).keydown(function(e) {
+					if (ctrlDown && (e.keyCode == vKey)) {
+						e.preventDefault();
+					}
+				});
+
+				raws = $('[name=word-wrap]');
+				for (i = 0; i < raws.length; i++) {
+					wrap(raws[i]);
+				}
+				
+				// Полный тест
+				$(document).on("click",'[name="runTest"]', function () {	
+					const baseTestElement = "#main-body";
+					const testObject = baseTestElement.data("test");
+					const id = $(this).attr('id');
+					if(id == "0") {
+						return;
+					}
+					const rawEvent = $(this).find('[name="rawEvent"]').val();
+					const expectation = $(this).find('[name="expect"]').val();
+
+					test = {
+						"number" : id,
+						"rawEvents" : rawEvent,
+						"testCode" : expectation
+					};				
+
+					vscode.postMessage({
+						command: 'runTest',
+						tests: test
+					});
+				});
+
+				// Сохраняем тест
+				$(document).on("click",'#save_test', function () {
+
+					// Получаем значения.					
+					const baseTestElement = "#main-body";
+					const testObject = baseTestElement.data("test");
+					const rawEvent = baseTestElement.find('[name="raw_event"]').val();
+					const expectation = baseTestElement.find('[name="expect"]').val();
+
+					vscode.postMessage({
+						command: 'saveTest',
+						test: testObject,
+						activeTestNumber : activeTestNumber,
+						newValues: {
+							"rawEvent" : rawEvent,
+							"expectation" : expectation,
+						}
+					});
+				});
+			});
+		</script> -->
+	</body>
+</html>
