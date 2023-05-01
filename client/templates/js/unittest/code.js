@@ -165,7 +165,7 @@ $(document).ready(function() {
 		const baseTestElement = $("#main-body");
 		const id = parseInt(baseTestElement.find('[name="test"]')[0].id);
 		const rawEvent = baseTestElement.find('[name="raw-event"]').val();
-		const expectation = baseTestElement.find('[name="expect"]').val();
+		const expectation = baseTestElement.find('[name="expected"]').val();
 
 		vscode.postMessage({
 			command: 'saveTest',
