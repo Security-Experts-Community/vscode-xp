@@ -16,6 +16,8 @@ export class CreateRuleViewProvider {
 
     public static showCreateCorrelationViewCommand = 'KnowledgebaseTree.showCreateCorrelationView';
     public static showCreateEnrichmentViewCommand = 'KnowledgebaseTree.showCreateEnrichmentView';
+	public static showCreateNormalizationViewCommand = 'KnowledgebaseTree.showCreateNormalizationView';
+
 
     private constructor(
         private readonly _config: Configuration,
@@ -52,6 +54,16 @@ export class CreateRuleViewProvider {
                 }
             )
         );
+
+        config.getContext().subscriptions.push(
+            vscode.commands.registerCommand(
+                CreateRuleViewProvider.showCreateNormalizationViewCommand,
+                async (selectedItem: RuleBaseItem) => {
+                    const parentFullPath = selectedItem.getDirectoryPath();
+                    return createCorrelationViewProvider.showCreateNormalizationView(parentFullPath);
+                }
+            )
+        );
     }
 
     public showCreateCorrelationView(ruleFullPath: string): void {
@@ -72,6 +84,17 @@ export class CreateRuleViewProvider {
             "Создать обогащение",
             "createEnrichment", 
             "обогащения", 
+            ruleFullPath,
+            templateNames);
+    }
+
+    public showCreateNormalizationView(ruleFullPath: string) : void {
+        const templateNames = ContentHelper.getTemplateNames(this._config, ContentHelper.NORMALIZATIONS_DIRECTORY_NAME);
+
+        this.showCreateRuleView(
+            "Создать нормализацию",
+            "createNormalization", 
+            "нормализации", 
             ruleFullPath,
             templateNames);
     }
@@ -166,19 +189,24 @@ export class CreateRuleViewProvider {
         try {
             switch (message.command) {
                 case 'createCorrelation': {
-                    const ruleFromTemplate = await ContentHelper.createCorrelationFromTemplate(ruleName, templateName, this._config);
-                    await ruleFromTemplate.save(ruleParentPath);
+                    rule = await ContentHelper.createCorrelationFromTemplate(ruleName, templateName, this._config);
+                    await rule.save(path.join(ruleParentPath, ContentHelper.CORRELATIONS_DIRECTORY_NAME));
                     break;
                 }
                 case 'createEnrichment': {
-                    const ruleFromTemplate = await ContentHelper.createEnrichmentFromTemplate(ruleName, templateName, this._config);
-                    await ruleFromTemplate.save(ruleParentPath);
+                    rule = await ContentHelper.createEnrichmentFromTemplate(ruleName, templateName, this._config);
+                    await rule.save(path.join(ruleParentPath, ContentHelper.ENRICHMENTS_DIRECTORY_NAME));
+                    break;
+                }
+                case 'createNormalization': {
+                    rule = await ContentHelper.createNormalizationFromTemplate(ruleName, templateName, this._config);
+                    await rule.save(path.join(ruleParentPath, ContentHelper.NORMALIZATIONS_DIRECTORY_NAME));
                     break;
                 }
             }
         }
         catch (error) {
-            ExtensionHelper.showError(`Ошибка создания и сохранения корреляции '${ruleName}'.`, error.message);
+            ExtensionHelper.showError(`Ошибка создания и сохранения правила '${ruleName}'.`, error);
             return;
         }
 
