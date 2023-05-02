@@ -280,6 +280,11 @@
 					"group": "create@2"
 				},
 				{
+					"command": "KnowledgebaseTree.showCreateNormalizationView",
+					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
+					"group": "create@3"
+				},
+				{
 					"command": "SiemContentEditor.createSubFolderCommand",
 					"when": "view == KnowledgebaseTree && viewItem == AnotherFolder",
 					"group": "folder@1"
@@ -402,6 +407,11 @@
 			{
 				"command": "KnowledgebaseTree.showCreateEnrichmentView",
 				"title": "Создать обогащение",
+				"category": "Редактор контента"
+			},			
+			{
+				"command": "KnowledgebaseTree.showCreateNormalizationView",
+				"title": "Создать нормализацию",
 				"category": "Редактор контента"
 			},
 			{

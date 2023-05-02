@@ -8,6 +8,7 @@ import { Enrichment } from '../models/content/enrichment';
 import { XpException } from '../models/xpException';
 import { FileSystemHelper } from './fileSystemHelper';
 import { KbHelper } from './kbHelper';
+import { Normalization } from '../models/content/normalization';
 
 export class ContentHelper {
 
@@ -65,6 +66,27 @@ export class ContentHelper {
         await ruleFromTemplate.rename(ruleName);
 
         // Задаем ObjectID только при создании обогащения.
+        const contentPrefix = Configuration.get().getContentPrefix();
+        const objectId = KbHelper.generateRuleObjectId(ruleName, contentPrefix);
+        ruleFromTemplate.getMetaInfo().setObjectId(objectId);
+        return ruleFromTemplate;
+    }
+
+    public static async createNormalizationFromTemplate(
+        ruleName : string,
+        templateName : string,
+        config: Configuration) : Promise<Normalization> {
+
+        const templatesPath = path.join(config.getExtensionPath(), this.CONTENT_TEMPLATES_DIRECTORY_NAME, this.NORMALIZATIONS_DIRECTORY_NAME);
+        const tmpDirPath = config.getRandTmpSubDirectoryPath();
+        await this.copyContentTemplateToTmpDirectory(templateName, templatesPath, tmpDirPath);
+
+        // Копируем во временную директорию и переименовываем.
+        const templateTmpDirPath = path.join(tmpDirPath, templateName);
+        const ruleFromTemplate = await Normalization.parseFromDirectory(templateTmpDirPath);
+        await ruleFromTemplate.rename(ruleName);
+
+        // Задаем ObjectID только при создании нормализации.
         const contentPrefix = Configuration.get().getContentPrefix();
         const objectId = KbHelper.generateRuleObjectId(ruleName, contentPrefix);
         ruleFromTemplate.getMetaInfo().setObjectId(objectId);
@@ -132,6 +154,7 @@ export class ContentHelper {
 
     public static CORRELATIONS_DIRECTORY_NAME  = "correlation_rules";
     public static ENRICHMENTS_DIRECTORY_NAME  = "enrichment_rules";
+    public static NORMALIZATIONS_DIRECTORY_NAME  = "normalization_formulas";
     public static CONTENT_TEMPLATES_DIRECTORY_NAME  = "content_templates";
 }
 

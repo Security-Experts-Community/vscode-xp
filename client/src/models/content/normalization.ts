@@ -12,6 +12,7 @@ import { NormalizationUnitTestsRunner } from '../tests/normalizationUnitTestsRun
 import { Configuration } from '../configuration';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { NormalizationUnitTestOutputParser } from '../tests/normalizationUnitTestOutputParser';
+import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 
 
 export class Normalization extends RuleBaseItem {
@@ -54,8 +55,35 @@ export class Normalization extends RuleBaseItem {
 		this.setName(newName);
 	}
 
-	public async save(fullPath: string): Promise<void> {
-		throw new Error('Method not implemented.');
+	public async save(parentFullPath: string): Promise<void> {
+		// Путь либо передан как параметр, либо он уже задан в правиле.
+		let rulePath = "";
+		if (parentFullPath) {
+			rulePath = path.join(parentFullPath, this._name);
+			this.setParentPath(parentFullPath);
+		} else {
+			const parentPath = this.getParentPath();
+			if (!parentPath) {
+				throw new Error("Не задан путь для сохранения нормализации.");
+			}
+			rulePath = this.getDirectoryPath();
+		}
+
+		if (!fs.existsSync(rulePath)) {
+			await fs.promises.mkdir(rulePath, {recursive: true});
+		}
+
+		const ruleFullPath = path.join(rulePath, this.getFileName());
+		if (this._ruleCode) {
+			await FileSystemHelper.writeContentFile(ruleFullPath, this._ruleCode);
+		} else {
+			await FileSystemHelper.writeContentFile(ruleFullPath, "");
+		}
+
+		await this.getMetaInfo().save(rulePath);
+		await this.saveLocalizationsImpl(rulePath);
+		await this.saveIntegrationTests(rulePath);
+		await this.saveUnitTests();
 	}
 
 	private constructor(name: string, parentDirectoryPath?: string) {

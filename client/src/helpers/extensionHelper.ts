@@ -29,9 +29,7 @@ export class ExtensionHelper {
 
 	static showError(userMessage: string, error: Error) {
 		const message = `\n\nMessage: ${error.message}`;
-		const stack = `\n\nStack Trace: ${error.stack}`;
-
-		vscode.window.showErrorMessage(userMessage + message + stack);
+		vscode.window.showErrorMessage(userMessage + message);
 		
 		console.log(error.message);
 		console.log(error.stack);
