@@ -129,12 +129,12 @@ export class IntegrationTest {
 		}
 
 		if(!fs.existsSync(this._ruleDirectoryPath)) {
-			await fs.promises.mkdir(this._ruleDirectoryPath);
+			await fs.promises.mkdir(this._ruleDirectoryPath, {recursive: true});
 		}
 
 		const testDirectoryPath = path.join(this._ruleDirectoryPath, `tests`);
 		if(!fs.existsSync(testDirectoryPath)) {
-			await fs.promises.mkdir(testDirectoryPath);
+			await fs.promises.mkdir(testDirectoryPath, {recursive: true});
 		}
 
 		// Позволяет сохранять тест без кода теста для нормализации событий, если нам сам тест не нужен.

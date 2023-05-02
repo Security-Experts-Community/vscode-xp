@@ -149,6 +149,20 @@ export class CreateRuleViewProvider {
         }
     }
 
+    // Функция добавляет defaultFolder к parentPath, если последний является путём к пакету
+    private getPath(parentPath: string, defaultFolder: string) : string {
+        // Магическая функция получения декартового произведения
+        const cartesian = (...args) => args.reduce((root, packs) => root.flatMap(root => packs.map(pack => [root, pack].flat())));
+        const packages = this._config.getPackages();
+        const packageRoots = this._config.getContentRoots();
+        // Получаем векторное произведение массивов
+        const array = cartesian(packageRoots, packages);
+        // Объединяем элементы массивов в пути
+        const packagesPaths = array.map(arr => path.join.apply(null, arr));
+        // Если текущий путь есть в списке, значит происходит создание через контекстное меню пакета
+        return packagesPaths.includes(parentPath) ? path.join(parentPath, defaultFolder) : parentPath;
+    }
+
     async receiveMessageFromWebView(message: any) {
 
         // Парсим и проверяем полученные параметры.
@@ -189,38 +203,20 @@ export class CreateRuleViewProvider {
         try {
             switch (message.command) {
                 case 'createCorrelation': {
-                    let newRuleFullPath = "";
-                    // не создаём вложенную подпапку с названием типа правила, если создаём внутри неё
-                    if(path.basename(ruleParentPath) === ContentHelper.CORRELATIONS_DIRECTORY_NAME) {
-                        newRuleFullPath = ruleParentPath;
-                    } else {
-                        newRuleFullPath = path.join(ruleParentPath, ContentHelper.CORRELATIONS_DIRECTORY_NAME);
-                    }
                     rule = await ContentHelper.createCorrelationFromTemplate(ruleName, templateName, this._config);
+                    const newRuleFullPath = this.getPath(ruleParentPath, ContentHelper.CORRELATIONS_DIRECTORY_NAME);
                     await rule.save(newRuleFullPath);
                     break;
                 }
-                case 'createEnrichment': {
-                    let newRuleFullPath = "";
-                    // не создаём вложенную подпапку с названием типа правила, если создаём внутри неё
-                    if(path.basename(ruleParentPath) === ContentHelper.ENRICHMENTS_DIRECTORY_NAME) {
-                        newRuleFullPath = ruleParentPath;
-                    } else {
-                        newRuleFullPath = path.join(ruleParentPath, ContentHelper.ENRICHMENTS_DIRECTORY_NAME);
-                    }
+                case 'createEnrichment': {                    
                     rule = await ContentHelper.createEnrichmentFromTemplate(ruleName, templateName, this._config);
+                    const newRuleFullPath = this.getPath(ruleParentPath, ContentHelper.ENRICHMENTS_DIRECTORY_NAME);
                     await rule.save(newRuleFullPath);
                     break;
                 }
                 case 'createNormalization': {
-                    let newRuleFullPath = "";
-                    // не создаём вложенную подпапку с названием типа правила, если создаём внутри неё
-                    if(path.basename(ruleParentPath) === ContentHelper.NORMALIZATIONS_DIRECTORY_NAME) {
-                        newRuleFullPath = ruleParentPath;
-                    } else {
-                        newRuleFullPath = path.join(ruleParentPath, ContentHelper.NORMALIZATIONS_DIRECTORY_NAME);
-                    }
                     rule = await ContentHelper.createNormalizationFromTemplate(ruleName, templateName, this._config);
+                    const newRuleFullPath = this.getPath(ruleParentPath, ContentHelper.NORMALIZATIONS_DIRECTORY_NAME);
                     await rule.save(newRuleFullPath);
                     break;
                 }
@@ -235,7 +231,7 @@ export class CreateRuleViewProvider {
         await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
         await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, rule);
         
-        ExtensionHelper.showUserInfo("Правило успешно создано");
+        ExtensionHelper.showUserInfo(`Правило ${ruleName} успешно создано`);
         this._view.dispose();
     }
 

@@ -24,12 +24,12 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 		const rootFolder = path.basename(root);
 		const outputFolder = this._config.getOutputDirectoryPath(rootFolder);
 		if(!fs.existsSync(outputFolder)) {
-			fs.mkdirSync(outputFolder);
+			fs.mkdirSync(outputFolder, {recursive: true});
 		}
 		
 		const tmpDirPath = this._config.getTmpDirectoryPath(rootFolder);
 		if(!fs.existsSync(tmpDirPath)) {
-			fs.mkdirSync(tmpDirPath);
+			fs.mkdirSync(tmpDirPath, {recursive: true});
 		}
 
 		if(!this._config.isKbOpened()) {

@@ -66,7 +66,7 @@ export class Enrichment extends RuleBaseItem {
 		}
 
 		if (!fs.existsSync(directoryFullPath)) {
-			await fs.promises.mkdir(directoryFullPath);
+			await fs.promises.mkdir(directoryFullPath, {recursive: true});
 		}
 
 		const ruleFullPath = path.join(directoryFullPath, this.getFileName());
