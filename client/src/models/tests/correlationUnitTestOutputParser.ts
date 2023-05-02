@@ -16,7 +16,7 @@ export class CorrelationUnitTestOutputParser implements UnitTestOutputParser {
 			if (pattern && pattern.length > 1){
 				const results = pattern.slice(1);
 				const expected = /\{.*?\}/m.exec(expectation);
-				const multipleExpectatoin = !!/expect.*expect/sm.exec(expectation);
+				const multipleExpectatoin = !!/expect\s+(\d+|not).*expect\s+(\d+|not)/sm.exec(expectation);
 				if (results.length == 1 && !multipleExpectatoin){
 					const result = JSON.parse(results[0]);
 					if (expected) {

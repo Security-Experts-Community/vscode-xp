@@ -70,7 +70,11 @@ export class Enrichment extends RuleBaseItem {
 		}
 
 		const ruleFullPath = path.join(directoryFullPath, this.getFileName());
-		await FileSystemHelper.writeContentFile(ruleFullPath, this._ruleCode);
+		if (this._ruleCode) {
+			await FileSystemHelper.writeContentFile(ruleFullPath, this._ruleCode);
+		} else {
+			await FileSystemHelper.writeContentFile(ruleFullPath, "");
+		}
 
 		await this.getMetaInfo().save(directoryFullPath);
 		await this.saveLocalizationsImpl(directoryFullPath);

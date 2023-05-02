@@ -189,18 +189,39 @@ export class CreateRuleViewProvider {
         try {
             switch (message.command) {
                 case 'createCorrelation': {
+                    let newRuleFullPath = "";
+                    // не создаём вложенную подпапку с названием типа правила, если создаём внутри неё
+                    if(path.basename(ruleParentPath) === ContentHelper.CORRELATIONS_DIRECTORY_NAME) {
+                        newRuleFullPath = ruleParentPath;
+                    } else {
+                        newRuleFullPath = path.join(ruleParentPath, ContentHelper.CORRELATIONS_DIRECTORY_NAME);
+                    }
                     rule = await ContentHelper.createCorrelationFromTemplate(ruleName, templateName, this._config);
-                    await rule.save(path.join(ruleParentPath, ContentHelper.CORRELATIONS_DIRECTORY_NAME));
+                    await rule.save(newRuleFullPath);
                     break;
                 }
                 case 'createEnrichment': {
+                    let newRuleFullPath = "";
+                    // не создаём вложенную подпапку с названием типа правила, если создаём внутри неё
+                    if(path.basename(ruleParentPath) === ContentHelper.ENRICHMENTS_DIRECTORY_NAME) {
+                        newRuleFullPath = ruleParentPath;
+                    } else {
+                        newRuleFullPath = path.join(ruleParentPath, ContentHelper.ENRICHMENTS_DIRECTORY_NAME);
+                    }
                     rule = await ContentHelper.createEnrichmentFromTemplate(ruleName, templateName, this._config);
-                    await rule.save(path.join(ruleParentPath, ContentHelper.ENRICHMENTS_DIRECTORY_NAME));
+                    await rule.save(newRuleFullPath);
                     break;
                 }
                 case 'createNormalization': {
+                    let newRuleFullPath = "";
+                    // не создаём вложенную подпапку с названием типа правила, если создаём внутри неё
+                    if(path.basename(ruleParentPath) === ContentHelper.NORMALIZATIONS_DIRECTORY_NAME) {
+                        newRuleFullPath = ruleParentPath;
+                    } else {
+                        newRuleFullPath = path.join(ruleParentPath, ContentHelper.NORMALIZATIONS_DIRECTORY_NAME);
+                    }
                     rule = await ContentHelper.createNormalizationFromTemplate(ruleName, templateName, this._config);
-                    await rule.save(path.join(ruleParentPath, ContentHelper.NORMALIZATIONS_DIRECTORY_NAME));
+                    await rule.save(newRuleFullPath);
                     break;
                 }
             }
