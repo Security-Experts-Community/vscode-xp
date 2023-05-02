@@ -2,15 +2,15 @@ import { CorrelationUnitTest } from './correlationUnitTest';
 
 export class FastTest extends CorrelationUnitTest {
 
-	// public async close(): Promise<void>{
-	// 	//
-	// }
+	constructor(testNumber: number){
+		super(testNumber);
+	}
 
-	public getTestPath() {
+	public getTestExpectationPath() {
 		return this._testFilePath;
 	}
 
-	public setTestPath(testFilePath : string) : void {
+	public setTestExpectationPath(testFilePath : string) : void {
 		this._testFilePath = testFilePath;
 	}
 
