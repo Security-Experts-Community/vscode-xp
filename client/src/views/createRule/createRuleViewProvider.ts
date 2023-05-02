@@ -208,7 +208,7 @@ export class CreateRuleViewProvider {
                     await rule.save(newRuleFullPath);
                     break;
                 }
-                case 'createEnrichment': {                    
+                case 'createEnrichment': {
                     rule = await ContentHelper.createEnrichmentFromTemplate(ruleName, templateName, this._config);
                     const newRuleFullPath = this.getPath(ruleParentPath, ContentHelper.ENRICHMENTS_DIRECTORY_NAME);
                     await rule.save(newRuleFullPath);
