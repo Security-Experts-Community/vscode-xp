@@ -37,38 +37,50 @@ export class CorrelationUnitTest extends BaseUnitTest {
 		return true;
 	}
 
+	public static fixStrings(rulePart: string): string {
+		let data = rulePart.replace(/\r/gms, '');
+		data = data.replace(/^\s*\n/gms, '');
+		data = data.replace(/#(\S)/gms, '# $1');
+		return data.trim();
+	}
+
 	public static readFromFile(filePath: string, rule: RuleBaseItem): CorrelationUnitTest {
 		if (!fs.existsSync(filePath)){
 			throw new XpException(`Невозможно создать тест. Файла ${filePath} нет на диске`);
 		}		
 		let testFileContent = fs.readFileSync(filePath, "utf8");
-		testFileContent = TestHelper.minifyTestCodeAndEvents(testFileContent);
+		testFileContent = TestHelper.compressTestCode(testFileContent);
 
 		const unitTest = rule.createNewUnitTest();
-		if (this.containsInputData(testFileContent)) {
-			const pattern = /(?:^#.*$|\r?\n)*^(?:\{.*?\}$)(?:\s*(?:^\{.*?\}$))*/m;
-			const inputData = pattern.exec(testFileContent);
-			let data = inputData[0].replace(/\r/gms, '');
-			data = data.replace(/^\s*\n/gms, '');
-			data = data.replace(/#(\S)/gms, '# $1');
-			unitTest.setTestInputData(data.trim());
-		}
 		
-		if (this.containsExpectation(testFileContent)) {
-			const pattern = /(?:^#.*$|\r?\n)*(?:table_list\s+default\r?\n)?(?:table_list\s+\{.*?\}\r?\n)?(?:^expect\s+(?:\d+|not)\s+\{.*?\}$)(?:\s*(?:^expect\s+(?:\d+|not)\s+\{.*?\}$))*/m;
-			const expectation = pattern.exec(testFileContent);
-			let data = expectation[0].replace(/\r/gms, '');
-			data = data.replace(/^\s*\n/gms, '');
-			data = data.replace(/#(\S)/gms, '# $1');
-			unitTest.setTestExpectation(data.trim());
+		let inputData = "";
+
+		const table_list_default =  /(?:^#.*$|\r?\n)*^table_list\s+default$/m.exec(testFileContent);
+		if (table_list_default && table_list_default.length === 1) {
+			inputData += '\n' + this.fixStrings(table_list_default[0]);
 		}
 
-		// TODO: возможно, в этом случае нужно предложить пользователю дефолтное заполнение
-        if (unitTest.getTestExpectation() === unitTest.getDefaultExpectation()
-         && unitTest.getTestInputData() === unitTest.getDefaultInputData()) {
-            unitTest.setTestExpectation(testFileContent);
-            unitTest.setTestInputData("");
-        }	
+		const table_list =  /(?:^#.*$|\r?\n)*^table_list\s+\{.*?\}$/m.exec(testFileContent);
+		if (table_list && table_list.length === 1) {
+			inputData += '\n' + this.fixStrings(table_list[0]);
+		}
+
+		let m: RegExpExecArray;
+		const event_pattern = /(?:^#.*?$|\s)*(?:^\{.*?\}$)/gm;
+		while((m = event_pattern.exec(testFileContent))) {
+			inputData += '\n' + this.fixStrings(m[0]);
+		}
+
+		if (inputData && inputData !== '') {
+			unitTest.setTestInputData(inputData.trim());
+		}
+
+		const pattern = /(?:^#.*$|\r?\n)*(?:^expect\s+(?:\d+|not)\s+\{.*?\}$)(?:\s*(?:^expect\s+(?:\d+|not)\s+\{.*?\}$))*/m;
+		const expectation = pattern.exec(testFileContent);
+		if(expectation && expectation.length === 1) {
+			const expectedCondition = expectation[0].replace(unitTest.getDefaultInputData(), '');
+			unitTest.setTestExpectation(this.fixStrings(expectedCondition));
+		}
 
 		unitTest.command = { 
 			command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,  
@@ -134,12 +146,12 @@ export class CorrelationUnitTest extends BaseUnitTest {
 		// }
 
 		// Модульные тесты корреляций содержат условия и начальные данные в одном файле
-		const minifiedTestInput = TestHelper.minifyTestCodeAndEvents(this.getTestInputData());
+		const minifiedTestInput = TestHelper.compressTestCode(this.getTestInputData());
 		this.setTestInputData(minifiedTestInput);
-		const mitifiedTestExpectation = TestHelper.minifyTestCodeAndEvents(this.getTestExpectation());
+		const mitifiedTestExpectation = TestHelper.compressTestCode(this.getTestExpectation());
 		this.setTestExpectation(mitifiedTestExpectation);
 
-		const fileContent = mitifiedTestExpectation + '\n\n' + minifiedTestInput;
+		const fileContent = minifiedTestInput + '\n\n' + mitifiedTestExpectation;
 		const filePath = this.getTestExpectationPath();
 		
 		return fs.writeFileSync(filePath, fileContent, FileSystemHelper._fileEncoding);

@@ -39,10 +39,20 @@
 #expectation {
   /* In the same place */
   position: relative;
-  top: 0;
+  top: 20px;
   left: 0;
   width: 100%;
   height: 1000px;
+}
+
+.expected-block {
+    float: left;
+    width: 50%;
+}
+
+.result-block {
+    float: left;
+    width: 50%;
 }
 
 #editing, #highlighting {
@@ -109,7 +119,7 @@ p code {
 		{{#UnitTest}}
 			<input id="run_test" class="run {{TestStatus}}" name="run-test" type="button" value="&#9654;   Запустить тест  ">	
 		{{/UnitTest}}
-			<input id="save_test" class="save" name="save-test" type="button" value="Сохранить">
+			<input id="save_test" class="save" name="save-test" type="button" value="Сохранить тест">
 	    </div>
 
 		<!-- Tab content -->
@@ -133,16 +143,16 @@ p code {
 				</div>	
 			</div>
 
-			<div class="norm-wrapper">  
+			<div class="expected-and-results">  
 				<!-- Test Conditions -->
-				<div class="test_block">
-					<div class="block_header">
+				<div class="expected-block">
+					<div class="header">
 						<div class="scrolldown" onclick="toggleCode(this)">ᐯ</div>
-						<label for="expect" class="label">Ожидаемый результат:</label>
+						<label for="expected" class="label">Ожидаемый результат:</label>
 					</div>
-					<div class="text block">
+					<div class="expected text">
 						<div id="expectation">
-							<textarea name="expect" id="editing" spellcheck="false" oninput="update(this.value); sync_scroll(this);" onscroll="sync_scroll(this);" onkeydown="check_tab(this, event);">{{TestExpectation}}</textarea>
+							<textarea name="expected" id="editing" spellcheck="false" oninput="update(this.value); sync_scroll(this);" onscroll="sync_scroll(this);" onkeydown="check_tab(this, event);">{{TestExpectation}}</textarea>
 							<pre id="highlighting" aria-hidden="true">
 								<code class="language-json" id="highlighting-content">{{TestExpectation}}</code>
 							</pre>
@@ -151,9 +161,9 @@ p code {
 				</div>
 
 				{{#TestOutput}}
-				<!-- Test Conditions -->
-				<div class="result_block">
-					<div class="block_header">
+				<!-- Test Result -->
+				<div class="result-block">
+					<div class="header">
 						<div class="scrolldown" onclick="toggleCode(this)">ᐯ</div>
 						<label for="result" class="label">Полученный результат:</label>
 					</div>
@@ -176,160 +186,5 @@ p code {
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/prism.js"></script>
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/unittest/code.js"></script>
-
-		<!-- <script>
-			function update(text) {
-				let result_element = document.querySelector("#highlighting-content");
-				// Handle final newlines (see article)
-				if(text[text.length-1] == "\n") {
-					text += " ";
-				}
-				// Update code
-				result_element.innerHTML = text.replace(new RegExp("&", "g"), "&amp;").replace(new RegExp("<", "g"), "&lt;"); /* Global RegExp */
-				// Syntax Highlight
-				Prism.highlightElement(result_element);
-			}
-
-			function sync_scroll(element) {
-				/* Scroll result to scroll coords of event - sync with textarea */
-				let result_element = document.querySelector("#highlighting");
-				// Get and set x and y
-				result_element.scrollTop = element.scrollTop;
-				result_element.scrollLeft = element.scrollLeft;
-			}
-
-			function check_tab(element, event) {
-				let code = element.value;
-				if(event.key == "Tab") {
-					/* Tab key pressed */
-					event.preventDefault(); // stop normal
-					let before_tab = code.slice(0, element.selectionStart); // text before tab
-					let after_tab = code.slice(element.selectionEnd, element.value.length); // text after tab
-					let cursor_pos = element.selectionStart + 1; // where cursor moves after tab - moving forward by 1 char to after tab
-					element.value = before_tab + "\t" + after_tab; // add tab char
-					// move cursor
-					element.selectionStart = cursor_pos;
-					element.selectionEnd = cursor_pos;
-					update(element.value); // Update text to include indent
-				}
-			}
-
-			// word wrap/unwrap with button
-			function wrap(check) {
-				const textField = check.parentNode.parentNode.children[2].children[0];
-				if (textField.wrap == "off") {
-					check.checked = true;
-					textField.wrap = "on";
-					textField.style.height = textField.scrollHeight + "px";
-				} else {
-					check.checked = false;
-					textField.wrap = "off";
-					//textField.focus();
-				}
-			}
-
-			var vscode = acquireVsCodeApi();
-
-			// Получение команд от расширения.
-			window.addEventListener(
-				'message', 
-				(event) => {
-					const message = event.data; 
-					switch (message.command) {
-						case 'updateRawEvent': {
-							const rawEvent = message.rawEvent;
-							if(!rawEvent) {
-								alert("Ошибка обновления сырых событий.");
-								return;
-							}
-							
-							// Задаем новое значение сырых событий.
-							baseTestElement = "#main-body";
-							baseTestElement.find('[name="raw_event"]').val(rawEvents);
-							break;
-						}
-						case 'updateExpectation': {
-							const expectation = message.expectation;
-							if(!expectation) {
-								alert("Ошибка обновления кода теста событий.");
-								return;
-							}
-							baseTestElement = "#main-body";
-							baseTestElement.find('[name="expect"]').val(expectation);
-							break;
-						}
-					}
-			});
-
-			$(document).ready(function() {
-				// Грязный хак, позволяющий убрать ошибку двойного копирование по сочетаниям Ctrl+C и Ctrl+V.
-				var ctrlDown = false,
-				ctrlKey = 17,
-				cmdKey = 91,
-				vKey = 86,
-				cKey = 67;
-
-				$(document).keydown(function(e) {
-					if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
-				}).keyup(function(e) {
-					if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
-				});
-
-				// Document Ctrl + C/V 
-				$(document).keydown(function(e) {
-					if (ctrlDown && (e.keyCode == vKey)) {
-						e.preventDefault();
-					}
-				});
-
-				raws = $('[name=word-wrap]');
-				for (i = 0; i < raws.length; i++) {
-					wrap(raws[i]);
-				}
-				
-				// Полный тест
-				$(document).on("click",'[name="runTest"]', function () {	
-					const baseTestElement = "#main-body";
-					const testObject = baseTestElement.data("test");
-					const id = $(this).attr('id');
-					if(id == "0") {
-						return;
-					}
-					const rawEvent = $(this).find('[name="rawEvent"]').val();
-					const expectation = $(this).find('[name="expect"]').val();
-
-					test = {
-						"number" : id,
-						"rawEvents" : rawEvent,
-						"testCode" : expectation
-					};				
-
-					vscode.postMessage({
-						command: 'runTest',
-						tests: test
-					});
-				});
-
-				// Сохраняем тест
-				$(document).on("click",'#save_test', function () {
-
-					// Получаем значения.					
-					const baseTestElement = "#main-body";
-					const testObject = baseTestElement.data("test");
-					const rawEvent = baseTestElement.find('[name="raw_event"]').val();
-					const expectation = baseTestElement.find('[name="expect"]').val();
-
-					vscode.postMessage({
-						command: 'saveTest',
-						test: testObject,
-						activeTestNumber : activeTestNumber,
-						newValues: {
-							"rawEvent" : rawEvent,
-							"expectation" : expectation,
-						}
-					});
-				});
-			});
-		</script> -->
 	</body>
 </html>

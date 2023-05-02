@@ -1,0 +1,2 @@
+table_list default
+expect 1 {"datafield6": "sc start xboxgipsvc"}

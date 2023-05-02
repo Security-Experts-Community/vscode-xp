@@ -1,7 +1,8 @@
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as vscode from 'vscode';
 
+import { CorrelationUnitTestsRunner } from '../../models/tests/correlationUnitTestsRunner';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { Configuration } from '../../models/configuration';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';

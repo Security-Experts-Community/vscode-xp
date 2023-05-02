@@ -14,35 +14,45 @@ import { BaseUnitTest } from '../tests/baseUnitTest';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { EnrichmentUnitTest } from '../tests/enrichmentUnitTest';
+import { CorrelationUnitTestOutputParser } from '../tests/correlationUnitTestOutputParser';
+import { CorrelationUnitTestsRunner } from '../tests/correlationUnitTestsRunner';
 
 /**
  * Обогащение
  */
 export class Enrichment extends RuleBaseItem {
-	protected getLocalizationPrefix(): string {
-		return "enrichment";
-	}
+
 	public clearUnitTests(): void {
-		throw new Error('Method not implemented.');
+		const testDirPath = this.getTestsPath();
+		fs.readdirSync(testDirPath)
+			.map(f => path.join(testDirPath, f))
+			.filter(f => f.endsWith(".sc"))
+			.forEach(f => fs.unlinkSync(f));
 	}
+
 	public getUnitTestOutputParser(): UnitTestOutputParser {
-		throw new Error('Method not implemented.');
+		return new CorrelationUnitTestOutputParser();
 	}
 
 	public getUnitTestRunner(): UnitTestRunner {
-		throw new Error('Method not implemented.');
+		const outputParser = this.getUnitTestOutputParser();
+		return new CorrelationUnitTestsRunner(Configuration.get(), outputParser);
 	}
-	public reloadUnitTests(): void {
-		throw new Error('Method not implemented.');
-	}
-	public addNewUnitTest(): void {
-		throw new Error('Method not implemented.');
-	}
-	public convertUnitTestFromObject(object: any): BaseUnitTest {
-		throw new Error('Method not implemented.');
+	public reloadUnitTests() : void {
+		const unitTests = CorrelationUnitTest.parseFromRuleDirectory(this);
+		this._unitTests = [];
+		this.addUnitTests(unitTests);
 	}
 	public createNewUnitTest(): BaseUnitTest {
-		throw new Error('Method not implemented.');
+		return CorrelationUnitTest.create(this);
+	}
+
+	public convertUnitTestFromObject(object: any) : CorrelationUnitTest{
+		return Object.assign(CorrelationUnitTest.create(this), object) as CorrelationUnitTest;
+	}
+
+	protected getLocalizationPrefix(): string {
+		return "enrichment";
 	}
 
 	public async save(parentFullPath?: string): Promise<void> {
@@ -106,20 +116,18 @@ export class Enrichment extends RuleBaseItem {
 
 		// Замена в тестах.
 		this.getIntegrationTests().forEach( 
-			it => {
-				//it.setRuleDirectoryPath(newRuleDirectoryPath);
-				const testCode = it.getTestCode();
+			integrationTest => {
+				const testCode = integrationTest.getTestCode();
 				const newTestCode = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testCode);
-				it.setTestCode(newTestCode);
+				integrationTest.setTestCode(newTestCode);
 			}
 		);
 
 		this.getUnitTests().forEach( 
-			it => {
-				//it.setRuleDirectoryPath(newRuleDirectoryPath);
-				const testCode = it.getTestExpectation();
+			unitTest => {
+				const testCode = unitTest.getTestExpectation();
 				const newTestCode = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testCode);
-				it.setTestExpectation(newTestCode);
+				unitTest.setTestExpectation(newTestCode);
 			}
 		);
 

@@ -219,8 +219,27 @@ export class TestHelper {
 		return formattedTestCode;
 	}
 
-	public static minifyTestCodeAndEvents(testCode: string) {
-		const compressedNormalizedEventReg = /\{[^#]*?\}$/gms;
+	public static sortObjectKeys(object: any) {
+		if(typeof object != "object") { return object; }
+		if(object instanceof Array) {
+			return object.map((obj) => { return this.sortObjectKeys(obj); });
+		}
+		const keys = Object.keys(object);
+		if(!keys) { return object; }
+		return keys.sort().reduce((obj, key) => {
+			if (object[key] instanceof Array) {
+				obj[key] = this.sortObjectKeys(object[key]);
+			} else {
+				obj[key] = object[key];
+			}
+			return obj;
+		}, {});
+	}
+
+	// Пока не используется, может пригодиться в дальнейшем. 
+	// Если при сжатии понадобится сортировка.
+	public static minifyJSONInText(testCode: string) : string {
+		const compressedNormalizedEventReg = /\{.*?\}$/gms;
 
 		let formattedTestCode = testCode;
 		let comNormEventResult: RegExpExecArray | null;
@@ -235,13 +254,7 @@ export class TestHelper {
 			// Форматируем событие и сортируем поля объекта, чтобы поля групп типа subject.* были рядом.
 			try {
 				const compressEventJson = JSON.parse(escapedCompessedEvent);
-				const orderedCompressEventJson = Object.keys(compressEventJson).sort().reduce(
-					(obj, key) => { 
-						obj[key] = compressEventJson[key]; 
-						return obj;
-					}, 
-					{}
-				);
+				const orderedCompressEventJson = this.sortObjectKeys(compressEventJson);
 				const formatedEvent = JSON.stringify(orderedCompressEventJson);
 				formattedTestCode = formattedTestCode.replace(compessedEvent, formatedEvent);
 			}

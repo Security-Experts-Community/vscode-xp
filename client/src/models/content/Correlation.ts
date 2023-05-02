@@ -275,23 +275,24 @@ export class Correlation extends RuleBaseItem {
 
 		// Замена в тестах.
 		this.getIntegrationTests().forEach(
-			it => {
-				//it.setRuleDirectoryPath(newRuleDirectoryPath);
-				const testCode = it.getTestCode();
+			integrationTest => {
+				const testCode = integrationTest.getTestCode();
 				const newTestCode = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testCode);
-				it.setTestCode(newTestCode);
+				integrationTest.setTestCode(newTestCode);
 			}
 		);
-
 		this.getUnitTests().forEach(
-			it => {
-				//it.setRuleDirectoryPath(newRuleDirectoryPath);
-				const testCode = it.getTestExpectation();
-				const newTestCode = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testCode);
-				it.setTestExpectation(newTestCode);
+			unitTest => {
+				const testExpectation = unitTest.getTestExpectation();
+				const newTestExpectation = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testExpectation);
+				unitTest.setTestExpectation(newTestExpectation);				
+				const testInputData = unitTest.getTestInputData();
+				const newTestInputData = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testInputData);
+				unitTest.setTestInputData(newTestInputData);
 			}
 		);
 
+		// Замена в правилах локализации
 		this.getLocalizations().forEach(
 			loc => {
 				const localizationId = loc.getLocalizationId();
@@ -299,9 +300,6 @@ export class Correlation extends RuleBaseItem {
 				loc.setLocalizationId(newLocalizationId);
 			}
 		);
-
-		// Имя правила.
-		//this.setName(newRuleName);
 	}
 
 	contextValue = 'Correlation';

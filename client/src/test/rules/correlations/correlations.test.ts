@@ -96,7 +96,7 @@ suite('Корреляции', () => {
 		const testCode1 = intTests1.getTestCode();
 		assert.ok(!testCode1.includes(oldRuleName));
 
-		const intTests2 = intTests[0];
+		const intTests2 = intTests[1];
 		const testCode2 = intTests2.getTestCode();
 		assert.ok(!testCode2.includes(oldRuleName));
 
@@ -125,8 +125,8 @@ suite('Корреляции', () => {
 		const modularTests = readedRule.getUnitTests();
 		
 		assert.ok(modularTests.length == 1);
-		assert.strictEqual(modularTests[0].getTestExpectation(), 'expect 1 {"code":"test code"}');
-		assert.strictEqual(modularTests[0].getTestInputData(), '# Здесь укажи какие нормализованные события ты подаёшь на вход корреляци\n');
+		assert.strictEqual(modularTests[0].getTestExpectation(), 'expect 1 {"code": "test code"}');
+		assert.strictEqual(modularTests[0].getTestInputData(), modularTests[0].getDefaultInputData());
 		assert.strictEqual(modularTests[0].getNumber(), 1);
 	});
 
@@ -143,8 +143,8 @@ suite('Корреляции', () => {
 		
 		assert.ok(unitTests.length == 1);
 		const unitTest = unitTests[0];
-		assert.strictEqual(unitTest.getTestExpectation(), "test code\n\n"+unitTest.getDefaultInputData());	
-		assert.strictEqual(unitTest.getTestInputData(), "");
+		assert.strictEqual(unitTest.getTestExpectation(), unitTest.getDefaultExpectation());	
+		assert.strictEqual(unitTest.getTestInputData(), unitTest.getDefaultInputData());
 		assert.strictEqual(unitTest.getNumber(), 1);
 	});
 
@@ -171,7 +171,7 @@ suite('Корреляции', () => {
 		}
 	});
 
-	// // Удаляем созданные корреляции.
+	// Удаляем созданные корреляции.
 	teardown(() => {
 		const tmpPath = TestFixture.getTmpPath();
 		if(fs.existsSync(tmpPath)) {
