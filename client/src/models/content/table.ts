@@ -5,15 +5,16 @@ import { RuleBaseItem } from './ruleBaseItem';
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 import { KbTreeBaseItem } from './kbTreeBaseItem';
+import { XpException } from '../xpException';
 
 export class Table extends KbTreeBaseItem {
 
 	public async rename(newName: string): Promise<void> {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 
 	public async save(fullPath: string): Promise<void> {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 
 	private constructor(name: string, parentDirectoryPath?: string) {

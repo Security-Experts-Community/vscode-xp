@@ -6,31 +6,32 @@ import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider
 import { BaseUnitTest } from '../tests/baseUnitTest';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
+import { XpException } from '../xpException';
 
 export class Aggregation extends RuleBaseItem {
 	protected getLocalizationPrefix(): string {
 		return "aggregation";
 	}
 	public clearUnitTests(): void {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 	public getUnitTestRunner(): UnitTestRunner {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 	public getUnitTestOutputParser(): UnitTestOutputParser {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 	public reloadUnitTests(): void {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 	public convertUnitTestFromObject(object: any): BaseUnitTest {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 	public createNewUnitTest(): BaseUnitTest {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 	public async rename(newName: string): Promise<void> {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 
 	private constructor(name: string, parentDirectoryPath? : string) {
@@ -41,7 +42,7 @@ export class Aggregation extends RuleBaseItem {
 	public static async parseFromDirectory(directoryPath: string, fileName?: string) : Promise<Aggregation> {
 
 		if(!fs.existsSync(directoryPath)) {
-			throw new Error(`Директория '${directoryPath}' не существует.`);
+			throw new XpException(`Директория '${directoryPath}' не существует.`);
 		}
 
 		// Получаем имя корреляции и родительский путь.

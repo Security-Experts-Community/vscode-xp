@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { XpException } from '../models/xpException';
 	
 export class XpRenameProvide implements vscode.RenameProvider {
 	provideRenameEdits(
@@ -7,11 +8,11 @@ export class XpRenameProvide implements vscode.RenameProvider {
 		newName: string, 
 		token: vscode.CancellationToken): vscode.ProviderResult<vscode.WorkspaceEdit> {
 			
-		throw new Error('Скоро мы будем уметь переименовывать всё и вся ;) Stay tuned!');
+		throw new XpException('Скоро мы будем уметь переименовывать всё и вся ;) Stay tuned!');
 	}
 	prepareRename?(
 		document: vscode.TextDocument,
 		position: vscode.Position, token: vscode.CancellationToken): vscode.ProviderResult<vscode.Range | { range: vscode.Range; placeholder: string; }> {
-		throw new Error('Скоро мы будем уметь переименовывать всё и вся ;) Stay tuned!');
+		throw new XpException('Скоро мы будем уметь переименовывать всё и вся ;) Stay tuned!');
 	}
 }

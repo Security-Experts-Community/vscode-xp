@@ -11,6 +11,7 @@ import { RuleBaseItem } from '../content/ruleBaseItem';
 import { IntegrationTest } from './integrationTest';
 import { TestStatus } from './testStatus';
 import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
+import { XpException } from '../xpException';
 
 export class IntegrationTestRunner {
 
@@ -21,7 +22,7 @@ export class IntegrationTestRunner {
 
 		const integrationTests = rule.getIntegrationTests();
 		if(integrationTests.length == 0) {
-			throw new Error("Не заданы тесты для запуска");
+			throw new XpException("Не заданы тесты для запуска");
 		}
 
 		// Хотя бы у одного теста есть сырые события и код теста.

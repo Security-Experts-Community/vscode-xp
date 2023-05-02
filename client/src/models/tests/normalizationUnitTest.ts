@@ -5,6 +5,7 @@ import { UnitTestContentEditorViewProvider } from '../../views/unitTestEditor/un
 import { BaseUnitTest } from './baseUnitTest';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Normalization } from '../content/normalization';
+import { XpException } from '../xpException';
 
 export class NormalizationUnitTest extends BaseUnitTest {
 	public getDefaultExpectation(): string {
@@ -87,11 +88,11 @@ export class NormalizationUnitTest extends BaseUnitTest {
 
 	public async save() : Promise<void> {
 		if(!this.getTestsDirPath()) {
-			throw new Error("Не задан путь для сохранения.");
+			throw new XpException("Не задан путь для сохранения.");
 		}
 
 		if(!this.getNumber()) {
-			throw new Error("Для модульного теста не задан порядковый номер");
+			throw new XpException("Для модульного теста не задан порядковый номер");
 		}
 
 		// if(!this.getTestExpectation()) {

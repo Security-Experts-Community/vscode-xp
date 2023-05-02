@@ -4,20 +4,15 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { Guid } from 'guid-typescript';
-import { FileSystemHelper } from '../helpers/fileSystemHelper';
-import { FileNotFoundException } from './fileNotFounException';
+import { FileNotFoundException } from './fileNotFoundException';
 import { XpException as XpException } from './xpException';
 import { ContentType } from '../contentType/contentType';
 import { Localization } from './content/localization';
 import { EDRPathHelper } from './locator/EDRPathLocator';
 import { OsType, PathLocator } from './locator/pathLocator';
 import { SIEMPathHelper } from './locator/SIEMPathLocator';
-import { UnitTestContentEditorViewProvider as UnitTestEditorViewProvider } from '../views/unitTestEditor/unitTestEditorViewProvider';
 
 export class Configuration {
-	// getUnitTestEditorViewProvider() {
-	// 	return this._unitTestEditorViewProvider;
-	// }
 
 	private constructor(context: vscode.ExtensionContext) {
 
@@ -31,8 +26,6 @@ export class Configuration {
 		this._diagnosticCollection = vscode.languages.createDiagnosticCollection(extensionName);
 
 		context.subscriptions.push(this._diagnosticCollection);
-
-		// this._unitTestEditorViewProvider = new UnitTestEditorViewProvider(this);
 	}
 
 	public getRulesDirFilters() : string { return this._pathHelper.getRulesDirFilters(); }
@@ -554,21 +547,8 @@ export class Configuration {
 
 	public static async init(context : vscode.ExtensionContext) : Promise<Configuration> {
 		this._instance = new Configuration(context);
-
-		// const baseOutputDirPath = this._instance.getBaseOutputDirectoryPath();
-		// try {		
-		// 	if(fs.existsSync(baseOutputDirPath)) {
-		// 		await FileSystemHelper.clearDirectory(baseOutputDirPath);
-		// 	}			
-		// }
-		// catch(error) {
-		// 	console.warn(`Не удалось удалить временную директорию '${baseOutputDirPath}}'`);
-		// }
-
 		return this._instance;
 	}
-
-	// private _unitTestEditorViewProvider: UnitTestEditorViewProvider;
 
 	private static _instance : Configuration;
 

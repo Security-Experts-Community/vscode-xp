@@ -1,4 +1,4 @@
-import { FileNotFoundException } from '../models/fileNotFounException';
+import { FileNotFoundException } from '../models/fileNotFoundException';
 import { XpException } from '../models/xpException';
 import { IncorrectFieldFillingException } from '../views/incorrectFieldFillingException';
 import { ExtensionHelper } from './extensionHelper';

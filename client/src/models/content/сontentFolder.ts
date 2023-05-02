@@ -5,6 +5,7 @@ import * as fs from "fs";
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { RuleBaseItem } from './ruleBaseItem';
 import { KbTreeBaseItem } from './kbTreeBaseItem';
+import { XpException } from '../xpException';
 
 export enum ContentFolderType {
 	ContentRoot = 1,
@@ -20,11 +21,11 @@ export enum ContentFolderType {
 export class ContentFolder extends KbTreeBaseItem {
 
 	public async rename(newName: string): Promise<void> {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 
 	public getRuleFileName(): string {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 
 	public getRuleFilePath(): string {
@@ -33,7 +34,7 @@ export class ContentFolder extends KbTreeBaseItem {
 
 	public getDirectoryPath() : string {
 		if(!this.getParentPath()) {
-			throw new Error(`Не задан путь к директории правила '${this.getName()}'.`);
+			throw new XpException(`Не задан путь к директории правила '${this.getName()}'.`);
 		}
 
 		return path.join(this.getParentPath(), this.getName());
@@ -68,7 +69,7 @@ export class ContentFolder extends KbTreeBaseItem {
 	public static async create(directoryPath: string, newFolderType : ContentFolderType) : Promise<ContentFolder> {
 
 		if(!fs.existsSync(directoryPath)) {
-			throw new Error(`Директория '${directoryPath}' не существует.`);
+			throw new XpException(`Директория '${directoryPath}' не существует.`);
 		}
 
 		const subDirectories = FileSystemHelper.readSubDirectories(directoryPath);

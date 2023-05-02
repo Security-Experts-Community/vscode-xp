@@ -60,7 +60,7 @@ export class Correlation extends RuleBaseItem {
 
 	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Correlation> {
 		if (!fs.existsSync(directoryPath)) {
-			throw new Error(`Директория '${directoryPath}' не существует.`);
+			throw new XpException(`Директория '${directoryPath}' не существует.`);
 		}
 
 		// Получаем имя корреляции и родительский путь.
@@ -216,7 +216,7 @@ export class Correlation extends RuleBaseItem {
 		} else {
 			const parentPath = this.getParentPath();
 			if (!parentPath) {
-				throw new Error("Не задан путь для сохранения корреляции.");
+				throw new XpException("Не задан путь для сохранения корреляции.");
 			}
 
 			corrDirPath = this.getDirectoryPath();

@@ -2,14 +2,15 @@ import * as path from "path";
 
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 import { KbTreeBaseItem } from './kbTreeBaseItem';
+import { XpException } from '../xpException';
 
 export class Macros extends KbTreeBaseItem {
 	public rename(newName: string): Promise<void> {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 	
 	public async save(fullPath: string) : Promise<void> {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 
 	constructor(macrosDirPath: string) {

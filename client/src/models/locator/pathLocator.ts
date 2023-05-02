@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-import { FileNotFoundException } from '../fileNotFounException';
+import { FileNotFoundException } from '../fileNotFoundException';
 import { XpException } from '../xpException';
 
 export enum OsType {

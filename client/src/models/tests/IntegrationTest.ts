@@ -4,6 +4,7 @@ import * as path from "path";
 import { TestStatus } from './testStatus';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { XpException } from '../xpException';
 
 // TODO: вынести общие методы из класс BaseUnitTest.
 export class IntegrationTest {
@@ -120,11 +121,11 @@ export class IntegrationTest {
 		}
 
 		if(this._rawEvents == undefined) {
-			throw new Error("Код теста не задан.");
+			throw new XpException("Код теста не задан.");
 		}
 
 		if(!this.getRuleDirectoryPath()) {
-			throw new Error("Не задана директория правила");
+			throw new XpException("Не задана директория правила");
 		}
 
 		if(!fs.existsSync(this._ruleDirectoryPath)) {

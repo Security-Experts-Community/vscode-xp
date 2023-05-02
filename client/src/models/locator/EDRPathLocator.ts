@@ -3,6 +3,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { PathLocator } from './pathLocator';
+import { XpException } from '../xpException';
+import { ArgumentException } from '../argumentException';
 
 
 export class EDRPathHelper extends PathLocator {
@@ -29,11 +31,12 @@ export class EDRPathHelper extends PathLocator {
 		return this.getKbFullPath();
 	}
 
-	public getRootByPath(directory: string): string{
-		if (!directory){
-			return "";
+	public getRootByPath(contentPath: string): string{
+		if (!contentPath) {
+			throw new ArgumentException(`Директория должна быть задана.`, "contentPath");
 		}
-		const pathEntities = directory.split(path.sep);
+
+		const pathEntities = contentPath.split(path.sep);
 		const roots = this.getContentRoots().map(folder => {return path.basename(folder);});
 		for (const root of roots){
 			const  packagesDirectoryIndex = pathEntities.findIndex( pe => pe.toLocaleLowerCase() === root);
@@ -47,7 +50,7 @@ export class EDRPathHelper extends PathLocator {
 			return packageDirectoryPath;
 		}
 
-		throw new Error(`Путь '${directory}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
+		throw new XpException(`Путь '${contentPath}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
 	}
 
 	public getNormalizationsGraphFileName() : string {

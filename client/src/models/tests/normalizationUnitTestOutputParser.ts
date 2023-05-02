@@ -1,12 +1,13 @@
 import * as vscode  from 'vscode';
 import { UnitTestOutputParser } from './unitTestOutputParser';
+import { XpException } from '../xpException';
 
 export class NormalizationUnitTestOutputParser implements UnitTestOutputParser {
 	parseFailedOutput(output: string, expectation: string): string {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 	parseSuccessOutput(output: string): string {
-		throw new Error('Method not implemented.');
+		throw new XpException('Method not implemented.');
 	}
 	
 	private _diagnostics: vscode.Diagnostic[];

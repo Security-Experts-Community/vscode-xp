@@ -7,7 +7,7 @@ import { Configuration } from '../configuration';
 import { XpException } from '../xpException';
 import { RuleBaseItem } from '../content/ruleBaseItem';
 import { SiemjConfigHelper } from './siemjConfigHelper';
-import { FileNotFoundException } from '../fileNotFounException';
+import { FileNotFoundException } from '../fileNotFoundException';
 import { SiemjConfBuilder } from './siemjConfigBuilder';
 
 export class SiemjManager {

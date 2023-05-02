@@ -134,15 +134,15 @@ export class CorrelationUnitTest extends BaseUnitTest {
 
 	public async save() : Promise<void> {
 		if(!this.getTestsDirPath()) {
-			throw new Error("Не задан путь для сохранения.");
+			throw new XpException("Не задан путь для сохранения.");
 		}
 
 		if(!this.getNumber()) {
-			throw new Error("Для модульного теста не задан порядковый номер");
+			throw new XpException("Для модульного теста не задан порядковый номер");
 		}
 
 		// if(!this.getTestExpectation()) {
-		// 	throw new Error("Нельзя сохранять пустой тест");
+		// 	throw new XpException("Нельзя сохранять пустой тест");
 		// }
 
 		// Модульные тесты корреляций содержат условия и начальные данные в одном файле

@@ -5,6 +5,7 @@ import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { YamlHelper } from '../../helpers/yamlHelper';
 import { MetaInfo } from '../metaInfo/metaInfo';
+import { XpException } from '../xpException';
 
 export enum LocalizationLanguage{
 	Ru = 1,
@@ -81,7 +82,7 @@ export class Localization {
 		// Читаем английские локализации.
 		const enLocFilePath = path.join(ruleDirectoryPath, Localization.LOCALIZATIONS_DIRNAME, Localization.EN_LOCALIZATION_FILENAME);
 		if(!fs.existsSync(enLocFilePath)) {
-			throw new Error(`Не найден файл английской локализации по пути '${ruLocFilePath}'`);
+			throw new XpException(`Не найден файл английской локализации по пути '${ruLocFilePath}'`);
 		}
 
 		const enLocContant = fs.readFileSync(enLocFilePath, 'utf8');
