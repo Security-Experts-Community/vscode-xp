@@ -5,7 +5,7 @@
 	"author": "Dmitry Fedosov (@DmitryOffsec)",
 	"icon": "resources/logo.png",
 	"license": "MIT",
-	"version": "3.2.7",
+	"version": "3.3.0",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -14,7 +14,10 @@
 	"activationEvents": [],
 	"categories": [
 		"Snippets",
-		"Formatters"
+		"Formatters",
+		"Language Packs",
+		"Testing",
+		"Visualization"
 	],
 	"keywords": [
 		"xdr edr soldr xp maxpatrol siem"
