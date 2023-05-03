@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from "path";
+import * as vscode from 'vscode';
 
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 import { KbTreeBaseItem } from './kbTreeBaseItem';
@@ -48,10 +49,6 @@ export class Macros extends KbTreeBaseItem {
 		return path.join(this.getDirectoryPath(), this.getFileName());
 	}
 
-	iconPath = {
-		light: path.join(this.getResourcesPath(), 'light', 'rule.svg'),
-		dark: path.join(this.getResourcesPath(), 'dark', 'rule.svg')
-	};
-
+	iconPath = new vscode.ThemeIcon('filter');
 	contextValue = 'Macros';
 }

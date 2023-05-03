@@ -4,7 +4,7 @@ import { Configuration } from '../../models/configuration';
 import { Correlation } from '../../models/content/correlation';
 import { PackKbAction } from '../../views/contentTree/actions/packKbAction';
 import { TestFixture } from '../helper';
-import { ContentFolder, ContentFolderType } from '../../models/content/сontentFolder';
+import { ContentFolder, ContentFolderType } from '../../models/content/contentFolder';
 
 suite(PackKbAction.name, () => {
 

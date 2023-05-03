@@ -48,18 +48,17 @@ export class ContentFolder extends KbTreeBaseItem {
 		
 		super(directoryName, path.basename(directoryName));
 
-		if(type == ContentFolderType.PackageFolder || type == ContentFolderType.ContentRoot) {
-			this.iconPath = {
-				light: path.join(this.getResourcesPath(), 'light', 'package.svg'),
-				dark: path.join(this.getResourcesPath(), 'dark', 'package.svg')
-			};
-		} else {
-			this.iconPath = {
-				light: path.join(this.getResourcesPath(), 'light', 'folder.svg'),
-				dark: path.join(this.getResourcesPath(), 'dark', 'folder.svg')
-			};
+		switch(type){
+			case ContentFolderType.PackageFolder:
+				this.iconPath = new vscode.ThemeIcon('package');
+				break;
+			case ContentFolderType.ContentRoot:
+				this.iconPath = new vscode.ThemeIcon('root-folder');
+				break;
+			default:
+				this.iconPath = new vscode.ThemeIcon('folder');
 		}
-
+		
 		this.collapsibleState = 
 			hasNestedElements 
 				? vscode.TreeItemCollapsibleState.Collapsed 
