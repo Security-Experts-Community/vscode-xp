@@ -1,6 +1,6 @@
 ## Поддержка языка XP в Visual Studio Code
 
-[![Documentation Status](https://readthedocs.org/projects/vscode-xp/badge/?version=latest)](https://vscode-xp.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/vscode-xp/badge/?version=latest)](https://vscode-xp.readthedocs.io/ru/latest/?badge=latest)
 
 Язык eXtraction and Processing (XP) используется для создания правил преобразования данных в процессе обработки событий. На языке XP вы можете разрабатывать правила нормализации, корреляции и обогащения событий.
 
