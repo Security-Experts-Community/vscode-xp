@@ -23,7 +23,7 @@ export class SiemjManager {
 		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
 
 		if(!fs.existsSync(outputFolder)) {
-			fs.mkdirSync(outputFolder);
+			fs.mkdirSync(outputFolder, {recursive: true});
 		}
 		
 		// Получаем нужный конфиг для нормализации событий.
@@ -70,7 +70,7 @@ export class SiemjManager {
 		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
 
 		if(!fs.existsSync(outputFolder)) {
-			fs.mkdirSync(outputFolder);
+			fs.mkdirSync(outputFolder, {recursive: true});
 		}
 		
 		// Получаем нужный конфиг для нормализации событий.
@@ -126,7 +126,7 @@ export class SiemjManager {
 		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
 
 		if(!fs.existsSync(outputFolder)) {
-			fs.mkdirSync(outputFolder);
+			fs.mkdirSync(outputFolder, {recursive: true});
 		}
 		
 		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);

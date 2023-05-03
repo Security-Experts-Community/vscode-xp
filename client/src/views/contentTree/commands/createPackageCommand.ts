@@ -58,26 +58,26 @@ export class CreatePackageCommand {
 
 		// Пакет
 		const newPackagePath = path.join(selectedItemDirPath, packageName);
-		await fs.promises.mkdir(newPackagePath);
+		await fs.promises.mkdir(newPackagePath, {recursive: true});
 
 		const aggregationPath = path.join(newPackagePath, "aggregation_rules");
-		await fs.promises.mkdir(aggregationPath);
+		await fs.promises.mkdir(aggregationPath, {recursive: true});
 
 		const normalizationPath = path.join(newPackagePath, "normalization_formulas");
-		await fs.promises.mkdir(normalizationPath);
+		await fs.promises.mkdir(normalizationPath, {recursive: true});
 
 		const correlationPath = path.join(newPackagePath, "correlation_rules");
-		await fs.promises.mkdir(correlationPath);
+		await fs.promises.mkdir(correlationPath, {recursive: true});
 
 		const enrichmentPath = path.join(newPackagePath, "enrichment_rules");
-		await fs.promises.mkdir(enrichmentPath);
+		await fs.promises.mkdir(enrichmentPath, {recursive: true});
 
 		const tablesPath = path.join(newPackagePath, "tabular_lists");
-		await fs.promises.mkdir(tablesPath);
+		await fs.promises.mkdir(tablesPath, {recursive: true});
 
 		// Пакет -> _meta
 		const metaPath = path.join(newPackagePath, "_meta");
-		await fs.promises.mkdir(metaPath);
+		await fs.promises.mkdir(metaPath, {recursive: true});
 
 		// Пакет -> _meta -> metainfo.yaml
 		const metainfoPath = path.join(metaPath, MetaInfo.METAINFO_FILENAME);

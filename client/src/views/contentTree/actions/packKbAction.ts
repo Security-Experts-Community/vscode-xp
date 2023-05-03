@@ -79,11 +79,11 @@ export class PackSIEMAllPackagesAction {
 
 				// Нужна ссылка в 
 				const contractsDirPath = path.join(tmpSubDirectoryPath, "contracts");
-				await fs.promises.mkdir(contractsDirPath);
+				await fs.promises.mkdir(contractsDirPath, {recursive: true});
 
 				// Проверяем путь к контрактам и копируем их.
 				const taxonomyPath = path.join(contractsDirPath, "taxonomy");
-				await fs.promises.mkdir(taxonomyPath);
+				await fs.promises.mkdir(taxonomyPath, {recursive: true});
 				const сontractsDirectoryPath = this.config.getTaxonomyDirPath();
 				await fse.copy(сontractsDirectoryPath, taxonomyPath);
 
@@ -164,11 +164,11 @@ export class PackKbAction {
 				}
 
 				const contractsDirPath = path.join(tmpSubDirectoryPath, "contracts");
-				await fs.promises.mkdir(contractsDirPath);
+				await fs.promises.mkdir(contractsDirPath, {recursive: true});
 
 				// Проверяем путь к контрактам и копируем их.
 				const taxonomyPath = path.join(contractsDirPath, "taxonomy");
-				await fs.promises.mkdir(taxonomyPath);
+				await fs.promises.mkdir(taxonomyPath, {recursive: true});
 				const сontractsDirectoryPath = this._config.getTaxonomyDirPath();
 				await fse.copy(сontractsDirectoryPath, taxonomyPath);
 

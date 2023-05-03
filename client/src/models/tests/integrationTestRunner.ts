@@ -49,7 +49,7 @@ export class IntegrationTestRunner {
 		const rootFolder = path.basename(rootPath);
 		const outputDirPath = this._config.getOutputDirectoryPath(rootFolder);
 		if(!fs.existsSync(outputDirPath)) {
-			await fs.promises.mkdir(outputDirPath);
+			await fs.promises.mkdir(outputDirPath, {recursive: true});
 		}
 
 		const configBuilder = new SiemjConfBuilder(this._config, rootPath);

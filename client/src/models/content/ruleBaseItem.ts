@@ -108,7 +108,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		// Создаем или очищаем директорию с тестами.
 		const testDirPath = this.getTestsPath();
 		if(!fs.existsSync(testDirPath)) {
-			await fs.promises.mkdir(testDirPath);
+			await fs.promises.mkdir(testDirPath, {recursive: true});
 		} 
 		else {
 			// Удаляем файлы, которые относятся к модульным тестам
@@ -255,7 +255,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 
 		const localizationDirPath = path.join(fullPath, Localization.LOCALIZATIONS_DIRNAME);
 		if(!fs.existsSync(localizationDirPath)) {
-			await fs.promises.mkdir(localizationDirPath);
+			await fs.promises.mkdir(localizationDirPath, {recursive: true});
 		}
 
 		// Русские локализации

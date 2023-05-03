@@ -1,4 +1,4 @@
-Description: 
+Description: Replace these words with a description of normalization
 EventDescriptions:
     - LocalizationId: Empty_1
-      EventDescription: ''
+      EventDescription: 'Replace these words with a description'

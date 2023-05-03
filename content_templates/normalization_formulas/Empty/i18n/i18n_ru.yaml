@@ -1,4 +1,4 @@
-Description: 
+Description: Замени эти слова на описание нормализации 
 EventDescriptions:
     - LocalizationId: Empty_1
-      EventDescription: ''
+      EventDescription: 'Замени эти слова на описание'

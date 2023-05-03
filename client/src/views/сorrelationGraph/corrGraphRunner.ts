@@ -28,7 +28,7 @@ export class CorrGraphRunner {
 		const outputFolder = this._config.getOutputDirectoryPath(rootFolder);
 
 		if(!fs.existsSync(outputFolder)) {
-			await fs.promises.mkdir(outputFolder);
+			await fs.promises.mkdir(outputFolder, {recursive: true});
 		}
 		
 		const configBuilder = new SiemjConfBuilder(this._config, rootPath);
