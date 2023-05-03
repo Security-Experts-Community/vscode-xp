@@ -6,6 +6,7 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { YamlHelper } from '../../helpers/yamlHelper';
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { XpException } from '../xpException';
+import { IncorrectFieldFillingException } from '../../views/incorrectFieldFillingException';
 
 export enum LocalizationLanguage{
 	Ru = 1,
@@ -144,7 +145,7 @@ export class Localization {
 
 		const eventDescriptionsPlain = metaInfoPlain.EventDescriptions as any[];
 		if(!eventDescriptionsPlain) {
-			throw new Error(`Не удалось получить EventDescriptions из файла метаданных '${metaInfoFullPath}'`);
+			throw new IncorrectFieldFillingException(`Не удалось получить EventDescriptions из файла метаданных '${metaInfoFullPath}'`);
 		}
 
 		const eventDescriptions = eventDescriptionsPlain.map( edp => {
