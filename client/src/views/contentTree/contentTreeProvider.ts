@@ -306,9 +306,15 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 				kbItems.push(packageFolderItem);
 				continue;
 			}
-			
-			const kbItem = await ContentTreeProvider.createContentElement(directoryPath);
-			kbItems.push(kbItem);
+
+			// Если ошибка в текущем элементе, продолжаем парсить остальные
+			try {
+				const kbItem = await ContentTreeProvider.createContentElement(directoryPath);
+				kbItems.push(kbItem);
+			}
+			catch (error) {
+				ExceptionHelper.show(error, `Ошибка парсинга директории ${directoryPath}`);	
+			}
 		}
 
 		// Подсвечиваем правила, у которых есть хотя бы один измененный файл.
