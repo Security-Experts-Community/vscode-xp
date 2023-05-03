@@ -1,0 +1,16 @@
+filter ProcessStart(string $name) {
+    filter::NotFromCorrelator()
+    and (
+        filter::ProcessStart_Windows($name)
+        or (
+            object == "process"
+            and action == "start"
+            and not in_list([
+                "windows",
+                "endpoint_monitor",
+                "sysmon"
+                ], event_src.title)
+        )
+    )
+    and match(object.name, $name)
+}

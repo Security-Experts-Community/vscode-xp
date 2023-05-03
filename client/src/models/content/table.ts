@@ -1,8 +1,6 @@
 import * as path from "path";
 import * as fs from 'fs';
 
-import { RuleBaseItem } from './ruleBaseItem';
-import { MetaInfo } from '../metaInfo/metaInfo';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 import { KbTreeBaseItem } from './kbTreeBaseItem';
 import { XpException } from '../xpException';
@@ -28,7 +26,7 @@ export class Table extends KbTreeBaseItem {
 			throw new Error(`Директория '${directoryPath}' не существует.`);
 		}
 
-		// Получаем имя корреляции и родительский путь.
+		// Получаем название табличного списка и родительский путь.
 		const name = path.basename(directoryPath);
 		const parentDirectoryPath = path.dirname(directoryPath);
 
@@ -39,29 +37,6 @@ export class Table extends KbTreeBaseItem {
 		if (fileName) {
 			table.setFileName(fileName);
 		}
-
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
-		table.setCommand({
-			command: ContentTreeProvider.onRuleClickCommand,
-			title: "Open File",
-			arguments: [table]
-		});
-
-		return table;
-	}
-
-	public static create(directoryPath: string, fileName?: string): Table {
-		const table = new Table(directoryPath);
-
-		// Если явно указано имя файла, то сохраняем его.
-		// Иначе используем заданное в конструкторе
-		if (fileName) {
-			table.setName(fileName);
-		}
-
-		// Парсим основные метаданные.
-		const metaInfo = MetaInfo.fromFile(directoryPath);
-		table.setMetaInfo(metaInfo);
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
 		table.setCommand({

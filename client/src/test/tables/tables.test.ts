@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as assert from 'assert';
+import * as path from 'path';
 
 import { TestFixture } from '../helper';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
@@ -7,17 +8,39 @@ import { Table } from '../../models/content/table';
 
 suite('Табличные списки', () => {
 
-	test('Успешный парсинг ТС', async () => {
-		const rulePath = TestFixture.getTablesPath("AD_Domain_Controllers");
-		const table = await Table.parseFromDirectory(rulePath);
+	test('Успешный парсинг ТС без указания имени', async () => {
+		const tablePath = TestFixture.getTablesPath("AD_Domain_Controllers");
+		const testTablesPath = path.join(TestFixture.getFixturePath(), "tables");
+		const table = await Table.parseFromDirectory(tablePath);
 		
 		assert.strictEqual(table.getName(), "AD_Domain_Controllers");
+		assert.strictEqual(tablePath, path.join(testTablesPath, "AD_Domain_Controllers"));
+		assert.strictEqual(table.getParentPath(), testTablesPath);
+		assert.strictEqual(table.getDirectoryPath(), tablePath);
+		assert.strictEqual(table.getFileName(), "table.tl");
+		assert.strictEqual(table.getFilePath(), path.join(tablePath, "table.tl"));
+		assert.strictEqual(table.getMetaInfoFilePath(), path.join(tablePath, "metainfo.yaml"));
+		assert.ok(table.getCommand());
+	});
+	
+	test('Успешный парсинг ТС с указанием имени', async () => {
+		const tablePath = TestFixture.getTablesPath("AD_Domain_Controllers");
+		const testTablesPath = path.join(TestFixture.getFixturePath(), "tables");
+		const table = await Table.parseFromDirectory(tablePath, "NewName");
+		
+		assert.strictEqual(table.getName(), "AD_Domain_Controllers");
+		assert.strictEqual(tablePath, path.join(testTablesPath, "AD_Domain_Controllers"));
+		assert.strictEqual(table.getParentPath(), testTablesPath);
+		assert.strictEqual(table.getDirectoryPath(), tablePath);
+		assert.strictEqual(table.getFileName(), "NewName");
+		assert.strictEqual(table.getFilePath(), path.join(tablePath, "NewName"));
+		assert.strictEqual(table.getMetaInfoFilePath(), path.join(tablePath, "metainfo.yaml"));
 		assert.ok(table.getCommand());
 	});
 
 	test('Успешная сработка нажатия на ТС', async () => {
-		const rulePath = TestFixture.getTablesPath("AD_Domain_Controllers");
-		const table = await Table.parseFromDirectory(rulePath);
+		const tablePath = TestFixture.getTablesPath("AD_Domain_Controllers");
+		const table = await Table.parseFromDirectory(tablePath);
 
 		const commandResult = await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, table);
 		assert.ok(commandResult);

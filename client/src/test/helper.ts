@@ -73,6 +73,10 @@ export class TestFixture {
 		return path.resolve(__dirname, '../../testFixture', "tables", name);
 	}
 
+	public static getMacrosPath(name : string) {
+		return path.resolve(__dirname, '../../testFixture', "macros", name);
+	}
+
 	public static getValidationUri(name : string) {
 		return vscode.Uri.file(path.resolve(__dirname, '../../testFixture', "validation", name));
 	}

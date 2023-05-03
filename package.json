@@ -5,7 +5,7 @@
 	"author": "Dmitry Fedosov (@DmitryOffsec)",
 	"icon": "resources/logo.png",
 	"license": "MIT",
-	"version": "3.3.2",
+	"version": "3.3.3",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -271,17 +271,17 @@
 				},
 				{
 					"command": "KnowledgebaseTree.showCreateCorrelationView",
-					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
+					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros && viewItem != Table",
 					"group": "create@1"
 				},
 				{
 					"command": "KnowledgebaseTree.showCreateEnrichmentView",
-					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
+					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros && viewItem != Table",
 					"group": "create@2"
 				},
 				{
 					"command": "KnowledgebaseTree.showCreateNormalizationView",
-					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
+					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros && viewItem != Table",
 					"group": "create@3"
 				},
 				{
