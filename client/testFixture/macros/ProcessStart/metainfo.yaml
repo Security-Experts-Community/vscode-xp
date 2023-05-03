@@ -1,0 +1,17 @@
+Filter:
+    Name:
+        ru: 'Запуск процесса'
+        en: 'Process start'
+    Description: {}
+    UseAsEventName: true
+Args:
+    name:
+        Type: String
+        Name:
+            ru: 'Имя исполняемого файла процесса'
+            en: 'Process executable file name'
+        Default:
+Tags:
+    - system
+    - process
+ObjectId: LOC-RF-916

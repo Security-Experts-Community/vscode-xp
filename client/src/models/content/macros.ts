@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from "path";
 
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
@@ -13,23 +14,24 @@ export class Macros extends KbTreeBaseItem {
 		throw new XpException('Method not implemented.');
 	}
 
-	constructor(macrosDirPath: string) {
-		super("filter.flt", path.basename(macrosDirPath));
-
-		const name = path.basename(macrosDirPath);
-		this.setName(name);
-
-		const parentPath = path.dirname(macrosDirPath);
-		this.setParentPath(parentPath);
+	private constructor(name: string, parentDirectoryPath?: string) {
+		super(name, parentDirectoryPath);
+		this.setFileName("filter.flt");
 	}
 
-	public static async parseFromFile(directoryPath: string, fileName?: string) : Promise<Macros> {
-		const marcos = new Macros(directoryPath);
+	public static async parseFromDirectory(directoryPath: string, fileName?: string) : Promise<Macros> {
+		if (!fs.existsSync(directoryPath)) {
+			throw new Error(`Директория '${directoryPath}' не существует.`);
+		}
+
+		const name = path.basename(directoryPath);
+		const parentDirectoryPath = path.dirname(directoryPath);
+		const marcos = new Macros(name, parentDirectoryPath);
 		
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
 		if (fileName){
-			marcos.setName(fileName);			
+			marcos.setFileName(fileName);			
 		}
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
@@ -43,7 +45,7 @@ export class Macros extends KbTreeBaseItem {
 	}
 
 	public getRuleFilePath(): string {
-		return path.join(this.getDirectoryPath(), this.getName());
+		return path.join(this.getDirectoryPath(), this.getFileName());
 	}
 
 	iconPath = {

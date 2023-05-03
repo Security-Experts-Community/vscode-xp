@@ -426,7 +426,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 			".tl": Table.parseFromDirectory, 
 			".xp": Normalization.parseFromDirectory,
 			".agr": Aggregation.parseFromDirectory, 
-			".flt": Macros.parseFromFile
+			".flt": Macros.parseFromDirectory
 		};
 
 		// Перебираем все интересующие нас расширения и проверяем есть ли в текущем списке файлы с таким расширением
