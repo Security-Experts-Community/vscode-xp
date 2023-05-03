@@ -119,7 +119,7 @@ export class CorrelationUnitTest extends BaseUnitTest {
 			if(fs.existsSync(testFullPath))
 				continue;
 
-			const test = new CorrelationUnitTest();
+			const test = new CorrelationUnitTest(1);
 			test.setRule(rule);
 			test.setTestExpectation(test.getDefaultExpectation());
 			test.setTestInputData(test.getDefaultInputData());			
@@ -157,8 +157,8 @@ export class CorrelationUnitTest extends BaseUnitTest {
 		return fs.writeFileSync(filePath, fileContent, FileSystemHelper._fileEncoding);
 	}
 
-	constructor() {
-		super(1);
+	constructor(testNumber: number) {	
+		super(testNumber);
 	}
 
 	public getTestExpectationPath() : string {

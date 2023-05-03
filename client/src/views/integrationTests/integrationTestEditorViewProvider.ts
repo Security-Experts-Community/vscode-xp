@@ -254,7 +254,7 @@ export class IntegrationTestEditorViewProvider  {
 			}
 
 			case 'addEnvelope': {
-				let rawEvents = message?.rawEvents as string;
+				const rawEvents = message?.rawEvents as string;
 				const mimeType = message?.mimeType as EventMimeType;
 
 				return this.addEnvelope(rawEvents, mimeType);
@@ -414,8 +414,8 @@ export class IntegrationTestEditorViewProvider  {
 			await FileSystemHelper.writeContentFile(fastTestFilePath, modularTestContent);
 
 			// Создаем временный модульный тест для быстрого тестирования.
-			const fastTest = new FastTest();
-			fastTest.setTestPath(fastTestFilePath);
+			const fastTest = new FastTest(currTest.getNumber());
+			fastTest.setTestExpectationPath(fastTestFilePath);
 			fastTest.setRule(this._rule);
 
 			const testRunner = this._rule.getUnitTestRunner();
