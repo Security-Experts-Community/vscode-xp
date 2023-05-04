@@ -26,7 +26,7 @@ export class UnpackKbAction {
 
 		const config = Configuration.get();
 		if(!config.isKbOpened()) {
-			ExtensionHelper.showUserInfo("Нельзя распаковать пакет(ы) без открытия существующей базы знаний. Сначала откройте базу знаний.");
+			ExtensionHelper.showUserInfo("Для распаковки пакетов нужно открыть базу знаний.");
 			return;
 		}
 		
@@ -47,7 +47,7 @@ export class UnpackKbAction {
 		const exportDirPath = selectedPackage.getContentRootPath(Configuration.get());
 
 		if(!fs.existsSync(exportDirPath)) {
-			ExtensionHelper.showUserError(`Не существует директория для пакетов.`);
+			ExtensionHelper.showUserError(`Не существует такой папки для пакетов.`);
 			return;
 		}
 
@@ -83,10 +83,9 @@ export class UnpackKbAction {
 				);
 
 				if(!output.includes(this.successSubstring)) {
-
-					ExtensionHelper.showUserError(`Ошибка распаковки пакета. Смотри Output.`);
+					// TODO: тут хорошо бы сделать ссылку или кнопку для перехода в нужный канал Output.
+					ExtensionHelper.showUserError(`Не удалось распаковать пакет. Подробности приведены в панели Output.`);
 					this._config.getOutputChannel().appendLine(knowledgeBasePackagerCli + " " + params.join(" "));
-
 					this._config.getOutputChannel().show();
 					return;
 				} 
@@ -104,11 +103,12 @@ export class UnpackKbAction {
 					await fse.copy(objectsPackagePath, onePackagePath, { overwrite: true });
 				}
 
-				ExtensionHelper.showUserInfo(`Пакет успешно распакован.`);
+				ExtensionHelper.showUserInfo(`Пакет распакован.`);
 				await ContentTreeProvider.refresh();
 			}
 			catch(error) {
-				ExtensionHelper.showUserError(`Произошла неожиданная ошибка: ${error.message}`);
+				// TODO: Нужно все внутренние ошибки обрабатывть единообразно
+				ExtensionHelper.showUserError(`Внутренняя ошибка расширения: ${error.message}`);
 			}
 		});
 	}

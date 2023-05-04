@@ -22,7 +22,7 @@ export class OpenKnowledgebaseCommand {
 
 		// Проверка доступности директории.
 		if(!fs.existsSync(openClassifierDirectoryPath)) {
-			vscode.window.showErrorMessage(`Директория '${openClassifierDirectoryPath}' не доступна. Выберите другую директорию для открытия контента.`);
+			vscode.window.showErrorMessage(`Папка '${openClassifierDirectoryPath}' недоступна. Выберите другую папку.`);
 			return;
 		}
 

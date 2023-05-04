@@ -182,7 +182,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 	
 					const config = Configuration.get();
 					if(!config.isKbOpened()) {
-						ExtensionHelper.showUserInfo("Нельзя собрать схемы ТС и графы без открытия базы знаний. Сначала откройте базу знаний.");
+						ExtensionHelper.showUserInfo("Для сбора графов нужно открыть базу знаний.");
 						return;
 					}
 					
@@ -209,7 +209,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 				ContentTreeProvider.buildKbPackageCommand,
 				async (selectedPackage: RuleBaseItem) => {
 					if(!config.isKbOpened()) {
-						ExtensionHelper.showUserInfo("Нельзя собрать схемы ТС и графы без открытия базы знаний. Сначала откройте базу знаний.");
+						ExtensionHelper.showUserInfo("Для сбора графов нужно открыть базу знаний.");
 						return;
 					}
 					
@@ -337,7 +337,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		
 		if(!actualContentType){
 			const answer = await vscode.window.showInformationMessage(
-				`Кажется, что база знаний не проинициализирована, хотите создать необходимые директории для режима ${configContentType} автоматически?`,
+				`База знаний не проинициализирована. Создать необходимые папки для формата ${configContentType}?`,
 				"Да",
 				"Нет");
 
@@ -354,7 +354,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 		if(actualContentType == ContentType.EDR && configContentType == ContentType.SIEM) {
 			const answer = await vscode.window.showInformationMessage(
-				"Кажется, что база знаний в формате EDR, хотите изменить тип контента? Неправильная настройка не позволит собрать пакет.",
+				"Формат базы знаний (EDR) не соответствует текущему целевому продукту (SIEM). Выбрать другой продукт? Неправильная настройка не позволит собрать пакет",
 				"Да",
 				"Нет");
 
@@ -365,7 +365,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 		if(actualContentType == ContentType.SIEM && configContentType == ContentType.EDR) {
 			const answer = await vscode.window.showInformationMessage(
-				"Кажется, что база знаний в формате SIEM, хотите изменить тип контента? Неправильная настройка не позволит собрать пакет.",
+				"Формат базы знаний (SIEM) не соответствует текущему целевому продукту (EDR). Выбрать другой продукт? Неправильная настройка не позволит собрать пакет",
 				"Да",
 				"Нет");
 

@@ -18,7 +18,7 @@ export class ExceptionHelper {
 				if(userInfo) {
 					return ExtensionHelper.showError(userInfo, error);
 				}
-				return ExtensionHelper.showError("Неожиданная ошибка.", error);
+				return ExtensionHelper.showError("Внутренняя ошибка расширения. Повторите действие или [обратитесь к разработчикам](https://github.com/Security-Experts-Community/vscode-xp/issues/new?assignees=&labels=bug&template=form_for_bugs.yml&title=%5BBUG%5D)", error);
 			}
 		}
 	}

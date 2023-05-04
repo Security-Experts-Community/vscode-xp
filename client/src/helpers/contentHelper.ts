@@ -100,7 +100,7 @@ export class ContentHelper {
             .find(p => path.basename(p).toLocaleLowerCase() === templateName.toLocaleLowerCase());
 
         if(!templateDirPath) {
-            throw new XpException("Заданное имя шаблона не найдено.");
+            throw new XpException("Такое название шаблона не найдено.");
         }
         
         // Копируем во временную директорию и переименовываем.
@@ -122,7 +122,7 @@ export class ContentHelper {
         }
 
         if(ruleNameParseResult.length != 2) {
-            throw new Error("Ошибка разбора файла правила корреляции");
+            throw new Error("Не удалось разобрать файл правила корреляции");
         }
 
         const ruleName = ruleNameParseResult[1];
@@ -142,7 +142,7 @@ export class ContentHelper {
         }
 
         if(ruleNameParseResult.length != 2) {
-            throw new Error("Ошибка разбора файла правила обогащения");
+            throw new Error("Не удалось разобрать файл правила обогащения");
         }
 
         const ruleName = ruleNameParseResult[1];

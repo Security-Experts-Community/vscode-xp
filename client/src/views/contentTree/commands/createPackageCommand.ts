@@ -19,32 +19,32 @@ export class CreatePackageCommand {
 		const userInput = await vscode.window.showInputBox(
 			{
 				ignoreFocusOut: true,
-				placeHolder: 'Имя пакета',
-				prompt: 'Имя пакета',
+				placeHolder: 'Название пакета',
+				prompt: 'Название пакета',
 				validateInput: (v) => {
 					const trimed = v.trim();
 					// Корректность имени директории с точки зрения ОС.
 					if(trimed.includes(">") || trimed.includes("<") || trimed.includes(":") || trimed.includes("\"") || trimed.includes("/") || trimed.includes("|") || trimed.includes("?") || trimed.includes("*"))
-						return "Имя пакета содержит недопустимые символы";
+						return "Название пакета содержит недопустимые символы";
 
 					if(trimed === '')
-						return "Имя пакета не должно быть пусто";
+						return "Название пакета должно содержать хотя бы один символ";
 
 					// Не используем штатные директории контента.
 					const contentSubDirectories = KbHelper.getContentSubDirectories();
 					if(contentSubDirectories.includes(trimed))
-						return "Данное имя пакета зарезервировано и не может быть использовано";
+						return "Это название пакета зарезервировано и не может быть использовано";
 
 					// Английский язык
 					const englishAlphabet = /^[a-z0-9_]*$/;
 					if(!englishAlphabet.test(trimed)) {
-						return "Допустимы только строчные английские буквы, цифры и символ подчёркивания";
+						return "Используйте только строчные английские буквы, цифры и символ подчеркивания";
 					}
 
 					// Невозможность создать уже созданную директорию.
 					const newFolderPath = path.join(selectedItem.getParentPath(), trimed);
 					if(fs.existsSync(newFolderPath))
-						return "Данный пакет уже существует";
+						return "Пакет с таким названием уже существует";
 				}
 			}
 		);

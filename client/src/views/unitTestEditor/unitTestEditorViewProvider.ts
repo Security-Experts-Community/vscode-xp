@@ -46,7 +46,7 @@ export class UnitTestContentEditorViewProvider  {
 				async (test: BaseUnitTest) => {
 					const testPath = test.getTestExpectationPath();
 					if (!fs.existsSync(testPath)) {
-						vscode.window.showWarningMessage(`Не удалось открыть тест по пути '${testPath}'`);
+						vscode.window.showWarningMessage(`Не удалось открыть тест: '${testPath}'`);
 						return;
 					}
 					// test.show();
@@ -164,7 +164,7 @@ export class UnitTestContentEditorViewProvider  {
 			this._view.webview.html = htmlContent;
 		}
 		catch(error) {
-			ExtensionHelper.showError("Ошибка открытия интеграционных тестов.", error);
+			ExtensionHelper.showError("Не удалось открыть интеграционные тесты.", error);
 		}
 	}
 
@@ -183,7 +183,7 @@ export class UnitTestContentEditorViewProvider  {
 			}
 
 			default: {
-				ExtensionHelper.showUserInfo("Данная команда в настоящий момент не поддерживается. Stay tuned!");
+				ExtensionHelper.showUserInfo("Такой команды нет в этой версии расширения.");
 			}
 		}
 	}
@@ -204,14 +204,14 @@ export class UnitTestContentEditorViewProvider  {
 			this._test.save();
 		}
 		catch(error) {
-			ExceptionHelper.show(error, `Ошибка сохранения теста №${this._test.label} правила ${this._test.getRule().getName()}`);
+			ExceptionHelper.show(error, `Не удалось сохранить модульный тест №${this._test.label} правила ${this._test.getRule().getName()}`);
 			return;
 		}
 	}
 
 	private async runUnitTest(message: any) {
 		if(!message.test) {
-			ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите.");
+			ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
 			return;
 		}
 

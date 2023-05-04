@@ -175,7 +175,7 @@ export class IntegrationTestEditorViewProvider  {
 			this._view.webview.html = htmlContent;
 		}
 		catch(error) {
-			ExtensionHelper.showError("Ошибка открытия интеграционных тестов.", error);
+			ExtensionHelper.showError("Не удалось открыть интеграционные тесты.", error);
 		}
 	}
 
@@ -183,7 +183,7 @@ export class IntegrationTestEditorViewProvider  {
 		switch (message.command) {
 			case 'normalize': {
 				if(!message.test) {
-					ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите.");
+					ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
 					return;
 				}
 
@@ -197,7 +197,7 @@ export class IntegrationTestEditorViewProvider  {
 			}
 			case 'normalizeAndEnrich': {
 				if(!message.test) {
-					ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите.");
+					ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
 					return;
 				}
 
@@ -230,7 +230,7 @@ export class IntegrationTestEditorViewProvider  {
 					await this.saveTest(message);
 				}
 				catch(error) {
-					ExceptionHelper.show(error, `Ошибка сохранения теста №${currTest}.`);
+					ExceptionHelper.show(error, `Не удалось сохранить тест №${currTest}.`);
 					return;
 				}
 
@@ -241,14 +241,14 @@ export class IntegrationTestEditorViewProvider  {
 			case 'saveAllTests': {
 				try {
 					await this.saveAllTests(message);
-					ExtensionHelper.showUserInfo(`Сохранение всех тестов успешно завершено.`);
+					ExtensionHelper.showUserInfo(`Все тесты сохранены.`);
 				
 					// Добавляем в DOM новый тест.
 					const activeTestNumber = this.getActiveTestNumber(message);
 					this.updateView(activeTestNumber);
 				}
 				catch(error) {
-					ExceptionHelper.show(error, `Ошибка сохранения теста`);
+					ExceptionHelper.show(error, `Не удалось сохранить тест`);
 				}
 				return;
 			}
@@ -265,7 +265,7 @@ export class IntegrationTestEditorViewProvider  {
 			}
 
 			default: {
-				ExtensionHelper.showUserInfo("Данная команда в настоящий момент не поддерживается. Stay tuned!");
+				ExtensionHelper.showUserInfo("Такой команды нет в этой версии расширения.");
 			}
 		}
 	}
@@ -283,7 +283,7 @@ export class IntegrationTestEditorViewProvider  {
 
 	private async cleanTestCode(message: any) {
 		if(!message.test) {
-			ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите.");
+			ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
 			return;
 		}
 		
@@ -291,7 +291,7 @@ export class IntegrationTestEditorViewProvider  {
 		try {
 			const testCode = message?.testCode;
 			if(!testCode) {
-				throw new Error("Ошибка получения кода теста из UI.");
+				throw new Error("Не удалось получить условия выполнения теста из интерфейса редактирования интеграционных тестов.");
 			}
 
 			test = IntegrationTest.convertFromObject(message.test);
@@ -305,7 +305,7 @@ export class IntegrationTestEditorViewProvider  {
 			});
 		}
 		catch (error) {
-			ExtensionHelper.showError(`Ошибка при очистке кода теста №${test.getNumber()}`, error.message);
+			ExtensionHelper.showError(`Не удалось очистить код теста №${test.getNumber()}`, error);
 		}
 	}
 
@@ -361,7 +361,7 @@ export class IntegrationTestEditorViewProvider  {
 				return;
 			}
 
-			ExtensionHelper.showUserInfo("Нормализация события успешно завершена.");
+			ExtensionHelper.showUserInfo("Нормализация сырого события завершена успешно.");
 
 			// Обновляем правило.
 			tests[ruleTestIndex] = test;
@@ -379,7 +379,7 @@ export class IntegrationTestEditorViewProvider  {
 		try {
 			normalizedEvents = currTest.getNormalizedEvents();
 			if(!normalizedEvents) {
-				ExtensionHelper.showUserError("Нет нормализованных событий. Сначала нормализуйте сырые события, а потом запускайте быстрый тест.");
+				ExtensionHelper.showUserError("Для запуска быстрого теста нужно хотя бы одно нормализованное событие. Нормализуйте сырые события, и повторите действие.");
 				return;
 			}
 
@@ -392,7 +392,7 @@ export class IntegrationTestEditorViewProvider  {
 				"expect $1 {}");
 		}
 		catch (error) {
-			ExtensionHelper.showError("Ошибка формирования кода модульного теста из интеграционного.", error.message);
+			ExtensionHelper.showError("Не удалось сформировать условия выполнения быстрого теста.", error);
 			return;
 		}
 
@@ -424,7 +424,7 @@ export class IntegrationTestEditorViewProvider  {
 
 				switch (resultTest.getStatus()) {
 					case TestStatus.Success: {
-						ExtensionHelper.showUserInfo(`Быстрый тест ${resultTest.getNumber()} завершился успешно.`);
+						ExtensionHelper.showUserInfo(`Быстрый тест ${resultTest.getNumber()} пройден успешно.`);
 						break;
 					}
 					case TestStatus.Failed: {
@@ -455,7 +455,7 @@ export class IntegrationTestEditorViewProvider  {
 				return fs.promises.rmdir(randTmpPath, {recursive : true});
 			} 
 			catch(error) {
-				ExceptionHelper.show(error, 'Ошибка запуска быстрых тестов.');
+				ExceptionHelper.show(error, 'Не удалось запустить быстрый тест.');
 			}
 		});
 	}
@@ -480,12 +480,12 @@ export class IntegrationTestEditorViewProvider  {
 				tests = rule.getIntegrationTests();
 			}
 			catch(error) {
-				ExceptionHelper.show(error, `Ошибка сохранения тестов.`);
+				ExceptionHelper.show(error, `Не удалось сохранить тесты.`);
 				return false;
 			}
 
 			if(tests.length == 0) {
-				ExtensionHelper.showUserInfo(`Тестов для правила '${this._rule.getName()}' не обнаружено`);
+				ExtensionHelper.showUserInfo(`Тесты для правила '${this._rule.getName()}' не найдены`);
 				return false;
 			}
 
@@ -493,10 +493,10 @@ export class IntegrationTestEditorViewProvider  {
 				const executedTests = await testRunner.run(this._rule);
 
 				if(executedTests.every(it => it.getStatus() === TestStatus.Success)) {
-					ExtensionHelper.showUserInfo(`Интеграционные тесты завершились успешно.`);
+					ExtensionHelper.showUserInfo(`Интеграционные тесты прошли успешно.`);
 					return true;
 				} 
-				ExtensionHelper.showUserError(`Интеграционные тесты завершились неуспешно. Возможно в правиле используются сабрули из других пакетов.`);
+				ExtensionHelper.showUserError(`Интеграционные тесты завершились неуспешно. Возможно в правиле используются вспомогательные правила из других пакетов.`);
 			}
 			catch(error) {
 				ExceptionHelper.show(error, `Ошибка запуска тестов`);
@@ -508,7 +508,7 @@ export class IntegrationTestEditorViewProvider  {
 	async saveTest(message: any) : Promise<IntegrationTest> {
 		// Обновляем и сохраняем тест.
 		const test = await TestHelper.saveIntegrationTest(this._rule, message);
-		ExtensionHelper.showUserInfo(`Сохранение теста №${test.getNumber()} успешно завершено.`);
+		ExtensionHelper.showUserInfo(`Тест №${test.getNumber()} сохранен.`);
 		return test;
 	}
 

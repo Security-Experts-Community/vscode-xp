@@ -5,7 +5,7 @@ import { Localization } from '../../models/content/localization';
 import { Correlation } from '../../models/content/correlation';
 import { XpException } from '../../models/xpException';
 
-suite('Локализации', () => {
+suite('Правила локализации', () => {
 	
 	test('Парсинг трех локализаций', () => {
 		const rulePath = TestFixture.getFixturePath("localizations", "MSSQL_user_password_brute");

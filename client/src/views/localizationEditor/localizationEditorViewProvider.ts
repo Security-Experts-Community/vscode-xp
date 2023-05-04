@@ -56,17 +56,17 @@ export class LocalizationEditorViewProvider  {
 
 				const locId = loc.getLocalizationId();
 				if(!locId) {
-					throw new XpException("LocalizationId не задан.");
+					throw new XpException("Не задан LocalizationId.");
 				}
 
 				const criteria = loc.getCriteria();
 				if(!criteria) {
-					throw new XpException(`Критерий локализации пуст для LocalizationId = '${locId}'.`);
+					throw new XpException(`Критерий для правила локализации не задан: LocalizationId = '{locId}'.`);
 				}
 
 				// Ошибка в том случае, если нет обоих локализаций.
 				if(!loc.getRuLocalizationText() && !loc.getEnLocalizationText()) {
-					throw new XpException(`Для критерия LocalizationId = '${locId}' не задана ни одна из локализаций.`);	
+					throw new XpException(`Для критерия LocalizationId = '{locId}' не задано ни одного значения.`);	
 				}
 
 				let ruLocalizationText = loc.getRuLocalizationText();
@@ -90,7 +90,7 @@ export class LocalizationEditorViewProvider  {
 			// Создать и показать панель.
 			this._view = vscode.window.createWebviewPanel(
 				LocalizationEditorViewProvider.viewId,
-				`Локализации '${rule.getName()}'`,
+				`Правила локализации '${rule.getName()}'`,
 				vscode.ViewColumn.One,
 				{retainContextWhenHidden : true});
 
@@ -122,14 +122,14 @@ export class LocalizationEditorViewProvider  {
 			this._view.webview.html = htmlContent;
 		}
 		catch(error) {
-			ExtensionHelper.showUserError(`Ошибка открытия файлов локализации. ${error.message}`);
+			ExtensionHelper.showUserError(`Не удалось открыть правила локализации. ${error.message}`);
 		}
 	}
 
 	async receiveMessageFromWebView(message: any) {
 		switch (message.command) {
 			case 'buildLocalizations': {
-				ExtensionHelper.showUserInfo("Проверка локализаций находится на этапе разработки. Stay tunned!");
+				ExtensionHelper.showUserInfo("Скоро мы добавим проверку правил локализации.");
 				break;
 			}
 
@@ -156,7 +156,7 @@ export class LocalizationEditorViewProvider  {
 
 					const firstDuplicate = this.findDuplicates(criteria);
 					if(firstDuplicate != null) {
-						ExtensionHelper.showUserError(`Критерий '${firstDuplicate}' дублируется в нескольких локализациях`);
+						ExtensionHelper.showUserError(`Критерий '${firstDuplicate}' дублируется в нескольких правилах локализации`);
 						return;
 					}
 
@@ -178,10 +178,10 @@ export class LocalizationEditorViewProvider  {
 					this._rule.setLocalizations(localizations);
 					this._rule.saveLocalizations();
 
-					ExtensionHelper.showUserInfo(`Локализация для правила ${this._rule.getName()} успешно сохранена.`);
+					ExtensionHelper.showUserInfo(`Правила локализации для правила ${this._rule.getName()} сохранены.`);
 				}
 				catch (error) {
-					ExtensionHelper.showError("Ошибка сохранения локализации.", error);
+					ExtensionHelper.showError("Не удалось сохранить правила локализации.", error);
 				}
 			}
 		}

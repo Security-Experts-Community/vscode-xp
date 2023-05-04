@@ -213,7 +213,7 @@ export async function activate(context: ExtensionContext) {
 		);
 	}
 	catch(error){
-		ExceptionHelper.show(error, "Ошибка активации расширения");
+		ExceptionHelper.show(error, "Не удалось активировать расширение 'eXtraction and Processing'");
 	}
 }
 

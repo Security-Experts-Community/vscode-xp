@@ -369,7 +369,7 @@
 		"commands": [
 			{
 				"command": "xpContentEditor.setContentType",
-				"title": "Задать тип контента: SIEM или XDR",
+				"title": "Выбрать целевой продукт: SIEM или XDR",
 				"category": "Редактор контента"
 			},
 			{
@@ -467,7 +467,7 @@
 			},
 			{
 				"command": "LocalizationView.showLocalizationEditor",
-				"title": "Локализации",
+				"title": "Правила локализации",
 				"category": "Редактор контента"
 			},
 			{

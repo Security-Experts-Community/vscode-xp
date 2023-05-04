@@ -70,9 +70,9 @@ export class CreateRuleViewProvider {
         const templateNames = ContentHelper.getTemplateNames(this._config, ContentHelper.CORRELATIONS_DIRECTORY_NAME);
 
         this.showCreateRuleView(
-            "Создать корреляцию",
+            "Создать правило корреляции",
             "createCorrelation", 
-            "корреляции", 
+            "правила корреляции", 
             ruleFullPath,
             templateNames);
     }
@@ -81,9 +81,9 @@ export class CreateRuleViewProvider {
         const templateNames = ContentHelper.getTemplateNames(this._config, ContentHelper.ENRICHMENTS_DIRECTORY_NAME);
 
         this.showCreateRuleView(
-            "Создать обогащение",
+            "Создать правило обогащения",
             "createEnrichment", 
-            "обогащения", 
+            "правила обогащения", 
             ruleFullPath,
             templateNames);
     }
@@ -92,9 +92,9 @@ export class CreateRuleViewProvider {
         const templateNames = ContentHelper.getTemplateNames(this._config, ContentHelper.NORMALIZATIONS_DIRECTORY_NAME);
 
         this.showCreateRuleView(
-            "Создать нормализацию",
+            "Создать формулу нормализации",
             "createNormalization", 
-            "нормализации", 
+            "формулы нормализации", 
             ruleFullPath,
             templateNames);
     }
@@ -145,7 +145,7 @@ export class CreateRuleViewProvider {
             this._view.webview.html = htmlContent;
         }
         catch (error) {
-            ExtensionHelper.showError("Ошибка отображения шаблона корреляции.", error);
+            ExtensionHelper.showError("Не удалось отобразить шаблон правила корреляции.", error);
         }
     }
 
@@ -169,17 +169,17 @@ export class CreateRuleViewProvider {
         const [ruleName, templateName, ruleParentPath] = this.parseMessageFromFrontEnd(message);
 
         if(!ruleName) {
-            ExtensionHelper.showUserError("Не задано имя корреляции.");
+            ExtensionHelper.showUserError("Не задано название правила корреляции.");
             return;
         }
 
         if(!templateName) {
-            ExtensionHelper.showUserError("Не задана информаця о типе шаблона. Выберите доступный шаблон и повторите попытку.");
+            ExtensionHelper.showUserError("Не задана информация о типе шаблона. Выберите шаблон и повторите действие.");
             return;
         }
 
         if(!fs.existsSync(ruleParentPath)) {
-            ExtensionHelper.showUserError("Путь для создания корреляции не найден. Возможно повреждение репозитория.");
+            ExtensionHelper.showUserError("Путь для создания правила корреляции не найден. Возможно репозиторий поврежден.");
             return;
         }
 
@@ -187,7 +187,7 @@ export class CreateRuleViewProvider {
         const ruleFullPath = RuleBaseItem.getRuleDirectoryPath(ruleParentPath, ruleName);
         if(fs.existsSync(ruleFullPath)) {
             const overwriteResult = await vscode.window.showInformationMessage(
-                `Хотите перезаписать существующее правило '${ruleName}'?`,
+                `Правило с именем '${ruleName}' уже есть. Перезаписать его?`,
                 ...["Да", "Нет"]);
 
             if (overwriteResult === "Нет") {
@@ -223,7 +223,7 @@ export class CreateRuleViewProvider {
             }
         }
         catch (error) {
-            ExtensionHelper.showError(`Ошибка создания и сохранения правила '${ruleName}'.`, error);
+            ExtensionHelper.showError(`Не удалось создать и сохранить правило '${ruleName}'.`, error);
             return;
         }
 
@@ -231,7 +231,7 @@ export class CreateRuleViewProvider {
         await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
         await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, rule);
         
-        ExtensionHelper.showUserInfo(`Правило ${ruleName} успешно создано`);
+        ExtensionHelper.showUserInfo(`Правило ${ruleName} создано.`);
         this._view.dispose();
     }
 
@@ -244,7 +244,7 @@ export class CreateRuleViewProvider {
         ruleName = ruleName.trim();
 
         if(ruleName.includes(" ")) {
-            ExtensionHelper.showUserError("В имени корреляции нельзя использовать пробельные символы.");
+            ExtensionHelper.showUserError("Название правила не должно содержать пробел.");
             return;
         }
 

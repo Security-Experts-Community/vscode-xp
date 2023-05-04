@@ -48,7 +48,7 @@ export class PackSIEMAllPackagesAction {
 		// Проверка наличия утилиты сборки kb-файлов.
 		const knowledgeBasePackagerCli = this.config.getKbPackFullPath();
 		if(!fs.existsSync(knowledgeBasePackagerCli)) {
-			ExtensionHelper.showUserError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку.");
+			ExtensionHelper.showUserError('Путь к утилите сборки пакетов экспертизы задан не верно. Измените его [в настройках расширения](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]) и повторите попытку');
 			return;
 		}
 
@@ -109,7 +109,8 @@ export class PackSIEMAllPackagesAction {
 				ExtensionHelper.showUserError(`Ошибка сборки пакета '${packageName}'. Смотри Output.`);
 			}
 			catch(error) {
-				ExtensionHelper.showUserError("Произошла неожиданная ошибка.");
+				// TODO: Нужно все внутренние ошибки обрабатывть единообразно
+				ExtensionHelper.showUserError(`Внутренняя ошибка расширения.\n ${error.message}.`);
 			}
 		});
 	}
@@ -193,7 +194,8 @@ export class PackKbAction {
 				this._config.getOutputChannel().show();
 			}
 			catch(error) {
-				ExceptionHelper.show(error, "Произошла неожиданная ошибка.");
+				// TODO: Нужно все внутренние ошибки обрабатывть единообразно
+				ExceptionHelper.show(error, "Внутренняя ошибка расширения.");
 			}
 		});
 	}

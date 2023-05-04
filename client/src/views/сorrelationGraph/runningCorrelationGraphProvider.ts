@@ -77,7 +77,7 @@ export class RunningCorrelationGraphProvider {
             this._view.webview.html = htmlContent;
         }
         catch (error) {
-            ExtensionHelper.showError("Ошибка отображения шаблона корреляции.", error);
+            ExtensionHelper.showError("Не удалось отобразить шаблон правила корреляции.", error);
         }
     }
 
@@ -87,7 +87,7 @@ export class RunningCorrelationGraphProvider {
                 const rawEvents = message.rawEvents;
 
                 if(!rawEvents) {
-                    ExtensionHelper.showUserError("Не заполнено поле сырых событий. Заполните его и повторите.");
+                    ExtensionHelper.showUserError("Добавьте сырые события и повторите действие.");
                     return;
                 }             
 				await this.corrGraphRun(rawEvents);
@@ -109,7 +109,7 @@ export class RunningCorrelationGraphProvider {
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 cancellable: false,
-                title: `Прогон событий по графу корреляций для директории ${path.basename(rootPath)}`
+                title: `Корреляция нормализованных событий с использованием графа для директории ${path.basename(rootPath)}`
             }, async (progress) => {
                 try {
                     const rootFolder = path.basename(rootPath);
@@ -126,14 +126,14 @@ export class RunningCorrelationGraphProvider {
                     const correlatedEventsString = await runner.run(rootPath, rawEventsFilePath);
 
                     if(!correlatedEventsString) {
-                        ExtensionHelper.showUserInfo(`По данным событиям не произошло ни одной сработки корреляций в папке ${rootFolder}.`);
+                        ExtensionHelper.showUserInfo(`По этим событиям не произошло ни одной сработки корреляции из папки ${rootFolder}.`);
                         return;
                     }
                     
                     // Извлекаем имена сработавших корреляций.
                     const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /("correlation_name"\s*:\s*"(.*?)")/g);
                     if(!correlationNames) {
-                        ExtensionHelper.showUserError("Ошибка прогона событий по графу корреляции.");
+                        ExtensionHelper.showUserError(`Не удалось скоррелировать нормализованные события с использованием графа для директории ${path.basename(rootPath)}.`);
                         return;
                     }
 
@@ -169,7 +169,7 @@ export class RunningCorrelationGraphProvider {
 
 		const mimeType = message?.mimeType as EventMimeType;
 		if(!mimeType) {
-			ExtensionHelper.showUserInfo("Не задан mime. Добавьте задайте его и повторите.");
+			ExtensionHelper.showUserInfo("Не задан MIME-тип события. Добавьте его и повторите действие.");
 			return;
 		}
 

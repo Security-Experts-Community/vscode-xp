@@ -23,7 +23,7 @@ export class RenameTreeItemCommand {
 			if(td.isDirty && openFilePath.includes(ruleDirPath)) {
 				const fileName = path.basename(openFilePath);
 				stopExecution = true;
-				ExtensionHelper.showUserInfo(`Файл '${fileName}' не сохранен. Сохраните и повторите команду.`);
+				ExtensionHelper.showUserInfo(`Файл '${fileName}' не сохранен. Сохраните его и повторите действие.`);
 			}
 		});
 
@@ -36,26 +36,26 @@ export class RenameTreeItemCommand {
 			{
 				ignoreFocusOut: true,
 				value : oldRuleName,
-				placeHolder: 'Новое имя правила',
-				prompt: 'Новое имя правила',
+				placeHolder: 'Новое название правила',
+				prompt: 'Новое название правила',
 				validateInput: (v) => {
 					const trimed = v.trim();
 					// Корректность имени директории с точки зрения ОС.
 					if(trimed.includes(">") || trimed.includes("<") || trimed.includes(":") || trimed.includes("\"") || trimed.includes("/") || trimed.includes("|") || trimed.includes("?") || trimed.includes("*"))
-						return "Имя правила содержит недопустимые символы";
+						return "Имя название содержит недопустимые символы";
 
 					if(trimed === '')
-						return "Имя правилане должно быть пусто";
+						return "Имя название должно содержать хотя бы один символ";
 
 					// Не используем штатные директории контента.
 					const contentSubDirectories = KbHelper.getContentSubDirectories();
 					if(contentSubDirectories.includes(trimed))
-						return "Данное имя директории зарезервировано и не может быть использовано";
+						return "Это имя папки зарезервировано и не может быть использовано";
 
 					// Английский язык
 					const englishAlphabet = /^[A-Za-z0-9_]*$/;
 					if(!englishAlphabet.test(trimed)) {
-						return "Допустимы только английские буквы, цифры и символ подчёркивания";
+						return "Используйте только английские буквы, цифры и символ подчеркивания";
 					}
 				}
 			}
@@ -86,7 +86,7 @@ export class RenameTreeItemCommand {
 			await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, selectedItem);
 		}
 		catch(error) {
-			ExtensionHelper.showUserInfo("Ошибка переименования.");
+			ExtensionHelper.showUserInfo("Не удалось переименовать объект.");
 			return;
 		}
 	}

@@ -39,7 +39,7 @@ export class IntegrationTestRunner {
 		});
 
 		if(!atLeastOneTestIsValid) {
-			ExtensionHelper.showUserError("Ни один тест не содержит нужного заполнения. Заполните поле сырых событий, код теста и запустите тесты повторно.");
+			ExtensionHelper.showUserError("Для запуска тестов нужно добавить сырые события и условия выполнения теста.");
 			return;
 		}
 
@@ -65,7 +65,7 @@ export class IntegrationTestRunner {
 		const siemjConfContent = configBuilder.build();
 
 		if(!siemjConfContent) {
-			ExtensionHelper.showUserError("Не удалось сгенерировать siemj.conf для заданного правила и тестов.");
+			ExtensionHelper.showUserError("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
 			return;
 		}
 
