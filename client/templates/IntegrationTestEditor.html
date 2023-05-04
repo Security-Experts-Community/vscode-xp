@@ -54,7 +54,7 @@
 					<input type="checkbox" name="word-wrap" onclick="wrap(this);" checked>
 					<label for="word-wrap">переносить по словам</label>
 					<div class="dropdown">
-						<input class="dropbtn" type="button" value="Конверт">
+						<input class="dropbtn" type="button" value="MIME-тип">
 						<div class="dropdown-content">
 							<div name="add_envelope">application/x-pt-eventlog</div>
 							<div name="add_envelope">application/json</div>
@@ -63,7 +63,7 @@
 							<div name="add_envelope">text/xml</div>
 						</div>
 					</div>
-					<input name="normalize_and_enrich" type="button" value="Нормализовать + Обогатить">
+					<input name="normalize_and_enrich" type="button" value="Нормализовать и обогатить">
 					<input name="normalize" type="button" value="Нормализовать">
 				</div>
 
@@ -80,7 +80,7 @@
 					<label for="norm_event" class="label">Нормализованное событие:</label>
 				</div>
 				<div class="manage_buttons">
-					<input name="fast_test" type="button" value="Быстрый тест">
+					<input name="fast_test" type="button" value="&#9654;   Запустить быстрый тест  ">
 				</div>
 				<div class="text">
 					<div contenteditable="true" id="norm_event" name="norm_event">{{NormEvent}}</div>
@@ -92,10 +92,10 @@
 			<div class="test_block">
 				<div class="block_header">
 					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
-					<label for="expect" class="label">Код теста:</label>
+					<label for="expect" class="label">Условия прохождения теста:</label>
 				</div>
 				<div class="manage_buttons">
-					<input id="clean_test_button" type="button" value="Очистить код теста">
+					<input id="clean_test_button" type="button" value="Очистить">
 				</div>
 
 				<div class="text">

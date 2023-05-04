@@ -16,7 +16,7 @@ export class ProcessHelper {
 		);
 
 		if(childProcess.status != 0) {
-			throw new Error(`Ошибка запуска внешнего процесса '${command}'. ` + childProcess.stderr);
+			throw new Error(`Не удалось запустить внешний процесс '${command}'. \n` + childProcess.stderr);
 		}
 
 		return childProcess.stdout;
@@ -191,7 +191,7 @@ export class ProcessHelper {
 		);
 
 		if(childProcess.status != 0) {
-			throw new Error(`Ошибка запуска внешнего процесса '${command}'. ` + childProcess.stderr);
+			throw new Error(`Не удалось запустить внешний процесс '${command}'. \n` + childProcess.stderr);
 		}
 
 		return childProcess.stdout;

@@ -95,13 +95,15 @@ export class PackEDRPackageAction {
 				outputChannel.appendLine(output);
 				
 				if(output.includes("done")) {
-					ExtensionHelper.showUserInfo(`Пакет '${packageName}' успешно собран.`);
+					ExtensionHelper.showUserInfo(`Пакет '${packageName}' собран успешно.`);
 					return;
-				} 					
-				ExtensionHelper.showUserError(`Ошибка сборки пакета '${packageName}'. Смотри Output: eXtract and Processing.`);			
+				}
+				// TODO: тут нужно сделать ссылку или кнопку для перехода в нужную панель
+				ExtensionHelper.showUserError(`Не удалось собрать пакет '${packageName}'. Подробности приведены в канале 'eXtraction and Processing' панели Output.`);			
 			}
 			catch(error) {
-				ExtensionHelper.showUserError(`Произошла неожиданная ошибка: ${error}`);
+				// TODO: Нужно все внутренние ошибки обрабатывть единообразно
+				ExtensionHelper.showUserError(`Внутренняя ошибка расширения.\n ${error}`);
 			}
 			finally{
 				outputChannel.appendLine("----------------------------------------");
@@ -188,13 +190,14 @@ export class PackEDRAllPackagesAction implements PackAction {
 				emitter.fire(`\r\nXP:: Command output:\n${output.trim()}\n\n`);
 
 				if(output.includes("done")) {
-					ExtensionHelper.showUserInfo(`Пакет '${packageName}' успешно собран.`);
+					ExtensionHelper.showUserInfo(`Пакет '${packageName}' собран успешно.`);
 					return;
 				} 
 				ExtensionHelper.showUserError(`Ошибка сборки пакета '${packageName}'. Смотри Terminal.`);
 			}
 			catch(error) {
-				ExtensionHelper.showUserError(`Произошла неожиданная ошибка ${error}.`);
+				// TODO: Нужно все внутренние ошибки обрабатывть единообразно
+				ExtensionHelper.showUserError(`Внутренняя ошибка расширения.\n ${error}.`);
 			}
 		});
 	}

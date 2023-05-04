@@ -32,7 +32,7 @@ export class TestsFormatContentMenuExtension {
 					});
 				}
 				catch (error) {
-					ExtensionHelper.showError("Ошибка упаковки кода теста.", error.message);
+					ExtensionHelper.showError("Не удалось упаковать кода теста.", error);
 				}
 			}
 		);
@@ -88,7 +88,7 @@ export class TestsFormatContentMenuExtension {
 					});
 				}
 				catch (error) {
-					ExtensionHelper.showError("Ошибка упаковки кода теста. ", error.message);
+					ExtensionHelper.showError("Не удалось упаковать код теста. ", error);
 				}
 			},
 			this

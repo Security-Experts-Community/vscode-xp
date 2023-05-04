@@ -15,32 +15,32 @@ export class CreateSubFolderCommand {
 		const userInput = await vscode.window.showInputBox(
 			{
 				ignoreFocusOut: true,
-				placeHolder: 'Имя директории',
-				prompt: 'Имя директории',
+				placeHolder: 'Имя папки',
+				prompt: 'Имя папки',
 				validateInput: (v) => {
 					const trimed = v.trim();
 					// Корректность имени директории с точки зрения ОС.
 					if(trimed.includes(">") || trimed.includes("<") || trimed.includes(":") || trimed.includes("\"") || trimed.includes("/") || trimed.includes("|") || trimed.includes("?") || trimed.includes("*"))
-						return "Имя директории содержит недопустимые символы";
+						return "Имя папки содержит недопустимые символы";
 
 					if(trimed === '')
-						return "Имя директории не должно быть пусто";
+						return "Имя папки должно содержать хотя бы один символ";
 
 					// Не используем штатные директории контента.
 					const contentSubDirectories = KbHelper.getContentSubDirectories();
 					if(contentSubDirectories.includes(trimed))
-						return "Данное имя директории зарезервировано и не может быть использовано";
+						return "Это имя папки зарезервировано и не может быть использовано";
 
 					// Английский язык
 					const englishAlphabet = /^[A-Za-z0-9_]*$/;
 					if(!englishAlphabet.test(trimed)) {
-						return "Допустимы только английские буквы, цифры и символ подчёркивания";
+						return "Используйте только английские буквы, цифры и символ подчеркивания";
 					}
 
 					// Невозможность создать уже созданную директорию.
 					const newFolderPath = path.join(selectedItem.getParentPath(), trimed);
 					if(fs.existsSync(newFolderPath))
-						return "Данная директория уже существует";
+						return "Такая папка уже существует";
 				}
 			}
 		);

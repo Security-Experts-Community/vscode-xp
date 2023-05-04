@@ -43,7 +43,7 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 			}
 		}
 		catch (error) {
-			ExtensionHelper.showError(`Ошибка считывания описания функций языка XP. Их автодополнение и описание параметров работать не будет. Возможно поврежден файл '${signaturesFilePath}'.`, error);
+			ExtensionHelper.showError(`Не удалось считать описания функций языка XP. Их автодополнение и описание параметров работать не будет. Возможно поврежден файл '${signaturesFilePath}'.`, error);
 		}
 
 		try {
@@ -56,7 +56,7 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 			}
 		}
 		catch (error) {
-			ExtensionHelper.showError(`Ошибка считывания описания описания полей таксономии. Их автодополнение работать не будет. Возможно поврежден файл '${signaturesFilePath}'.`, error);
+			ExtensionHelper.showError(`Не удалось считать описания полей таксономии. Их автодополнение работать не будет. Возможно поврежден файл '${signaturesFilePath}'.`, error);
 		}
 
 		try {

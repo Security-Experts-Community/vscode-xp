@@ -33,7 +33,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 		}
 
 		if(!this._config.isKbOpened()) {
-			ExtensionHelper.showUserError("Не открыта база знаний");
+			ExtensionHelper.showUserError("Не выбрана база знаний.");
 			return;
 		}
 
@@ -77,7 +77,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			);
 
 			if(!output) {
-				ExtensionHelper.showUserError("Ошибка запуска юнит-тестов, команда запуска не вернула ожидаемые данные. Проверьте пути до утилит.");
+				ExtensionHelper.showUserError('Не удалось запустить модульные тесты, команда запуска не вернула ожидаемые данные. Проверьте путь до утилит KBT [в настройках расширения](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]).');
 				test.setStatus(TestStatus.Unknown);
 				return test;
 			}

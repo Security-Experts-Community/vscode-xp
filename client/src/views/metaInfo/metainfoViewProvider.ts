@@ -75,7 +75,7 @@ export class MetainfoViewProvider {
 			this.updateWebView();
 		}
 		catch (error) {
-			ExtensionHelper.showError("Ошибка визуализации метаинформации.", error);
+			ExtensionHelper.showError("Ошибка визуализации метаданных.", error);
 		}
 	}
 
@@ -109,10 +109,10 @@ export class MetainfoViewProvider {
 					await this.updateWebView();
 				}
 				catch (error) {
-					return ExceptionHelper.show(error, "Ошибка сохранения метаданных.");
+					return ExceptionHelper.show(error, "Не удалось сохранить метаданные.");
 				}
 
-				return ExtensionHelper.showUserInfo("Метаданные правила успешно сохранены.");
+				return ExtensionHelper.showUserInfo("Метаданные правила сохранены.");
 			}
 		}
 	}

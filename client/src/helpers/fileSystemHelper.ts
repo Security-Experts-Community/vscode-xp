@@ -48,7 +48,7 @@ export class FileSystemHelper {
 			file = fs.readFileSync(filePath, this._fileEncoding);
 		}
 		catch (error) {
-			throw new Error(`Ошибка чтения файла '${filePath}'`);
+			throw new Error(`Не удалось прочитать файл '${filePath}'`);
 		}
 		
 		return file.toString();
@@ -59,7 +59,7 @@ export class FileSystemHelper {
 			fs.writeFileSync(filePath, fileContent, {encoding: this._fileEncoding});
 		}
 		catch (error) {
-			throw new Error(`Ошибка записи в файл '${filePath}'`);
+			throw new Error(`Не удалось записать в файл '${filePath}'`);
 		}
 	}
 

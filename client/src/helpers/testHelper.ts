@@ -69,7 +69,7 @@ export class TestHelper {
 			const lineNumber = d.range.start.line;
 
 			if(lineNumber >= lines.length) {
-				throw new ParseException(`Ошибка разбора ошибки кода правила по пути ${ruleContent}`);
+				throw new ParseException(`Не удалось разобрать сообщения об ошибках в коде правила: ${ruleContent}`);
 			}
 
 			const errorLine = lines[lineNumber];
@@ -211,7 +211,7 @@ export class TestHelper {
 			}
 			catch (error) {
 				// Если не удалось отформатировать, пропускаем и пишем в лог.
-				console.warn(`Ошибка форматирования события ${compessedEvent}.`);
+				console.warn(`Не удалось отформатировать событие ${compessedEvent}.`);
 				continue;
 			}
 		}
@@ -281,7 +281,7 @@ export class TestHelper {
 		// Сырые события.
 		const rawEvents = message?.newValues?.rawEvents;
 		if(!rawEvents) {
-			throw new Error(`Не заданы сырые события для теста №${test.getNumber()}. Добавьте их и повторите.`);
+			throw new Error(`В тест №${test.getNumber()} не добавлены сырые события. Добавьте их и повторите действие.`);
 		}
 
 		// Если обновляем сырые событиях, то разумно убрать нормализованные события, если такие есть.
@@ -421,14 +421,14 @@ export class TestHelper {
 			// Сырые события.
 			const rawEvents = plainTest?.rawEvents;
 			if(!rawEvents || rawEvents == "") {
-				throw new XpException(`Попытка сохранить тест №${number} без сырых событий.`);
+				throw new XpException(`Попытка сохранения теста №${number} без сырых событий.`);
 			}
 			test.setRawEvents(rawEvents);
 
 			// Код теста.
 			const testCode = plainTest?.testCode;
 			if(!testCode || testCode == "") {
-				throw new Error("Попытка сохранить тест без сырых событий.");
+				throw new Error("Попытка сохранения теста без сырых событий.");
 			}
 			test.setTestCode(TestHelper.compressTestCode(testCode));
 

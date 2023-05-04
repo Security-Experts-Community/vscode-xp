@@ -8,11 +8,11 @@ export class Enveloper {
 	public static async addEnvelope(rawEvents: string, mimeType : EventMimeType) {
 		
 		if(!rawEvents) {
-			throw new XpException("Не заданы сырые события для теста. Добавьте их и повторите.");
+			throw new XpException("В тест не добавлены сырые события. Добавьте их и повторите действие.");
 		}
 
 		if(!mimeType) {
-			throw new XpException("Не задан mime. Задайте его и повторите.");
+			throw new XpException("Не задан MIME-тип события. Добавьте его и повторите действие.");
 		}
 
 		// Проверяем, если исходное событие в формате xml (EventViewer)

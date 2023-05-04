@@ -58,7 +58,7 @@ export class SetContentTypeCommand {
 		// Централизованно обновляем тип контента
 		config.setContentType(contentType);
 
-		item.text = `Content Type: ${contentType}`;
+		item.text = `Тип целевого продукта: ${contentType}`;
 		item.show();
 	}
 }
