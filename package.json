@@ -3,7 +3,7 @@
 	"displayName": "eXtraction and Processing",
 	"description": "Предназначен для очень удобного и легкого редактирования контента на языке eXtraction and Processing (XP)",
 	"author": "Dmitry Fedosov (@DmitryOffsec)",
-	"icon": "resources/logo.png",
+	"icon": "resources/xp.png",
 	"license": "MIT",
 	"version": "3.3.3",
 	"repository": {
@@ -190,7 +190,7 @@
 				{
 					"id": "Content",
 					"title": "Редактор контента",
-					"icon": "resources/view_icon.svg"
+					"icon": "resources/xp.svg"
 				}
 			]
 		},
@@ -271,17 +271,17 @@
 				},
 				{
 					"command": "KnowledgebaseTree.showCreateCorrelationView",
-					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros && viewItem != Table",
+					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
 					"group": "create@1"
 				},
 				{
 					"command": "KnowledgebaseTree.showCreateEnrichmentView",
-					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros && viewItem != Table",
+					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
 					"group": "create@2"
 				},
 				{
 					"command": "KnowledgebaseTree.showCreateNormalizationView",
-					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros && viewItem != Table",
+					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
 					"group": "create@3"
 				},
 				{
@@ -370,28 +370,18 @@
 			{
 				"command": "xpContentEditor.setContentType",
 				"title": "Выбрать целевой продукт: SIEM или XDR",
-				"category": "Редактор контента",
-				"icon": {
-					"light": "resources/light/folder.svg",
-					"dark": "resources/dark/folder.svg"
-				}
+				"category": "Редактор контента"
 			},
 			{
 				"command": "SiemContentEditor.openKnowledgebaseCommand",
 				"title": "Открыть базу знаний",
 				"category": "Редактор контента",
-				"icon": {
-					"light": "resources/light/folder.svg",
-					"dark": "resources/dark/folder.svg"
-				}
+				"icon": "$(folder-opened)"
 			},
 			{
 				"command": "SiemContentEditor.refreshKbTree",
 				"title": "Обновить дерево контента",
-				"icon": {
-					"light": "resources/light/refresh.svg",
-					"dark": "resources/dark/refresh.svg"
-				}
+				"icon": "$(refresh)"
 			},
 			{
 				"command": "SiemContentEditor.сreatePackageCommand",

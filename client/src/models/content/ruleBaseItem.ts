@@ -1,5 +1,6 @@
 import * as path from "path";
 import * as fs from 'fs';
+import * as vscode from 'vscode';
 
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { Localization, LocalizationLanguage } from './localization';
@@ -439,10 +440,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		this._ruleCode = text;
 	}
 
-	iconPath = {
-		light: path.join(this.getResourcesPath(), 'light', 'rule.svg'),
-		dark: path.join(this.getResourcesPath(), 'dark', 'rule.svg')
-	};
+	iconPath = new vscode.ThemeIcon('file');
 
 	protected _localizations: Localization [] = [];
 	protected _unitTests: BaseUnitTest [] = [];

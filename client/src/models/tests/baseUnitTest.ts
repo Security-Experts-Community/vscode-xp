@@ -62,26 +62,19 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 
 		switch (this._status) {
 			case TestStatus.Unknown: {
-				this.iconPath = {
-					light: path.join(extenstionResources, 'light', 'document.svg'),
-					dark: path.join(extenstionResources, 'dark', 'document.svg')
-				};
+				this.iconPath = new vscode.ThemeIcon('circle-large-outline');
 				return;
 			}
 
 			case TestStatus.Success: {
-				this.iconPath = {
-					light: path.join(extenstionResources, 'light', 'success.svg'),
-					dark: path.join(extenstionResources, 'dark', 'success.svg')
-				};
+				const iconPath = path.join(extenstionResources, 'test-passed.svg');
+				this.iconPath = { light: iconPath, dark: iconPath };
 				return;
 			}
 
 			case TestStatus.Failed: {
-				this.iconPath = {
-						light: path.join(extenstionResources, 'light', 'failed.svg'),
-						dark: path.join(extenstionResources, 'dark', 'failed.svg')
-				};
+				const iconPath = path.join(extenstionResources, 'test-failed.svg');
+				this.iconPath = { light: iconPath, dark: iconPath };
 				return;
 			}
 		}
