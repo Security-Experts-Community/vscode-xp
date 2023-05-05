@@ -20,13 +20,13 @@ jobs:
         id: release_version
         run: |
           TAGGED_VERSION="${GITHUB_REF/refs\/tags\/v/}"
-          echo "TAGGED_VERSION={TAGGED_VERSION}"
+          echo "TAGGED_VERSION=${TAGGED_VERSION}"
           if [[ ! "${TAGGED_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
             echo "Invalid version tag '${TAGGED_VERSION}'"
             exit 1
           fi
           echo "EXT_VERSION=${TAGGED_VERSION}" >> $GITHUB_ENV
-          echo "EXT_VERSION=${EXT_VERSION}"
+          echo "EXT_VERSION=${TAGGED_VERSION}"
           WRITTEN_VERSION="$(cat package.json | jq '.version' -r)"
           echo "WRITTEN_VERSION=${WRITTEN_VERSION}"
           if [[ "${TAGGED_VERSION}" == *"-"* ]]; then
@@ -35,23 +35,23 @@ jobs:
               exit 1
             fi
             echo "EXT_ISPREVIEW=1" >> $GITHUB_ENV
-            echo "EXT_ISPREVIEW=${EXT_ISPREVIEW}"
+            echo "EXT_ISPREVIEW=1"
           else
             if [[ "${TAGGED_VERSION}" != "${WRITTEN_VERSION}" ]]; then
               echo "Release Tag and Version in package.json do not match: '${TAGGED_VERSION}' vs '${WRITTEN_VERSION}'"
               exit 1
             fi
             echo "EXT_ISPREVIEW=0" >> $GITHUB_ENV
-            echo "EXT_ISPREVIEW=${EXT_ISPREVIEW}"
+            echo "EXT_ISPREVIEW=0"
           fi
       - name: get tag message
         run: |
           TAG_SUBJECT="$(git tag -l --format='%(contents:subject)' v${TAGGED_VERSION})"
           echo "${TAG_SUBJECT}" >> $GITHUB_OUTPUT
-          echo "${TAG_SUBJECT}"
+          echo "TAG SUBJECT: ${TAG_SUBJECT}"
           TAG_BODY="$(git tag -l --format='%(contents:body)' v${TAGGED_VERSION})"
           echo "${TAG_BODY}" >> $GITHUB_OUTPUT
-          echo "${TAG_BODY}"          
+          echo "TAG BODY: ${TAG_BODY}"          
         id: get_tag_message
       - name: stamp version
         run: |
