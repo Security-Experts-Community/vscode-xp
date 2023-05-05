@@ -46,7 +46,12 @@ jobs:
           fi
       - name: get tag message
         run: |
-          echo "$(git tag -l --format='%(contents:subject)' v.${TAGGED_VERSION})" >> $GITHUB_OUTPUT
+          TAG_SUBJECT="$(git tag -l --format='%(contents:subject)' v${TAGGED_VERSION})"
+          echo "${TAG_SUBJECT}" >> $GITHUB_OUTPUT
+          echo "${TAG_SUBJECT}"
+          TAG_BODY="$(git tag -l --format='%(contents:body)' v${TAGGED_VERSION})"
+          echo "${TAG_BODY}" >> $GITHUB_OUTPUT
+          echo "${TAG_BODY}"          
         id: get_tag_message
       - name: stamp version
         run: |
