@@ -32,7 +32,6 @@ import { GitHooks } from './gitHooks';
 import { InitKBRootCommand } from './commands/initKBRootCommand';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { KbTreeBaseItem } from '../../models/content/kbTreeBaseItem';
-import { UnitTestContentEditorViewProvider } from '../unitTestEditor/unitTestEditorViewProvider';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseItem> {
 
