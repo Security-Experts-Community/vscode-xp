@@ -10,7 +10,10 @@
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
 	},
-	"publisher": "Security-Experts-Community",
+	"bugs": {
+    	"url": "https://github.com/Security-Experts-Community/vscode-xp/issues"
+	},
+	"publisher": "SecurityExpertsCommunity",
 	"activationEvents": [],
 	"categories": [
 		"Snippets",
@@ -20,7 +23,11 @@
 		"Visualization"
 	],
 	"keywords": [
-		"xdr edr soldr xp maxpatrol siem"
+		"SIEM",
+		"XDR",
+		"EDR",
+		"XP",
+		"xplang"
 	],
 	"engines": {
 		"vscode": "^1.75.0"
