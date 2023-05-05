@@ -38,15 +38,15 @@
 
 1. Установите [VSCode](https://code.visualstudio.com/).
 
-1. Установите [Node.js](https://nodejs.org/).
+2. Установите [Node.js](https://nodejs.org/).
 
-1. Создайте локальную копию репозитория:
+3. Создайте локальную копию репозитория:
 
-   ```
-   git clone https://github.com/Security-Experts-Community/vscode-xp
-   ```
+```
+git clone https://github.com/Security-Experts-Community/vscode-xp
+```
 
-1. В корне проекта выполните команду `npm install`.
+4. В корне проекта выполните команду `npm install`.
 
 #### <a name="4507248395"></a>Репозитории
 
@@ -60,6 +60,4 @@
 
 Перед публикацией расширения вам нужно в корне проекта выполнить команду `npm install -g vsce`.
 
-Чтобы опубликовать расширение,
-
-1. выполните команду `vsce package -o xpContentEditor.vsix` или запустите скрипт `publish.py` в корне проекта.
+Чтобы опубликовать расширение, выполните команду `vsce package -o xpContentEditor.vsix` или запустите скрипт `publish.py` в корне проекта.
