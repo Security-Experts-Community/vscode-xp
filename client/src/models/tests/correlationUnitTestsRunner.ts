@@ -12,6 +12,7 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { BaseUnitTest } from './baseUnitTest';
 import { UnitTestRunner } from './unitTestsRunner';
 import { UnitTestOutputParser } from './unitTestOutputParser';
+import { SiemjManager } from '../siemj/siemjManager';
 
 export class CorrelationUnitTestsRunner implements UnitTestRunner {
 
@@ -35,6 +36,21 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 		if(!this._config.isKbOpened()) {
 			ExtensionHelper.showUserError("Не выбрана база знаний.");
 			return;
+		}
+
+		const rule = test.getRule();
+		const schemaFullPath = this._config.getSchemaFullPath(rootFolder);
+		
+		// Схема БД необходима для запуска юнит-тестов.
+		if(!fs.existsSync(schemaFullPath)) {
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				cancellable: false
+			}, async (progress) => {
+				progress.report( {message : "Сборка схемы БД, которая необходима для запуска тестов."});
+				const siemjManager = new SiemjManager(this._config);
+				await siemjManager.buildSchema(rule);
+			});
 		}
 
 		try {

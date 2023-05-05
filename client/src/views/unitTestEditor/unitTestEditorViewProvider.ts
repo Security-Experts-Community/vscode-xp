@@ -11,7 +11,6 @@ import { MustacheFormatter } from '../mustacheFormatter';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { UnitTestsListViewProvider } from './unitTestsListViewProvider';
-import { SiemjManager } from '../../models/siemj/siemjManager';
 
 export class UnitTestContentEditorViewProvider  {
 
@@ -216,23 +215,12 @@ export class UnitTestContentEditorViewProvider  {
 		}
 
 		const rule = this._test.getRule();
-		const root = this._config.getRootByPath(rule.getDirectoryPath());
-		const rootFolder = path.basename(root);
-		const schemaFullPath = this._config.getSchemaFullPath(rootFolder);
-
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false
 		}, async (progress) => {
-			try {
-				// Схема БД необходима для запуска юнит-тестов.
-				if(!fs.existsSync(schemaFullPath)) {
-					progress.report( {message : "Сборка схемы БД, которая необходима для запуска тестов."});
-					const siemjManager = new SiemjManager(this._config);
-					await siemjManager.buildSchema(rule);
-				}
-				
-				progress.report( {message : `Выполнение теста №${this._test.getNumber()}'`});
+			try {				
+				progress.report( {message : `Выполнение теста №${this._test.getNumber()}`});
 				const runner = rule.getUnitTestRunner();
 				this._test = await runner.run(this._test);			
 				this.updateView();
