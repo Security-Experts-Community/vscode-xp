@@ -29,7 +29,7 @@ import { UnpackKbAction } from './actions/unpackKbAction';
 import { ContentType } from '../../contentType/contentType';
 import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';
 import { GitHooks } from './gitHooks';
-import { InitKBRootCommand } from './commands/initKBRootCommand';
+import { InitKBRootCommand } from './commands/initKnowledgebaseRootCommand';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { KbTreeBaseItem } from '../../models/content/kbTreeBaseItem';
 

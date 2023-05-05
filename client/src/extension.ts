@@ -25,7 +25,7 @@ import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHig
 import { TestsFormatContentMenuExtension } from './ext/contextMenuExtension';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
 import { YamlHelper } from './helpers/yamlHelper';
-import { InitKBRootCommand } from './views/contentTree/commands/initKBRootCommand';
+import { InitKBRootCommand } from './views/contentTree/commands/initKnowledgebaseRootCommand';
 import { XPPackingTaskProvider } from './providers/xpCustomTaskProvider';
 import { ExceptionHelper } from './helpers/exceptionHelper';
 
