@@ -1,22 +1,24 @@
-name: publish-vsc-marketplace
-run-name: ${{ github.actor }} triggered publication
+name: Release and Publish
+run-name: ${{ github.actor }} triggered release and publication
 on:
   push:
     tags:
       - v*
 jobs:
   release:
-    name: create release
+    name: Create release and publish
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
+
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           cache: 'npm'
-      - name: get release version
+
+      - name: Get release version
         id: release_version
         run: |
           TAGGED_VERSION="${GITHUB_REF/refs\/tags\/v/}"
@@ -44,21 +46,24 @@ jobs:
             echo "EXT_ISPREVIEW=0" >> $GITHUB_ENV
             echo "EXT_ISPREVIEW=0"
           fi
-      - name: get tag message
+
+      - name: Get tag message body
         run: |
           TAG_BODY="$(git tag -l --format='%(contents:body)' v${TAGGED_VERSION})"
           echo "${TAG_BODY}" >> $GITHUB_OUTPUT        
         id: get_tag_message
-      - name: stamp version
+
+      - name: Stamp version
         run: |
           cat package.json | jq --arg VER "${{ env.EXT_VERSION }}" '.version=$VER' > /tmp/package.json 
           cp /tmp/package.json ./package.json
           npm ci
           npm run vscode:prepublish
-      - name: package extension
+
+      - name: Package extension
         run: npx vsce package -o "./vscode-xp-${{ env.EXT_VERSION }}.vsix"
 
-      - name: create release
+      - name: Create release
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -71,7 +76,7 @@ jobs:
           body: |
             ${{join(steps.get_tag_message.outputs.*, '\n')}}
 
-      - name: upload release asset
+      - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.VSCODE_XP_GH_RELEASE_TOKEN }}
@@ -81,6 +86,6 @@ jobs:
           asset_name: vscode-xp-${{ env.EXT_VERSION }}.vsix
           asset_content_type: application/zip
 
-      - name: publish
+      - name: Publish
         if: env.EXT_ISPREVIEW != 1
-        run: echo npx vsce publish -i "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VS_MARKETPLACE_TOKEN }}"
+        run: npx vsce publish -i "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VS_MARKETPLACE_TOKEN }}"
