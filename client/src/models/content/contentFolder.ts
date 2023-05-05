@@ -56,7 +56,10 @@ export class ContentFolder extends KbTreeBaseItem {
 				this.iconPath = new vscode.ThemeIcon('root-folder');
 				break;
 			default:
-				this.iconPath = new vscode.ThemeIcon('folder');
+				this.iconPath = {
+					light: path.join(this.getResourcesPath(), 'light', 'folder.svg'),
+					dark: path.join(this.getResourcesPath(), 'dark', 'folder.svg')
+			};
 		}
 		
 		this.collapsibleState = 
