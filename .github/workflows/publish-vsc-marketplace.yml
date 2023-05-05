@@ -46,11 +46,8 @@ jobs:
           fi
       - name: get tag message
         run: |
-          TAG_SUBJECT="$(git tag -l --format='%(contents:subject)' v${TAGGED_VERSION})"
-          echo "${TAG_SUBJECT}" >> $GITHUB_OUTPUT
-          echo "TAG SUBJECT: ${TAG_SUBJECT}"
           TAG_BODY="$(git tag -l --format='%(contents:body)' v${TAGGED_VERSION})"
-          echo "${TAG_BODY}" >> $GITHUB_OUTPUT
+          echo "${TAG_BODY}\n" >> $GITHUB_OUTPUT
           echo "TAG BODY: ${TAG_BODY}"          
         id: get_tag_message
       - name: stamp version
@@ -69,7 +66,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.VSCODE_XP_GH_RELEASE_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: Release ${{ env.EXT_VERSION }}
+          release_name: v${{ env.EXT_VERSION }}
           draft: false
           prerelease: ${{env.EXT_ISPREVIEW == 1}}
           body: |
@@ -87,4 +84,4 @@ jobs:
 
       - name: publish
         if: env.EXT_ISPREVIEW != 1
-        run: echo npx vsce publish -i "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VSCE_TOKEN }}"
+        run: echo npx vsce publish -i "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VS_MARKETPLACE_TOKEN }}"
