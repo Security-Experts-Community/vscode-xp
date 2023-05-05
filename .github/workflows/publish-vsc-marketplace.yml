@@ -2,8 +2,6 @@ name: publish-vsc-marketplace
 run-name: ${{ github.actor }} triggered publication
 on:
   push:
-    branches:
-      - develop
     tags:
       - v*
 jobs:
