@@ -37,6 +37,7 @@ temp=${this._config.getTmpDirectoryPath(this._contentRootFolder)}`;
 			}
 		}
 
+		const output = path.join('${output_folder}', this._config.getNormalizationsGraphFileName());
 		const nfgraphBuildingSection = 
 `
 [make-nfgraph]
@@ -44,7 +45,7 @@ type=BUILD_RULES
 rcc_lang=n
 rules_src=${this._contentRootPath}
 xp_appendix=${xpAppendixPath}
-out=\${output_folder}\\${this._config.getNormalizationsGraphFileName()}`;
+out=${output}`;
 
 		this._siemjConfigSection += nfgraphBuildingSection;
 		this._scenarios.push("make-nfgraph");
@@ -108,14 +109,17 @@ out=\${output_folder}`;
 		// 	return;
 		// }
 
+		const table_list_schema = path.join('${output_folder}', this._config.getSchemaFileName());
+		const table_list_defaults= path.join('${output_folder}', this._config.getCorrelationDefaultsFileName());
+		const output = path.join('${output_folder}', this._config.getFptaDbFileName());
 		const tablesDatabaseBuildingSection = 
 `
 [make-tables-db]
 type=BUILD_TABLES_DATABASE
 table_list_filltype=All
-table_list_schema=\${output_folder}\\${this._config.getSchemaFileName()}
-table_list_defaults=\${output_folder}\\${this._config.getCorrelationDefaultsFileName()}
-out=\${output_folder}\\${this._config.getFptaDbFileName()}`;
+table_list_schema=${table_list_schema}
+table_list_defaults=${table_list_defaults}
+out=${output}`;
 
 		this._siemjConfigSection += tablesDatabaseBuildingSection;
 		this._scenarios.push("make-tables-db");
@@ -146,6 +150,8 @@ out=\${output_folder}\\${this._config.getFptaDbFileName()}`;
 		}
 
 		const rulesFilters = this._config.getRulesDirFilters();
+		const table_list_schema = path.join('${output_folder}', this._config.getSchemaFileName());
+		const output = path.join('${output_folder}', this._config.getCorrelationsGraphFileName());
 		const cfgraphBuildingSection = 
 `
 [make-crgraph]
@@ -153,8 +159,8 @@ type=BUILD_RULES
 rcc_lang=c
 rules_src=${rulesSrcPath}
 rfilters_src=${rulesFilters}
-table_list_schema=\${output_folder}\\${this._config.getSchemaFileName()}
-out=\${output_folder}\\${this._config.getCorrelationsGraphFileName()}`;
+table_list_schema=${table_list_schema}
+out=${output}`;
 
 		this._siemjConfigSection += cfgraphBuildingSection;
 		this._scenarios.push("make-crgraph");
@@ -170,6 +176,8 @@ out=\${output_folder}\\${this._config.getCorrelationsGraphFileName()}`;
 		}
 
 		const rulesFilters = this._config.getRulesDirFilters();
+		const table_list_schema = path.join('${output_folder}', this._config.getSchemaFileName());
+		const output = path.join('${output_folder}', this._config.getEnrichmentsGraphFileName());
 		const efgraphBuildingSection = 
 `
 [make-ergraph]
@@ -177,8 +185,8 @@ type=BUILD_RULES
 rcc_lang=e
 rules_src=${this._contentRootPath}
 rfilters_src=${rulesFilters}
-table_list_schema=\${output_folder}\\${this._config.getSchemaFileName()}
-out=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}`;
+table_list_schema=${table_list_schema}
+out=${output}`;
 
 		this._siemjConfigSection += efgraphBuildingSection;
 		this._scenarios.push("make-ergraph");
@@ -192,12 +200,13 @@ out=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}`;
 			rulesSrcPathResult = rulesSrcPath;
 		}
 
+		const output = path.join('${output_folder}', this._config.getLocalizationsFolder());
 		const localizationBuildingSection = 
 `
 [make-loca]
 type=BUILD_EVENT_LOCALIZATION
 rules_src=${rulesSrcPathResult}
-out=\${output_folder}\\${this._config.getLocalizationsFolder()}`;
+out=${output}`;
 
 		this._siemjConfigSection += localizationBuildingSection;
 		this._scenarios.push("make-loca");
@@ -205,16 +214,19 @@ out=\${output_folder}\\${this._config.getLocalizationsFolder()}`;
 
 	public addEventsNormalization(rawEventsFilePath : string) : void {
 
+		const formulas = path.join('${output_folder}', this._config.getNormalizationsGraphFileName());
+		const not_norm_events = path.join('${output_folder}', this._config.getNotNormalizedEventsFileName());
+		const output = path.join('${output_folder}', this._config.getNormalizedEventsFileName());
 		const eventNormalizationSection = 
 `
 [run-normalize]
 type=NORMALIZE
-formulas=\${output_folder}\\${this._config.getNormalizationsGraphFileName()}
+formulas=${formulas}
 in=${rawEventsFilePath}
 raw_without_envelope=no
 print_statistics=yes
-not_norm_events=\${output_folder}\\${this._config.getNotNormalizedEventsFileName()}
-out=\${output_folder}\\${this._config.getNormalizedEventsFileName()}`;
+not_norm_events=${not_norm_events}
+out=${output}`;
 
 		this._siemjConfigSection += eventNormalizationSection;
 		this._scenarios.push("run-normalize");
@@ -222,13 +234,16 @@ out=\${output_folder}\\${this._config.getNormalizedEventsFileName()}`;
 
 	public addEventsEnrichment() : void {
 
+		const enrules = path.join('${output_folder}', this._config.getEnrichmentsGraphFileName());
+		const input = path.join('${output_folder}', this._config.getNormalizedEventsFileName());
+		const output = path.join('${output_folder}', this._config.getEnrichedEventsFileName());
 		const eventEnrichSection = 
 `
 [run-enrich]
 type=ENRICH
-enrules=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}
-in=\${output_folder}\\${this._config.getNormalizedEventsFileName()}
-out=\${output_folder}\\${this._config.getEnrichedEventsFileName()}`;
+enrules=${enrules}
+in=${input}
+out=${output}`;
 
 		this._siemjConfigSection += eventEnrichSection;
 		this._scenarios.push("run-enrich");
@@ -236,15 +251,19 @@ out=\${output_folder}\\${this._config.getEnrichedEventsFileName()}`;
 
 	public addTestsRun(testsRuleFullPath: string) : void {
 
+		const formulas = path.join('${output_folder}', this._config.getNormalizationsGraphFileName());
+		const enrules = path.join('${output_folder}', this._config.getEnrichmentsGraphFileName());
+		const corrules = path.join('${output_folder}', this._config.getCorrelationsGraphFileName());
+		const table_list_defaults = path.join('${output_folder}', this._config.getCorrelationDefaultsFileName());
 		const rulesTestsSection = 
 `
 [rules-tests]
 type=TEST_RULES
 cr_timeout=${this._crTimeout}
-formulas=\${output_folder}\\${this._config.getNormalizationsGraphFileName()}
-enrules=\${output_folder}\\${this._config.getEnrichmentsGraphFileName()}
-corrules=\${output_folder}\\${this._config.getCorrelationsGraphFileName()}
-table_list_defaults=\${output_folder}\\${this._config.getCorrelationDefaultsFileName()}
+formulas=${formulas}
+enrules=${enrules}
+corrules=${corrules}
+table_list_defaults=${table_list_defaults}
 rules_src=${testsRuleFullPath}`;
 
 		this._siemjConfigSection += rulesTestsSection;
@@ -253,14 +272,18 @@ rules_src=${testsRuleFullPath}`;
 
 	public addEventsCorrelate() : void {
 
+		const corrules = path.join('${output_folder}', this._config.getCorrelationsGraphFileName());
+		const input = path.join('${output_folder}', this._config.getEnrichedEventsFileName());
+		const table_list_database = path.join('${output_folder}', this._config.getFptaDbFileName());
+		const output = path.join('${output_folder}', this._config.getCorrelatedEventsFileName());
 		const eventEnrichSection = 
 `
 [run-correlate]
 type=CORRELATE
-corrules=\${output_folder}\\${this._config.getCorrelationsGraphFileName()}
-in=\${output_folder}\\${this._config.getEnrichedEventsFileName()}
-table_list_database=\${output_folder}\\${this._config.getFptaDbFileName()}
-out=\${output_folder}\\${this._config.getCorrelatedEventsFileName()}`;
+corrules=${corrules}
+in=${input}
+table_list_database=${table_list_database}
+out=${output}`;
 
 		this._siemjConfigSection += eventEnrichSection;
 		this._scenarios.push("run-correlate");
