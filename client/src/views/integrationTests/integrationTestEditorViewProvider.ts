@@ -470,8 +470,8 @@ export class IntegrationTestEditorViewProvider  {
 
 			await VsCodeApiHelper.saveRuleCodeFile(this._rule);
 
-			const outputParse = new SiemJOutputParser();
-			const testRunner = new IntegrationTestRunner(this._config, outputParse);
+			const outputParser = new SiemJOutputParser();
+			const testRunner = new IntegrationTestRunner(this._config, outputParser);
 
 			let tests : IntegrationTest [] = [];
 			try {

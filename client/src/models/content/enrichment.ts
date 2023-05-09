@@ -210,9 +210,6 @@ export class Enrichment extends RuleBaseItem {
 		enrichment.setEnDescription(enDescription);
 
 		const localizations = Localization.parseFromDirectory(directoryPath);
-		if(!enrichment.checkLocalizationConsistency(localizations, enrichment.getMetaInfo())) {
-			throw new XpException("Наборы идентификаторов локализаций в файле метаинформации и файлах локализаций не совпадают.");
-		}
 		enrichment.setLocalizations(localizations);
 
 		const modularTest = CorrelationUnitTest.parseFromRuleDirectory(enrichment);

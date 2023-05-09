@@ -28,8 +28,7 @@ export class ExtensionHelper {
 	}
 
 	static showError(userMessage: string, error: Error) {
-		const message = `\n\nMessage: ${error.message}`;
-		vscode.window.showErrorMessage(userMessage + message);
+		vscode.window.showErrorMessage(userMessage);
 		
 		console.log(error.message);
 		console.log(error.stack);
