@@ -11,14 +11,17 @@ import { MetaInfo } from '../../../models/metaInfo/metaInfo';
 suite('Корреляции', () => {
 
 	test('Проверка корректности создания дубликата корреляционного правила', async() => {
+		
 		const rulePath = TestFixture.getCorrelationPath("with_unit_test");
 		const templateRule = await Correlation.parseFromDirectory(rulePath);
 		const newRuleName = "modified_test";
-		const rule = await templateRule.duplicate(newRuleName, TestFixture.getTmpPath());
+		const tmpDirPath = TestFixture.getTmpPath();
+		
+		const rule = await templateRule.duplicate(newRuleName, tmpDirPath);
 
-		assert.strictEqual(rule.getParentPath(), TestFixture.getTmpPath());
+		assert.strictEqual(rule.getParentPath(), tmpDirPath);
 		assert.strictEqual(rule.getName(), newRuleName);		
-		const newRuleDir = path.join(TestFixture.getTmpPath(), newRuleName);
+		const newRuleDir = path.join(tmpDirPath, newRuleName);
 		assert.strictEqual(rule.getDirectoryPath(), newRuleDir);
 		assert.strictEqual(rule.getFileName(), templateRule.getFileName());
 		assert.strictEqual(rule.getFilePath(), path.join(newRuleDir, templateRule.getFileName()));
@@ -146,12 +149,6 @@ suite('Корреляции', () => {
 		assert.strictEqual(unitTest.getTestExpectation(), unitTest.getDefaultExpectation());	
 		assert.strictEqual(unitTest.getTestInputData(), unitTest.getDefaultInputData());
 		assert.strictEqual(unitTest.getNumber(), 1);
-	});
-
-	test('Неудачная попытка создать тест для правила без пути', () => {
-
-		const rule = Correlation.create("ESC_SuperDuperCorrelation");
-		assert.throws(() => rule.createIntegrationTest(), Error);
 	});
 
 	test('Перименование корреляции без кода', async () => {

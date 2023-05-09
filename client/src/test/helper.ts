@@ -82,7 +82,8 @@ export class TestFixture {
 	}
 
 	public static getTmpPath() {
-		const tmpDirectory = this.getFixturePath("tmp");
+		const tmpDirectory = Configuration.get().getRandTmpSubDirectoryPath();
+		fs.mkdirSync(tmpDirectory, { recursive: true });
 		return tmpDirectory;
 	}
 
@@ -92,7 +93,7 @@ export class TestFixture {
 		const rulePath = TestFixture.getCorrelationPath(ruleName);
 
 		const correlationTmpPath = path.join(tmpPath, ruleName);
-		fs.mkdirSync(correlationTmpPath);
+		await fs.promises.mkdir(correlationTmpPath);
 		await fsExtra.copy(rulePath, correlationTmpPath);
 
 		return correlationTmpPath;

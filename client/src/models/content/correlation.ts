@@ -281,6 +281,7 @@ export class Correlation extends RuleBaseItem {
 				integrationTest.setTestCode(newTestCode);
 			}
 		);
+		
 		this.getUnitTests().forEach(
 			unitTest => {
 				const testExpectation = unitTest.getTestExpectation();

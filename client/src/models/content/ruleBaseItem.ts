@@ -33,9 +33,10 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	
 	protected abstract getLocalizationPrefix() : string;
 
-	public addNewUnitTest(): void{
+	public addNewUnitTest() : BaseUnitTest {
 		const newUnitTest = this.createNewUnitTest();
 		this.addUnitTests([newUnitTest]);
+		return newUnitTest;
 	}
 
 	public static getRuleDirectoryPath(parentDirPath : string, ruleName : string ) : string {
@@ -102,8 +103,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	public getTestsPath():string {
 		return path.join(this.getDirectoryPath(), 'tests');
 	}
-
-
 
 	public async saveUnitTests(): Promise<void> {	
 		// Создаем или очищаем директорию с тестами.
@@ -176,8 +175,12 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	}
 
 	public createIntegrationTest() : IntegrationTest {
-		const newTest = IntegrationTest.create(this._integrationTests.length + 1, this.getDirectoryPath());
-		return newTest;
+		const newItTestNumber = this._integrationTests.length + 1;
+		if(this.getDirectoryPath()) {
+			return IntegrationTest.create(newItTestNumber, this.getDirectoryPath());
+		}
+
+		return IntegrationTest.create(newItTestNumber);
 	}
 
 	public async clearIntegrationTests() : Promise<void> {
@@ -426,10 +429,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		}
 
 		return "";
-
-		// TODO: Обсудить нужно ли тут исключение
-		// при создании правила оно пустое и его можно переименовать
-		//throw new XpException("Отсутствует код правила.");
 	}
 
 	public async save(fullPath?: string) : Promise<void> {

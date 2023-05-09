@@ -28,7 +28,7 @@ export class GitHooks {
 		if(this._branchName != branchName || this._commit != commit) {
 			const outputDirectory = this._config.getBaseOutputDirectoryPath();
 			if(fs.existsSync(outputDirectory)) {
-				await FileSystemHelper.clearDirectory(outputDirectory);
+				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(outputDirectory);
 			}
 		}
 

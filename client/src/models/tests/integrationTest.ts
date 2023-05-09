@@ -62,7 +62,7 @@ export class IntegrationTest {
 		return tests;
 	}
 
-	public static create(testNumber : number, ruleDirPath: string) : IntegrationTest {
+	public static create(testNumber : number, ruleDirPath?: string) : IntegrationTest {
 		
 		const test = new IntegrationTest();
 		test.setNumber(testNumber);

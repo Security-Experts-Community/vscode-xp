@@ -8,7 +8,6 @@ import { RuleBaseItem } from '../content/ruleBaseItem';
 import { Correlation } from '../content/correlation';
 import { XpException } from '../xpException';
 import { Enrichment } from '../content/enrichment';
-import { EnrichmentUnitTest } from './enrichmentUnitTest';
 import { TestHelper } from '../../helpers/testHelper';
 
 export class CorrelationUnitTest extends BaseUnitTest {
@@ -91,7 +90,7 @@ export class CorrelationUnitTest extends BaseUnitTest {
 		return unitTest;
 	}
 
-	public static parseFromRuleDirectory(rule: Correlation | Enrichment) : (CorrelationUnitTest | EnrichmentUnitTest) [] {
+	public static parseFromRuleDirectory(rule: Correlation | Enrichment) : CorrelationUnitTest [] {
 		const ruleDirectoryFullPath = rule.getDirectoryPath();
 		const testsFullPath = path.join(ruleDirectoryFullPath, "tests");
 		if (!fs.existsSync(testsFullPath)){
@@ -112,14 +111,21 @@ export class CorrelationUnitTest extends BaseUnitTest {
 
 	public static create(rule: RuleBaseItem) : CorrelationUnitTest {
 		const baseDirFullPath = rule.getDirectoryPath();
-		const testsFullPath = path.join(baseDirFullPath, "tests");
+		let testsFullPath : string;
+		if(baseDirFullPath) {
+			testsFullPath = path.join(baseDirFullPath, "tests");
+		}
 
-		for(let testNumber = 1; testNumber < CorrelationUnitTest.MaxTestIndex; testNumber++) {
-			const testFullPath = path.join(testsFullPath, `test_${testNumber}.sc`);
-			if(fs.existsSync(testFullPath))
-				continue;
+		for(let testNumber = 1; testNumber < CorrelationUnitTest.MAX_TEST_INDEX; testNumber++) {
 
-			const test = new CorrelationUnitTest(1);
+			// Если задан путь к правилу
+			if(testsFullPath) {
+				const testFullPath = path.join(testsFullPath, `test_${testNumber}.sc`);
+				if(fs.existsSync(testFullPath))
+					continue;
+			}
+
+			const test = new CorrelationUnitTest(testNumber);
 			test.setRule(rule);
 			test.setTestExpectation(test.getDefaultExpectation());
 			test.setTestInputData(test.getDefaultInputData());			
@@ -169,5 +175,5 @@ export class CorrelationUnitTest extends BaseUnitTest {
 		return "";
 	}
 
-	private static MaxTestIndex = 255;
+	private static MAX_TEST_INDEX = 255;
 }

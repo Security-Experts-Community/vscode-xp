@@ -144,8 +144,10 @@ export class Localization {
 		const metaInfoPlain = YamlHelper.parse(yamlContent);
 
 		const eventDescriptionsPlain = metaInfoPlain.EventDescriptions as any[];
+
 		if(!eventDescriptionsPlain) {
-			throw new IncorrectFieldFillingException(`Не удалось получить EventDescriptions из файла метаданных '${metaInfoFullPath}'`);
+			// Для обогащений есть общее описание, но нет EventDescription
+			return [];
 		}
 
 		const eventDescriptions = eventDescriptionsPlain.map( edp => {

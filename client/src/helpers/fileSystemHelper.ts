@@ -77,7 +77,7 @@ export class FileSystemHelper {
 	 * @param dirPath
 	 * @returns 
 	 */
-	public static async clearDirectory(dirPath: string) {
+	public static async deleteAllSubDirectoriesAndFiles(dirPath: string) {
 
 		const entityDirPaths = fs.readdirSync(dirPath, { withFileTypes: true })
 			.filter(entity => entity.isDirectory())

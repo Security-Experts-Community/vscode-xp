@@ -13,9 +13,10 @@ import { ContentHelper } from '../../helpers/contentHelper';
 import { BaseUnitTest } from '../tests/baseUnitTest';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
-import { EnrichmentUnitTest } from '../tests/enrichmentUnitTest';
 import { CorrelationUnitTestOutputParser } from '../tests/correlationUnitTestOutputParser';
 import { CorrelationUnitTestsRunner } from '../tests/correlationUnitTestsRunner';
+import { XpException } from '../xpException';
+import { Localization } from './localization';
 
 /**
  * Обогащение
@@ -78,7 +79,8 @@ export class Enrichment extends RuleBaseItem {
 
 		await this.getMetaInfo().save(directoryFullPath);
 		await this.saveLocalizationsImpl(directoryFullPath);
-		await this.saveIntegrationTests();
+		await this.saveIntegrationTests(directoryFullPath);
+		await this.saveUnitTests();
 	}
 
 	public async rename(newRuleName: string): Promise<void> {
@@ -140,6 +142,10 @@ export class Enrichment extends RuleBaseItem {
 				const localizationId = loc.getLocalizationId();
 				const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, localizationId);
 				loc.setLocalizationId(newLocalizationId);
+
+				const creteria = loc.getCriteria();
+				const newCreteria = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, creteria);
+				loc.setCriteria(newCreteria);
 			}
 		);
 
@@ -195,8 +201,21 @@ export class Enrichment extends RuleBaseItem {
 		// Парсим основные метаданные.
 		const metaInfo = MetaInfo.fromFile(directoryPath);
 		enrichment.setMetaInfo(metaInfo);
+		
+		// Парсим описания на разных языках.
+		const ruDescription = await Localization.parseRuDescription(directoryPath);
+		enrichment.setRuDescription(ruDescription);
 
-		const modularTest = EnrichmentUnitTest.parseFromRuleDirectory(enrichment);
+		const enDescription = await Localization.parseEnDescription(directoryPath);
+		enrichment.setEnDescription(enDescription);
+
+		const localizations = Localization.parseFromDirectory(directoryPath);
+		if(!enrichment.checkLocalizationConsistency(localizations, enrichment.getMetaInfo())) {
+			throw new XpException("Наборы идентификаторов локализаций в файле метаинформации и файлах локализаций не совпадают.");
+		}
+		enrichment.setLocalizations(localizations);
+
+		const modularTest = CorrelationUnitTest.parseFromRuleDirectory(enrichment);
 		enrichment.addUnitTests(modularTest);
 
 		const integrationalTests = IntegrationTest.parseFromRuleDirectory(directoryPath);

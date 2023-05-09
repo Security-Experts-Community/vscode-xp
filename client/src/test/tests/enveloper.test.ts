@@ -3,7 +3,7 @@ import { Enveloper } from '../../models/enveloper';
 
 suite('Enveloper', () => {
 
-	test('Оборачиваем в конверт xml событие из EventViewer-а', async () => {
+	test('Оборачиваем в конверт xml событие из EventViewer-а с артефактами копирования', async () => {
 		const xmlEvent = 
 `- <Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
 - <System>
@@ -39,7 +39,7 @@ suite('Enveloper', () => {
   <Data Name="AdditionalInfo">Local Read (ConnectServer)</Data>
   <Data Name="AdditionalInfo2">root\\cimv2\\Security\\MicrosoftVolumeEncryption</Data>
 </EventData>
-</Event>`
+</Event>`;
 
 		const envelopedEvent = await Enveloper.addEnvelope(xmlEvent, "application/x-pt-eventlog");
 		const json = JSON.parse(envelopedEvent);
@@ -59,7 +59,7 @@ suite('Enveloper', () => {
 		assert.strictEqual(json.type, "raw");
 	});
 
-	test('Оборачиваем в конверт xml событие из EventViewer-а', async () => {
+	test('Оборачиваем в конверт xml событие из EventViewer-а без артефактов копирования', async () => {
 		const xmlEvent = 
 `<Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
 <System>

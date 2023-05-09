@@ -5,6 +5,8 @@ import * as path from 'path';
 import { getDocUri, testCompletion, TestFixture } from '../../helper';
 import { ContentTreeProvider } from '../../../views/contentTree/contentTreeProvider';
 import { Enrichment } from '../../../models/content/enrichment';
+import { IntegrationTest } from '../../../models/tests/integrationTest';
+import { Localization } from '../../../models/content/localization';
 
 suite('Обогащение', () => {
 
@@ -29,6 +31,7 @@ suite('Обогащение', () => {
 	test('Парсинг обогащения без тестов', async () => {
 		const rulePath = TestFixture.getEnrichmentPath("without_tests");
 		const enrichment = await Enrichment.parseFromDirectory(rulePath);
+
 		assert.ok(enrichment);
 	});
 
@@ -37,6 +40,9 @@ suite('Обогащение', () => {
 		const rule = await Enrichment.parseFromDirectory(rulePath);
 
 		assert.strictEqual(rule.getName(), "MSSQL_user_command");
+		assert.ok(rule.getRuleCode());
+		assert.strictEqual(rule.getRuDescription(), `Извлечение имени команды или процесса из событий MS SQL`);
+		assert.strictEqual(rule.getEnDescription(), `Extraction of a command or process name from MS SQL events`);
 	});
 
 	test('Успешная сработка нажатия на обогащении', async () => {
@@ -45,5 +51,43 @@ suite('Обогащение', () => {
 
 		const commandResult = await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, enrichment);
 		assert.ok(commandResult);
+	});
+
+	test('Переименование обогащения', async () => {
+		const enrichmentName = `Super_Duper_Enrichment`;
+		const enrichment = Enrichment.create(enrichmentName);
+		enrichment.setRuleCode(
+`enrichment ${enrichmentName}
+    enrich correlation:
+`);
+
+		const it1 = enrichment.createIntegrationTest();
+		it1.setNormalizedEvents("");
+		it1.setTestCode(`expect 1 {"correlation_name" : "${enrichmentName}"}`);
+		enrichment.addIntegrationTests([it1]);
+
+		enrichment.addLocalization(Localization.create(`correlation_name == "${enrichmentName}"`, "ru localization", "en localization"));
+
+		const unitTest = enrichment.addNewUnitTest();
+		unitTest.setTestInputData("test input");
+		unitTest.setTestExpectation("test expectation");
+
+		const newEnrichmentName = "NewEnrichmentName";
+		await enrichment.rename(newEnrichmentName);
+
+		// Общая проверка.
+		assert.strictEqual(enrichment.getName(), newEnrichmentName);
+		assert.strictEqual(enrichment.getMetaInfo().getName(), newEnrichmentName);
+		assert.strictEqual(enrichment.getIntegrationTests().length, 1);
+		assert.strictEqual(enrichment.getUnitTests().length, 1);
+		assert.strictEqual(enrichment.getLocalizations().length, 1);
+		
+		// Детальная проверка.
+		const newIt1 = enrichment.getIntegrationTests()[0];
+		assert.strictEqual(newIt1.getTestCode(), `expect 1 {"correlation_name" : "${newEnrichmentName}"}`);
+
+		const localization1 = enrichment.getLocalizations()[0];
+		assert.strictEqual(localization1.getLocalizationId(), `enrichment_${newEnrichmentName}`);
+		assert.strictEqual(localization1.getCriteria(), `correlation_name == "${newEnrichmentName}"`);
 	});
 });

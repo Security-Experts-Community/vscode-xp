@@ -91,7 +91,7 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 
 	public getDirectoryPath() : string {
 		if(!this._parentPath) {
-			throw new XpException(`Не задан путь к директории для элемента '${this.getName()}'.`);
+			return undefined;
 		}
 
 		return path.join(this._parentPath, this.getName());

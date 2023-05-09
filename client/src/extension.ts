@@ -28,6 +28,7 @@ import { YamlHelper } from './helpers/yamlHelper';
 import { InitKBRootCommand } from './views/contentTree/commands/initKnowledgebaseRootCommand';
 import { XPPackingTaskProvider } from './providers/xpCustomTaskProvider';
 import { ExceptionHelper } from './helpers/exceptionHelper';
+import { FileSystemHelper } from './helpers/fileSystemHelper';
 
 let client: LanguageClient;
 let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
@@ -207,6 +208,10 @@ export async function activate(context: ExtensionContext) {
 			xpDocumentHighlightProvider,
 			legend
 		);
+
+		// Очистка директории временных файлов.
+		const tmpDirectory = config.getTmpDirectoryPath();
+		await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
 	}
 	catch(error){
 		ExceptionHelper.show(error, "Не удалось активировать расширение 'eXtraction and Processing'");

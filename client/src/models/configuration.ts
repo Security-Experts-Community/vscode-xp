@@ -414,7 +414,11 @@ export class Configuration {
 	}
 
 	public getTmpDirectoryPath(rootFolder?: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), "temp");
+		if(rootFolder) {
+			return path.join(os.tmpdir(), this.getExtensionDisplayName(), rootFolder);
+		}
+
+		return path.join(os.tmpdir(), this.getExtensionDisplayName());
 	}
 
 	public getTmpSiemjConfigPath(rootFolder: string) : string {
