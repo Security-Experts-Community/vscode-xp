@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 import { KbTreeBaseItem } from './kbTreeBaseItem';
 import { XpException } from '../xpException';
+import { XPObjectType } from './xpObjectType';
 
 export class Macros extends KbTreeBaseItem {
 	public rename(newName: string): Promise<void> {
@@ -13,6 +14,10 @@ export class Macros extends KbTreeBaseItem {
 	
 	public async save(fullPath: string) : Promise<void> {
 		throw new XpException('Method not implemented.');
+	}
+
+	public getObjectType(): string {
+		return XPObjectType.Macro;
 	}
 
 	private constructor(name: string, parentDirectoryPath?: string) {

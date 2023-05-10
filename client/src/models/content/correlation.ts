@@ -19,6 +19,7 @@ import { CorrelationUnitTestOutputParser } from '../tests/correlationUnitTestOut
 import { XpException } from '../xpException';
 import { UnitTestContentEditorViewProvider } from '../../views/unitTestEditor/unitTestEditorViewProvider';
 import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
+import { XPObjectType } from './xpObjectType';
 
 export class Correlation extends RuleBaseItem {
 	protected getLocalizationPrefix(): string {
@@ -192,8 +193,7 @@ export class Correlation extends RuleBaseItem {
 		const metainfo = rule.getMetaInfo();
 		metainfo.setName(name);
 
-		const contentPrefix = Configuration.get().getContentPrefix();
-		const objectId = KbHelper.generateRuleObjectId(name, contentPrefix);
+		const objectId = rule.generateObjectId();
 		metainfo.setObjectId(objectId);
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.
@@ -204,6 +204,10 @@ export class Correlation extends RuleBaseItem {
 		});
 
 		return rule;
+	}
+
+	public getObjectType(): string {
+		return XPObjectType.Correlation;
 	}
 
 	public async save(parentFullPath?: string): Promise<void> {

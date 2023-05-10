@@ -83,7 +83,7 @@ export class CreatePackageCommand {
 		const metainfoPath = path.join(metaPath, MetaInfo.METAINFO_FILENAME);
 
 		const contentPrefix = Configuration.get().getContentPrefix();
-		const objectId = KbHelper.generatePackageObjectId(packageName, contentPrefix);
+		const objectId = KbHelper.generateObjectId(packageName, contentPrefix, 'PKG');
 		const defaultMetainfoObject = {
 			ObjectId: objectId,
 			Version: "1.0.0"

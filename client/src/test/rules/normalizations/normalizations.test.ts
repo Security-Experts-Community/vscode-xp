@@ -32,10 +32,30 @@ suite('Нормализация', () => {
 	});
 
 	test('Перименование нормализации без кода', async () => {
-		const rulePath = TestFixture.getCorrelationPath("empty_normalization_code");
+		const rulePath = TestFixture.getNormalizationPath("empty_normalization_code");
 		const normalization = await Normalization.parseFromDirectory(rulePath);
 		const newName = "NEW_NORMALIZATION_NAME";
 		normalization.rename(newName);
 		assert.strictEqual(normalization.getName(), newName);
+	});
+
+	test('ObjectID остается такой же после переименования', async () => {
+		// Копируем корреляцию во временную директорию.
+		const rulePath = TestFixture.getNormalizationPath("empty_normalization_code");
+		const normalization = await Normalization.parseFromDirectory(rulePath);
+		const oldId = normalization.getMetaInfo().getObjectId();
+
+		normalization.rename("New_normalization1");
+		const newId = normalization.getMetaInfo().getObjectId();
+
+		assert.strictEqual(oldId, newId);
+	});
+
+	test('Правильное создание ObjectID', async () => {
+		const rulePath = TestFixture.getNormalizationPath("empty_normalization_code");
+		const normalization = await Normalization.parseFromDirectory(rulePath);
+		const expectedObjectId = "LOC-NF-196826125";
+		assert.strictEqual(normalization.generateObjectId(), expectedObjectId);
+		assert.strictEqual(normalization.getMetaInfo().getObjectId(), expectedObjectId);
 	});
 });

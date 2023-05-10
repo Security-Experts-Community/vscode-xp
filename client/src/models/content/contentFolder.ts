@@ -19,6 +19,9 @@ export enum ContentFolderType {
 }
 
 export class ContentFolder extends KbTreeBaseItem {
+	public getObjectType(): string {
+		throw new Error('Method not implemented.');
+	}
 
 	public async rename(newName: string): Promise<void> {
 		throw new XpException('Method not implemented.');

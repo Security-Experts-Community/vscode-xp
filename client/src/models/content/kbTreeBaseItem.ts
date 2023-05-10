@@ -1,9 +1,9 @@
 import * as path from "path";
 import * as vscode from "vscode";
-import { XpException } from '../xpException';
-import { ArgumentException } from '../argumentException';
+
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { Configuration } from '../configuration';
+import { KbHelper } from '../../helpers/kbHelper';
 
 /**
  * Базовый класс для всех item-ом из дерева контента.
@@ -13,6 +13,16 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 		protected _parentPath : string) {
 		super(_name, vscode.TreeItemCollapsibleState.None);
 		this.label = _name;
+	}
+
+
+	public abstract getObjectType() : string;
+
+	public generateObjectId() : string {
+		const ruleName = this.getName();
+		const contentPrefix = Configuration.get().getContentPrefix();
+		const objectType = this.getObjectType();
+		return KbHelper.generateObjectId(ruleName, contentPrefix, objectType);
 	}
 
 	public setCommand(command: vscode.Command) : void {
@@ -87,6 +97,10 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 
 	public setMetaInfo(metaInfo : MetaInfo) {
 		this._metaInfo = metaInfo;
+	}
+
+	public getMetaInfo() : MetaInfo {
+		return this._metaInfo;
 	}
 
 	public getDirectoryPath() : string {

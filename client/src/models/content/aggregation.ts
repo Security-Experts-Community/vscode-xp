@@ -7,6 +7,7 @@ import { BaseUnitTest } from '../tests/baseUnitTest';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { XpException } from '../xpException';
+import { XPObjectType } from './xpObjectType';
 
 export class Aggregation extends RuleBaseItem {
 	protected getLocalizationPrefix(): string {
@@ -37,6 +38,10 @@ export class Aggregation extends RuleBaseItem {
 	private constructor(name: string, parentDirectoryPath? : string) {
 		super(name, parentDirectoryPath);
 		this.setFileName('rule.agr');
+	}
+
+	public getObjectType(): string {
+		return XPObjectType.Aggregation;
 	}
 	
 	public static async parseFromDirectory(directoryPath: string, fileName?: string) : Promise<Aggregation> {

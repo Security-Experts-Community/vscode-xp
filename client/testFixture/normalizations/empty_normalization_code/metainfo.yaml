@@ -1,4 +1,4 @@
 EventDescriptions:
     - Criteria: id = "PT_Microsoft_Windows_eventlog_1001_Application_Error"
       LocalizationId: PT_Microsoft_Windows_eventlog_1001_Application_Error
-ObjectId: LOC-NF-6783
+ObjectId: LOC-NF-196826125

@@ -405,10 +405,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		}
 	}
 	
-	// Метаданные.
-	public getMetaInfo() : MetaInfo {
-		return this._metaInfo;
-	}
 
 	public getRuleFilePath(): string {
 		return path.join(this.getDirectoryPath(), this.getFileName());

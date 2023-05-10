@@ -54,4 +54,11 @@ suite('Макросы', () => {
 		const commandResult = await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, macro);
 		assert.ok(commandResult);
 	});
+
+	test('Правильное создание ObjectID', async () => {
+		const macroDirectory = TestFixture.getMacrosPath("ProcessStart");
+		const macro = await Macros.parseFromDirectory(macroDirectory);
+		const expectedObjectId = "LOC-RF-196803747";
+		assert.strictEqual(macro.generateObjectId(), expectedObjectId);
+	});
 });

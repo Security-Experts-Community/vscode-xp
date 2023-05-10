@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 import { KbTreeBaseItem } from './kbTreeBaseItem';
 import { XpException } from '../xpException';
+import { XPObjectType } from './xpObjectType';
 
 export class Table extends KbTreeBaseItem {
 
@@ -19,6 +20,10 @@ export class Table extends KbTreeBaseItem {
 	private constructor(name: string, parentDirectoryPath?: string) {
 		super(name, parentDirectoryPath);
 		this.setFileName("table.tl");
+	}
+
+	public getObjectType(): string {
+		return XPObjectType.Table;
 	}
 
 	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Table> {
