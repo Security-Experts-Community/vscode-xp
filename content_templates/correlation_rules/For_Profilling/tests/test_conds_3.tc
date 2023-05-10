@@ -1,4 +1,4 @@
-# Новый адрес
+# Нет отличия от профиля
 table_list default
 table_list {"User_Logon_Profile": [{"additional_data": "", "dst_ip": "", "login": "", "access_type": "", "dst_host": "", "dst_path": "", "src_ip": ""}]}
-expect 1 {"correlation_name": "For_Profilling", "reason": "new_address"}
+expect not {"correlation_name": "For_Profilling"}

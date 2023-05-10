@@ -35,6 +35,9 @@ rule Universal: EventName
         $object.process.path = object.process.path
         $object.process.fullpath = object.process.fullpath
         $object.process.hash = object.process.hash
+        $object.process.hash.md5 = object.process.hash.md5
+        $object.process.hash.sha1 = object.process.hash.sha1
+        $object.process.hash.sha256 = object.process.hash.sha256
         $object.process.version = object.process.version
         $object.process.cmdline = object.process.cmdline
         $object.process.guid = object.process.guid
