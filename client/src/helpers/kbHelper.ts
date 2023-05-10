@@ -16,15 +16,9 @@ export class KbHelper {
 		return ["correlation_rules", "tabular_lists", "aggregation_rules", "enrichment_rules", "normalization_formulas"];
 	}
 
-	public static generateRuleObjectId(ruleName : string, contentPrefix : string) : string {
+	public static generateObjectId(ruleName : string, contentPrefix : string, objectType: string) : string {
 		let objectId = Math.abs(crc32.str(ruleName)).toString();
 		objectId = objectId.substring(0, 9);
-		return `${contentPrefix}-CR-${objectId}`;
-	}
-
-	public static generatePackageObjectId(ruleName : string, contentPrefix : string) : string {
-		let objectId = Math.abs(crc32.str(ruleName)).toString();
-		objectId = objectId.substring(0, 9);
-		return `${contentPrefix}-PKG-${objectId}`;
+		return `${contentPrefix}-${objectType}-${objectId}`;
 	}
 }

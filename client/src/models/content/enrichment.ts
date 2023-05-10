@@ -7,7 +7,6 @@ import { CorrelationUnitTest } from '../tests/correlationUnitTest';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Configuration } from '../configuration';
-import { KbHelper } from '../../helpers/kbHelper';
 import { IntegrationTest } from '../tests/integrationTest';
 import { ContentHelper } from '../../helpers/contentHelper';
 import { BaseUnitTest } from '../tests/baseUnitTest';
@@ -15,8 +14,8 @@ import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { CorrelationUnitTestOutputParser } from '../tests/correlationUnitTestOutputParser';
 import { CorrelationUnitTestsRunner } from '../tests/correlationUnitTestsRunner';
-import { XpException } from '../xpException';
 import { Localization } from './localization';
+import { XPObjectType } from './xpObjectType';
 
 /**
  * Обогащение
@@ -158,6 +157,10 @@ export class Enrichment extends RuleBaseItem {
 		this.setFileName("rule.en");
 	}
 
+	public getObjectType(): string {
+		return XPObjectType.Enrichment;
+	}
+
 	public static create(name: string, parentPath?: string, fileName?: string): Enrichment {
 		const rule = new Enrichment(name, parentPath);
 
@@ -171,8 +174,7 @@ export class Enrichment extends RuleBaseItem {
 		metainfo.setName(name);
 
 		// Берем модуль, потому что crc32 может быть отрицательным.
-		const contentPrefix = Configuration.get().getContentPrefix();
-		const objectId = KbHelper.generateRuleObjectId(name, contentPrefix);
+		const objectId = rule.generateObjectId();
 		metainfo.setObjectId(objectId);
 
 		// Добавляем команду, которая пробрасываем параметром саму рубрику.

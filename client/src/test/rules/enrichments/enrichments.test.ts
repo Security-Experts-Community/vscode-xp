@@ -23,6 +23,13 @@ suite('Обогащение', () => {
 		assert.strictEqual(oldId, newId);
 	});
 
+	test('Правильное создание ObjectID', async () => {
+		const enrichment = Enrichment.create("New_enrichment");
+		const expectedObjectId = "LOC-ER-140080387";
+		assert.strictEqual(enrichment.generateObjectId(), expectedObjectId);
+		assert.strictEqual(enrichment.getMetaInfo().getObjectId(), expectedObjectId);
+	});
+
 	test('Наличие автодополнения', async () => {
 		const completions = await testCompletion(docUri, new vscode.Position(0, 0));
 		assert.ok(completions.items.length > 0);

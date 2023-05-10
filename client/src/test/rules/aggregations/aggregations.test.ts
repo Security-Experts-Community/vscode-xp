@@ -22,4 +22,11 @@ suite('Агрегации', () => {
 		const commandResult = await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, aggregation);
 		assert.ok(commandResult);
 	});
+
+	test('Правильное создание ObjectID', async () => {
+		const rulePath = TestFixture.getAggregationsPath("Inspection_check_failed");
+		const rule = await Aggregation.parseFromDirectory(rulePath);
+		const expectedObjectId = "LOC-AR-111177307";
+		assert.strictEqual(rule.generateObjectId(), expectedObjectId);
+	});
 });

@@ -44,8 +44,7 @@ export class ContentHelper {
         await ruleFromTemplate.rename(ruleName);
 
         // Задаем ObjectID только при создании корреляции.
-        const contentPrefix = Configuration.get().getContentPrefix();
-		const objectId = KbHelper.generateRuleObjectId(ruleName, contentPrefix);
+		const objectId = ruleFromTemplate.generateObjectId();
 		ruleFromTemplate.getMetaInfo().setObjectId(objectId);
 
         return ruleFromTemplate;
@@ -66,8 +65,7 @@ export class ContentHelper {
         await ruleFromTemplate.rename(ruleName);
 
         // Задаем ObjectID только при создании обогащения.
-        const contentPrefix = Configuration.get().getContentPrefix();
-        const objectId = KbHelper.generateRuleObjectId(ruleName, contentPrefix);
+        const objectId = ruleFromTemplate.generateObjectId();
         ruleFromTemplate.getMetaInfo().setObjectId(objectId);
         return ruleFromTemplate;
     }
@@ -87,8 +85,7 @@ export class ContentHelper {
         await ruleFromTemplate.rename(ruleName);
 
         // Задаем ObjectID только при создании нормализации.
-        const contentPrefix = Configuration.get().getContentPrefix();
-        const objectId = KbHelper.generateRuleObjectId(ruleName, contentPrefix);
+        const objectId = ruleFromTemplate.generateObjectId();
         ruleFromTemplate.getMetaInfo().setObjectId(objectId);
         return ruleFromTemplate;
     }

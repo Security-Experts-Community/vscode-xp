@@ -70,6 +70,13 @@ suite('Корреляции', () => {
 		assert.strictEqual(oldId, newId);
 	});
 
+	test('Правильное создание ObjectID', async () => {
+		const correlation = Correlation.create("New_correlation");
+		const expectedObjectId = "LOC-CR-109745836";
+		assert.strictEqual(correlation.generateObjectId(), expectedObjectId);
+		assert.strictEqual(correlation.getMetaInfo().getObjectId(), expectedObjectId);
+	});
+
 	test('Переименование открытой корреляции без сохранения на диск', async () => {
 		// Копируем корреляцию во временную директорию.
 		const oldRuleName = "Active_Directory_Snapshot";

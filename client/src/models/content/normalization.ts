@@ -13,6 +13,7 @@ import { Configuration } from '../configuration';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { NormalizationUnitTestOutputParser } from '../tests/normalizationUnitTestOutputParser';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
+import { XPObjectType } from './xpObjectType';
 
 
 export class Normalization extends RuleBaseItem {
@@ -89,6 +90,10 @@ export class Normalization extends RuleBaseItem {
 	private constructor(name: string, parentDirectoryPath?: string) {
 		super(name, parentDirectoryPath);
 		this.setFileName("formula.xp");
+	}
+
+	public getObjectType(): string {
+		return XPObjectType.Normalization;
 	}
 
 	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Normalization> {

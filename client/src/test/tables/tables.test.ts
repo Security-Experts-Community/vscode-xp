@@ -45,4 +45,23 @@ suite('Табличные списки', () => {
 		const commandResult = await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, table);
 		assert.ok(commandResult);
 	});
+
+	test('ObjectID остается такой же после переименования', async () => {
+		// Копируем корреляцию во временную директорию.
+		const tablePath = TestFixture.getTablesPath("AD_Domain_Controllers");
+		const table = await Table.parseFromDirectory(tablePath);
+		const oldId = table.getMetaInfo().getObjectId();
+
+		table.rename("New_table1");
+		const newId = table.getMetaInfo().getObjectId();
+
+		assert.strictEqual(oldId, newId);
+	});
+
+	test('Правильное создание ObjectID', async () => {
+		const tablePath = TestFixture.getTablesPath("AD_Domain_Controllers");
+		const table = await Table.parseFromDirectory(tablePath);
+		const expectedObjectId = "LOC-TL-41842215";
+		assert.strictEqual(table.generateObjectId(), expectedObjectId);
+	});
 });
