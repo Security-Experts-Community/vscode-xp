@@ -57,6 +57,9 @@
 			"        \\$object.process.path = object.process.path",
 			"        \\$object.process.fullpath = object.process.fullpath",
 			"        \\$object.process.hash = object.process.hash",
+			"        \\$object.process.hash.md5 = object.process.hash.md5",
+			"        \\$object.process.hash.sha1 = object.process.hash.sha1",
+			"        \\$object.process.hash.sha256 = object.process.hash.sha256",
 			"        \\$object.process.version = object.process.version",
 			"        \\$object.process.cmdline = object.process.cmdline",
 			"        \\$object.process.guid = object.process.guid",
@@ -175,6 +178,9 @@
 			"        \\$object.process.path = object.process.path",
 			"        \\$object.process.fullpath = object.process.fullpath",
 			"        \\$object.process.hash = object.process.hash",
+			"        \\$object.process.hash.md5 = object.process.hash.md5",
+			"        \\$object.process.hash.sha1 = object.process.hash.sha1",
+			"        \\$object.process.hash.sha256 = object.process.hash.sha256",
 			"        \\$object.process.version = object.process.version",
 			"        \\$object.process.cmdline = object.process.cmdline",
 			"        \\$object.process.guid = object.process.guid",
@@ -406,7 +412,7 @@
 	"Макросы вайтлистинга": {
 		"prefix":  ["filter::CheckWL"],
 		"body": [
-			"filter::CheckWL_${1|Process_Creation,Powershell,Specific_Only,Windows_Login,Registry_Actions,Networking,File_Creation,Linux_Specific_Only,Linux_File_Operations,Windows_Shares,Web_Access,Tasks,Process_Access,Database_Actions|}(\"${TM_DIRECTORY/.*?(ESC.*?)/$1/}\",$2)"
+			"filter::CheckWL_${1|Process_Creation,Powershell,Specific_Only,Windows_Login,Registry_Actions,Networking,File_Creation,LDAP_Request,Linux_Specific_Only,Linux_File_Operations,Windows_Shares,Web_Access,Tasks,Process_Access,Database_Actions|}(\"${TM_DIRECTORY/.*?(ESC.*?)/$1/}\",$2)"
 		]
 	},	
 	"Макросы": {
@@ -536,6 +542,9 @@
 			"\\$object.process.path = object.process.path",
 			"\\$object.process.fullpath = object.process.fullpath",
 			"\\$object.process.hash = object.process.hash",
+			"\\$object.process.hash.md5 = object.process.hash.md5",
+			"\\$object.process.hash.sha1 = object.process.hash.sha1",
+			"\\$object.process.hash.sha256 = object.process.hash.sha256",
 			"\\$object.process.version = object.process.version",
 			"\\$object.process.cmdline = object.process.cmdline",
 			"\\$object.process.guid = object.process.guid",
@@ -591,22 +600,22 @@
     "subject action object status": {
 		"prefix": ["$subject, $action, $object, $status"],
 		"body": [
-			"\\$subject = \"${1|account,application,process,system,host|}\"",
-			"\\$action = \"${2|info,modify,access,start,execute,login,detect,send,exclude,disable,initiate,unlock,call,apply,download,bind,remove,create|}\"",
-			"\\$object = \"${3|file_object,reg_object,account,process,ds_object,resource,command,configuration,malware,message,module,db_object,service,virtual_machine,socket|}\"",
-			"\\$status = \"${4|success,failure|}\""
+			"\\$subject = \"${1|account,application,process,system,host,rule,service|}\"",
+			"\\$action = \"${2|access,alert,allow,apply,assign,backup,bind,call,check,clean,close,configure,connect,copy,create,decrypt,deelevate,deescalate,deliver,deny,detect,disable,disconnect,down,download,elevate,enable,encrypt,escalate,exclude,execute,extract,grant,info,initiate,inject,install,leak,lock,login,logout,modify,move,open,print,protect,quarantine,read,receive,reject,remove,rename,request,reset,restart,restore,revoke,rollback,scan,search,send,start,state,stop,sync,terminate,truncate,unassign,unbind,uninstall,unlock,up,update,upgrade,upload,validate,view|}\"",
+			"\\$object = \"${3|account,alert,application,arp_table,attack,certificate,check,client,cmdlet,command,compliance,computer,configuration,connection,conntrack,database,db_object,device,ds_object,file,file_object,flow,handle,host,infected_object,interface,ip_address,link,log,logging,mailbox,malware,message,mode,module,network,node,package,packet,policy,port,process,profile,reg_object,report,request,resource,rule,scan,service,session,socket,system,table,task,thread,transaction,translation,trust,tunnel,update,user_group,virtual_key,virtual_machine,volume,vulnerability|}\"",
+			"\\$status = \"${4|success,failure,ongoing|}\""
 		]
 	},
 	"on subject": {
 		"prefix": ["$subject"],
 		"body": [
-			"\\$subject = \"${1|account,application,process,system,host|}\""
+			"\\$subject = \"${1|account,application,process,system,host,rule,service|}\""
 		]
 	},
 	"filter subject": {
 		"prefix": ["subject"],
 		"body": [
-			"subject == \"${1|account,application,process,system,host|}\"",
+			"subject == \"${1|account,application,process,system,host,rule,service|}\"",
 			"${2|and,or|} "
 		]
 	},
@@ -614,13 +623,13 @@
     "on action": {
 		"prefix": ["$action"],
 		"body": [
-			"\\$action = \"${1|info,modify,access,start,execute,login,detect,send,exclude,disable,initiate,unlock,call,apply,download,bind,remove,create|}\""
+			"\\$action = \"${1|access,alert,allow,apply,assign,backup,bind,call,check,clean,close,configure,connect,copy,create,decrypt,deelevate,deescalate,deliver,deny,detect,disable,disconnect,down,download,elevate,enable,encrypt,escalate,exclude,execute,extract,grant,info,initiate,inject,install,leak,lock,login,logout,modify,move,open,print,protect,quarantine,read,receive,reject,remove,rename,request,reset,restart,restore,revoke,rollback,scan,search,send,start,state,stop,sync,terminate,truncate,unassign,unbind,uninstall,unlock,up,update,upgrade,upload,validate,view|}\""
 		]
 	},
 	"filter action": {
 		"prefix": ["action"],
 		"body": [
-			"action == \"${1|info,modify,access,start,execute,login,detect,send,exclude,disable,initiate,unlock,call,apply,download,bind,remove,create|}\"",
+			"action == \"${1|access,alert,allow,apply,assign,backup,bind,call,check,clean,close,configure,connect,copy,create,decrypt,deelevate,deescalate,deliver,deny,detect,disable,disconnect,down,download,elevate,enable,encrypt,escalate,exclude,execute,extract,grant,info,initiate,inject,install,leak,lock,login,logout,modify,move,open,print,protect,quarantine,read,receive,reject,remove,rename,request,reset,restart,restore,revoke,rollback,scan,search,send,start,state,stop,sync,terminate,truncate,unassign,unbind,uninstall,unlock,up,update,upgrade,upload,validate,view|}\"",
 			"${2|and,or|} "
 		]
 	},
@@ -628,13 +637,13 @@
     "on object": {
 		"prefix": ["$object"],
 		"body": [
-			"\\$object = \"${1|file_object,reg_object,account,process,ds_object,resource,command,configuration,malware,message,module,db_object,service,virtual_machine,socket|}\""
+			"\\$object = \"${1|account,alert,application,arp_table,attack,certificate,check,client,cmdlet,command,compliance,computer,configuration,connection,conntrack,database,db_object,device,ds_object,file,file_object,flow,handle,host,infected_object,interface,ip_address,link,log,logging,mailbox,malware,message,mode,module,network,node,package,packet,policy,port,process,profile,reg_object,report,request,resource,rule,scan,service,session,socket,system,table,task,thread,transaction,translation,trust,tunnel,update,user_group,virtual_key,virtual_machine,volume,vulnerability|}\""
 		]
 	},
 	"filter object": {
 		"prefix": ["object"],
 		"body": [
-			"object == \"${1|file_object,reg_object,account,process,ds_object,resource,command,configuration,malware,message,module,db_object,service,virtual_machine,socket|}\"",
+			"object == \"${1|account,alert,application,arp_table,attack,certificate,check,client,cmdlet,command,compliance,computer,configuration,connection,conntrack,database,db_object,device,ds_object,file,file_object,flow,handle,host,infected_object,interface,ip_address,link,log,logging,mailbox,malware,message,mode,module,network,node,package,packet,policy,port,process,profile,reg_object,report,request,resource,rule,scan,service,session,socket,system,table,task,thread,transaction,translation,trust,tunnel,update,user_group,virtual_key,virtual_machine,volume,vulnerability|}\"",
 			"${2|and,or|} "
 		]
 	},
@@ -642,13 +651,13 @@
     "on status": {
 		"prefix": ["$status"],
 		"body": [
-			"\\$status = \"${1|success,failure|}\""
+			"\\$status = \"${1|success,failure,ongoing|}\""
 		]
 	},
 	"filter status": {
 		"prefix": ["status"],
 		"body": [
-			"status == \"${1|success,failure|}\"",
+			"status == \"${1|success,failure,ongoing|}\"",
 			"${2|and,or|} "
 		]
 	},
@@ -657,7 +666,7 @@
 		"prefix": ["emit {"],
 		"body": [
 			"emit {",
-			"    \\$correlation_type = \"${1|event,incident|}\"",
+			"    \\$correlation_type = \"${1|event,incident,subrule,draft|}\"",
 			"    \\$importance = \"${2|high,medium,low,info|}\"",
 			"}",
 			""
@@ -675,7 +684,7 @@
 	"correlation_type": {
 		"prefix": ["$correlation_type"],
 		"body": [
-			"\\$correlation_type = \"${1|event,incident|}\""
+			"\\$correlation_type = \"${1|event,incident,subrule,draft|}\""
 		]
 	},
 	"importance": {
@@ -710,7 +719,7 @@
 	"Метки автовайтлистинга": {
 		"prefix": ["$labels"],
 		"body": [
-			"\\$labels = \"w_auto|${1|CheckWL_Specific_Only,CheckWL_Tasks,CheckWL_Web_Access,CheckWL_File_Creation,CheckWL_Windows_Shares,CheckWL_Process_Creation,CheckWL_Powershell,CheckWL_Networking,CheckWL_Registry_Actions,CheckWL_Linux_Specific_Only,CheckWL_Process_Access,CheckWL_Windows_Login,CheckWL_Linux_File_Operations,CheckWL_Linux_Process_Creation,CheckWL_Linux_Login,CheckWL_Linux_Networking,CheckWL_Database_Actions|}\"",
+			"\\$labels = \"w_auto|${1|CheckWL_Specific_Only,CheckWL_Tasks,CheckWL_Web_Access,CheckWL_File_Creation,CheckWL_LDAP_Request,CheckWL_Windows_Shares,CheckWL_Process_Creation,CheckWL_Powershell,CheckWL_Networking,CheckWL_Registry_Actions,CheckWL_Linux_Specific_Only,CheckWL_Process_Access,CheckWL_Windows_Login,CheckWL_Linux_File_Operations,CheckWL_Linux_Process_Creation,CheckWL_Linux_Login,CheckWL_Linux_Networking,CheckWL_Database_Actions|}\"",
 			""
 		]
 	}

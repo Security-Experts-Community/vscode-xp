@@ -1,1 +1,3 @@
-expect 1 {"correlation_name": "For_Profilling"}
+# Новый пользователь
+table_list default
+expect 1 {"correlation_name": "For_Profilling", "reason": "no_user"}

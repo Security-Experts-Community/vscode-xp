@@ -1,29 +1,33 @@
 # Проверяем режим сбора профиля и работы правила
-query AutoProfile($rule) from ESC_Auto_Profile {
+query AutoProfile($rule) from Profiling_Mode {
     rule == $rule
 }
 
 # Сверка с профилем
-query CheckProfileApplication($login, $src_ip, $dst_ip, $access_type) from ESC_Risk_User_Logon_Profiles_2 {
+query CheckProfileApplication($login, $src_ip, $dst_ip, $access_type) from User_Logon_Profile {
     access_type == $access_type
     and login == $login   
     and src_ip == $src_ip
     and dst_ip == $dst_ip # or dst_host == $dst_host
+    # дополинтельные проверки, специфичные для профиля
+    # and dst_path == $dst_path # имя репозитория, БД, проекта, чего угодно
+    # and additional_data == $additional_data 
+
 }
 
 # Проверяем, если ли вообще в профиле такой пользователь
-#query CheckUsername($username) from ESC_Risk_User_Logon_Profiles_2 {
-#    login == $username
+query CheckUsername($username) from User_Logon_Profile {
+    login == $username
 }
 
 # Проверяем, использовал ли пользователь раньше этот адрес
-#query CheckIP($username, $src_ip) from ESC_Risk_User_Logon_Profiles_2 {
-#    login == $username
-#    and src_ip == $src_ip
+query CheckIP($username, $src_ip) from User_Logon_Profile {
+    login == $username
+    and src_ip == $src_ip
 }
 
 # Проверяем, изменился ли тип доступа
-#query CheckAccessType($username, $src_ip, $access_type) from ESC_Risk_User_Logon_Profiles_2 {  
+#query CheckAccessType($username, $src_ip, $access_type) from User_Logon_Profile {  
 #    access_type == $access_type
 #    and login == $username
 #    and src_ip == $src_ip
@@ -34,9 +38,15 @@ event Anomaly_Logon_Application:
         event_src.host
     filter {
         filter::NotFromCorrelator()
+        and action == "login"
+        and status == "success"
+        and subject.account.name != null
+        and src.ip != null
+        # Тут могут быть какие-то дополнительные условия
+        # and event_src.title == ""
 
         # Сверка с профилем
-        and not exec_query("CheckProfileApplication", )
+        and not exec_query("CheckProfileApplication", [])
     }
     
 rule For_Profilling: Anomaly_Logon_Application
@@ -46,22 +56,21 @@ rule For_Profilling: Anomaly_Logon_Application
         # 0 - Профиль собран, обогащение отключено, правило обращается напрямую в профиль;
         # 1 - Правило работает по собранному профилю, но профиль продолжает собираться;
         # 2 - Профиль на стадии сбора, корреляция не срабатывает
-        $auto_profile = select_query_first("AutoProfile", ["For_Profilling"], "auto_profiling")
-
-        if $auto_profile == null then
-            $auto_profile = 0
-        endif
+        
+        # Если в табличке нет правила, то считаем, что правило работает в режиме автопрофилирования
+        $auto_profile = coalesce(select_query_first("AutoProfile", ["For_Profilling"], "auto_profiling"), 1)
     }
     
     on Anomaly_Logon_Application {
-   
-        $subject.account.name = subject.account.name
+        # OLD
         $subject.name = subject.name # OLD
-        $subject.account.domain = subject.account.domain
         $subject.domain = subject.domain # OLD
+        $subject.id = subject.id # OLD
+
+        $subject.account.name = subject.account.name
+        $subject.account.domain = subject.account.domain
         $subject.account.session_id = subject.account.session_id
         $subject.account.id = subject.account.id
-        $subject.id = subject.id # OLD
         $subject.account.privileges = subject.account.privileges
 
         $object.account.name = object.account.name
@@ -120,33 +129,46 @@ rule For_Profilling: Anomaly_Logon_Application
         $event_src.category = event_src.category
         $event_src.rule = event_src.rule
         
-        # EXAMPLE alert.context
+        # Проверка, если ли для пользователя собранный профиль
+        if not exec_query("CheckUsername", [lower(subject.account.name)]) then
+            $reason = "no_user"
+            $importance = "high" # Важность может быть low для систем вроде VPN, почты (которыми пользуются все сотрудники)
+        # Если пользователь есть в профиле, ищем конкретные отличия
+        else
+            # Проверям, не новый ли адрес
+            if not exec_query("CheckIP",  [lower(subject.account.name), string(src.ip)]) then 
+                $reason = "new_address"
+                $importance = "high" # Тут всегда максимальная важность, потому что это самое опасное отличие от профиля
+            endif
 
-        #$access_type = event_src.vendor + "|" + lower(object.name)
-        #if not exec_query("CheckUsername", [lower(subject.account.name)]) then
-        #    $alert.context = "User never accessed Checkpoint before"
-        #    $reason = "no_user"
-        #    $importance = "medium"
-        #elif not exec_query("CheckIP",  [lower(subject.account.name), string(src.ip)]) then 
-        #    $alert.context = "User never accessed Checkpoint from IP " + string(src.ip)
-        #    $reason = "new_address"
-        #    $importance = "medium"
-        #elif not exec_query("CheckAccessType",  [lower(subject.account.name), string(src.ip), $access_type]) then 
-        #    $alert.context = "User never accessed Checkpoint with new access type: " + $access_type
-        #    $reason = "new_access_type"
-        #    $importance = "medium"
-        #else
-        #    $alert.context = "Unknown case"
-        #    $reason = "-"
-        #    $importance = "info"
-        #endif
+            # Проверяем другие условия, характерные для приложения. Должно покрывать поля, передаваемый в фильтр
+            # Обратите внимание, что проверки в порядке важности сработки
+            # Далее примеры, которые нужно заменить своими, актуальными для конретного приложения
+            # Repo
+            #if not exec_query("CheckRepo",  [lower(subject.account.name), lower(datafield2)]) then
+            #    $reason = $reason + "|new_repo"
+            #    $importance = coalesce($importance, "low")
+            #endif
+            # UA
+            #if subject.process.meta != null and not exec_query("CheckAgent",  [lower(subject.account.name), lower(subject.process.meta)]) then
+            #    $reason = $reason + "|new_agent"
+            #    $importance = coalesce($importance, "info") # Просто потому что VsCode постоянно обновляется и это не показатель
+            #endif
+        endif
 
+        # Если все проверки завершились, но $reason остался пустым, запись могла не успеть попасть в ТС на момент сработки фильтра, такую сработку дропаем
+        if $reason == null then
+            close
+        endif 
+        
+        # Если правило работает в режиме сбора профиля, то emit не нужен. Но close не внесет запись в ТС, поэтому костыль через оборащение
         if $auto_profile == 2 then
             $importance = "info"
             $detect = "drop"
         endif 
 
         $alert.key = 
+        $alert.context = $reason
     }
 
     insert_into ESC_Risk_User_Logon_Profiles_2 if $auto_profile != 0 {        
@@ -154,7 +176,9 @@ rule For_Profilling: Anomaly_Logon_Application
         access_type = # $event_src.vendor or #event_src,title
         login = # user lower($subject.account.name)      
         src_ip = # source ip string($src.ip)
-        dst_ip = # destination ip lower($event_src.host)
+        # dst_ip = lower($event_src.host) # destination ip 
+        # dst_path = coalesce(lower($datafield2), "")
+        # additional_data = coalesce(lower($subject.process.meta), "")
     }
    
 emit {
