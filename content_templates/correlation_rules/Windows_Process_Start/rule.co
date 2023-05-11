@@ -4,7 +4,7 @@ event Process_Start:
     filter {
         filter::NotFromCorrelator()
         and filter::ProcessStart_Windows_any()
-        # and filter::and filter::ProcessStart_Windows_commandline("process_name", "regex_value")
+        # and filter::ProcessStart_Windows_commandline("process_name", "regex_value")
         # and filter::ProcessStart_Windows("process_name")
         and filter::CheckWL_Process_Creation("Windows_Process_Start", )
     }

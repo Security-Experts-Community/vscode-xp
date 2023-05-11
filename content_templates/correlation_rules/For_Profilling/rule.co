@@ -27,7 +27,7 @@ query CheckIP($username, $src_ip) from User_Logon_Profile {
 }
 
 # Проверяем, изменился ли тип доступа
-#query CheckAccessType($username, $src_ip, $access_type) from User_Logon_Profile {  
+# query CheckAccessType($username, $src_ip, $access_type) from User_Logon_Profile {  
 #    access_type == $access_type
 #    and login == $username
 #    and src_ip == $src_ip

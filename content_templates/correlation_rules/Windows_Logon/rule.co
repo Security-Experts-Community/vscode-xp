@@ -5,7 +5,7 @@ event User_Login:
         filter::NotFromCorrelator()
         and event_src.title == "windows"
         and msgid == "4624"
-        #and filter::LoginAttempt_Windows_Endpoint()
+        # and filter::LoginAttempt_Windows_Endpoint()
         
         and filter::CheckWL_Windows_Login("Windows_Logon", )
     }
