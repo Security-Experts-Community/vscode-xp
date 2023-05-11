@@ -302,5 +302,5 @@ scenario=${this._scenarios.join(" ")}
 	private _contentRootFolder : string;
 	private _siemjConfigSection : string;
 	private _scenarios : string[] = [];
-	private _crTimeout = 45;
+	private _crTimeout = 180;
 }

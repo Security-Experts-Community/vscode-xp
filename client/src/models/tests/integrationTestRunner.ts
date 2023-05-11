@@ -57,9 +57,8 @@ export class IntegrationTestRunner {
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();
-
-		// TODO: временное решения до устранение проблем с вылетом тестов по таймауту.
-		configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this._config));
+		configBuilder.addCorrelationsGraphBuilding();
+		
 		configBuilder.addTestsRun(rule.getDirectoryPath());
 
 		const siemjConfContent = configBuilder.build();
