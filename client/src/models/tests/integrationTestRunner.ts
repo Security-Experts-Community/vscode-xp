@@ -12,6 +12,10 @@ import { IntegrationTest } from './integrationTest';
 import { TestStatus } from './testStatus';
 import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
 import { XpException } from '../xpException';
+import { TestHelper } from '../../helpers/testHelper';
+import { CorrGraphRunner } from '../../views/сorrelationGraph/corrGraphRunner';
+import { Correlation } from '../content/correlation';
+import { Enrichment } from '../content/enrichment';
 
 export class IntegrationTestRunner {
 
@@ -57,7 +61,22 @@ export class IntegrationTestRunner {
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();
-		configBuilder.addCorrelationsGraphBuilding();
+
+		const ruleCode = await rule.getRuleCode();
+		// Если корреляция с сабрулями, то собираем полный граф корреляций для отработок сабрулей из других пакетов.
+		// В противном случае только корреляции из текущего пакета с правилами. Позволяет ускорить тесты.
+		if(rule instanceof Correlation) {
+			if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
+				configBuilder.addCorrelationsGraphBuilding();
+			} else {
+				configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this._config));
+			}
+		}
+
+		// Для обогащений собираем всегда полный граф корреляций, так как непонятно какая корреляция отработает на сырое событие.
+		if(rule instanceof Enrichment) {
+			configBuilder.addCorrelationsGraphBuilding();
+		}
 		
 		configBuilder.addTestsRun(rule.getDirectoryPath());
 

@@ -1,6 +1,9 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
+import * as fs from 'fs';
+
 import { workspace, ExtensionContext } from 'vscode';
+
 
 import {
 	LanguageClient,
@@ -211,7 +214,9 @@ export async function activate(context: ExtensionContext) {
 
 		// Очистка директории временных файлов.
 		const tmpDirectory = config.getTmpDirectoryPath();
-		await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
+		if(fs.existsSync(tmpDirectory)) {
+			await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
+		}
 	}
 	catch(error){
 		ExceptionHelper.show(error, "Не удалось активировать расширение 'eXtraction and Processing'");
