@@ -78,27 +78,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		throw new Error(`Путь к правилу '${this.getName()}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
 	}
 
-	public getContentRootPath(config: Configuration): string{
-		if(!this._parentPath) {
-			throw new ArgumentException(`Не задан путь к директории правила '${this.getName()}'.`);
-		}
-
-		const pathEntities = this.getDirectoryPath().split(path.sep);
-		const rootPaths = config.getContentRoots().map(folder => {return path.basename(folder);});
-		for (const rootPath of rootPaths){
-			const  packagesDirectoryIndex = pathEntities.findIndex( pe => pe.toLocaleLowerCase() === rootPath);
-			if(packagesDirectoryIndex === -1){
-				continue;
-			}
-
-			// Удаляем лишние элементы пути и собираем результирующий путь.
-			pathEntities.splice(packagesDirectoryIndex + 1);
-			const packageDirectoryPath = pathEntities.join(path.sep);
-			return packageDirectoryPath;
-		}
-
-		throw new Error(`Путь к правилу '${this.getName()}' не содержит ни одну из корневых директорий: [${rootPaths.join(", ")}].`);
-	}
 
 	public getTestsPath():string {
 		return path.join(this.getDirectoryPath(), 'tests');

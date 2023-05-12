@@ -4,6 +4,8 @@ import * as vscode from "vscode";
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { Configuration } from '../configuration';
 import { KbHelper } from '../../helpers/kbHelper';
+import { ArgumentException } from '../argumentException';
+import { XpException } from '../xpException';
 
 /**
  * Базовый класс для всех item-ом из дерева контента.
@@ -31,6 +33,28 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 
 	public getCommand() : vscode.Command {
 		return this.command;
+	}
+
+	public getContentRootPath(config: Configuration): string{
+		if(!this._parentPath) {
+			throw new ArgumentException(`Не задан путь к директории правила '${this.getName()}'.`);
+		}
+
+		const pathEntities = this.getDirectoryPath().split(path.sep);
+		const rootPaths = config.getContentRoots().map(folder => {return path.basename(folder);});
+		for (const rootPath of rootPaths){
+			const  packagesDirectoryIndex = pathEntities.findIndex( pe => pe.toLocaleLowerCase() === rootPath);
+			if(packagesDirectoryIndex === -1){
+				continue;
+			}
+
+			// Удаляем лишние элементы пути и собираем результирующий путь.
+			pathEntities.splice(packagesDirectoryIndex + 1);
+			const packageDirectoryPath = pathEntities.join(path.sep);
+			return packageDirectoryPath;
+		}
+
+		throw new XpException(`Путь к правилу '${this.getName()}' не содержит ни одну из корневых директорий: [${rootPaths.join(", ")}].`);
 	}
 
 	/**

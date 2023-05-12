@@ -9,12 +9,14 @@ import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
 import { Configuration } from '../../../models/configuration';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { ContentTreeProvider } from '../contentTreeProvider';
+import { KbTreeBaseItem } from '../../../models/content/kbTreeBaseItem';
+import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 
 export class UnpackKbAction {
 	constructor(private _config: Configuration) {
 	}
 
-	public async run(selectedPackage : RuleBaseItem) : Promise<void> {
+	public async run(selectedPackage : KbTreeBaseItem) : Promise<void> {
 
 		// Проверка наличия утилиты сборки kb-файлов.
 		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();
@@ -29,7 +31,7 @@ export class UnpackKbAction {
 			ExtensionHelper.showUserInfo("Для распаковки пакетов нужно открыть базу знаний.");
 			return;
 		}
-		
+
 		// Выбираем kb-файл.
 		const kbUris = await vscode.window.showOpenDialog({
 			canSelectFolders: false,
@@ -41,21 +43,22 @@ export class UnpackKbAction {
 			return;
 		}
 
-		const kbFilePath = kbUris[0].fsPath; 
-
-		// Получаем путь к директории пакетов.
-		const exportDirPath = selectedPackage.getContentRootPath(Configuration.get());
-
-		if(!fs.existsSync(exportDirPath)) {
-			ExtensionHelper.showUserError(`Не существует такой папки для пакетов.`);
-			return;
-		}
 
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
 			title: "Распаковка пакета"
 		}, async (progress) => {
+
+			const kbFilePath = kbUris[0].fsPath; 
+
+			// Получаем путь к директории пакетов.
+			const exportDirPath = selectedPackage.getContentRootPath(Configuration.get());
+
+			if(!fs.existsSync(exportDirPath)) {
+				ExtensionHelper.showUserError(`Не существует такой папки для пакетов.`);
+				return;
+			}
 
 			// Очищаем и показываем окно Output.
 			this._config.getOutputChannel().clear();
@@ -82,7 +85,7 @@ export class UnpackKbAction {
 					this._config.getOutputChannel()
 				);
 
-				if(!output.includes(this.successSubstring)) {
+				if(!output.includes(this.SUCCESS_SUBSTRING)) {
 					// TODO: тут хорошо бы сделать ссылку или кнопку для перехода в нужный канал Output.
 					ExtensionHelper.showUserError(`Не удалось распаковать пакет. Подробности приведены в панели Output.`);
 					this._config.getOutputChannel().appendLine(knowledgeBasePackagerCli + " " + params.join(" "));
@@ -103,15 +106,15 @@ export class UnpackKbAction {
 					await fse.copy(objectsPackagePath, onePackagePath, { overwrite: true });
 				}
 
-				ExtensionHelper.showUserInfo(`Пакет распакован.`);
+				ExtensionHelper.showUserInfo(`Пакет успешно распакован.`);
 				await ContentTreeProvider.refresh();
 			}
 			catch(error) {
-				// TODO: Нужно все внутренние ошибки обрабатывть единообразно
-				ExtensionHelper.showUserError(`Внутренняя ошибка расширения: ${error.message}`);
+				// TODO: Нужно все внутренние ошибки обрабатывать единообразно
+				ExceptionHelper.show(error, `Внутренняя ошибка расширения: ${error.message}`);
 			}
 		});
 	}
 
-	private readonly successSubstring = "Knowledge base unpacking completed successfully";
+	private readonly SUCCESS_SUBSTRING = "Knowledge base unpacking completed successfully";
 }
