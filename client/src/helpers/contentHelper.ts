@@ -1,16 +1,84 @@
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import * as path from 'path';
+
 import { Configuration } from '../models/configuration';
 import { Correlation } from '../models/content/correlation';
-
 import { Enrichment } from '../models/content/enrichment';
 import { XpException } from '../models/xpException';
 import { FileSystemHelper } from './fileSystemHelper';
-import { KbHelper } from './kbHelper';
 import { Normalization } from '../models/content/normalization';
+import { YamlHelper } from './yamlHelper';
+
 
 export class ContentHelper {
+
+    private static getStringColumns(parsedFields: any){
+        return parsedFields.reduce((acc, currentColumn) => {
+            const name = Object.getOwnPropertyNames(currentColumn)[0];
+            if (currentColumn[name]['type'] === "String"){
+                acc.push(name);
+            }
+            return acc;
+        }, []);
+    }
+
+    static fixTableYaml(parsedYaml: any) {
+        const stringColumns = this.getStringColumns(parsedYaml['fields']);
+
+        const defaults = parsedYaml['defaults'];
+        if (defaults){
+            const defaultKeys = Object.getOwnPropertyNames(defaults);
+            defaultKeys.forEach(key => {
+                defaults[key].forEach(row => {
+                    const rowColumns = Object.getOwnPropertyNames(row);
+                    rowColumns.forEach(rowColumn => {
+                        if (stringColumns.includes(rowColumn) && !!row[rowColumn] && typeof row[rowColumn] !== "string") {
+                            let value = row[rowColumn];
+                            if (typeof value.getMonth === 'function'){
+                                value = value.toISOString();
+                            }
+                            row[rowColumn] = `${value}`;
+                    }});                
+                });
+            });
+        }
+        
+        return YamlHelper.stringifyTable(parsedYaml);
+    }
+
+	static fixTables(startPath: string) : void {
+		const files = this.getFilesByPattern(startPath, /\.tl/);
+
+		files.forEach(file => {
+			const content = YamlHelper.parse(fs.readFileSync(file, 'utf8'));
+			const fixedContent = this.fixTableYaml(content);
+			fs.writeFileSync(file, fixedContent);
+		});
+	}
+
+    static getFilesByPattern(startPath: string, fileNamePattern: RegExp): string[] {
+        const getFileList = (dirName) : string[] => {
+			let files = [];
+			const items = fs.readdirSync(dirName, { withFileTypes: true });
+
+			for (const item of items) {
+				if (item.isDirectory()) {
+					files = [
+						...files,
+						...(getFileList(path.join(dirName, item.name))),
+					];
+				} else {
+					if (fileNamePattern.exec(item.name) != undefined){
+						files.push(path.join(dirName, item.name));
+					}
+				}
+			}
+			return files;
+		};
+		
+		return getFileList(startPath);
+    }
 
     public static replaceAllRuleNamesWithinString(oldRuleName : string, newRuleName : string, ruleCode : string): string {
         if (!ruleCode) { return ""; }

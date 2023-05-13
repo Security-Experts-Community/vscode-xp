@@ -45,6 +45,14 @@ export class YamlHelper {
 		);
 	}
 
+	public static stringifyTable(object: any) : string {
+		return js_yaml.dump(object, {
+            styles: { '!!null': 'empty' },
+            lineWidth: -1,
+            quotingType: '"'
+        });
+	}
+
 	public static parse(str: string): any {
 		return js_yaml.load(str, this.loadOptions);
 	}

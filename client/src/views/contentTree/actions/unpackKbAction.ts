@@ -7,10 +7,10 @@ import { ExtensionHelper } from '../../../helpers/extensionHelper';
 import { ProcessHelper } from '../../../helpers/processHelper';
 import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
 import { Configuration } from '../../../models/configuration';
-import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { ContentTreeProvider } from '../contentTreeProvider';
 import { KbTreeBaseItem } from '../../../models/content/kbTreeBaseItem';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
+import { ContentHelper } from '../../../helpers/contentHelper';
 
 export class UnpackKbAction {
 	constructor(private _config: Configuration) {
@@ -92,6 +92,9 @@ export class UnpackKbAction {
 					this._config.getOutputChannel().show();
 					return;
 				} 
+
+				// TODO: Убрать этот фикс, когда починят экспорт из PTKB
+				ContentHelper.fixTables(outputDirPath);
 
 				// Если внутри несколько пакетов.
 				const packagesPackagePath = path.join(outputDirPath, "packages");
