@@ -117,7 +117,20 @@ export class UnpackKbAction {
 						? vscode.workspace.workspaceFolders[0].uri.fsPath
 						: undefined;
 					if(rootPath){
-						await fse.copy(macroPackagePath, path.join(rootPath, "common"));
+						const outPath = path.join(rootPath, "common");
+						await fse.copy(macroPackagePath, outPath);
+
+						// Убираем BOM-метки из файлов
+						const files = ContentHelper.getFilesByPattern(outPath, /metainfo\.yaml/);
+						files.forEach(file => {
+							let content = fs.readFileSync(file, 'utf8');
+							if (typeof content === 'string') {
+								if (content.charCodeAt(0) === 0xFEFF) {
+									content = content.slice(1);
+								}
+								fs.writeFileSync(file, content, 'utf8');
+							}
+						});
 					}
 				}
 
