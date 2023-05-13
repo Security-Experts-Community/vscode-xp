@@ -109,6 +109,18 @@ export class UnpackKbAction {
 					await fse.copy(objectsPackagePath, onePackagePath, { overwrite: true });
 				}
 
+				// Копируем макросы
+				const macroPackagePath = path.join(outputDirPath, "common");
+				if(fs.existsSync(macroPackagePath)) {
+					const rootPath =
+					(vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
+						? vscode.workspace.workspaceFolders[0].uri.fsPath
+						: undefined;
+					if(rootPath){
+						await fse.copy(macroPackagePath, path.join(rootPath, "common"));
+					}
+				}
+
 				ExtensionHelper.showUserInfo(`Пакет успешно распакован.`);
 				await ContentTreeProvider.refresh();
 			}

@@ -33,7 +33,7 @@ export class ContentHelper {
                 defaults[key].forEach(row => {
                     const rowColumns = Object.getOwnPropertyNames(row);
                     rowColumns.forEach(rowColumn => {
-                        if (stringColumns.includes(rowColumn) && !!row[rowColumn] && typeof row[rowColumn] !== "string") {
+                        if (stringColumns.includes(rowColumn) && row[rowColumn]!=null && typeof row[rowColumn] !== "string") {
                             let value = row[rowColumn];
                             if (typeof value.getMonth === 'function'){
                                 value = value.toISOString();
@@ -42,6 +42,10 @@ export class ContentHelper {
                     }});                
                 });
             });
+        }
+
+        if(parsedYaml['fillType'] === 'CybsiGrid' && parsedYaml['itemType'] != null){
+            parsedYaml['itemType'] = parsedYaml['itemType'].toLowerCase();
         }
         
         return YamlHelper.stringifyTable(parsedYaml);
