@@ -6,11 +6,17 @@ import { FileSystemHelper } from './fileSystemHelper';
 import { YamlHelper } from './yamlHelper';
 
 export class TaxonomyHelper {
-	public static async getTaxonomyCompletions(configuration: Configuration) : Promise<vscode.CompletionItem[]> {
+
+	public static async getTaxonomySignaturesPlain(configuration: Configuration) {
 		// Считываем поля таксономии.
 		const taxonomyFilePath = configuration.getTaxonomyFullPath();
 		const taxonomyFileContent = await FileSystemHelper.readContentFile(taxonomyFilePath);
 		const taxonomySignaturesPlain = JSON.parse(taxonomyFileContent);
+		return taxonomySignaturesPlain;
+	}
+
+	public static async getTaxonomyCompletions(configuration: Configuration) : Promise<vscode.CompletionItem[]> {
+		const taxonomySignaturesPlain = await TaxonomyHelper.getTaxonomySignaturesPlain(configuration);
 
 		// Считываем русскую локализацию для полей таксономии.
 		const taxonomyRuLocalizationFilePath = configuration.getTaxonomyRuLocalizationFullPath();
@@ -30,11 +36,6 @@ export class TaxonomyHelper {
 				.flatMap(field => {
 					// Поля события.
 					const eventCi = this.convertFieldToCompletionItem(field, taxonomySignaturesPlain, fieldsRuLocalization);
-
-					// Поля правила.
-					// const correlationCi = this.convertFieldToCompletionItem(`$${field}`, taxonomySignaturesPlain, fieldsRuLocalization);
-
-					// return [eventCi, correlationCi];
 					return [eventCi];
 				});
 
