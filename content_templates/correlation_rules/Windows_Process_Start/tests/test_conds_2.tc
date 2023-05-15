@@ -1,5 +1,5 @@
 # Вайтлистинг
 table_list default
-table_list {"Common_whitelist_auto": [{"rule": "Process_Start_Windows", "specific_value": ""}]}
+table_list {"Common_whitelist_auto": [{"rule": "Windows_Process_Start", "specific_value": ""}]}
 
-expect not {"correlation_name": "Process_Start_Windows"}
+expect not {"correlation_name": "Windows_Process_Start"}

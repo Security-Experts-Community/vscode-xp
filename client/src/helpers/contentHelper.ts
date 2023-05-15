@@ -85,7 +85,9 @@ export class ContentHelper {
     }
 
     public static replaceAllRuleNamesWithinString(oldRuleName : string, newRuleName : string, ruleCode : string): string {
-        if (!ruleCode) { return ""; }
+        if (!ruleCode) {
+            return ""; 
+        }
         ruleCode = ruleCode.replace(new RegExp(oldRuleName, "gm"), `${newRuleName}`);
         return ruleCode;
     }

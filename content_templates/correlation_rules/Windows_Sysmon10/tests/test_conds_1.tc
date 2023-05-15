@@ -1,1 +1,1 @@
-expect 1 {"correlation_name": "SYSMON10"}
+expect 1 {"correlation_name": "Windows_Sysmon10"}

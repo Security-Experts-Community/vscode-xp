@@ -1,5 +1,5 @@
 # Вайтлистинг
 table_list default
-table_list {"Common_whitelist_auto": [{"rule": "Share_Access", "specific_value": ""}]}
+table_list {"Common_whitelist_auto": [{"rule": "Windows_Share_Access", "specific_value": ""}]}
 
-expect not {"correlation_name": "Share_Access"}
+expect not {"correlation_name": "Windows_Share_Access"}

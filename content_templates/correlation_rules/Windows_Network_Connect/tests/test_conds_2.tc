@@ -1,5 +1,5 @@
 # Вайтлистинг
 table_list default
-table_list {"Common_whitelist_auto": [{"rule": "Network_Connect", "specific_value": ""}]}
+table_list {"Common_whitelist_auto": [{"rule": "Windows_Network_Connect", "specific_value": ""}]}
 
-expect not {"correlation_name": "Network_Connect"}
+expect not {"correlation_name": "Windows_Network_Connect"}

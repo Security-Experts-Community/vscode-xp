@@ -1,1 +1,1 @@
-expect 1 {"correlation_name": "Powershell_Execute_4103_4104"}
+expect 1 {"correlation_name": "Windows_Powershell_Execute"}

@@ -1,5 +1,5 @@
 # Вайтлистинг
 table_list default
-table_list {"Common_whitelist_auto": [{"rule": "LDAP", "specific_value": ""}]}
+table_list {"Common_whitelist_auto": [{"rule": "Windows_LDAP", "specific_value": ""}]}
 
-expect not {"correlation_name": "LDAP"}
+expect not {"correlation_name": "Windows_LDAP"}

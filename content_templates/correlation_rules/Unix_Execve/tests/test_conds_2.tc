@@ -1,4 +1,4 @@
 # Вайтлистинг
 table_list default
-table_list {"Common_whitelist_auto": [{"rule": "Unix_execve", "specific_value": ""}]}
-expect not {"correlation_name": "Unix_execve"}
+table_list {"Common_whitelist_auto": [{"rule": "Unix_Execve", "specific_value": ""}]}
+expect not {"correlation_name": "Unix_Execve"}

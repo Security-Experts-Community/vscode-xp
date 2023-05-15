@@ -1,5 +1,5 @@
 # Вайтлистинг
 table_list default
-table_list {"Common_whitelist_auto": [{"rule": "SYSMON10", "specific_value": ""}]}
+table_list {"Common_whitelist_auto": [{"rule": "Windows_Sysmon10", "specific_value": ""}]}
 
-expect not {"correlation_name": "SYSMON10"}
+expect not {"correlation_name": "Windows_Sysmon10"}

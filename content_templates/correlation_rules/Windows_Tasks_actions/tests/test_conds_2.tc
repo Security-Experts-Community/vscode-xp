@@ -1,5 +1,5 @@
 # Вайтлистинг
 table_list default
-table_list {"Common_whitelist_auto": [{"rule": "Tasks_actions", "specific_value": ""}]}
+table_list {"Common_whitelist_auto": [{"rule": "Windows_Tasks_actions", "specific_value": ""}]}
 
-expect not {"correlation_name": "Tasks_actions"}
+expect not {"correlation_name": "Windows_Tasks_actions"}

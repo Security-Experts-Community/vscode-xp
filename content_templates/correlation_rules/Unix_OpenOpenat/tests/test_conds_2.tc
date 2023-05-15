@@ -1,4 +1,4 @@
 # Вайтлистинг
 table_list default
-table_list {"Common_whitelist_auto": [{"rule": "Unix_OpenAt", "specific_value": ""}]}
-expect not {"correlation_name": "Unix_OpenAt"}
+table_list {"Common_whitelist_auto": [{"rule": "Unix_OpenOpenat", "specific_value": ""}]}
+expect not {"correlation_name": "Unix_OpenOpenat"}
