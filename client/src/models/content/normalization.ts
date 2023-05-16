@@ -14,6 +14,7 @@ import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { NormalizationUnitTestOutputParser } from '../tests/normalizationUnitTestOutputParser';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { XPObjectType } from './xpObjectType';
+import { ContentHelper } from '../../helpers/contentHelper';
 
 
 export class Normalization extends RuleBaseItem {
@@ -53,7 +54,39 @@ export class Normalization extends RuleBaseItem {
 	}
 
 	public async rename(newName: string): Promise<void> {
+		const oldRuleName = this.getName();
 		this.setName(newName);
+
+		// Замена в критериях.
+		this.getMetaInfo().getEventDescriptions().forEach(ed => {
+			const criteria = ed.getCriteria();
+			const newCriteria = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newName, criteria);
+			ed.setCriteria(newCriteria);
+
+			const localizationId = ed.getLocalizationId();
+			const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newName, localizationId);
+			ed.setLocalizationId(newLocalizationId);
+		});
+
+		this.getUnitTests().forEach(
+			unitTest => {
+				const testExpectation = unitTest.getTestExpectation();
+				const newTestExpectation = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newName, testExpectation);
+				unitTest.setTestExpectation(newTestExpectation);				
+				const testInputData = unitTest.getTestInputData();
+				const newTestInputData = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newName, testInputData);
+				unitTest.setTestInputData(newTestInputData);
+			}
+		);
+
+		// Замена в правилах локализации
+		this.getLocalizations().forEach(
+			loc => {
+				const localizationId = loc.getLocalizationId();
+				const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newName, localizationId);
+				loc.setLocalizationId(newLocalizationId);
+			}
+		);
 	}
 
 	public async save(parentFullPath: string): Promise<void> {
