@@ -2,7 +2,7 @@ import * as path from 'path';
 
 import { Configuration } from '../../models/configuration';
 import { Correlation } from '../../models/content/correlation';
-import { PackKbAction } from '../../views/contentTree/actions/packKbAction';
+import { PackKbAction } from '../../views/contentTree/actions/packSIEMAllPackagesAction';
 import { TestFixture } from '../helper';
 import { ContentFolder, ContentFolderType } from '../../models/content/contentFolder';
 
