@@ -71,16 +71,18 @@ export class UnpackKbAction {
 				const outputDirPath = path.join(unpackPackagePath, kbFileName);
 
 				// Типовая команда выглядит так:
-				// kbtools.exe unpack -s c:\tmp\pack\esc.kb -o c:\tmp\pack\unpack\doesn_t_exist_folder
-				// doesn_t_exist_folder создается самим kbtools
-				const params = [
-					"unpack", 
-					"-s", kbFilePath, 
+				// dotnet kbpack.dll unpack -s c:\tmp\pack\esc.kb -o c:\tmp\pack\unpack\doesn_t_exist_folder
+				// doesn_t_exist_folder создается самим kbtools				
+
+				const params =  [
+					knowledgeBasePackagerCli,
+					"unpack",
+					"-s", kbFilePath,
 					"-o", outputDirPath
 				];
 
 				const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
-					knowledgeBasePackagerCli,
+					"dotnet",
 					params,
 					this._config.getOutputChannel()
 				);

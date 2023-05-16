@@ -8,7 +8,6 @@ import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { KbHelper } from '../../../helpers/kbHelper';
 import { ProcessHelper } from '../../../helpers/processHelper';
 import { Configuration } from '../../../models/configuration';
-import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 import { KbTreeBaseItem } from '../../../models/content/kbTreeBaseItem';
 
@@ -92,9 +91,10 @@ export class PackSIEMAllPackagesAction {
 				 * kbtools.exe pack -s "c:\src\path" -o "c:\dst\path\packages.kb
 				 */
 				emitter.fire(`\n\nXP:: Промежуточный статус: Запущена команда архивации файлов, это может занимать длительное время!\n\n`);
-				const output = await ProcessHelper.ExecuteWithArgsWithRealtimeEmmiterOutput(
-					knowledgeBasePackagerCli,
+				const output  = await ProcessHelper.ExecuteWithArgsWithRealtimeEmmiterOutput(
+					"dotnet",
 					[
+						knowledgeBasePackagerCli,
 						"pack", 
 						"-s", tmpSubDirectoryPath, 
 						"-o", unpackKbFilePath
@@ -174,10 +174,11 @@ export class PackKbAction {
 				await fse.copy(сontractsDirectoryPath, taxonomyPath);
 
 				// Типовая команда выглядит так:
-				// kbtools(kbpack).exe pack -s "c:\tmp\pack" -o "c:\tmp\pack\Esc.kb"
+				// dotnet kbpack.dll pack -s "c:\tmp\pack" -o "c:\tmp\pack\Esc.kb"
 				const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
-					knowledgeBasePackagerCli,
+					"dotnet",
 					[
+						knowledgeBasePackagerCli, 
 						"pack", 
 						"-s", tmpSubDirectoryPath, 
 						"-o", unpackKbFilePath
