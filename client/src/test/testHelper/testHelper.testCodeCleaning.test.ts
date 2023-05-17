@@ -547,14 +547,14 @@ expect 1 {
     "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",
     "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab",
     "status": "success"
-}`
+}`;
 
         const extectedTestCode = 
 `table_list default
 expect 1 {
     "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",
     "status": "success"
-}`
+}`;
 
         const actualTestCode = TestHelper.cleanTestCode(testCode);
         assert.strictEqual(actualTestCode, extectedTestCode);
@@ -572,7 +572,7 @@ Got results:
     "subject.name": "ptarakanovadm",
     "time": "2022-12-06T18:34:01Z"
 }
-[INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`
+[INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`;
 
         const extectedTestCode = 
 `SUCCESS!
@@ -582,7 +582,7 @@ Got results:
     "subject.account.name": "ptarakanovadm",
     "subject.name": "ptarakanovadm"
 }
-[INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`
+[INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`;
 
         const actualTestCode = TestHelper.cleanTestCode(testCode);
         assert.strictEqual(actualTestCode, extectedTestCode);
@@ -601,7 +601,7 @@ Got results:
     "labels": "CheckWL_Specific_Only|subject_account_to_attacking_assets|event_source_to_related_assets|src_to_related_assets|subject_account_to_attacking_assets|src_to_related_assets|event_source_to_related_assets",
     "normalized": true
 }
-[INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`
+[INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`;
 
         const extectedTestCode = 
 `SUCCESS!
@@ -612,7 +612,7 @@ Got results:
     "incident.severity": "high",
     "normalized": true
 }
-[INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`
+[INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`;
 
         const actualTestCode = TestHelper.cleanTestCode(testCode);
         assert.strictEqual(actualTestCode, extectedTestCode);

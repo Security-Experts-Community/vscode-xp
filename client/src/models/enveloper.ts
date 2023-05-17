@@ -18,8 +18,7 @@ export class Enveloper {
 		// Проверяем, если исходное событие в формате xml (EventViewer)
 		let rawEventsTrimmed = rawEvents.trim();
 		if(this.isRawEventXml(rawEventsTrimmed)) {
-			const eventJsonObject = this.convertXmlRawEventToJsonObject(rawEventsTrimmed);
-			rawEventsTrimmed = JSON.stringify(eventJsonObject);
+			rawEventsTrimmed = this.convertXmlRawEventsToJson(rawEventsTrimmed);
 		}
 
 		if(this.isEnvelopedEvents(rawEventsTrimmed)) {
@@ -132,20 +131,33 @@ export class Enveloper {
 		return newRawEvents;
 	}
 
-	public static convertXmlRawEventToJsonObject(xmlRawEvent : string) : any {
+	public static convertXmlRawEventsToJson(xmlRawEvent : string) : string {
 
+		let resultJson = "";
 		const xmlRawEventCorrected = xmlRawEvent
 			.replace(/^- <Event /gm, "<Event ")
 			.replace(/^- <System>/gm, "<System>")
 			.replace(/^- <EventData>/gm, "<EventData>");
 
-		const jsonEvent = xml2json_light.xml2json(xmlRawEventCorrected);
-		let jsonEventString = JSON.stringify(jsonEvent);
+		const xmlEventsRegex = /<Event[\s\S]*?<\/Event>/gm;
+		let xmlRawEventResult: RegExpExecArray | null;
+		while ((xmlRawEventResult = xmlEventsRegex.exec(xmlRawEventCorrected))) {
+			if (xmlRawEventResult.length != 1) {
+				continue;
+			}
 
-		// Меняем имя атрибута на ожидамое значение text.
-		jsonEventString = jsonEventString.replace(/_@ttribute/gm, "text");
-		const jsonEventObject = JSON.parse(jsonEventString);
-		
-		return jsonEventObject;
+			const xmlEvent = xmlRawEventResult[0];
+			
+			// Конвертируем xml в json.
+			const jsonEventObject = xml2json_light.xml2json(xmlEvent);
+			const jsonEventString = JSON.stringify(jsonEventObject);
+
+			// Исправляем xml.
+			const resultXmlRawEvent = jsonEventString.replace(/_@ttribute/gm, "text");
+			
+			resultJson += resultXmlRawEvent + "\n";
+		}
+
+		return resultJson;
 	}
 }
