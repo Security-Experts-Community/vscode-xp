@@ -1,2 +1,2 @@
 table_list default
-expect 1 {"correlation_name":"Unix_OpenAt"}
+expect 1 {"correlation_name":"Unix_OpenOpenat"}

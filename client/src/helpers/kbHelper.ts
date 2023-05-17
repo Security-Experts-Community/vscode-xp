@@ -8,7 +8,9 @@ export class KbHelper {
 	 * @returns результирующая строка
 	 */
 	public static convertWindowsEOFToLinux (text : string) : string {
-		if (!text) { return ""; }
+		if (!text) {
+			return ""; 
+		}
 		return text.replace(/(\r\n)/gm, "\n");
 	}
 

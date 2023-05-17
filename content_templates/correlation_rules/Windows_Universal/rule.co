@@ -4,10 +4,10 @@ event EventName:
     filter {
         filter::NotFromCorrelator()
 
-        and filter::CheckWL_Specific_Only("Universal", )
+        and filter::CheckWL_Specific_Only("Windows_Universal", )
     }
 
-rule Universal: EventName
+rule Windows_Universal: EventName
 
     init {
         $labels = "w_auto"

@@ -1,1 +1,1 @@
-expect 1 {"correlation_name": "Process_Start_Windows"}
+expect 1 {"correlation_name": "Windows_Process_Start"}

@@ -61,12 +61,12 @@ export class LocalizationEditorViewProvider  {
 
 				const criteria = loc.getCriteria();
 				if(!criteria) {
-					throw new XpException(`Критерий для правила локализации не задан: LocalizationId = '{locId}'.`);
+					throw new XpException(`Критерий для правила локализации не задан: LocalizationId = '${locId}'.`);
 				}
 
 				// Ошибка в том случае, если нет обоих локализаций.
 				if(!loc.getRuLocalizationText() && !loc.getEnLocalizationText()) {
-					throw new XpException(`Для критерия LocalizationId = '{locId}' не задано ни одного значения.`);	
+					throw new XpException(`Для критерия LocalizationId = '${locId}' не задано ни одного значения.`);	
 				}
 
 				let ruLocalizationText = loc.getRuLocalizationText();
@@ -81,6 +81,7 @@ export class LocalizationEditorViewProvider  {
 				
 				plainLocalizations.push({
 					"Criteria" : criteria,
+
 					"LocalizationId" : locId,
 					"RuLocalization" : ruLocalizationText,
 					"EnLocalization" : enLocalizationText
@@ -108,6 +109,7 @@ export class LocalizationEditorViewProvider  {
 			const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
 			
 			const templatePlainObject = {
+				"RuleName" : rule.getName(),
 				"RuDescription" : rule.getRuDescription(),
 				"EnDescription" : rule.getEnDescription(),
 				"Localizations" : plainLocalizations,

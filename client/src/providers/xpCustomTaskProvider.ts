@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { Configuration } from '../models/configuration';
-import { PackSIEMAllPackagesAction } from '../views/contentTree/actions/packKbAction';
+import { PackSIEMAllPackagesAction } from '../views/contentTree/actions/packSIEMAllPackagesAction';
 import { PackEDRAllPackagesAction} from '../views/contentTree/actions/packEDRPackageAction';
 
 interface XPTaskDefinition extends vscode.TaskDefinition {

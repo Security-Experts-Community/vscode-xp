@@ -24,7 +24,7 @@ import { DeleteContentItemCommand } from './commands/deleteContentItemCommand';
 import { CreatePackageCommand } from './commands/createPackageCommand';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { BuildAllAction } from './actions/buildAllAction';
-import { PackKbAction } from './actions/packKbAction';
+import { PackKbAction } from './actions/packSIEMAllPackagesAction';
 import { UnpackKbAction } from './actions/unpackKbAction';
 import { ContentType } from '../../contentType/contentType';
 import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';

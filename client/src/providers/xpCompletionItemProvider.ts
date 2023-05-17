@@ -105,7 +105,7 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 		document: vscode.TextDocument,
 		position: vscode.Position,
 		token: vscode.CancellationToken,
-		context) {
+		context: any) {
 
 		return this._completionItems;
 	}

@@ -32,6 +32,7 @@ import { InitKBRootCommand } from './views/contentTree/commands/initKnowledgebas
 import { XPPackingTaskProvider } from './providers/xpCustomTaskProvider';
 import { ExceptionHelper } from './helpers/exceptionHelper';
 import { FileSystemHelper } from './helpers/fileSystemHelper';
+import { XpEnumValuesCompletionItemProvider } from './providers/xpEnumValuesCompletionItemProvider';
 
 let client: LanguageClient;
 let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
@@ -170,6 +171,20 @@ export async function activate(context: ExtensionContext) {
 				],
 				completionItemProvider,
 				"$"
+			)
+		);
+
+		const literalItemProvider = await XpEnumValuesCompletionItemProvider.init(context, config);
+		context.subscriptions.push(
+			vscode.languages.registerCompletionItemProvider(
+				[
+					{
+						scheme: 'file',
+						language: 'co'
+					}
+				],
+				literalItemProvider,
+				"\""
 			)
 		);
 

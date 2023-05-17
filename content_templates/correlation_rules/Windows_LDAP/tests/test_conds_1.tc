@@ -1,1 +1,1 @@
-expect 1 {"correlation_name": "LDAP"}
+expect 1 {"correlation_name": "Windows_LDAP"}
