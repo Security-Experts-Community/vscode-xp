@@ -265,14 +265,7 @@ export class Configuration {
 	}
 
 	public getKbPackFullPath() : string {
-		let appName = "";
-		switch(this.getOsType()) {
-			case OsType.Windows: appName = "kbpack.exe"; break;
-			case OsType.Linux: appName = "kbpack"; break;
-
-			default: throw new XpException("Платформа не поддеживается.");
-		}
-
+		const appName = "kbpack.dll";
 		const fullPath = path.join(this.getKbtBaseDirectory(), "extra-tools", "kbpack", appName);
 		this.checkKbtToolPath(appName, fullPath);
 
