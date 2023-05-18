@@ -164,14 +164,24 @@ export class PackKbAction {
 					await fs.promises.writeFile(contentfullPath, content);
 				}
 
+				// Создаем contracts
 				const contractsDirPath = path.join(tmpSubDirectoryPath, "contracts");
 				await fs.promises.mkdir(contractsDirPath, {recursive: true});
+				
+				// Создаем contracts\origins
+				const originsDirPath = path.join(contractsDirPath, "origins");
+				await fs.promises.mkdir(originsDirPath, {recursive: true});
 
 				// Проверяем путь к контрактам и копируем их.
 				const taxonomyPath = path.join(contractsDirPath, "taxonomy");
 				await fs.promises.mkdir(taxonomyPath, {recursive: true});
 				const сontractsDirectoryPath = this._config.getTaxonomyDirPath();
 				await fse.copy(сontractsDirectoryPath, taxonomyPath);
+
+				// Копируем origins из шаблона
+				const originsSrcFilePath = this._config.getOriginsFilePath();
+				const originsDstDirPath = path.join(originsDirPath, "origins.json");
+				await fs.promises.copyFile(originsSrcFilePath, originsDstDirPath);
 
 				// Типовая команда выглядит так:
 				// dotnet kbpack.dll pack -s "c:\tmp\pack" -o "c:\tmp\pack\Esc.kb"
