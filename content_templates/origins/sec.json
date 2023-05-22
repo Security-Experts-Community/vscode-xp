@@ -1,0 +1,18 @@
+[
+    {
+        "Id": "95a1cca9-50b5-4fae-91a2-26aa36648c3c",
+        "SystemName": "SEC",
+        "Nickname": "SEC",
+        "DisplayName": [
+            {
+                "Locale": "ru",
+                "Value": "Security Experts Community"
+            },
+            {
+                "Locale": "en",
+                "Value": "Security Experts Community"
+            }
+        ],
+        "Revision": 1
+    }
+]

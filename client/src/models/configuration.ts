@@ -470,6 +470,11 @@ export class Configuration {
 		
 		return fullPath;
 	}
+
+	public getOriginsFilePath() : string {
+		const fullPath = path.join(this.getExtensionPath(), "content_templates", "origins", "sec.json");
+		return fullPath;
+	}
 	
 	/**
 	 * Возвращает путь к файлу дополнения формул нормализации. 

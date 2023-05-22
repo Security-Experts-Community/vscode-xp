@@ -94,7 +94,10 @@ export class RunningCorrelationGraphProvider {
                 break;
 			}
             case 'addEnvelope': {
-				return this.addEnvelope(message);
+				const rawEvents = message?.rawEvents as string;
+				const mimeType = message?.mimeType as EventMimeType;
+                
+				return this.addEnvelope(rawEvents, mimeType);
 			}
         }
     }
@@ -155,28 +158,16 @@ export class RunningCorrelationGraphProvider {
         });
 	}
 
-	private async addEnvelope(message: any) {
+	public async addEnvelope(rawEvents: string, mimeType: EventMimeType) {
 		
-		let rawEvents = message?.rawEvents as string;
-		if(!rawEvents) {
-			return ExtensionHelper.showUserInfo("Не заданы сырые события для теста. Добавьте их и повторите.");
+		let envelopedRawEventsString : string;
+		try {
+			envelopedRawEventsString = await Enveloper.addEnvelope(rawEvents, mimeType);
 		}
-
-		rawEvents = rawEvents.trim();
-		if(Enveloper.isEnvelopedEvents(rawEvents)) {
-			return ExtensionHelper.showUserInfo("Конверт для событий уже добавлен.");
-		}
-
-		const mimeType = message?.mimeType as EventMimeType;
-		if(!mimeType) {
-			ExtensionHelper.showUserInfo("Не задан MIME-тип события. Добавьте его и повторите действие.");
+		catch(error) {
+			ExceptionHelper.show(error, "Ошибка добавления конверта.");
 			return;
 		}
-
-		// Сжали список событий и обернули в конверт.
-		const compressedRawEvents = TestHelper.compressRawEvents(rawEvents);
-		const envelopedRawEvents = Enveloper.addEventsToEnvelope(compressedRawEvents, mimeType);
-		const envelopedRawEventsString = envelopedRawEvents.join('\n');
 
 		this._view.webview.postMessage({
 			'command': 'updateRawEvents',
@@ -184,53 +175,6 @@ export class RunningCorrelationGraphProvider {
 		});
 	}
 
-    // private async normalizeRawEvents(rawEvents: string) : Promise<void> {
-
-	// 	const kbDirPath = KbHelper.getKbPaths().getPackagesPath();
-
-	// 	vscode.window.withProgress({
-	// 		location: vscode.ProgressLocation.Notification,
-	// 		cancellable: false,
-	// 	}, async (progress) => {
-    //         let rawEventsFilePath: fs.PathLike;
-	// 		try {
-    //             progress.report( {
-    //                 message: "Нормализация событий"
-    //             });
-
-    //             // Создаем временную директорию.
-    //             const tmpDirectoryPath = this._config.getRandTmpSubDirectoryPath();
-    //             await fs.promises.mkdir(tmpDirectoryPath);
-
-    //             // Сохраняет сырые события в конверте на диск.
-    //             rawEventsFilePath = path.join(tmpDirectoryPath, "raw_events.json");
-    //             await FileSystemHelper.writeContentFile(rawEventsFilePath, rawEvents)
-
-	// 			const normalizer = new Normalizer(this._config);
-	// 			const normEvents = await normalizer.Normalize(kbDirPath, rawEventsFilePath);
-	
-	// 			if(!normEvents) {
-	// 				ExtensionHelper.showUserError("Ошибка нормализации событий.");
-	// 				return;
-	// 			}
-	// 		}
-	// 		catch(error) {
-    //             const errorType = error.constructor.name;
-    //             switch(errorType)  {
-    //                 case "XpExtensionException" :  {
-    //                     const typedError = error as XpExtensionException;
-    //                     ExtensionHelper.showError(typedError.message, error.message);
-    //                 }
-    //                 default: {
-    //                     ExtensionHelper.showError("Не удалось нормализовать событие.", error.message);
-    //                 }
-    //             }
-				
-	// 			this._config.getOutputChannel().show();
-	// 			return;
-	// 		}
-	// 	});
-	// }
 
     private _view: vscode.WebviewPanel;
 }
