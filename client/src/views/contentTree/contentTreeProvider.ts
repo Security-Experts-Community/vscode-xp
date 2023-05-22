@@ -45,13 +45,15 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		const gitHooks = new GitHooks(gitApi, config);
 		const kbTreeProvider = new ContentTreeProvider(knowledgebaseDirectoryPath, gitApi, config);
 
-		// Обновляем дерево при смене текущей ветки.
-		gitApi.onDidOpenRepository( (r) => {
-			r.state.onDidChange( (e) => {
-				gitHooks.update();
-				kbTreeProvider.refresh();
+		if(gitApi) {
+			// Обновляем дерево при смене текущей ветки.
+			gitApi.onDidOpenRepository( (r) => {
+				r.state.onDidChange( (e) => {
+					gitHooks.update();
+					kbTreeProvider.refresh();
+				});
 			});
-		});
+		}
 	
 		const kbTree = vscode.window.createTreeView(
 			ContentTreeProvider.KnowledgebaseTreeId, {
