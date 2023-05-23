@@ -145,28 +145,6 @@
 		<script>
 			const vscode = acquireVsCodeApi();
 
-			$(document).ready(function() {
-				// Грязный хак, позволяющий убрать ошибку двойного копирование по сочетаниям Ctrl+C и Ctrl+V.
-				var ctrlDown = false,
-				ctrlKey = 17,
-				cmdKey = 91,
-				vKey = 86,
-				cKey = 67;
-
-				$(document).keydown(function(e) {
-					if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
-				}).keyup(function(e) {
-					if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
-				});
-
-				// Document Ctrl + C/V 
-				$(document).keydown(function(e) {
-					if (ctrlDown && (e.keyCode == vKey)) {
-						e.preventDefault();
-					}
-				});
-			});
-
 			// Нажатие на кнопку проверки локализаций.
 			const buildLocalizationsButton = document.getElementById("build_loc");
 			buildLocalizationsButton.addEventListener("click", function () {
