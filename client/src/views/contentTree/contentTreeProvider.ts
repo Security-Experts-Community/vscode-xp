@@ -42,11 +42,11 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		const context = config.getContext();
 		const gitApi = await VsCodeApiHelper.getScmGitApiCore();
 
-		const gitHooks = new GitHooks(gitApi, config);
 		const kbTreeProvider = new ContentTreeProvider(knowledgebaseDirectoryPath, gitApi, config);
 
 		if(gitApi) {
 			// Обновляем дерево при смене текущей ветки.
+			const gitHooks = new GitHooks(gitApi, config);
 			gitApi.onDidOpenRepository( (r) => {
 				r.state.onDidChange( (e) => {
 					gitHooks.update();
@@ -378,6 +378,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 	private highlightsLabelForNewOrEditRules(items: KbTreeBaseItem[]) : void {
 		const kbUri = vscode.Uri.file(this._knowledgebaseDirectoryPath);
+		if(!this._gitAPI) {
+			return;
+		}
+		
 		const repo = this._gitAPI.getRepository(kbUri);
 
 		// База знаний не под git-ом.
