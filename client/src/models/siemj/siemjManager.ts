@@ -155,15 +155,66 @@ export class SiemjManager {
 
 		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(enrichEventsFilePath)) {
-			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
+			throw new XpException("Ошибка нормализации и обогащения событий. Файл с результирующим событием не создан.");
 		}
 
 		const enrichEventsContent = await FileSystemHelper.readContentFile(enrichEventsFilePath);
 		if(!enrichEventsContent) {
-			throw new XpException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
+			throw new XpException("Обогатитель вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
 		}
 
 		await fs.promises.unlink(siemjConfigPath);
 		return enrichEventsContent;
+	}
+
+	public async runTestLocalizations(rule: RuleBaseItem) : Promise<string[]> {
+		const contentFullPath = rule.getPackagePath(this._config);
+		if(!fs.existsSync(contentFullPath)) {
+			throw new FileNotFoundException(`Директория контента '${contentFullPath}' не существует.`);
+		}
+
+		await SiemjConfigHelper.clearArtifacts(this._config);
+
+		const contentRootPath = rule.getContentRootPath(this._config);
+		const contentRootFolder = path.basename(contentRootPath);
+		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
+
+		if(!fs.existsSync(outputFolder)) {
+			fs.mkdirSync(outputFolder, {recursive: true});
+		}
+		
+		const ruLocalizations : string[] = [];
+		for (const test of rule.getIntegrationTests()) {
+			const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
+			configBuilder.addNormalizationsGraphBuilding(false);
+			configBuilder.addTablesSchemaBuilding();
+			configBuilder.addTablesDbBuilding();
+			configBuilder.addEnrichmentsGraphBuilding();
+			configBuilder.addEventsNormalization(test.getRawEventsFilePath());
+			configBuilder.addEventsEnrichment();
+			configBuilder.addLocalizationsBuilding(rule.getDirectoryPath());
+
+			configBuilder.addLocalizationForCorrelatedEvents();
+			const siemjConfContent = configBuilder.build();
+	
+			// Централизованно сохраняем конфигурационный файл для siemj.
+			const siemjConfigPath = this._config.getRandTmpSubDirectoryPath(contentRootFolder);
+			await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
+			const siemjExePath = this._config.getSiemjPath();
+	
+			// Типовая команда выглядит так:
+			// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
+			await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+				siemjExePath,
+				["-c", siemjConfigPath, "main"],
+				this._config.getOutputChannel()
+			);
+	
+			const ruLocalizationFilePath = this._config.getRuLocalizationForCorrelatedEvents(contentRootFolder);
+			const ruLocalization = await FileSystemHelper.readContentFile(ruLocalizationFilePath);
+			ruLocalizations.push(ruLocalization);
+		}
+
+		return ruLocalizations;
 	}
 }

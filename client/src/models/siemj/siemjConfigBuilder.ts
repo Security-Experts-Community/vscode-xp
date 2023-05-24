@@ -289,6 +289,23 @@ out=${output}`;
 		this._scenarios.push("run-correlate");
 	}
 
+	public addLocalizationForCorrelatedEvents() : void {
+
+		const correlatedEvents = path.join('${output_folder}', this._config.getCorrelatedEventsFileName());
+
+		const ruLocalization = 
+`
+[run-loca-ru]
+type=FRONTEND
+lang=ru
+locarules=\${make-loca:out}
+in=${correlatedEvents}
+out=\${output_folder}\\ru_events.json`;
+
+		this._siemjConfigSection += ruLocalization;
+		this._scenarios.push("run-loca-ru");
+	}
+
 	public build() : string {
 		const resultConfig = 
 `${this._siemjConfigSection}
