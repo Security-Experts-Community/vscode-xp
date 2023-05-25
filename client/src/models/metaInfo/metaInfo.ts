@@ -38,6 +38,10 @@ export class MetaInfo {
 
 	public static create(metaInfoAsInFile: any): MetaInfo {
 		const metaInfo = new MetaInfo();
+		
+		// Сохраним текущее состояние файла для дальнейшего использования в процедуре сохранения.
+		// Необходимо, чтобы произвольные и не относящиеся к форме поля остались в metainfo.yaml
+		metaInfo.AsInFile = metaInfoAsInFile;
 
 		if (metaInfoAsInFile.Name) {
 			metaInfo.setName(metaInfoAsInFile.Name);
@@ -342,7 +346,9 @@ export class MetaInfo {
 			this.setCreatedDate(this.Updated);
 		}
 
-		const metaInfoObject = {};
+		// Для начального заполнения берем текущее состояние файла.
+		// Далее будем менять известные нам поля, а неизвестные останутся как есть.
+		const metaInfoObject = this.AsInFile;
 
 		if (this.Name) metaInfoObject["ContentAutoName"] = this.Name;
 
@@ -427,6 +433,8 @@ export class MetaInfo {
 	private ATTACK: Attack[] = [];
 	private EventDescriptions: MetaInfoEventDescription[] = [];
 	private ContentLabels: string[] = [];
+
+	private AsInFile: any = {};
 }
 
 

@@ -2,7 +2,7 @@
 	--background: #212529;
 	--main-theme: #bdbdbd;
 	--white: #bdbdbd;
-	--gray: #787878; 
+	--gray: #787878;
 	--red: #c94c4c;
 	--blue: #034f84;
 }
@@ -67,11 +67,13 @@ div {
 	width: calc(100% - 30px);
 }
 
-div input[type=text], div input[type=url] {
+div input[type=text],
+div input[type=url] {
 	width: calc(100% - 50px);
 }
 
-input, select {
+input,
+select {
 	border: none;
 	padding: 6px 10px;
 	margin: 4px 0;
@@ -82,7 +84,8 @@ input, select {
 	border-bottom: 1px solid var(--white);
 }
 
-input:focus, select:focus {
+input:focus,
+select:focus {
 	border-bottom: 3px solid var(--white);
 	outline: none;
 }
@@ -92,7 +95,8 @@ input:invalid {
 	outline: none;
 }
 
-.add_value, .delete {
+.add_value,
+.delete {
 	float: left;
 	width: 20px;
 	height: 20px;
@@ -113,11 +117,11 @@ input:invalid {
 }
 
 .complex {
-	float: left;
 	width: 100%;
 }
 
 .complex input[type=text] {
-	width: calc((100% - 68px) / 2);
+	/* 2 divs with left and right margin -> 4 margins of 2px */
+	width: calc((100% - 50px - 2*4px) / 2);
 	margin: 2px;
 }
