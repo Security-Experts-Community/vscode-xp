@@ -13,6 +13,7 @@
 
 	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/main.css">
 	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/meta.css">
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/tl.css">
 
 	<!-- Для отладки в браузере добавляю прямую ссылку на JQuery. -->
 	<script	src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -20,81 +21,47 @@
 
 </head>
 
-<style>
-	
-	.columns {
-		border-right: 1px solid  var(--white);
-	}
-
-	th {
-		border-bottom: 1px solid  var(--white);
-	}
-
-	.column-name {
-		font-weight: 600;
-		padding: 3px;
-		width: calc(100% - 50px);
-	}
-
-	td input {
-		border:none;
-		margin: 2px 10px;
-	}
-
-	td input:focus {
-		border:none;
-	}
-
-	label {
-		color: var(--white);
-	}
-</style>
-
 <body>
 	<!-- Common Panel -->
 	<div id="header">
 		<div id="navigation">
-			<input id="name" type="text" value="{{Name}}" title="{{Name}}" pattern="[A-Z][a-zA-Z0-9_]+">
-			<input id="save_test" class="save" type="button" value="Сохранить">
+			<input id="name" type="text" value="{{Name}}" title="{{Name}}" pattern="[A-Z][a-zA-Z0-9_]+" placeholder="Table_List_Name" required>
+			<p>ID: {{ObjectId}}</p>
 		</div>
+		<!-- <input id="save" class="save" type="button" value="Сохранить"> -->
 	</div>
 
 	<div id="main-body">
 		<div id="common-info">
 			<table>
-				<!-- <tr>
-					<td class="labels">Название</td>
-					<td>
-						<input id="name" type="text" value="{{Name}}" title="{{Name}}" pattern="[A-Z][a-zA-Z0-9_]+">
-					</td>
-				</tr> -->
-
 				<tr>
-					<td class="labels">Описание</td>
+					<td class="labels">Описание (RU)</td>
 					<td>
-						<input id="description" type="text" value="{{Description}}" title="Description">
-					</td>
-				</tr>
-	
-				<tr>
-					<td class="labels">Идентификатор</td>
-					<td>
-						<input id="object-id" type="text" value="{{ObjectId}}" title="ObjectId">
+						<input id="description-ru" type="text" value="{{DescriptionRu}}" title="Description" placeholder="Тут должно быть описание табличного списка">
 					</td>
 				</tr>
 
 				<tr>
-					<datalist id="fill-types">
-						<option>Registry</option>
-						<option>CorrelationRule</option>
-						<option>EnrichmentRule</option>
-						<option>AssetGrid</option>
-					</datalist>
-					
+					<td class="labels">Описание (EN)</td>
+					<td>
+						<input id="description-en" type="text" value="{{DescriptionEn}}" title="Description" placeholder="Here is the description for this amazing TL">
+					</td>
+				</tr>
+			</table>
+
+			<br />
+
+			<table>
+				<tr>
 					<td class="labels">Тип заполнения</td>
 					<td>
-						<input id="fill-type" name="fill-type" type="text" value="{{FillType}}" list="fill-types" />
-					</td>	
+						<select id="fill-type" name="fill-type" title="userCanEditContent">
+							<option value="Registry">Справочник</option>
+							<option value="CorrelationRule">Заполнется корреляциями</option>
+							<option value="EnrichmentRule">Заполняется обогащениями</option>
+							<!--<option value="AssetGrid">Данные об активах</option>-->
+						</select>
+					</td>
 				</tr>				
 			</table>	
 		</div>
@@ -107,19 +74,31 @@
 				<tr>
 					<td class="labels">Время жизни записи</td>
 					<td>
-						<input id="ttl" class="table-property" type="text" value="{{TTL}}" title="ttl" pattern="\d+">
+						<input id="ttl" class="table-property ttl-ms" type="number" value="{{TTL}}" title="ttl" pattern="\d+">
+						<div id="converter">
+							<span>seconds</span>
+							<span style="margin: 4px 4px;">>></span>
+							<input id="ttl-days" class="ttl-human" type="number"> 
+							<span>days</span>
+							<input id="ttl-hours" class="ttl-human" type="number"> 
+							<span>hours</span>
+							<input id="ttl-minutes" class="ttl-human" type="number"> 
+							<span>minutes</span>
+							<input id="ttl-seconds" class="ttl-human" type="number"> 
+							<span>seconds</span>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td class="labels">Типичный размер</td>
+					<td>
+						<input id="typical-size" class="table-property" type="number" value="{{typicalSize}}" title="typicalSize" pattern="\d+">
 					</td>
 				</tr>
 				<tr>
 					<td class="labels">Максимальный размер</td>
 					<td>
-						<input id="max-size" class="table-property" type="text" value="{{maxSize}}" title="maxSize" pattern="\d+">
-					</td>
-				</tr>
-				<tr>
-					<td class="labels">Стандартный размер</td>
-					<td>
-						<input id="typical-size" class="table-property" type="text" value="{{typicalSize}}" title="typicalSize" pattern="\d+">
+						<input id="max-size" class="table-property" type="numer" value="{{maxSize}}" title="maxSize" pattern="\d+">
 					</td>
 				</tr>
 
@@ -127,7 +106,7 @@
 				<tr>
 					<td class="labels">Редактирование пользоваетлями</td>
 					<td>
-						<select id="user-edit" class="table-property" title="userCanEditContent">
+						<select id="user-edit" title="userCanEditContent" class="table-property">
 							<option value="true">Да</option>
 							<option value="false">Нет</option>
 						</select>
@@ -138,85 +117,121 @@
 				<tr>
 					<td class="labels">PDQL</td>
 					<td>
-						<input id="pdql" class="table-property" type="text" value="{{pdql}}" title="pdql">
+						<textarea id="pdql" class="table-property" title="pdql" placeholder="filter(...) | select(...)">{{pdql}}</textarea>
 					</td>
 				</tr>
-
-				<!-- <tr>
-					<td class="labels">Тип</td>
-					<td>
-						<input id="type" type="text" value="{{type}}" title="{{type}}" pattern="\d+">
-					</td>
-				</tr> -->
 			</table>
 		</div>
 
-		<div id="table">
-			<table>
-				<!-- {{#Columns}}
-				{{/Columns}} -->
+		<div id="table-dix">
+			<table id="table">
 				<tr>
-					<td>
+					{{#Fields}}
+					<td class="field-properties" name="{{ColumnName}}">
 						<table class="columns">
 							<th>
-								<input class="delete" type="button" value="-" title="-" onclick="deleteColumn(this)">
-								<input class="column-name" type="text" value="{{column1.value}}">
+								<input class="delete" type="button" value="-" title="-" onclick="deleteColumn('{{ColumnName}}')">
+								<input class="column-name" type="text" value="{{ColumnName}}" placeholder="column name" pattern="[a-zA-Z0-9_\.]+">
+								<select class="column-type" name="column-type" ctype="{{ColumnType}}">
+									<option value="String">Строка</option>
+									<option value="Number">Число</option>
+									<option value="DataTime">Дата и Время</option>
+									<option value="DataTime">Регулярное выражение</option>
+								</select>
 							</th>
 							<tr>
 								<td class="field-property">
-									<input type="checkbox" name="index" checked>
-									<label for="index">индексируемое</label>
+									<input type="checkbox" name="index" class="{{index}}" value="индексируемое">
 								</td>
 							</tr>
 							<tr>
 								<td class="field-property">
-									<input type="checkbox" name="nullable" checked>
-									<label for="nullable">может быть пустым</label>
+									<input type="checkbox" name="nullable" class="{{nullable}}" value="может быть пустым">
 								</td>
 							</tr>
 							<tr>
 								<td class="field-property">
-									<input type="checkbox" name="key" checked>
-									<label for="key">ключевое</label>
+									<input type="checkbox" name="key" class="{{key}}" value="ключевое">
 								</td>
 							</tr>
 							<tr>
 								<td class="field-property">
-									<input type="checkbox" name="unique" checked>
-									<label for="unique">уникальное</label>
+									<input type="checkbox" name="unique" class="{{unique}}" value="уникальное">
 								</td>
-							</tr>
-							<tr>
-								<td class="field-property">
-									<select id="field-type" name="field-type">
-										<option value="String">Строка</option>
-										<option value="Number">Число</option>
-										<option value="DataTime">Дата и Время</option>
-										<option value="DataTime">Регулярное выражение</option>
-									</select>
-								</td>
-							</tr>
-							<!-- <tr>
-								<td>Тут какое-то значение</td>
-							</tr> -->
+							</tr> 
 						</table>
 					</td>
-					<td>
-						<input class="add_value" type="button" value="+" onclick="addColumn(this)">
+					{{/Fields}}
+					<td class="last-column">
+						<!--<input class="add_value" type="button" value="+" onclick="addColumn(this)">-->
+						<input class="add_value" type="button" value="+" onclick="">
+						<p class="main-text"> Добавить колонку</p>
 					</td>
 				</tr>
+				{{#Defaults}}
+				<tr class="table-defaults">
+					{{#ColumnName}}
+					<td name="{{ColumnName}}">
+						<input placeholder="null" value = "{{ColumnValue}}" type="text">
+					</td>
+					{{/ColumnName}}
+					<td class="last-column">
+						<input class="delete" type="button" value="-" title="-" onclick="$(this).closest('tr').remove()">
+					</td>
+				</tr>
+				{{/Defaults}}
 			</table>
+			<div id="add-defaults">
+				<input class="add_value" type="button" value="+" onclick="addDefaults()">
+				<p class="main-text"> Добавить значение в ТС</p>
+			</div>
 		</div>
 	</div>
 
 	<script>
 
-		function deleteColumn(button) {
-			button.parentNode.parentNode.parentNode.parentNode.parentNode.remove();
+		$(document).ready(function() {
+			// Грязный хак, позволяющий убрать ошибку двойного копирование по сочетаниям Ctrl+C и Ctrl+V.
+			var ctrlDown = false,
+			ctrlKey = 17,
+			cmdKey = 91,
+			vKey = 86,
+			cKey = 67;
+
+			$(document).keydown(function(e) {
+				if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = true;
+			}).keyup(function(e) {
+				if (e.keyCode == ctrlKey || e.keyCode == cmdKey) ctrlDown = false;
+			});
+
+			// Document Ctrl + C/V 
+			$(document).keydown(function(e) {
+				if (ctrlDown && (e.keyCode == vKey)) {
+					e.preventDefault();
+				}
+			});
+
+			$("#fill-type").val("{{FillType}}");
+			selectTableProperties();
+			msToTime();
+			$('#add-defaults').hide();
+
+			$('.true').attr('checked','checked');
+
+			$('.column-type').each( function() {
+				$(this).val($(this).attr("ctype"));
+			});
+		});
+
+		function deleteColumn(columnName) {
+			$('td[name="' + columnName + '"]').remove();
 		}
 
 		function addColumn(button) {
+			var tmpColumnId = (Math.random() + 1).toString(36).substring(7); // Пока имя колонки не задано, заполняем уникальным случайным значением
 			const NewTD = document.createElement('td');
+			NewTD.classList.add('field-properties');
+			NewTD.setAttribute("name", tmpColumnId);
 
 			// Формируем колонку
 			const NewTable = document.createElement('table');
@@ -224,24 +239,27 @@
 			NewTD.appendChild(NewTable);
 
 			// Название колонки и кнопка удаления
-			const tableHeading = document.createElement('th');
-			const tableName = document.createElement('input');
-			tableName.classList.add('column-name');
+			const tableHeading = document.createElement('tr');
+			const columnHeading = document.createElement('th');
+			const columnName = document.createElement('input');
+			columnName.classList.add('column-name');
+			columnName.placeholder = 'new_column_name';
 			// Кнопка удаления
 			const deleteButton = document.createElement('input');
 			deleteButton.type = 'button';
 			deleteButton.value = '-';
 			deleteButton.classList.add("delete");
 			deleteButton.onclick = function() {
-				deleteButton.parentNode.parentNode.parentNode.remove();
+				deleteColumn(tmpColumnId);
 			}
-			tableHeading.appendChild(deleteButton)
-			tableHeading.appendChild(tableName)
+			tableHeading.appendChild(columnHeading);
+			columnHeading.appendChild(deleteButton);
+			columnHeading.appendChild(columnName);
 			
 			NewTable.appendChild(tableHeading);
 			
 			// Свойста колонок
-			$.each(['индексируемое', 'может быть пустым', 'ключевое', 'уникальное'], function( index, value ) {
+			$.each(['индексируемое', 'может быть пустым', 'ключевое', 'уникальное'], function( index, property ) {
 				const columpProperty = document.createElement('tr');
 				const columpPropertyData = document.createElement('td');
 				columpPropertyData.classList.add('field-property');
@@ -249,11 +267,8 @@
 
 				const checkbox = document.createElement('input');
 				checkbox.type = 'checkbox';
-				const label = document.createElement('label');
-				label.name = 'index';
-				label.innerText = value;
+				checkbox.value = property
 				columpPropertyData.appendChild(checkbox);
-				columpPropertyData.appendChild(label);
 			
 				NewTable.appendChild(columpProperty);
 			});
@@ -261,7 +276,8 @@
 			const columpProperty = document.createElement('tr');
 			const columpPropertyData = document.createElement('td');
 			columpPropertyData.classList.add('field-property');
-			
+
+			// Тип новой колонки
 			const select = document.createElement('select');
 			option1 = document.createElement("option");
 			option1.text = 'Строка';
@@ -277,17 +293,62 @@
 			select.add(option3);
 			select.add(option4);
 
-			columpPropertyData.appendChild(select);
+			select.classList.add('column-type');
+			columnHeading.appendChild(select);
+
 			columpProperty.appendChild(columpPropertyData);
 			NewTable.appendChild(columpProperty);
 			
 			button.parentNode.before(NewTD)
+
+			$('.table-defaults').each(function() {
+				const newValueTD = document.createElement('td')
+				const newValue = document.createElement('input');
+				newValueTD.appendChild(newValue)
+				newValue.placeholder = "null";
+				newValue.type = "text";
+				newValueTD.setAttribute("name", tmpColumnId);
+				$(this).children().last().before(newValueTD);			
+			});
 		}
 
+		// Создание новой строки значений в ТС типа справочник
+		function addDefaults() {
+			const tableRaw = document.createElement('tr');
+			tableRaw.classList.add('table-defaults');
+
+			$('.field-properties').each(function() {
+				const cell = document.createElement('td');
+				cell.setAttribute("name", $(this).attr('name'));
+				tableRaw.appendChild(cell);
+
+				const value = document.createElement('input');
+				value.setAttribute("placeholder", "null");
+				value.setAttribute("type", "text");
+				cell.appendChild(value);
+			});
+
+			const deleteButton = document.createElement('input');
+			deleteButton.type = 'button';
+			deleteButton.value = '-';
+			deleteButton.classList.add("delete");
+			deleteButton.onclick = function() {
+				$(this).closest('tr').remove();
+			}
+			tableRaw.appendChild(deleteButton);
+
+			$('#table').append(tableRaw);
+		}
+
+		// Показываем в UI только свойства, харакетрные для выбранного типа ТС
 		$(document).on("change",'#fill-type', function () {
-			typeSet = $(this).val();
+			selectTableProperties()
+		});
+
+		function selectTableProperties() {
+			typeSet = $("#fill-type").val();
 			$('.table-property').each(function() {
-				$(this).val("")
+				//$(this).val("")
 				$(this).parent().parent().hide();
 				$(this).prop('required',false);
 			});
@@ -302,19 +363,79 @@
 				$('#typical-size').parent().parent().show();
 				$('#typical-size').prop('required',true);
 
+				$('.table-defaults').remove();
+				$('#add-defaults').hide();
+
 			} else if (typeSet == "Registry") {
 
 				$('#user-edit').parent().parent().show();
 				$('#user-edit').prop('required',true);
+				$('#add-defaults').show();
 
 			} else if (typeSet == "AssetGrid") {
 
 				$('#pdql').parent().parent().show();
 				$('#pdql').prop('required',true);
+				$('.table-defaults').remove();
+				$('#add-defaults').hide();
 
 			}
+		};
+
+		// Редактирование время жизни записи для ТС, заполняемых правилами корреляции или обогащения
+		$(document).on("change",'#ttl', function () {
+			msToTime();
 		});
 
+		function msToTime() {
+			if($('#ttl').val() != null && $('#ttl').val() != "") {
+				var s = $('#ttl').val();
+				var secs = s % 60;
+				s = (s - secs) / 60;
+				$('#ttl-seconds').val(secs);
+				var mins = s % 60;
+				s = (s - mins) / 60;
+				$('#ttl-minutes').val(mins);
+				var hrs = s % 60;
+				s = (s - hrs) / 24;
+				$('#ttl-hours').val(hrs);
+				var days = s % 24;
+				$('#ttl-days').val(days);
+			}
+		}
+
+		$(document).on("change",'.ttl-human', function () {
+			timeToMS();
+		});
+
+		function timeToMS() {
+			sec = parseInt($('#ttl-days').val() * 24 * 60 * 60) + parseInt($('#ttl-hours').val() * 60 * 60) + parseInt($('#ttl-minutes').val() * 60) + parseInt($('#ttl-seconds').val() * 1);
+			$('#ttl').val(sec);
+		}
+
+		// Изменяем атрибут name во всех элементах колонки при ее переименовании
+		$(document).on("change", ".column-name", function () {
+			var old_name = $(this).closest('.field-properties').attr('name');
+			var new_name = $(this).val();
+
+			$('td[name="' + old_name + '"]').each( function() {
+				$(this).attr('name', new_name);
+			});
+
+			$(this).siblings('.delete')[0].onclick = function() {
+				deleteColumn(new_name);
+			};
+		
+		});
+	
+		// 
+		$(document).on('change', ':checkbox', function() {
+			if(this.checked) {
+				$(this).addClass("true");
+			} else {
+				$(this).removeClass("true");
+			}
+		});
 	</script>
 </body>
 </html>

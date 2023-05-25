@@ -35,17 +35,6 @@
 	border: none;
 }
 
-.run.success {
-	color: var(--vscode-charts-green);
-}
-.run.failure {
-	background: var(--vscode-inputValidation-errorBackground);
-	color: var(--vscode-inputValidation-errorForeground);
-}
-.run.failure.active {
-	color: var(--vscode-charts-red);
-}
-
 button.success {
 	color: var(--vscode-charts-green);
 }

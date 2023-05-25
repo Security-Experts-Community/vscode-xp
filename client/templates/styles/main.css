@@ -16,11 +16,38 @@ body {
 #header {
 	width: calc(100% - 10px);
 	padding: 10px 15px 0 15px;
-	/* position: fixed; */
+	position: fixed;
 	top:0; left:0;
 	z-index: 1;
 	display: block;
 	float: left;
+}
+
+#navigation {
+	width: 50%;
+	float: left;
+}
+
+#name {
+	border: none;
+	padding: 6px 10px;
+	margin: 0 10px;
+	box-sizing: border-box;
+	background-color: transparent;
+	color: var(--white);
+	width: 100%;
+	font-size: 1.2em;
+	font-weight: bold;
+	padding: 0 10px;
+	margin-bottom: 5px;
+}
+#name:invalid {
+	color: var(--red);
+	outline: none;
+}
+#name::placeholder {
+    color: var(--red);
+	outline: none;
 }
 
 .save[type=button]{
@@ -43,8 +70,6 @@ body {
 	background-color: var(--vscode-button-secondaryBackground);
 	color: var(--vscode-button-secondaryForeground);
 	min-width: 100px;
-	height: 27px;
-	margin: 5px 5px;
 	border: none;
 	cursor: pointer;
 }
@@ -52,7 +77,30 @@ body {
 	background-color: var(--vscode-button-secondaryHoverBackground);
 }
 
+/* ------ ADD AND DELETE BUTTONS ------ */
 
+.add_value, .delete {
+	float: left;
+	width: 20px;
+	height: 20px;
+	margin: 5px 2px;
+	padding: 3px;
+	box-sizing: border-box;
+	background-color: var(--white);
+	border: none;
+}
+
+.add_value {
+	background-color: var(--blue);
+}
+.add_value:focus, .delete:focus {
+	border:none;
+}
+
+.delete {
+	background-color: var(--red);
+	color: var(--background)
+}
 
 /* ------ COMMON ELEMENTS ------ */
 #main-body {
@@ -70,5 +118,16 @@ body {
 }
 
 p {
+	color: var(--gray);
 	margin: 0;
+	margin-left: 10px;
+	font-size: 0.8em;
+}
+
+.labels {
+	text-align: right;
+	width: 100px;
+	vertical-align: top;
+	padding-top: 8px;
+	font-size: 0.9em;
 }
