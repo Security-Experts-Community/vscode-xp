@@ -38,7 +38,7 @@ export class MetaInfo {
 
 	public static create(metaInfoAsInFile: any): MetaInfo {
 		const metaInfo = new MetaInfo();
-		
+
 		// Сохраним текущее состояние файла для дальнейшего использования в процедуре сохранения.
 		// Необходимо, чтобы произвольные и не относящиеся к форме поля остались в metainfo.yaml
 		metaInfo.AsInFile = metaInfoAsInFile;
@@ -353,7 +353,9 @@ export class MetaInfo {
 		if (this.Name) metaInfoObject["ContentAutoName"] = this.Name;
 
 
-		metaInfoObject["ExpertContext"] = {};
+		if (!metaInfoObject["ExpertContext"]) {
+			metaInfoObject["ExpertContext"] = {};
+		}
 		metaInfoObject["ExpertContext"]["Created"] = DateHelper.dateToString(this.Created);
 		metaInfoObject["ExpertContext"]["Updated"] = DateHelper.dateToString(this.Updated);
 
@@ -384,7 +386,13 @@ export class MetaInfo {
 		);
 
 		if (!JsHelper.isEmptyObj(attackPlain)) {
-			metaInfoObject["ContentRelations"] = { "Implements": {} };
+			if (metaInfoObject["ContentRelations"]) {
+				if (!metaInfoObject["ContentRelations"]["Implements"]) {
+					metaInfoObject["ContentRelations"]["Implements"] = {};
+				}
+			} else {
+				metaInfoObject["ContentRelations"] = { "Implements": {} };
+			}
 			metaInfoObject["ContentRelations"]["Implements"]["ATTACK"] = attackPlain;
 		}
 
