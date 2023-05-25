@@ -104,7 +104,7 @@ export async function activate(context: ExtensionContext) {
 		);
 
 		ContentTreeProvider.init(config, rootPath);
-		LocalizationEditorViewProvider.init(context);
+		LocalizationEditorViewProvider.init(config);
 		UnitTestContentEditorViewProvider.init(config);
 		UnitTestsListViewProvider.init(config);
 		IntegrationTestEditorViewProvider.init(config);

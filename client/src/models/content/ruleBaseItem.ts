@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 
 import { MetaInfo } from '../metaInfo/metaInfo';
-import { Localization, LocalizationLanguage } from './localization';
+import { Localization, LocalizationExample, LocalizationLanguage } from './localization';
 import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { IntegrationTest } from '../tests/integrationTest';
 import { KbTreeBaseItem } from './kbTreeBaseItem';
@@ -212,12 +212,20 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		return this._localizations;
 	}
 	
-	public setLocalizations(localizations: Localization[]) : void {
+	public setLocalizationTemplates(localizations: Localization[]) : void {
 		this._localizations = [];
 		this._metaInfo.setEventDescriptions([]);
 		localizations.forEach((loc) => {
 			this.addLocalization(loc);
 		});
+	}
+
+	public setLocalizationExamples(localizations: LocalizationExample[]) : void {
+		this._localizationExamples = localizations;
+	}
+
+	public getLocalizationExamples() : LocalizationExample[] {
+		return this._localizationExamples;
 	}
 
 	public async saveLocalizations() : Promise<void> {
@@ -422,6 +430,8 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	
 	private _ruDescription : string;
 	private _enDescription : string;
+
+	private _localizationExamples : LocalizationExample [] = [];
 
 	protected _ruleCode : string;
 	contextValue = "BaseRule";

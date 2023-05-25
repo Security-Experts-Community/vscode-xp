@@ -4,12 +4,14 @@ import * as path from 'path';
 
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
-import { Localization, LocalizationLanguage } from '../../models/content/localization';
+import { Localization, LocalizationExample, LocalizationLanguage } from '../../models/content/localization';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Correlation } from '../../models/content/correlation';
 import { Configuration } from '../../models/configuration';
 import { StringHelper } from '../../helpers/stringHelper';
 import { XpException } from '../../models/xpException';
+import { SiemjManager } from '../../models/siemj/siemjManager';
+import { ExceptionHelper } from '../../helpers/exceptionHelper';
 
 export class LocalizationEditorViewProvider  {
 
@@ -18,18 +20,19 @@ export class LocalizationEditorViewProvider  {
 	private _view?: vscode.WebviewPanel;
 	private _rule: RuleBaseItem;
 
-	constructor(
+	constructor(		
+		private readonly _config: Configuration,
 		private readonly _templatePath: string
 	) { }
 
-	public static init(context: vscode.ExtensionContext) {
+	public static init(config: Configuration) {
 
 		const templateFilePath = path.join(
 			Configuration.get().getExtensionPath(), "client", "templates", "LocalizationEditor.html");
 
-		const provider = new LocalizationEditorViewProvider(templateFilePath);
+		const provider = new LocalizationEditorViewProvider(config, templateFilePath);
 	
-		context.subscriptions.push(
+		config.getContext().subscriptions.push(
 			vscode.commands.registerCommand(
 				LocalizationEditorViewProvider.showLocalizationEditorCommand, 
 				async (correlation: Correlation) => provider.showLocalizationEditor(correlation)
@@ -84,7 +87,7 @@ export class LocalizationEditorViewProvider  {
 
 					"LocalizationId" : locId,
 					"RuLocalization" : ruLocalizationText,
-					"EnLocalization" : enLocalizationText
+					"EnLocalization" : enLocalizationText,
 				});
 			});
 
@@ -108,12 +111,14 @@ export class LocalizationEditorViewProvider  {
 			const resoucesUri = config.getExtensionUri();
 			const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
 			
+			const locExamples = this._rule.getLocalizationExamples();
 			const templatePlainObject = {
 				"RuleName" : rule.getName(),
 				"RuDescription" : rule.getRuDescription(),
 				"EnDescription" : rule.getEnDescription(),
 				"Localizations" : plainLocalizations,
 				"ExtensionBaseUri" : extensionBaseUri,
+				"LocalizationExamples" : locExamples
 			};
 
 			// Подгружаем шаблон и шаблонизируем данные.
@@ -131,7 +136,14 @@ export class LocalizationEditorViewProvider  {
 	async receiveMessageFromWebView(message: any) {
 		switch (message.command) {
 			case 'buildLocalizations': {
-				ExtensionHelper.showUserInfo("Скоро мы добавим проверку правил локализации.");
+				const locExamples = await this.getLocalizationExamples();
+				if(locExamples.length === 0) {
+					return ExtensionHelper.showUserInfo(
+						"Не найдены тесты, позволяющие сгенерировать примеры локализаций. Например, в них не должны использоваться табличные списки и должно ожидаться одно событие.");
+				}
+
+				this._rule.setLocalizationExamples(locExamples);
+				this.showLocalizationEditor(this._rule);
 				break;
 			}
 
@@ -177,7 +189,7 @@ export class LocalizationEditorViewProvider  {
 					});
 
 					// Обновляем локализации и сохраняем их.
-					this._rule.setLocalizations(localizations);
+					this._rule.setLocalizationTemplates(localizations);
 					this._rule.saveLocalizations();
 
 					ExtensionHelper.showUserInfo(`Правила локализации для правила ${this._rule.getName()} сохранены.`);
@@ -187,6 +199,23 @@ export class LocalizationEditorViewProvider  {
 				}
 			}
 		}
+	}
+
+	private async getLocalizationExamples() : Promise<LocalizationExample[]> {
+		return await vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			cancellable: false,
+			title: `Генерация локализаций из тестовых событий`
+		}, async (progress) => {
+			try {
+				const siemjManager = new SiemjManager(this._config);
+				const locExamples = await siemjManager.getLocalizationExamples(this._rule);
+				return locExamples;
+			}
+			catch (error) {
+				ExceptionHelper.show(error);
+			}
+		});
 	}
 
 	private findDuplicates(arr) : string {

@@ -270,7 +270,7 @@ rules_src=${testsRuleFullPath}`;
 		this._scenarios.push("rules-tests");
 	}
 
-	public addEventsCorrelate() : void {
+	public addCorrelateEnrichedEvents() : void {
 
 		const corrules = path.join('${output_folder}', this._config.getCorrelationsGraphFileName());
 		const input = path.join('${output_folder}', this._config.getEnrichedEventsFileName());
@@ -289,21 +289,49 @@ out=${output}`;
 		this._scenarios.push("run-correlate");
 	}
 
-	public addLocalizationForCorrelatedEvents() : void {
+	public addCorrelateNormalizedEvents() : void {
+
+		const corrules = path.join('${output_folder}', this._config.getCorrelationsGraphFileName());
+		const input = path.join('${output_folder}', this._config.getNormalizedEventsFileName());
+		const table_list_database = path.join('${output_folder}', this._config.getFptaDbFileName());
+		const output = path.join('${output_folder}', this._config.getCorrelatedEventsFileName());
+		const eventEnrichSection = 
+`
+[run-correlate]
+type=CORRELATE
+corrules=${corrules}
+in=${input}
+table_list_database=${table_list_database}
+out=${output}`;
+
+		this._siemjConfigSection += eventEnrichSection;
+		this._scenarios.push("run-correlate");
+	}
+
+	public addLocalization() : void {
 
 		const correlatedEvents = path.join('${output_folder}', this._config.getCorrelatedEventsFileName());
+		const locaRulesDir = path.join('${output_folder}', this._config.getLangsDirName());
 
 		const ruLocalization = 
 `
 [run-loca-ru]
 type=FRONTEND
 lang=ru
-locarules=\${make-loca:out}
+locarules=${locaRulesDir}
 in=${correlatedEvents}
-out=\${output_folder}\\ru_events.json`;
+out=\${output_folder}\\ru_events.json
+
+[run-loca-en]
+type=FRONTEND
+lang=en
+locarules=${locaRulesDir}
+in=${correlatedEvents}
+out=\${output_folder}\\en_events.json`;
 
 		this._siemjConfigSection += ruLocalization;
 		this._scenarios.push("run-loca-ru");
+		this._scenarios.push("run-loca-en");
 	}
 
 	public build() : string {

@@ -40,7 +40,7 @@ export class CorrGraphRunner {
 
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		configBuilder.addEventsEnrichment();
-		configBuilder.addEventsCorrelate();
+		configBuilder.addCorrelateEnrichedEvents();
 
 		const siemjConfContent = configBuilder.build();
 

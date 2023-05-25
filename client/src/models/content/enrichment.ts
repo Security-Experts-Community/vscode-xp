@@ -212,7 +212,7 @@ export class Enrichment extends RuleBaseItem {
 		enrichment.setEnDescription(enDescription);
 
 		const localizations = Localization.parseFromDirectory(directoryPath);
-		enrichment.setLocalizations(localizations);
+		enrichment.setLocalizationTemplates(localizations);
 
 		const modularTest = CorrelationUnitTest.parseFromRuleDirectory(enrichment);
 		enrichment.addUnitTests(modularTest);

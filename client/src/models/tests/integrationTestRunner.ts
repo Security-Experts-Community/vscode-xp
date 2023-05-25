@@ -80,7 +80,7 @@ export class IntegrationTestRunner {
 		}
 		
 		configBuilder.addTestsRun(rule.getDirectoryPath());
-		configBuilder.addLocalizationForCorrelatedEvents();
+		configBuilder.addLocalization();
 
 		const siemjConfContent = configBuilder.build();
 

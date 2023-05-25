@@ -13,6 +13,12 @@ export enum LocalizationLanguage{
 	En
 }
 
+export class LocalizationExample {
+	public ruText : string;
+	public enText : string;
+}
+
+
 export class Localization {
 
 	private constructor() {
@@ -52,19 +58,19 @@ export class Localization {
 	}
 
 	public setRuLocalizationText(localization: string ) : void {
-		this._ruLocalizationText = localization;
+		this._ruLocalizationTemplate = localization;
 	}
 
 	public setEnLocalizationText(localization: string ) : void {
-		this._enLocalizationText = localization;
+		this._enLocalizationTemplate = localization;
 	}
 
 	public getEnLocalizationText() : string {
-		return this._enLocalizationText;
+		return this._enLocalizationTemplate;
 	}
 
 	public getRuLocalizationText() : string {
-		return this._ruLocalizationText;
+		return this._ruLocalizationTemplate;
 	}
 
 	public static parseFromDirectory(ruleDirectoryPath: string) : Localization[] {
@@ -198,8 +204,8 @@ export class Localization {
 
 	private _criteria : string;
 
-	private _ruLocalizationText : string;
-	private _enLocalizationText : string;
+	private _ruLocalizationTemplate : string;
+	private _enLocalizationTemplate : string;
 
 	private _localizationId : string;
 
