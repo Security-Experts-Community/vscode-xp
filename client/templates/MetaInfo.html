@@ -342,82 +342,68 @@
 			deleteButton.value = '-';
 			deleteButton.classList.add("delete");
 			deleteButton.onclick = function () {
-				deleteButton.parentNode.remove()
+				deleteButton.parentNode.remove();
 			}
 
-			newDiv.appendChild(newField)
-			newDiv.appendChild(deleteButton)
+			newDiv.appendChild(newField);
+			newDiv.appendChild(deleteButton);
 
 			button.parentNode.insertBefore(newDiv, button);
 			newField.focus();
 		}
 
-		function addAttackComplexValue(button) {
-			const newDiv = document.createElement('div');
-			newDiv.classList.add("complex");
-			newDiv.setAttribute("name", 'attack');
+		function addComplexValue(button, type) {
+			var name = "";
+			if (type == "dataSource" || type == "attack") name = type;
+
+			var a = name == "dataSource" ? "provider" : "tactic";
+			var b = a + "s";
+			var c = name == "dataSource" ? "eventID" : "techniques";
+
+			const complexDiv = document.createElement('div');
+			complexDiv.classList.add("complex");
+			complexDiv.setAttribute("name", name);
 
 			const newField1 = document.createElement('input');
 			newField1.type = 'text';
 			newField1.required = true;
-			newField1.name = 'tactic';
-			newField1.setAttribute('list', 'tactics');
+			newField1.name = a;
+			newField1.setAttribute('list', b);
 
 			const newField2 = document.createElement('input');
 			newField2.required = true;
 			newField2.type = 'text';
-			newField2.name = 'techniques';
+			newField2.name = c;
 
 			const deleteButton = document.createElement('input');
 			deleteButton.type = 'button';
 			deleteButton.value = '-';
 			deleteButton.classList.add("delete");
 			deleteButton.onclick = function () {
-				deleteButton.parentNode.remove()
+				deleteButton.parentNode.remove();
 			}
 
-			newDiv.appendChild(newField1);
-			newDiv.appendChild(newField2);
-			newDiv.appendChild(deleteButton);
+			complexDiv.appendChild(newField1);
+			complexDiv.appendChild(newField2);
+			complexDiv.appendChild(deleteButton);
 
-			button.parentElement.insertBefore(newDiv, button)
+			const simpleDiv = document.createElement('div');
+			simpleDiv.appendChild(complexDiv);
+
+			button.parentElement.insertBefore(simpleDiv, button)
 			newField1.focus();
+		}
+
+		function addAttackComplexValue(button) {
+			addComplexValue(button, "attack");
 		}
 
 		function addDataSourceComplexValue(button) {
-			const newDiv = document.createElement('div');
-			newDiv.classList.add("complex");
-			newDiv.setAttribute("name", 'dataSource');
-
-			const newField1 = document.createElement('input');
-			newField1.type = 'text';
-			newField1.required = true;
-			newField1.name = 'provider';
-			newField1.setAttribute('list', 'providers');
-
-			const newField2 = document.createElement('input');
-			newField2.type = 'text';
-			newField2.required = true;
-			newField2.name = 'eventID';
-
-			const deleteButton = document.createElement('input');
-			deleteButton.type = 'button';
-			deleteButton.value = '-';
-			deleteButton.classList.add("delete");
-			deleteButton.onclick = function () {
-				deleteButton.parentNode.remove()
-			}
-
-			newDiv.appendChild(newField1);
-			newDiv.appendChild(newField2);
-			newDiv.appendChild(deleteButton);
-
-			button.parentElement.insertBefore(newDiv, button)
-			newField1.focus();
+			addComplexValue(button, "dataSource");
 		}
 
 		function deleteValue(button) {
-			button.parentNode.remove()
+			button.parentNode.remove();
 		}
 	</script>
 </body>
