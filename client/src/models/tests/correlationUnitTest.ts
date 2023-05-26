@@ -104,7 +104,9 @@ export class CorrelationUnitTest extends BaseUnitTest {
 			.map((f, _) => {
 				return CorrelationUnitTest.readFromFile(f, rule);
 			})
-			.filter((t): t is CorrelationUnitTest => !!t);
+			.filter((t): t is CorrelationUnitTest => !!t)
+			// Сортируем тесты, ибо в противном случае сначала будет 1, потом 10 и т.д.
+			.sort((a, b) => a.getNumber() - b.getNumber());
 
 		return tests;
 	}

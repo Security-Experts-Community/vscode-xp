@@ -163,10 +163,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	}
 
 	public async clearIntegrationTests() : Promise<void> {
-		this._integrationTests.forEach( (it) => {
-			it.remove();
-		});
-
 		this._integrationTests = [];
 	}
 

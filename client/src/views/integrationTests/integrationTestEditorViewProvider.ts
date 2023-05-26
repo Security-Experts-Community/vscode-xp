@@ -22,6 +22,7 @@ import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { XpException } from '../../models/xpException';
 import { Enveloper } from '../../models/enveloper';
+import { ExtensionState } from '../../models/applicationState';
 
 export class IntegrationTestEditorViewProvider  {
 
@@ -180,51 +181,12 @@ export class IntegrationTestEditorViewProvider  {
 	}
 
 	private async receiveMessageFromWebView(message: any) {
+
+		await this.runToolingAction(message);
+
+		// События, не требующие запуска утилит.
 		switch (message.command) {
-			case 'normalize': {
-				if(!message.test) {
-					ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
-					return;
-				}
-
-				// Актуализируем сырые события в тесте из вьюшки.
-				const rawEvents = message.rawEvents;
-				const currTest = IntegrationTest.convertFromObject(message.test);
-				currTest.setRawEvents(rawEvents);
-				await currTest.save();
-
-				return this.normalizeRawEvents(false, currTest);
-			}
-			case 'normalizeAndEnrich': {
-				if(!message.test) {
-					ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
-					return;
-				}
-
-				// Актуализируем сырые события в тесте из вьюшки.
-				const rawEvents = message.rawEvents;
-				const currTest = IntegrationTest.convertFromObject(message.test);
-				currTest.setRawEvents(rawEvents);
-				await currTest.save();
-
-				return this.normalizeRawEvents(true, currTest);
-			}
-
-			case 'fastTest': {
-				return this.fastTest(message);
-			}
-			case 'fullTest': {
-				const result = await this.runFullTests(message);
-				if(!result) {
-					return;
-				}
-				
-				const activeTestNumber = this.getActiveTestNumber(message);
-				this.updateView(activeTestNumber);
-				break;
-			}
 			case 'saveTest': {
-				
 				const currTest = IntegrationTest.convertFromObject(message.test);
 				try {
 					await this.saveTest(message);
@@ -238,6 +200,7 @@ export class IntegrationTestEditorViewProvider  {
 				this.updateView(activeTestNumber);
 				return;
 			}
+
 			case 'saveAllTests': {
 				try {
 					await this.saveAllTests(message);
@@ -263,10 +226,77 @@ export class IntegrationTestEditorViewProvider  {
 			case 'cleanTestCode': {
 				return this.cleanTestCode(message);
 			}
+		}
+	}
 
-			default: {
-				ExtensionHelper.showUserInfo("Такой команды нет в этой версии расширения.");
+	private async runToolingAction(message : any) {
+		// Проверяем, что комманда использует утилиты.
+		const commandName = message.command as string;
+		if(!['normalize', 'normalizeAndEnrich', 'fastTest', 'fullTest'].includes(commandName)) {
+			return;
+		}
+
+		if(ExtensionState.get().isToolingExecution()) {
+			return ExtensionHelper.showUserError("Дождитесь окончания выполняющихся процессов и повторите.");
+		}
+
+		ExtensionState.get().runToolingExecution();
+
+		try {
+			switch (message.command) {
+				case 'normalize': {
+					if(!message.test) {
+						ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
+						return;
+					}
+	
+					// Актуализируем сырые события в тесте из вьюшки.
+					const rawEvents = message.rawEvents;
+					const currTest = IntegrationTest.convertFromObject(message.test);
+					currTest.setRawEvents(rawEvents);
+					await currTest.save();
+	
+					await this.normalizeRawEvents(false, currTest);
+					break;
+				}
+				case 'normalizeAndEnrich': {
+					if(!message.test) {
+						ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
+						return;
+					}
+	
+					// Актуализируем сырые события в тесте из вьюшки.
+					const rawEvents = message.rawEvents;
+					const currTest = IntegrationTest.convertFromObject(message.test);
+					currTest.setRawEvents(rawEvents);
+					await currTest.save();
+
+					await this.normalizeRawEvents(true, currTest);
+					break;
+				}
+
+				case 'fastTest': {
+					await this.fastTest(message);
+					break;
+				}
+
+				case 'fullTest': {
+					const result = await this.runFullTests(message);
+					if(!result) {
+						return;
+					}
+					
+					const activeTestNumber = this.getActiveTestNumber(message);
+					await this.updateView(activeTestNumber);
+					break;
+				}
 			}
+		}
+		catch(error) {
+			ExceptionHelper.show(error, "Ошибка запуска.");
+		}
+		finally {
+			ExtensionState.get().stopRoolingExecution();
 		}
 	}
 

@@ -139,7 +139,7 @@ export class LocalizationEditorViewProvider  {
 				const locExamples = await this.getLocalizationExamples();
 				if(locExamples.length === 0) {
 					return ExtensionHelper.showUserInfo(
-						"Не найдены тесты, позволяющие сгенерировать примеры локализаций. Например, в них не должны использоваться табличные списки и должно ожидаться одно событие.");
+						"Не найдены тесты, позволяющие сгенерировать примеры локализаций. Например, в них не должны использоваться табличные списки и должно ожидаться одно событие. Либо критерий локализации задан неверно.");
 				}
 
 				this._rule.setLocalizationExamples(locExamples);
@@ -209,7 +209,7 @@ export class LocalizationEditorViewProvider  {
 		}, async (progress) => {
 			try {
 				const siemjManager = new SiemjManager(this._config);
-				const locExamples = await siemjManager.getLocalizationExamples(this._rule);
+				const locExamples = await siemjManager.correlateAndGetLocalizationExamples(this._rule);
 				return locExamples;
 			}
 			catch (error) {

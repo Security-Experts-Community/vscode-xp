@@ -45,11 +45,13 @@ export class SiemjManager {
 
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+		const siemjOutput = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
 			this._config.getOutputChannel()
 		);
+
+		this.processOutput(siemjOutput);
 
 		const schemaFilePath = this._config.getSchemaFullPath(contentRootFolder);
 		if(!fs.existsSync(schemaFilePath)) {
@@ -94,11 +96,13 @@ export class SiemjManager {
 
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+		const siemjOutput = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
 			this._config.getOutputChannel()
 		);
+
+		this.processOutput(siemjOutput);
 
 		const normEventsFilePath = this._config.getNormalizedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(normEventsFilePath)) {
@@ -152,11 +156,13 @@ export class SiemjManager {
 		
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+		const siemjOutput = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
 			this._config.getOutputChannel()
 		);
+
+		this.processOutput(siemjOutput);
 
 		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(enrichEventsFilePath)) {
@@ -172,7 +178,7 @@ export class SiemjManager {
 		return enrichEventsContent;
 	}
 
-	public async getLocalizationExamples(rule: RuleBaseItem) : Promise<LocalizationExample[]> {
+	public async correlateAndGetLocalizationExamples(rule: RuleBaseItem) : Promise<LocalizationExample[]> {
 		const contentFullPath = rule.getPackagePath(this._config);
 		if(!fs.existsSync(contentFullPath)) {
 			throw new FileNotFoundException(`Директория контента '${contentFullPath}' не существует.`);
@@ -216,83 +222,104 @@ export class SiemjManager {
 		if(filtredTest.length === 0) {
 			return [];
 		}
-		
+
+		// Объединяем все сырые события для тестов в один файл.
+		// Это нужно для ускорения процесса получения скоррелированных событий.
+		const rawEventsOfAllTest = filtredTest.map(ft => ft.getRawEvents()).join(os.EOL);
+		const tmpDir = this._config.getRandTmpSubDirectoryPath();
+		await fs.promises.mkdir(tmpDir);
+
+		const rawEventsOfAllTestsFilePath = path.join(tmpDir, this.LOCALIZATION_TEST_FILENAME);
+		await FileSystemHelper.writeContentFile(rawEventsOfAllTestsFilePath, rawEventsOfAllTest);
+
 		// Собираем общую часть для всех тестов правила.
 		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
 		configBuilder.addNormalizationsGraphBuilding(false);
-		configBuilder.addCorrelationsGraphBuilding();
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
+		configBuilder.addCorrelationsGraphBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();
 		configBuilder.addLocalizationsBuilding(rule.getDirectoryPath());
 
+		configBuilder.addEventsNormalization(rawEventsOfAllTestsFilePath);
+		configBuilder.addCorrelateNormalizedEvents();
+		configBuilder.addLocalization();
+
 		const siemjConfContent = configBuilder.build();
-		await this.saveConfigAndExecute(contentRootFolder, siemjConfContent);
+		const siemjOutput = await this.saveConfigAndExecute(contentRootFolder, siemjConfContent);
+		this.processOutput(siemjOutput);
 
-		const locExamples : LocalizationExample[] = [];
-		for (const test of filtredTest) {
-
-			// Нормализуем, коррелируем, обогащаем каждое событие.
-			const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
-			configBuilder.addEventsNormalization(test.getRawEventsFilePath());
-			// configBuilder.addEventsEnrichment();
-			configBuilder.addCorrelateNormalizedEvents();
-			configBuilder.addLocalization();
-
-			const siemjConfContent = configBuilder.build();
-			await this.saveConfigAndExecute(contentRootFolder, siemjConfContent);
-	
-			const currLocExample = new LocalizationExample();
-			currLocExample.ruText = await this.readCurrentLocalizationExample(
-				ruLocalizationFilePath,
-				rule.getName(),
-				test);
-
-			currLocExample.enText = await this.readCurrentLocalizationExample(
-				enLocalizationFilePath,
-				rule.getName(),
-				test);
-
-			// Проверяем наличие дубликатов.
-			const duplicate = locExamples.find(le => le.ruText === currLocExample.ruText && le.enText === currLocExample.enText);
-			if(!duplicate && currLocExample.ruText && currLocExample.enText) {
-				locExamples.push(currLocExample);
-			}
-		}
-
+		const locExamples = this.readCurrentLocalizationExample(contentRootFolder, rule.getName());
 		return locExamples;
 	}
 
-	private async readCurrentLocalizationExample(localizationFilePath : string, correlationName : string, test : IntegrationTest) : Promise<string> {
-		if(!fs.existsSync(localizationFilePath)) {
-			return null;
+	private async readCurrentLocalizationExample(contentRootFolder : string, correlationName : string) : Promise<LocalizationExample[]> {
+
+		// Читаем события с русской локализацией.
+		const ruLocalizationFilePath = this._config.getRuLocalizationFilePath(contentRootFolder);
+		if(!fs.existsSync(ruLocalizationFilePath)) {
+			return [];
+		}
+		const ruLocalizationEvents = await FileSystemHelper.readContentFile(ruLocalizationFilePath);
+
+		// Читаем события с английской локализацией.
+		const enLocalizationFilePath = this._config.getEnLocalizationFilePath(contentRootFolder);
+		if(!fs.existsSync(enLocalizationFilePath)) {
+			return [];
+		}
+		const enLocalizationEvents = await FileSystemHelper.readContentFile(enLocalizationFilePath);
+		
+		// Пустые файлы могут быть, если ничего не попало под критерий.
+		if(!ruLocalizationEvents || !enLocalizationEvents) {
+			return [];
 		}
 
-		const localizationEvent = await FileSystemHelper.readContentFile(localizationFilePath);
-		if(!localizationEvent) {
-			return null;
-		}
-
-		// localizationEvent = localizationEvent.trim();
+		const locExamples: LocalizationExample[] = [];
 		try {
-			for (const jsonLine of localizationEvent.split(os.EOL)) {
-				// Разделяем несколько корреляционных событий.
-				const event = JSON.parse(jsonLine);
+			const enEvents = enLocalizationEvents.split(os.EOL);
+			const ruEvents = ruLocalizationEvents.split(os.EOL);
 
-				// Могут отработать другие корреляции
-				if(event?.correlation_name !== correlationName) {
+			for (let index = 0; index < ruEvents.length; index++) {
+				// Разделяем несколько корреляционных событий.
+				const currRuEventString = ruEvents?.[index];
+				if(!currRuEventString) {
 					continue;
 				}
 
-				if(event?.text) {
-					return event?.text;
+				const currRuEventObject = JSON.parse(currRuEventString);
+
+				// Могут отработать другие корреляции
+				if(currRuEventObject?.correlation_name !== correlationName) {
+					continue;
+				}
+
+				if(currRuEventObject?.text) {
+					// Добавляем русскую локализацию.
+					const currLocExample = new LocalizationExample();
+					currLocExample.ruText = currRuEventObject?.text;
+
+					// Добавляем соответствующую английскую.
+					const currEnEventString = enEvents?.[index];
+					if(!currEnEventString) {
+						continue;
+					}
+					const currEnEventObject = JSON.parse(currEnEventString);
+					currLocExample.enText = currEnEventObject?.text;
+					
+					// Проверяем наличие дубликатов.
+					const duplicate = locExamples.find(le => le.ruText === currLocExample.ruText && le.enText === currLocExample.enText);
+					if(!duplicate && currLocExample.ruText && currLocExample.enText) {
+						locExamples.push(currLocExample);
+					}
 				}
 			}
 		}
 		catch (error) {
-			ExtensionHelper.showUserError(`Ошибка разбора локализации из теста №${test.getNumber()}`);
+			ExtensionHelper.showUserError(`Ошибка разбора локализации из теста`);
 			return null;
 		}
+
+		return locExamples;
 	}
 
 	private async saveConfigAndExecute(contentRootFolder: string, siemjConfContent: string) : Promise<string> {
@@ -311,4 +338,15 @@ export class SiemjManager {
 
 		return output;
 	}
+
+	private processOutput(siemjOutput: string) {
+		if(siemjOutput.includes(this.ERROR_SUBSTRING)) {
+			this._config.getOutputChannel().show();
+			throw new XpException("Ошибка выполнения siemj. Смотри Output.");
+		}
+	}
+
+	public LOCALIZATION_TEST_FILENAME = "alltestevents.json";
+
+	public ERROR_SUBSTRING = "SUBPROCESS EXIT CODE: 1";
 }

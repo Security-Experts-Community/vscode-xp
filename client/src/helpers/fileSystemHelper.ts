@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
 
 export class FileSystemHelper {
 
@@ -35,6 +36,26 @@ export class FileSystemHelper {
 
 	public static writeContentFile(filePath: string, fileContent: string) : Promise<void> {
 		return fs.promises.writeFile(filePath, fileContent, FileSystemHelper._fileEncoding);
+	}
+
+	public static async writeContentFileIfChanged(filePath: string, newContent: string) : Promise<void> {
+		// Считаем код записываемых данных.
+		const newSha1Sum = crypto.createHash('sha1');
+		const newContentHash = newSha1Sum.update(newContent).digest('hex');
+		
+		// Считаем код уже записанных в файл данных.
+		if(fs.existsSync(filePath)) {
+			const currSha1Sum = crypto.createHash('sha1');
+			const currContent = await fs.promises.readFile(filePath, FileSystemHelper._fileEncoding);
+			const currContentHash = currSha1Sum.update(currContent).digest('hex');
+	
+			// Хеши равны, ничего записывать не надо.
+			if(newContentHash === currContentHash) {
+				return;
+			}
+		}
+
+		return fs.promises.writeFile(filePath, newContent, FileSystemHelper._fileEncoding);
 	}
 
 	public static appendContentFile(filePath: string, fileContent: string) : Promise<void> {

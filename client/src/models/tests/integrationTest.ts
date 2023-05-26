@@ -57,7 +57,10 @@ export class IntegrationTest {
 				return test;
 			// Проверяем, что все элементы массива имеют нужный тип. 
 			// Если одного из файлов нет, то элемент массива может быть неопределён
-			}).filter((item) => {return item instanceof IntegrationTest;});
+			})
+			.filter((item) => {return item instanceof IntegrationTest;})
+			// Сортируем тесты, ибо в противном случае сначала будет 1, потом 10 и т.д.
+			.sort((a, b) => a.getNumber() - b.getNumber());
 
 		return tests;
 	}
@@ -139,33 +142,21 @@ export class IntegrationTest {
 
 		// Позволяет сохранять тест без кода теста для нормализации событий, если нам сам тест не нужен.
 		// test_conds_1.tc
-		if(this._testCode != undefined && this._testCodeUpdated) {
+		if(this._testCode) {
 			const testFullPath = this.getTestCodeFilePath();
-			await FileSystemHelper.writeContentFile(testFullPath, this._testCode);
+			await FileSystemHelper.writeContentFileIfChanged(testFullPath, this._testCode);
 		}
 
 		// raw_events_N.json
 		// const rawEventFullPath = path.join(testDirectoryPath, `raw_events_${this._number}.json`);
 		const rawEventFullPath = this.getRawEventsFilePath();
-		if(this._rawEvents != undefined && this._rawEventsUpdated) {
-			await FileSystemHelper.writeContentFile(rawEventFullPath, this._rawEvents);
+		if(this._rawEvents) {
+			await FileSystemHelper.writeContentFileIfChanged(rawEventFullPath, this._rawEvents);
 		}
-
-		// Сбрасываем флаги обновлённых полей.
-		this._numberUpdated = false;
-		this._rawEventsUpdated = false;
-		this._testCodeUpdated = false;
-	}
-
-	public async remove() : Promise<[void, void]> {
-		const rmRawEventsPromise = fs.promises.unlink(this.getRawEventsFilePath());
-		const rmTestCodePromise = fs.promises.unlink(this.getTestCodeFilePath());
-		return Promise.all([rmRawEventsPromise, rmTestCodePromise]);
 	}
 
 	public setNumber(number: number) : void {
 		this._number = number;
-		this._numberUpdated = true;
 	}
 
 	public getNumber() : number {
@@ -182,7 +173,6 @@ export class IntegrationTest {
 
 	public setRawEvents(rawEvent: string) {
 		this._rawEvents = rawEvent;
-		this._rawEventsUpdated = true;
 	}
 
 	public getRawEvents() {
@@ -191,7 +181,6 @@ export class IntegrationTest {
 
 	public setTestCode(testCode: string) {
 		this._testCode = testCode;
-		this._testCodeUpdated = true;
 	}
 
 	public getTestCode() {
@@ -201,13 +190,8 @@ export class IntegrationTest {
 	private _ruleDirectoryPath : string;
 
 	protected _number: number;
-	protected _numberUpdated = false;
-
 	protected _rawEvents : string;
-	protected _rawEventsUpdated = false;
-
 	protected _testCode : string;
-	protected _testCodeUpdated = false;
 	
 	protected _normalizeEvents : string;
 	protected _testStatus : TestStatus = TestStatus.Unknown;
