@@ -359,6 +359,18 @@ export class Configuration {
 		return path.join(this.getOutputDirectoryPath(rootFolder), this.getCorrelatedEventsFileName());
 	}
 
+	public getRuLocalizationFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), "ru_events.json");
+	}
+
+	public getEnLocalizationFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), "en_events.json");
+	}
+
+	public getLangsDirName() : string {
+		return "langs";
+	}
+
 	// Пути к файлам зависят от текущего режима работы
 	// При смене режима SIEM/EDR заменяется реализация _pathHelper
 

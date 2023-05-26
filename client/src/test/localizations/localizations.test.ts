@@ -103,7 +103,7 @@ suite('Правила локализации', () => {
 			"RuLocalization",
 			"EnLocalization");
 			
-		correlation.setLocalizations([newLocalization]);
+		correlation.setLocalizationTemplates([newLocalization]);
 
 		const actualLocalizations = correlation.getLocalizations();
 		assert.strictEqual(actualLocalizations.length, 1);

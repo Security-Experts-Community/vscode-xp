@@ -94,7 +94,7 @@ export class Correlation extends RuleBaseItem {
 		if(!correlation.checkLocalizationConsistency(localizations, correlation.getMetaInfo())) {
 			throw new XpException("Наборы идентификаторов локализаций в файле метаинформации и файлах локализаций не совпадают.");
 		}
-		correlation.setLocalizations(localizations);
+		correlation.setLocalizationTemplates(localizations);
 		
 		const modularTests = CorrelationUnitTest.parseFromRuleDirectory(correlation);
 		correlation.addUnitTests(modularTests);
@@ -175,7 +175,7 @@ export class Correlation extends RuleBaseItem {
 			const fixedLocalization = Object.assign(Localization.create("","",""), loc) as Localization;
 			return fixedLocalization;
 		});
-		duplicatedRule.setLocalizations(fixedLocalizations);
+		duplicatedRule.setLocalizationTemplates(fixedLocalizations);
 
 		await duplicatedRule.rename(newName);
 		return duplicatedRule;

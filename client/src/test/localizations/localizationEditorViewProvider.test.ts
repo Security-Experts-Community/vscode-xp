@@ -94,6 +94,6 @@ suite('LocalizationEditorViewProvider', () => {
 
 function getLocalizationEditorViewProvider() : LocalizationEditorViewProvider {
 	const localizationTemplatePath = TestFixture.getExtensionFilePath("client", "templates", "IntegrationTestEditor.html");
-	const localizationEditor = new LocalizationEditorViewProvider(localizationTemplatePath);
+	const localizationEditor = new LocalizationEditorViewProvider(Configuration.get(), localizationTemplatePath);
 	return localizationEditor;
 }

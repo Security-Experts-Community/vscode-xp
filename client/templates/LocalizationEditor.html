@@ -27,26 +27,20 @@
 		</div>
 
 		<div id="main-body">
+			<h2>Тестовые локализации:</h2>
+			<hr />
 			<div id="loc-results" class="common">
-				
+				{{#LocalizationExamples}}
 				<div class="language">
-					{{#LocalizationResult}}
 					<br />
-					<p>{{RuLocText}}</p>
-					<p><b>alert.key:</b> {{AlertKey}}</p>
-					<p><b>alert.context:</b> {{AlertContext}}</p>
-					{{/LocalizationResult}}
+					<p>{{ruText}}</p>
 				</div>
 				
 				<div class="language">
-					{{#LocalizationResult}}
 					<br />
-					<p>{{EnLocText}}</p>
-					<p><b>alert.key:</b> {{AlertKey}}</p>
-					<p><b>alert.context:</b> {{AlertContext}}</p>
-					{{/LocalizationResult}}
+					<p>{{enText}}</p>
 				</div>
-				
+				{{/LocalizationExamples}}
 
 				<!-- <div class="language">
 					<br />
