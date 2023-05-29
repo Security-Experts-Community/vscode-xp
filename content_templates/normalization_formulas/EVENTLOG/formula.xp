@@ -1,0 +1,16 @@
+EVENTLOG = ''
+
+COND = $Channel = "" and $Provider["Name"] == ""
+
+subject = 
+action = 
+object = 
+status = 
+
+time = $
+
+event_src.vendor = ""
+event_src.title = ""
+event_src.category = ""
+
+id = "LOC_Vendor_Title_eventlog_event_name"

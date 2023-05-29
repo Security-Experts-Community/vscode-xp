@@ -1,4 +1,4 @@
 Description: Replace these words with a description of normalization
 EventDescriptions:
-    - LocalizationId: Empty_1
+    - LocalizationId: LOC_Vendor_Title_CEF_syslog_event_name_1
       EventDescription: 'Replace these words with a description. Example: The user {subject.account.name} started the {object.process.name} process on host {event_src.host}'

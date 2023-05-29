@@ -129,9 +129,35 @@ export class Normalization extends RuleBaseItem {
 		return XPObjectType.Normalization;
 	}
 
+	public static create(name: string, parentPath?: string, fileName?: string): Normalization {
+		const rule = new Normalization(name, parentPath);
+
+		// Если явно указано имя файла, то сохраняем его.
+		// Иначе используем заданное в конструкторе
+		if (fileName) {
+			rule.setFileName(fileName);
+		}
+
+		const metainfo = rule.getMetaInfo();
+		metainfo.setName(name);
+
+		// Берем модуль, потому что crc32 может быть отрицательным.
+		const objectId = rule.generateObjectId();
+		metainfo.setObjectId(objectId);
+
+		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		rule.setCommand({
+			command: ContentTreeProvider.onRuleClickCommand,
+			title: "Open File",
+			arguments: [rule]
+		});
+
+		return rule;
+	}
+
 	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Normalization> {
 
-		// Получаем имя корреляции и родительский путь.
+		// Получаем имя формулы и родительский путь.
 		const name = path.basename(directoryPath);
 		const parentDirectoryPath = path.dirname(directoryPath);
 
@@ -146,6 +172,10 @@ export class Normalization extends RuleBaseItem {
 		// Парсим основные метаданные.
 		const metaInfo = MetaInfo.fromFile(directoryPath);
 		normalization.setMetaInfo(metaInfo);
+
+		const ruleFilePath = normalization.getRuleFilePath();
+		const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
+		normalization.setRuleCode(ruleCode);
 
 		// Парсим описания на разных языках.
 		const ruDescription = await Localization.parseRuDescription(directoryPath);
