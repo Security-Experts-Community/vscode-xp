@@ -113,28 +113,6 @@ suite('MetaInfo', () => {
 		assert.ok(!metaInfoPlain.ContentRelations); // ATTACK
 	});
 
-	// Тест более не может быть выполнен, так как противоречит сохранению неизвестных полей.
-	// Имплементировать логику для автоматической конвертации здесь и сохранению всех
-	// остальных полей там кажется избыточным.
-	/*
-	test('Преобразование форматов metainfo', async () => {
-		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "oldToNew");
-
-		const oldMetainfo = MetaInfo.fromFile(metaInfoPath, "oldMetainfo.yaml");
-
-		const savePath = TestFixture.getTmpPath();
-		await oldMetainfo.save(savePath);
-
-		const savedMetainfoPlain = await TestFixture.readYamlFile(path.join(savePath, MetaInfo.METAINFO_FILENAME));
-		const newMetainfoPlain = await TestFixture.readYamlFile(path.join(metaInfoPath, "newMetainfo.yaml"));
-
-		delete savedMetainfoPlain.ExpertContext.Updated; // при сохранении всегда ставится сегодняшняя дата
-		delete newMetainfoPlain.ExpertContext.Updated;
-
-		assert.deepStrictEqual(savedMetainfoPlain, newMetainfoPlain);
-	});
-	*/
-
 	test('Сохранение произвольных полей metainfo', async () => {
 		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "keepUnknownFields");
 
