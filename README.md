@@ -1,15 +1,14 @@
-## Поддержка языка XP в Visual Studio Code
+# Поддержка языка XP в Visual Studio Code
 
 [![Documentation Status](https://readthedocs.org/projects/vscode-xp/badge/?version=latest)](https://vscode-xp.readthedocs.io/ru/latest/?badge=latest) [![Telegram chat](https://img.shields.io/static/v1?label=chat&message=Telegram&color=blue&logo=telegram)](https://t.me/s3curity_experts_community/75) [![Telegram chat](https://img.shields.io/matrix/vscode-xp:matrix.org?color=g&label=matrix&logo=matrix&logoColor=green)](https://matrix.to/#/#vscode-xp:matrix.org)
 
-
 Язык eXtraction and Processing (XP) используется для создания правил преобразования данных в процессе обработки событий. На языке XP вы можете разрабатывать правила нормализации, корреляции и обогащения событий.
 
-Настоящее расширение разработано [Dmitry Fedosov](https://t.me/DmitryOffsec) и [контрибьютерами](https://github.com/Security-Experts-Community/vscode-xp/graphs/contributors), оно позволяет разрабатывать и тестировать правила в VSCode и VSCodium, а также публиковать их в необходимый для вашего продукта формат.
+Настоящее расширение разработано [Dmitry Fedosov](https://github.com/DmitryOffsec) и [контрибьютерами](https://github.com/Security-Experts-Community/vscode-xp/graphs/contributors), оно позволяет разрабатывать и тестировать правила в VSCode и VSCodium, а также публиковать их в необходимый для вашего продукта формат.
 
 Руководство по работе с расширением: [https://vscode-xp.readthedocs.io/](https://vscode-xp.readthedocs.io/)
 
-### Основные возможности
+## Основные возможности
 
 Возможности расширения:
 
@@ -32,15 +31,15 @@
 Вы можете легко получить готовое окружение для разработки на XP, если воспользуетесь проектом [VSCode XP Workspace](https://github.com/Security-Experts-Community/vscode-xp-workspace). В нём всё собрано в единый Docker-контейнер, а редактирование происходит через веб-версию VSCode.
 Подробности в репозитории проекта.
 
-### Нормализация событий
+## Нормализация событий
 
 Для написания правил корреляции, в общем случае, Вам потребуются формулы нормализации событий. В нашем [открытом репозитории с экспертизой](https://github.com/Security-Experts-Community/open-xp-rules) вы cможете найти базовые формулы нормализации. В будущем там появятся другие виды правил на языке XP, созданные сообществом.
 
-### Разработчикам
+## Разработчикам
 
 Разработкой расширения занимается сообщество [Security Experts Community](https://github.com/Security-Experts-Community). Вы можете принять участие в проекте и внести в него свою экспертизу. Актуальный список задач проекта публикуется [в списке задач](https://github.com/Security-Experts-Community/vscode-xp/issues). В удобном виде со списком задач можно ознакомиться [в проекте репозитория](https://github.com/orgs/Security-Experts-Community/projects/2/views/3).
 
-#### Компиляция
+### Компиляция
 
 Чтобы скомпилировать расширение:
 
@@ -56,7 +55,7 @@ git clone https://github.com/Security-Experts-Community/vscode-xp
 
 4. В корне проекта выполните команду `npm install`.
 
-#### Репозитории
+### Репозитории
 
 Основной на GitHub: [https://github.com/Security-Experts-Community/vscode-xp](https://github.com/Security-Experts-Community/vscode-xp)
 
@@ -64,7 +63,7 @@ git clone https://github.com/Security-Experts-Community/vscode-xp
 
 Зеркало на GitFlic: [https://gitflic.ru/project/security-experts-community/vscode-xp](https://gitflic.ru/project/security-experts-community/vscode-xp)
 
-#### Сборка расширения в установочный пакет
+### Сборка расширения в установочный пакет
 
 Перед сборкой установочного пакета расширения (\*.vsix-файл) вам нужно в корне проекта выполнить команду `npm install -g vsce`.
 
