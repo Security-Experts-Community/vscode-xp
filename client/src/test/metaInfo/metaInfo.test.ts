@@ -113,21 +113,24 @@ suite('MetaInfo', () => {
 		assert.ok(!metaInfoPlain.ContentRelations); // ATTACK
 	});
 
-	test('Преобразование форматов metainfo', async () => {
-		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "oldToNew");
+	test('Сохранение произвольных полей metainfo', async () => {
+		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "keepUnknownFields");
 
-		const oldMetainfo = MetaInfo.fromFile(metaInfoPath, "oldMetainfo.yaml");
+		const metainfo = MetaInfo.fromFile(metaInfoPath);
+
+		metainfo.setAttacks([{ Tactic: "test", Techniques: ["T1234.56"] }]);
+		metainfo.setName("KeepUnknownFieldsTest");
 
 		const savePath = TestFixture.getTmpPath();
-		await oldMetainfo.save(savePath);
+		await metainfo.save(savePath);
 
-		const savedMetainfoPlain = await TestFixture.readYamlFile(path.join(savePath, MetaInfo.METAINFO_FILENAME));
-		const newMetainfoPlain = await TestFixture.readYamlFile(path.join(metaInfoPath, "newMetainfo.yaml"));
+		const newMetainfoPlain = await TestFixture.readYamlFile(path.join(savePath, MetaInfo.METAINFO_FILENAME));
 
-		delete savedMetainfoPlain.ExpertContext.Updated; // при сохранении всегда ставится сегодняшняя дата
-		delete newMetainfoPlain.ExpertContext.Updated;
-
-		assert.deepStrictEqual(savedMetainfoPlain, newMetainfoPlain);
+		assert.strictEqual(newMetainfoPlain.ContentAutoName, "KeepUnknownFieldsTest");
+		assert.deepStrictEqual(newMetainfoPlain.ContentRelations.Implements.ATTACK, { "test": ["T1234.56"] });
+		assert.strictEqual(newMetainfoPlain.UnknownField, "Unknown data");
+		assert.strictEqual(newMetainfoPlain.ExpertContext.UnknownFieldInExpertContext, "lalala");
+		assert.deepStrictEqual(newMetainfoPlain.ContentRelations.InternalField, ["some", "strings"]);
 	});
 
 	// Создаем временную директорию.
