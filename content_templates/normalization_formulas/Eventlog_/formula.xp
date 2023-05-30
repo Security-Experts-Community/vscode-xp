@@ -1,4 +1,4 @@
-EVENTLOG = ''
+EVENTLOG = 'EventID=""'
 
 COND = $Channel = "" and $Provider["Name"] == ""
 
@@ -7,10 +7,13 @@ action =
 object = 
 status = 
 
-time = $
+msgid = $EventID
+
+time = $TimeCreated["SystemTime"]
 
 event_src.vendor = ""
 event_src.title = ""
+event_src.subsys = $Channel
 event_src.category = ""
 
 id = "LOC_Vendor_Title_eventlog_event_name"
