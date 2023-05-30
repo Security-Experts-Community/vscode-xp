@@ -1,0 +1,3 @@
+EventDescriptions:
+    - Criteria: id = "LOC_Microsoft_Title_eventlog_event_name"
+      LocalizationId: LOC_Microsoft_Title_eventlog_event_name_1 

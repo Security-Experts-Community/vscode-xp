@@ -1,4 +1,4 @@
 Description: Замени эти слова на описание нормализации 
 EventDescriptions:
-    - LocalizationId: Empty_1
+    - LocalizationId: LOC_Vendor_Title_CEF_syslog_event_name_1
       EventDescription: 'Замени эти слова на описание с таксономическими полями. Пример: Пользователь {subject.account.name} запустил процесс {object.process.name} на узле {event_src.host}'

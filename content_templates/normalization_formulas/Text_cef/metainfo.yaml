@@ -1,0 +1,3 @@
+EventDescriptions:
+    - Criteria: id = "LOC_Vendor_Title_CEF_syslog_event_name"
+      LocalizationId: LOC_Vendor_Title_CEF_syslog_event_name_1 

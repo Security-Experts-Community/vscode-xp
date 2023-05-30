@@ -134,8 +134,8 @@ export class ContentHelper {
         await this.copyContentTemplateToTmpDirectory(templateName, templatesPath, tmpDirPath);
 
         // Копируем во временную директорию и переименовываем.
-        const templateTmpDirPath = path.join(tmpDirPath, templateName);
-        const ruleFromTemplate = await Enrichment.parseFromDirectory(templateTmpDirPath);
+        const templateEnrTmpDirPath = path.join(tmpDirPath, templateName);
+        const ruleFromTemplate = await Enrichment.parseFromDirectory(templateEnrTmpDirPath);
         await ruleFromTemplate.rename(ruleName);
 
         // Задаем ObjectID только при создании обогащения.
@@ -154,8 +154,8 @@ export class ContentHelper {
         await this.copyContentTemplateToTmpDirectory(templateName, templatesPath, tmpDirPath);
 
         // Копируем во временную директорию и переименовываем.
-        const templateTmpDirPath = path.join(tmpDirPath, templateName);
-        const ruleFromTemplate = await Normalization.parseFromDirectory(templateTmpDirPath);
+        const templateNormTmpDirPath = path.join(tmpDirPath, templateName);
+        const ruleFromTemplate = await Normalization.parseFromDirectory(templateNormTmpDirPath);
         await ruleFromTemplate.rename(ruleName);
 
         // Задаем ObjectID только при создании нормализации.
@@ -175,10 +175,10 @@ export class ContentHelper {
         }
         
         // Копируем во временную директорию и переименовываем.
-        const templateCorrTmpDirPath = path.join(tmpDirPath, templateName);
+        const templateTmpDirPath = path.join(tmpDirPath, templateName);
 
-        await fs.promises.mkdir(templateCorrTmpDirPath, {recursive: true});
-        await fse.copy(templateDirPath, templateCorrTmpDirPath, {recursive: true}); 
+        await fs.promises.mkdir(templateTmpDirPath, {recursive: true});
+        await fse.copy(templateDirPath, templateTmpDirPath, {recursive: true}); 
     }
 
     public static replaceAllCorrelantionNameWithinCode(newRuleName : string, ruleCode : string): string {
