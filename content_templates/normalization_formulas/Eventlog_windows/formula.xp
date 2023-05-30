@@ -1,0 +1,26 @@
+EVENTLOG = 'EventID=""'
+
+COND = $Channel = "" and $Provider["Name"] == ""
+
+subject = 
+action = 
+object = 
+status = 
+
+msgid = $EventID
+
+time = $TimeCreated["SystemTime"]
+
+event_src.vendor = "microsoft"
+event_src.title = ""
+event_src.subsys = $Channel
+$first_dot = find_substr($Computer, '.')
+if $first_dot != null then
+    event_src.fqdn = lower($Computer)
+    event_src.hostname = lower(substr($Computer, 0, $first_dot))
+else
+    event_src.hostname = lower($Computer)
+endif
+event_src.category = 
+
+id = "LOC_Microsoft_Title_eventlog_event_name"
