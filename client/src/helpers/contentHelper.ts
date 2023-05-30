@@ -113,8 +113,8 @@ export class ContentHelper {
         await this.copyContentTemplateToTmpDirectory(templateName, templatesPath, tmpDirPath);
 
         // Копируем во временную директорию и переименовываем.
-        const templateCorrTmpDirPath = path.join(tmpDirPath, templateName);
-        const ruleFromTemplate = await Correlation.parseFromDirectory(templateCorrTmpDirPath);
+        const templateTmpDirPath = path.join(tmpDirPath, templateName);
+        const ruleFromTemplate = await Correlation.parseFromDirectory(templateTmpDirPath);
         await ruleFromTemplate.rename(ruleName);
 
         // Задаем ObjectID только при создании корреляции.
@@ -175,10 +175,10 @@ export class ContentHelper {
         }
         
         // Копируем во временную директорию и переименовываем.
-        const templateCorrTmpDirPath = path.join(tmpDirPath, templateName);
+        const templateTmpDirPath = path.join(tmpDirPath, templateName);
 
-        await fs.promises.mkdir(templateCorrTmpDirPath, {recursive: true});
-        await fse.copy(templateDirPath, templateCorrTmpDirPath, {recursive: true}); 
+        await fs.promises.mkdir(templateTmpDirPath, {recursive: true});
+        await fse.copy(templateDirPath, templateTmpDirPath, {recursive: true}); 
     }
 
     public static replaceAllCorrelantionNameWithinCode(newRuleName : string, ruleCode : string): string {

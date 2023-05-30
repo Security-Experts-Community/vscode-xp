@@ -1,0 +1,16 @@
+# размести здесь образец сырого события
+
+TEXT = '{"<"?}{NUMBER?}{">"?} {DATETIME?} {HOSTNAME?} CEF:{NUMBER}|{event_src.vendor=""}|
+		{event_src.title=""}|{NUMBER}.{NUMBER}|{NUMBER}|{WORD+}|{msgid=""}|
+		{$kv=KEYVALUE("=", " ", "`")}'
+
+subject = 
+action = 
+object = 
+status = 
+
+time = $kv[""]
+
+event_src.category = 
+
+id = "LOC_Vendor_Title_CEF_syslog_event_name"

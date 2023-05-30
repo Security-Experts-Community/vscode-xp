@@ -1,0 +1,14 @@
+TABULAR = ''
+
+subject = 
+action = 
+object = 
+status = 
+
+time = 
+
+event_src.vendor = ""
+event_src.title = ""
+event_src.category = 
+
+id = "LOC_Vendor_Title_transport_event_name"
