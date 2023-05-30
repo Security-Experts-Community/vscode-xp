@@ -11,6 +11,6 @@ status =
 
 time = $kv[""]
 
-event_src.category = 
+event_src.category = ""
 
 id = "LOC_Vendor_Title_CEF_syslog_event_name"
