@@ -148,7 +148,7 @@ export async function activate(context: ExtensionContext) {
 		);
 
 		// Автодополнение функций.
-		const completionItemProvider = await XpCompletionItemProvider.init(context, config);
+		const completionItemProvider = await XpCompletionItemProvider.init(config);
 		context.subscriptions.push(
 			vscode.languages.registerCompletionItemProvider(
 				[
@@ -174,13 +174,17 @@ export async function activate(context: ExtensionContext) {
 			)
 		);
 
-		const literalItemProvider = await XpEnumValuesCompletionItemProvider.init(context, config);
+		const literalItemProvider = await XpEnumValuesCompletionItemProvider.init(config);
 		context.subscriptions.push(
 			vscode.languages.registerCompletionItemProvider(
 				[
 					{
 						scheme: 'file',
 						language: 'co'
+					},
+					{
+						scheme: 'file',
+						language: 'xp'					
 					}
 				],
 				literalItemProvider,

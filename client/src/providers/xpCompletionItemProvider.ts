@@ -21,12 +21,12 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 	 * @param context контекст расширения
 	 * @returns возвращает настроеннный провайдер.
 	 */
-	public static async init(context: vscode.ExtensionContext, configuration: Configuration): Promise<XpCompletionItemProvider> {
+	public static async init(configuration: Configuration): Promise<XpCompletionItemProvider> {
 
 		let autocompleteSignatures: vscode.CompletionItem[] = [];
 
 		// Считываем автодополнение функций.
-		const signaturesFilePath = path.join(context.extensionPath, "syntaxes", "co.signature.json");
+		const signaturesFilePath = path.join(configuration.getContext().extensionPath, "syntaxes", "co.signature.json");
 		try {
 			const signaturesFileContent = await FileSystemHelper.readContentFile(signaturesFilePath);
 			const functionSignaturesPlain = JSON.parse(signaturesFileContent);

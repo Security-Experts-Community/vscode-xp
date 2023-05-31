@@ -141,18 +141,23 @@ export class IntegrationTest {
 		}
 
 		// Позволяет сохранять тест без кода теста для нормализации событий, если нам сам тест не нужен.
-		// test_conds_1.tc
+		// test_conds_N.tc
 		if(this._testCode) {
 			const testFullPath = this.getTestCodeFilePath();
 			await FileSystemHelper.writeContentFileIfChanged(testFullPath, this._testCode);
 		}
 
 		// raw_events_N.json
-		// const rawEventFullPath = path.join(testDirectoryPath, `raw_events_${this._number}.json`);
 		const rawEventFullPath = this.getRawEventsFilePath();
 		if(this._rawEvents) {
 			await FileSystemHelper.writeContentFileIfChanged(rawEventFullPath, this._rawEvents);
 		}
+	}
+
+	public async remove() : Promise<[void, void]> {
+		const unlinkRawEventsPromise = fs.promises.unlink(this.getRawEventsFilePath());
+		const unlinkTestCodePromise = fs.promises.unlink(this.getTestCodeFilePath());
+		return Promise.all([unlinkRawEventsPromise, unlinkTestCodePromise]);
 	}
 
 	public setNumber(number: number) : void {

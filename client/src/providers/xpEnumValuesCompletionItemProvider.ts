@@ -21,7 +21,7 @@ export class XpEnumValuesCompletionItemProvider implements vscode.CompletionItem
 	 * @param context контекст расширения
 	 * @returns возвращает настроеннный провайдер.
 	 */
-	public static async init(context: vscode.ExtensionContext, configuration: Configuration): Promise<XpEnumValuesCompletionItemProvider> {
+	public static async init(configuration: Configuration): Promise<XpEnumValuesCompletionItemProvider> {
 
 		let taxonomySignatures: any[] = [];
 

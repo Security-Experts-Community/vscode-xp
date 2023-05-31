@@ -33,7 +33,7 @@ export class FilterEqualsValidator extends IValidator {
 			if(filterBlockResult.length != 2)
 				continue;
 	
-			let filterBlock = filterBlockResult[1];
+			const filterBlock = filterBlockResult[1];
 			
 			const blockDiagnostics = await this.validateFilterBlock(filterBlock, textDocument, documentSettings);
 			diagnostics.push(...blockDiagnostics);

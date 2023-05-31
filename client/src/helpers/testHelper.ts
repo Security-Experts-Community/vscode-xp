@@ -412,6 +412,14 @@ export class TestHelper {
 	public static async saveAllTest(message: any, rule : RuleBaseItem) : Promise<RuleBaseItem> {
 		const plainTests = message.tests as any[];
 
+		// Количество тестов уменьшилось, удаляем старые и записываем новые.
+		if(rule.getIntegrationTests().length > plainTests.length) {
+			const promises = rule.getIntegrationTests()
+				.map(it => it.remove());
+
+			await Promise.all(promises);
+		}
+
 		// Очищаем интеграционные тесты.
 		rule.clearIntegrationTests();
 
@@ -426,6 +434,7 @@ export class TestHelper {
 			if(!rawEvents || rawEvents == "") {
 				throw new XpException(`Попытка сохранения теста №${number} без сырых событий.`);
 			}
+
 			// Из textarea новые строки только \n, поэтому надо их поправить под систему.
 			rawEvents = rawEvents.replace(/(?<!\\)\n/gm, EOL);
 			test.setRawEvents(rawEvents);
@@ -435,6 +444,7 @@ export class TestHelper {
 			if(!testCode || testCode == "") {
 				throw new XpException("Попытка сохранения теста без сырых событий.");
 			}
+
 			// Из textarea новые строки только \n, поэтому надо их поправить под систему.
 			testCode = testCode.replace(/(?<!\\)\n/gm, EOL);
 			test.setTestCode(TestHelper.compressTestCode(testCode));
