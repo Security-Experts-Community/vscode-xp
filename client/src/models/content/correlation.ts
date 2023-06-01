@@ -90,7 +90,7 @@ export class Correlation extends RuleBaseItem {
 		const enDescription = await Localization.parseEnDescription(directoryPath);
 		correlation.setEnDescription(enDescription);
 
-		const localizations = Localization.parseFromDirectory(directoryPath);
+		const localizations = await Localization.parseFromDirectory(directoryPath);
 		if(!correlation.checkLocalizationConsistency(localizations, correlation.getMetaInfo())) {
 			throw new XpException("Наборы идентификаторов локализаций в файле метаинформации и файлах локализаций не совпадают.");
 		}

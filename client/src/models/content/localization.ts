@@ -7,6 +7,7 @@ import { YamlHelper } from '../../helpers/yamlHelper';
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { XpException } from '../xpException';
 import { IncorrectFieldFillingException } from '../../views/incorrectFieldFillingException';
+import { ContentFolder } from './contentFolder';
 
 export enum LocalizationLanguage{
 	Ru = 1,
@@ -73,7 +74,7 @@ export class Localization {
 		return this._ruLocalizationTemplate;
 	}
 
-	public static parseFromDirectory(ruleDirectoryPath: string) : Localization[] {
+	public static async parseFromDirectory(ruleDirectoryPath: string) : Promise<Localization[]> {
 
 		// Читаем русские локализации.
 		const ruLocFilePath = path.join(ruleDirectoryPath, Localization.LOCALIZATIONS_DIRNAME, Localization.RU_LOCALIZATION_FILENAME);
@@ -81,21 +82,22 @@ export class Localization {
 			return [];
 		}
 
-		const ruLocContant = fs.readFileSync(ruLocFilePath, 'utf8');
+		const ruLocContant = await FileSystemHelper.readContentFile(ruLocFilePath);
 		const ruLocObject = YamlHelper.parse(ruLocContant);
 		const ruEventDescriptionsObject = ruLocObject.EventDescriptions as any[];
 		const ruDescription = ruLocObject.Description as string;
 
-		// Читаем английские локализации.
+		// Читаем английские локализации, если такие есть.
 		const enLocFilePath = path.join(ruleDirectoryPath, Localization.LOCALIZATIONS_DIRNAME, Localization.EN_LOCALIZATION_FILENAME);
-		if(!fs.existsSync(enLocFilePath)) {
-			throw new XpException(`Не найден файл английской локализации по пути '${ruLocFilePath}'`);
-		}
 
-		const enLocContant = fs.readFileSync(enLocFilePath, 'utf8');
-		const enLocObject = YamlHelper.parse(enLocContant);
-		const enEventDescriptionsObject = enLocObject.EventDescriptions as any[];
-		const enDescription = enLocObject.Description as string;
+		let enEventDescriptionsObject : any[] = [];
+		let enDescription : string;
+		if(fs.existsSync(enLocFilePath)) {
+			const enLocContant = await FileSystemHelper.readContentFile(enLocFilePath);
+			const enLocObject = YamlHelper.parse(enLocContant);
+			enEventDescriptionsObject = enLocObject.EventDescriptions as any[];
+			enDescription = enLocObject.Description as string;
+		}
 
 		// Читаем метаданные для извелечения критериев локализаций.
 		const eventDescriptions = this.parseEventDescriptions(ruleDirectoryPath);
@@ -106,7 +108,7 @@ export class Localization {
 				const localization = new Localization();
 
 				if(!ruEdp.LocalizationId) {
-					console.warn("Не задан LocalizationId в метаинформации.");
+					console.warn("Не задан LocalizationId в метаинформации правила.");
 				}
 
 				localization.setLocalizationId(ruEdp.LocalizationId);
@@ -126,7 +128,9 @@ export class Localization {
 					localization.setEnLocalizationText("");
 				}
 
-				localization.setEnDescription(enDescription);
+				if(enDescription) {
+					localization.setEnDescription(enDescription);
+				}
 
 				// Добавляем критерий из метаданных.
 				const localizationEventDescription = eventDescriptions.find(ed => ed.getLocalizationId() == ruEdp.LocalizationId);

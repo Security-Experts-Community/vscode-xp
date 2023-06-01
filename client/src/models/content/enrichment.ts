@@ -211,7 +211,7 @@ export class Enrichment extends RuleBaseItem {
 		const enDescription = await Localization.parseEnDescription(directoryPath);
 		enrichment.setEnDescription(enDescription);
 
-		const localizations = Localization.parseFromDirectory(directoryPath);
+		const localizations = await Localization.parseFromDirectory(directoryPath);
 		enrichment.setLocalizationTemplates(localizations);
 
 		const modularTest = CorrelationUnitTest.parseFromRuleDirectory(enrichment);

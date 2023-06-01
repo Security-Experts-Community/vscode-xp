@@ -140,16 +140,16 @@ export class IntegrationTest {
 			await fs.promises.mkdir(testDirectoryPath, {recursive: true});
 		}
 
-		// Позволяет сохранять тест без кода теста для нормализации событий, если нам сам тест не нужен.
+		// Если код теста не задан, 
 		// test_conds_N.tc
-		if(this._testCode) {
+		if(this._testCode != undefined) {
 			const testFullPath = this.getTestCodeFilePath();
 			await FileSystemHelper.writeContentFileIfChanged(testFullPath, this._testCode);
 		}
 
 		// raw_events_N.json
 		const rawEventFullPath = this.getRawEventsFilePath();
-		if(this._rawEvents) {
+		if(this._rawEvents != undefined) {
 			await FileSystemHelper.writeContentFileIfChanged(rawEventFullPath, this._rawEvents);
 		}
 	}
@@ -195,8 +195,8 @@ export class IntegrationTest {
 	private _ruleDirectoryPath : string;
 
 	protected _number: number;
-	protected _rawEvents : string;
-	protected _testCode : string;
+	protected _rawEvents = "";
+	protected _testCode = "";
 	
 	protected _normalizeEvents : string;
 	protected _testStatus : TestStatus = TestStatus.Unknown;

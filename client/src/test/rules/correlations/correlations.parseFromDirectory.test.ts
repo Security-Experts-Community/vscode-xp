@@ -3,7 +3,6 @@ import { StringHelper } from '../../../helpers/stringHelper';
 
 import { Correlation } from '../../../models/content/correlation';
 import { TestFixture } from '../../helper';
-import { XpException } from '../../../models/xpException';
 
 suite('Correlations.parseFromDirectory', () => {
 
@@ -21,6 +20,13 @@ suite('Correlations.parseFromDirectory', () => {
 
 	test('Парсинг корреляции без локализаций', async () => {
 		const rulePath = TestFixture.getCorrelationPath("without_localizations");
+		const correlation = await Correlation.parseFromDirectory(rulePath);
+
+		assert.ok(correlation);
+	});
+
+	test('Парсинг корреляции без английской локализации', async () => {
+		const rulePath = TestFixture.getCorrelationPath("without_en_localization");
 		const correlation = await Correlation.parseFromDirectory(rulePath);
 
 		assert.ok(correlation);

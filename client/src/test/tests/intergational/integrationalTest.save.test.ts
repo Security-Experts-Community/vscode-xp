@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { Correlation } from '../../../models/content/correlation';
-import { IntegrationTest } from '../../../models/tests/integrationTest';
 import { TestFixture } from '../../helper';
 
 suite('Сохранение интеграционных тестов', () => {

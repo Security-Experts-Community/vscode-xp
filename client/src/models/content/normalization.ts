@@ -184,7 +184,7 @@ export class Normalization extends RuleBaseItem {
 		const enDescription = await Localization.parseEnDescription(directoryPath);
 		normalization.setEnDescription(enDescription);
 
-		const localizations = Localization.parseFromDirectory(directoryPath);
+		const localizations = await Localization.parseFromDirectory(directoryPath);
 			localizations.forEach((loc) => {
 				normalization.addLocalization(loc);
 			});

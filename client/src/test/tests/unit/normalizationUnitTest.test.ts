@@ -7,7 +7,7 @@ import { Normalization } from '../../../models/content/normalization';
 suite('Модульный тест нормализации', () => {
 
 	test('Нет базовой директории для тестов', async() => {
-		const rulePath = TestFixture.getCorrelationPath("without_tests");
+		const rulePath = TestFixture.getNormalizationPath("without_tests");
 		const rule = await Normalization.parseFromDirectory(rulePath);
 		const actualTests = rule.getUnitTests();
 
@@ -15,7 +15,7 @@ suite('Модульный тест нормализации', () => {
 	});
 	
 	test('Проверка пути до теста', async() => {
-		const rulePath = TestFixture.getCorrelationPath("without_tests");
+		const rulePath = TestFixture.getNormalizationPath("without_tests");
 		const rule = await Normalization.parseFromDirectory(rulePath);
 		const unitTest = rule.createNewUnitTest();
 
@@ -25,7 +25,7 @@ suite('Модульный тест нормализации', () => {
 	});
 
 	test('Проверка пути до правила', async() => {
-		const rulePath = TestFixture.getCorrelationPath("without_tests");
+		const rulePath = TestFixture.getNormalizationPath("without_tests");
 		const rule = await Normalization.parseFromDirectory(rulePath);
 		const unitTest = rule.createNewUnitTest();
 

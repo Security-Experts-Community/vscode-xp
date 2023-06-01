@@ -7,9 +7,9 @@ import { XpException } from '../../models/xpException';
 
 suite('Правила локализации', () => {
 	
-	test('Парсинг трех локализаций', () => {
+	test('Парсинг трех локализаций', async () => {
 		const rulePath = TestFixture.getFixturePath("localizations", "MSSQL_user_password_brute");
-		const localizations = Localization.parseFromDirectory(rulePath);
+		const localizations = await Localization.parseFromDirectory(rulePath);
 
 		assert.strictEqual(localizations.length, 3);
 
