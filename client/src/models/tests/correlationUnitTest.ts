@@ -17,7 +17,7 @@ export class CorrelationUnitTest extends BaseUnitTest {
 	}
 
 	public getDefaultInputData(): string {
-		return `# Здесь укажи какие нормализованные события ты подаёшь на вход корреляци\n`;
+		return `# Здесь укажи какие нормализованные события (одно или несколько) ты подаёшь на вход правилу корреляции.\n# События отделяются друг от друга символом новой строки. Каждое их них должно быть записано в строку.\n`;
 	}
 
 	public static containsInputData(fileContent) : boolean {
