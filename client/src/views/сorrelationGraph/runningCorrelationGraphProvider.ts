@@ -97,7 +97,18 @@ export class RunningCorrelationGraphProvider {
 				const rawEvents = message?.rawEvents as string;
 				const mimeType = message?.mimeType as EventMimeType;
                 
-				return this.addEnvelope(rawEvents, mimeType);
+                return vscode.window.withProgress({
+                    location: vscode.ProgressLocation.Notification,
+                    cancellable: false,
+                    title: `Идёт добавление конверта на сырые события`
+                }, async (progress) => {
+                    try {
+                        return this.addEnvelope(rawEvents, mimeType);
+                    }
+                    catch(error) {
+                        ExceptionHelper.show(error, "Ошибка добавления конверта на сырые события");
+                    }
+                });
 			}
         }
     }
