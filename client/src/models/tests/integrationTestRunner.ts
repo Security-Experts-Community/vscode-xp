@@ -61,7 +61,6 @@ export class IntegrationTestRunner {
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();
-		configBuilder.addLocalizationsBuilding(rule.getDirectoryPath());
 
 		const ruleCode = await rule.getRuleCode();
 		// Если корреляция с сабрулями, то собираем полный граф корреляций для отработок сабрулей из других пакетов.
