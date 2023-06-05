@@ -13,7 +13,7 @@ export class NormalizationUnitTest extends BaseUnitTest {
 	}
 
 	public getDefaultInputData(): string {
-		return `# Здесь укажи какие сырые события ты подаёшь на вход нормализации\n`;
+		return `# Здесь укажи какое сырое событие (одно) ты подаёшь на вход правилу нормализации.\n`;
 	}
 
 	public static parseFromRuleDirectory(rule: Normalization) : NormalizationUnitTest [] {
