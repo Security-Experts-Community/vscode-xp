@@ -205,8 +205,8 @@
 			"Content": [
 				{
 					"id": "KnowledgebaseTree",
-					"name": "Дерево объектов",
-					"contextualTitle": "Дерево объектов"
+					"name": "Дерево контента",
+					"contextualTitle": "Дерево контента"
 				},
 				{
 					"id": "ModularTestsListView",
@@ -387,7 +387,7 @@
 			},
 			{
 				"command": "SiemContentEditor.refreshKbTree",
-				"title": "Обновить дерево объектов",
+				"title": "Обновить дерево контента",
 				"icon": "$(refresh)"
 			},
 			{
@@ -426,8 +426,8 @@
 			},
 			{
 				"command": "KnowledgebaseTree.buildAll",
-				"title": "Собрать все графы",
-				"shortTitle": "Собрать все графы",
+				"title": "Собрать всё (графы, табличные списки, локализации)",
+				"shortTitle": "Собрать всё",
 				"category": "Редактор XP",
 				"icon": "$(debug-start)"
 			},
@@ -452,7 +452,7 @@
 			},
 			{
 				"command": "SiemContentEditor.createSubFolderCommand",
-				"title": "Создать папку",
+				"title": "Создать директорию",
 				"category": "Редактор XP",
 				"icon": "$(new-folder)"
 			},
@@ -469,12 +469,12 @@
 			},
 			{
 				"command": "MetaInfoView.showMetaInfoEditor",
-				"title": "Открыть редактор метаданных",
+				"title": "Редактор метаданных",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "LocalizationView.showLocalizationEditor",
-				"title": "Открыть редактор правил локализации",
+				"title": "Редактор правил локализации",
 				"category": "Редактор XP"
 			},
 			{
@@ -508,7 +508,7 @@
 			},
 			{
 				"command": "IntegrationTestEditorView.showEditor",
-				"title": "Открыть интеграционные тесты",
+				"title": "Интеграционные тесты",
 				"category": "Редактор XP"
 			},
 			{
