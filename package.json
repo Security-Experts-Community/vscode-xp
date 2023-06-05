@@ -278,33 +278,18 @@
 				},
 				{
 					"command": "KnowledgebaseTree.showCreateCorrelationView",
-					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
+					"when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
 					"group": "create@1"
 				},
 				{
 					"command": "KnowledgebaseTree.showCreateEnrichmentView",
-					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
+					"when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
 					"group": "create@2"
 				},
 				{
 					"command": "KnowledgebaseTree.showCreateNormalizationView",
-					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
+					"when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
 					"group": "create@3"
-				},
-				{
-					"command": "SiemContentEditor.createSubFolderCommand",
-					"when": "view == KnowledgebaseTree && viewItem == AnotherFolder",
-					"group": "folder@1"
-				},
-				{
-					"command": "SiemContentEditor.createSubFolderCommand",
-					"when": "viewItem == PackageFolder || viewItem == ContentRoot",
-					"group": "folder@1"
-				},
-				{
-					"command": "SiemContentEditor.deleteContentItemCommand",
-					"when": "view == KnowledgebaseTree",
-					"group": "folder@2"
 				},
 				{
 					"command": "IntegrationTestEditorView.showEditor",
@@ -315,11 +300,6 @@
 					"command": "MetaInfoView.showMetaInfoEditor",
 					"when": "view == KnowledgebaseTree && viewItem == Correlation",
 					"group": "Correlation@2"
-				},
-				{
-					"command": "SiemContentEditor.renameTreeItemCommand",
-					"when": "view == KnowledgebaseTree && viewItem == Correlation",
-					"group": "Correlation@3"
 				},
 				{
 					"command": "LocalizationView.showLocalizationEditor",
@@ -357,11 +337,6 @@
 					"group": "Enrichment@2"
 				},
 				{
-					"command": "SiemContentEditor.renameTreeItemCommand",
-					"when": "view == KnowledgebaseTree && viewItem == Enrichment",
-					"group": "Enrichment@3"
-				},
-				{
 					"command": "LocalizationView.showLocalizationEditor",
 					"when": "view == KnowledgebaseTree && viewItem == Enrichment",
 					"group": "Enrichment@4"
@@ -370,6 +345,21 @@
 					"command": "ModularTestsListView.removeTest",
 					"when": "view == ModularTestsListView",
 					"group": "ModularTest@4"
+				},
+				{
+					"command": "SiemContentEditor.createSubFolderCommand",
+					"when": "view == KnowledgebaseTree && (viewItem == AnotherFolder ||viewItem == PackageFolder || viewItem == ContentRoot)",
+					"group": "ZCommonItems@1"
+				},
+				{
+					"command": "SiemContentEditor.renameTreeItemCommand",
+					"when": "view == KnowledgebaseTree && (viewItem == Correlation || viewItem == Normalization || viewItem == Enrichment)",
+					"group": "ZCommonItems@2"
+				},
+				{
+					"command": "SiemContentEditor.deleteContentItemCommand",
+					"when": "view == KnowledgebaseTree",
+					"group": "ZCommonItems@4"
 				}
 			]
 		},

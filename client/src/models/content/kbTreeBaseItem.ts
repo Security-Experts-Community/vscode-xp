@@ -82,8 +82,8 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 	/**
 	 * TODO:
 	 */
-	public setFileName(fielName:string) : void {
-		this._fileName = fielName;
+	public setFileName(fileName:string) : void {
+		this._fileName = fileName;
 	}
 
 	/**
