@@ -23,6 +23,7 @@ import { WhitelistingAndRuleNameValidator } from './whitelistingAndRuleNameValid
 import { NestedLowerValidator } from './nestedLowerValidator';
 import { ImportanceAndSeverityValidator } from './importanceAndSeverityValidator';
 import { FilterEqualsValidator } from './filterEqualsValidator';
+import { CorrectnessAssignmentOnBlocks } from './correctnessAssignmentOnBlocks';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -41,7 +42,8 @@ connection.onInitialize((params: InitializeParams) => {
 		new WhitelistingAndRuleNameValidator(),
 		new NestedLowerValidator(),
 		new ImportanceAndSeverityValidator(),
-		new FilterEqualsValidator()
+		new FilterEqualsValidator(),
+		new CorrectnessAssignmentOnBlocks()
 	);
 
 	const capabilities = params.capabilities;

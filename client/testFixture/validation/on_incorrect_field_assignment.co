@@ -1,0 +1,8 @@
+rule Unauthorized_Access: Subrule_PC_Access+ timer 1m
+
+    on Subrule_PC_Access {
+        dst.fqdn = $event_src.fqdn
+    }
+
+emit {
+}

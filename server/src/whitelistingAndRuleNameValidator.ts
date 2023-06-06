@@ -32,7 +32,7 @@ export class WhitelistingAndRuleNameValidator extends IValidator {
 		}
 	
 		// Ищем вайтлистинг правила.
-		const whitelistingPattern = /filter::CheckWL_\S+?\("(.+?)"/gm;
+		const whitelistingPattern = /filter::CheckWL_\S+?\s*\(\s*"(.+?)"/gm;
 	
 		const settings = await getDocumentSettings(textDocument.uri);
 		let problems = 0;

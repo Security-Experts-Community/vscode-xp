@@ -35,8 +35,8 @@ export class LowerFunctionResultValidator extends IValidator {
 			if(lowerCallResult.length != 2)
 				continue;
 	
-			let stringLiteral = lowerCallResult[1];
-			for(let literalChar of stringLiteral) {
+			const stringLiteral = lowerCallResult[1];
+			for(const literalChar of stringLiteral) {
 				// В литерале есть большая буква, добавляем ошибку.
 				if(this.isUpperCase(literalChar)) {
 					const diagnostic = this.getDiagnosticByRegExpResult(

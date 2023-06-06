@@ -71,7 +71,7 @@ export class WhitelistingAndAlertKeyValidator extends IValidator {
 		// Ищем хотя бы один такой же $alert.key
 		const alertKeyPattern = /\$alert.key\s*=\s(.+)$/gm;
 		let alertKeyResult: RegExpExecArray | null;
-		while (alertKeyResult = alertKeyPattern.exec(text)) {
+		while ((alertKeyResult = alertKeyPattern.exec(text))) {
 			
 			if(alertKeyResult.length != 2) {
 				continue;
