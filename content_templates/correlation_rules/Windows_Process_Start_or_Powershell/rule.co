@@ -90,7 +90,7 @@ rule Windows_Process_Start_or_Powershell: Process_Start or Powershell_Pipeline_E
         #endif
         
         $datafield6 = datafield6    # Идентификатор сессии в формате UUID
-        $datafield10 = datafield10  # цепочка имен процессов
+        $datafield19 = datafield19  # цепочка имен процессов
 
         $event_src.ip = event_src.ip
         $event_src.hostname = event_src.hostname
