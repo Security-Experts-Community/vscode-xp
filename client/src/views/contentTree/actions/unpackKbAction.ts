@@ -81,7 +81,7 @@ export class UnpackKbAction {
 					"-o", outputDirPath
 				];
 
-				const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+				const output = await ProcessHelper.executeWithArgsWithRealtimeOutput(
 					"dotnet",
 					params,
 					this._config.getOutputChannel()

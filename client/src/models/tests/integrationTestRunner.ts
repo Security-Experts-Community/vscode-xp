@@ -16,6 +16,7 @@ import { TestHelper } from '../../helpers/testHelper';
 import { CorrGraphRunner } from '../../views/сorrelationGraph/corrGraphRunner';
 import { Correlation } from '../content/correlation';
 import { Enrichment } from '../content/enrichment';
+import { FileSystemException } from '../fileSystemException';
 
 export class IntegrationTestRunner {
 
@@ -24,9 +25,12 @@ export class IntegrationTestRunner {
 
 	public async run(rule : RuleBaseItem) : Promise<IntegrationTest[]> {
 
+		// Проверяем наличие нужных утилит.
+		this._config.getSiemkbTestsPath();
+
 		const integrationTests = rule.getIntegrationTests();
 		if(integrationTests.length == 0) {
-			throw new XpException("Не заданы тесты для запуска");
+			throw new XpException(`У правила *${rule.getName}* не найдено интеграционных тестов`);
 		}
 
 		// Хотя бы у одного теста есть сырые события и код теста.
@@ -43,8 +47,7 @@ export class IntegrationTestRunner {
 		});
 
 		if(!atLeastOneTestIsValid) {
-			ExtensionHelper.showUserError("Для запуска тестов нужно добавить сырые события и условия выполнения теста.");
-			return;
+			throw new XpException("Для запуска тестов нужно добавить сырые события и условия выполнения теста.");
 		}
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
@@ -62,9 +65,9 @@ export class IntegrationTestRunner {
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();
 
-		const ruleCode = await rule.getRuleCode();
 		// Если корреляция с сабрулями, то собираем полный граф корреляций для отработок сабрулей из других пакетов.
 		// В противном случае только корреляции из текущего пакета с правилами. Позволяет ускорить тесты.
+		const ruleCode = await rule.getRuleCode();
 		if(rule instanceof Correlation) {
 			if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
 				configBuilder.addCorrelationsGraphBuilding();
@@ -83,8 +86,7 @@ export class IntegrationTestRunner {
 		const siemjConfContent = configBuilder.build();
 
 		if(!siemjConfContent) {
-			ExtensionHelper.showUserError("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
-			return;
+			throw new XpException("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
 		}
 
 		const siemjConfigPath = this._config.getTmpSiemjConfigPath(rootFolder);
@@ -97,14 +99,18 @@ export class IntegrationTestRunner {
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
 		const siemjExePath = this._config.getSiemjPath();
-		const siemJOutput = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+
+		const siemjExecutionResult = await ProcessHelper.execute(
 			siemjExePath,
-			["-c", siemjConfigPath, "main"],
-			this._config.getOutputChannel());
+			["-c", siemjConfigPath, "main"], {
+				encoding : "windows-1251",
+				outputChannel : this._config.getOutputChannel()
+			}
+		);
 
 		const ruleFileUri = vscode.Uri.file(rule.getRuleFilePath());
 
-		if(siemJOutput.includes(this.TEST_SUCCESS_SUBSTRING)) {
+		if(siemjExecutionResult.output.includes(this.TEST_SUCCESS_SUBSTRING)) {
 			integrationTests.forEach(it => it.setStatus(TestStatus.Success));
 
 			// Убираем ошибки по текущему правилу.
@@ -115,7 +121,7 @@ export class IntegrationTestRunner {
 			this._config.getOutputChannel().show();
 			this._config.getDiagnosticCollection().clear();
 
-			let ruleFileDiagnostics = await this._outputParser.parse(siemJOutput);
+			let ruleFileDiagnostics = await this._outputParser.parse(siemjExecutionResult.output);
 
 			// Фильтруем диагностики по текущему правилу.
 			ruleFileDiagnostics = ruleFileDiagnostics.filter(rfd => {

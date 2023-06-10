@@ -49,7 +49,7 @@ export class BuildAllAction {
 					// Типовая команда выглядит так:
 					// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
 					const siemjExePath = this._config.getSiemjPath();
-					const siemJOutput = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+					const siemJOutput = await ProcessHelper.executeWithArgsWithRealtimeOutput(
 						siemjExePath,
 						["-c", siemjConfigPath, "main"],
 						this._config.getOutputChannel());

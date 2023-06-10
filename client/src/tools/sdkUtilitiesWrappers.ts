@@ -68,7 +68,7 @@ export class SDKUtilitiesWrappers {
 
 				// Запускаем утилиту с параметрами
 				// TODO: Возможно есть смысл отслеживать неуспешные запуски по кодам ошибки от дочернего процесса
-				const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+				const output = await ProcessHelper.executeWithArgsWithRealtimeOutput(
 					normalizeExePath,
 					[
 						"--sdk", sdkPath,

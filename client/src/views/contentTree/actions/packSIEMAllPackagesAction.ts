@@ -185,7 +185,7 @@ export class PackKbAction {
 
 				// Типовая команда выглядит так:
 				// dotnet kbpack.dll pack -s "c:\tmp\pack" -o "c:\tmp\pack\Esc.kb"
-				const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+				const output = await ProcessHelper.executeWithArgsWithRealtimeOutput(
 					"dotnet",
 					[
 						knowledgeBasePackagerCli, 

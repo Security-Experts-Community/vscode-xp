@@ -78,7 +78,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			const schemaFilePath = this._config.getSchemaFullPath(rootFolder);
 			const ruleFiltersDirPath = this._config.getRulesDirFilters();
 
-			const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(ecaTestParam,
+			const output = await ProcessHelper.executeWithArgsWithRealtimeOutput(ecaTestParam,
 				[
 					"--sdk", sdkDirPath,
 					"--taxonomy", taxonomyFilePath,

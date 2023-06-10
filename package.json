@@ -571,6 +571,7 @@
 	},
 	"devDependencies": {
 		"@types/glob": "^8.0.0",
+		"@types/iconv": "^3.0.1",
 		"@types/js-yaml": "^4.0.5",
 		"@types/mocha": "^8.2.2",
 		"@typescript-eslint/eslint-plugin": "^4.21.0",
@@ -589,6 +590,7 @@
 		"diff": "^5.1.0",
 		"fs-extra": "^10.0.0",
 		"guid-typescript": "^1.0.9",
+		"iconv": "^3.0.1",
 		"js-yaml": "^4.1.0",
 		"lru-cache": "^6.0.0",
 		"mustache": "^4.2.0",

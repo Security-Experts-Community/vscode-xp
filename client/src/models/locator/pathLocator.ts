@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-import { FileNotFoundException } from '../fileNotFoundException';
+import { FileSystemException } from '../fileSystemException';
 import { XpException } from '../xpException';
 
 export enum OsType {
@@ -38,7 +38,7 @@ export abstract class PathLocator {
 		}
 	
 		if(!fs.existsSync(this._kbFullPath)) {
-			throw new FileNotFoundException(`Некорректный путь '${this._kbFullPath}'`, this._kbFullPath);
+			throw new FileSystemException(`Некорректный путь '${this._kbFullPath}'`, this._kbFullPath);
 		}
 	}
 
