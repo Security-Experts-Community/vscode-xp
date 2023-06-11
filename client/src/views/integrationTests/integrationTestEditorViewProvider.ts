@@ -292,11 +292,8 @@ export class IntegrationTestEditorViewProvider  {
 				}
 
 				case 'fullTest': {
-					const result = await this.runFullTests(message);
-					if(!result) {
-						return;
-					}
-					
+					await this.runFullTests(message);
+
 					const activeTestNumber = this.getActiveTestNumber(message);
 					await this.updateView(activeTestNumber);
 					break;
@@ -505,9 +502,6 @@ export class IntegrationTestEditorViewProvider  {
 
 			await VsCodeApiHelper.saveRuleCodeFile(this._rule);
 
-			const outputParser = new SiemJOutputParser();
-			const testRunner = new IntegrationTestRunner(this._config, outputParser);
-
 			let tests : IntegrationTest [] = [];
 			try {
 				// Сохраняем активные тесты.
@@ -515,23 +509,24 @@ export class IntegrationTestEditorViewProvider  {
 				tests = rule.getIntegrationTests();
 			}
 			catch(error) {
-				ExceptionHelper.show(error, `Не удалось сохранить тесты.`);
+				ExceptionHelper.show(error, `Не удалось сохранить тесты`);
 				return false;
 			}
 
 			if(tests.length == 0) {
-				ExtensionHelper.showUserInfo(`Тесты для правила '${this._rule.getName()}' не найдены`);
+				vscode.window.showInformationMessage(`Тесты для правила '${this._rule.getName()}' не найдены. Добавьте хотя бы один тест и повторите.`);
 				return false;
 			}
 
 			try {
+				const outputParser = new SiemJOutputParser();
+				const testRunner = new IntegrationTestRunner(this._config, outputParser);
 				const executedTests = await testRunner.run(this._rule);
 
 				if(executedTests.every(it => it.getStatus() === TestStatus.Success)) {
 					ExtensionHelper.showUserInfo(`Интеграционные тесты прошли успешно.`);
 					return true;
 				} 
-				ExtensionHelper.showUserError(`Интеграционные тесты завершились неуспешно. Возможно в правиле используются вспомогательные правила из других пакетов.`);
 			}
 			catch(error) {
 				ExceptionHelper.show(error, `Ошибка запуска тестов`);

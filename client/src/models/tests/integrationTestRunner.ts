@@ -29,6 +29,8 @@ export class IntegrationTestRunner {
 		this._config.getSiemkbTestsPath();
 
 		const integrationTests = rule.getIntegrationTests();
+		integrationTests.forEach(it => it.setStatus(TestStatus.Unknown));
+
 		if(integrationTests.length == 0) {
 			throw new XpException(`У правила *${rule.getName}* не найдено интеграционных тестов`);
 		}
@@ -89,8 +91,8 @@ export class IntegrationTestRunner {
 			throw new XpException("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
 		}
 
+		// Сохраняем конфигурационный файл для siemj во временную директорию.
 		const siemjConfigPath = this._config.getTmpSiemjConfigPath(rootFolder);
-		// Централизованно сохраняем конфигурационный файл для siemj.
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 
 		// Очищаем и показываем окно Output.
@@ -110,48 +112,55 @@ export class IntegrationTestRunner {
 
 		const ruleFileUri = vscode.Uri.file(rule.getRuleFilePath());
 
-		if(siemjExecutionResult.output.includes(this.TEST_SUCCESS_SUBSTRING)) {
+		if(siemjExecutionResult.output.includes(this.TESTS_SUCCESS_SUBSTRING)) {
 			integrationTests.forEach(it => it.setStatus(TestStatus.Success));
 
 			// Убираем ошибки по текущему правилу.
 			this._config.getDiagnosticCollection().set(ruleFileUri, []);
 
-			await this.clearTmpFiles(this._config, rootFolder);
-		} else {
-			this._config.getOutputChannel().show();
-			this._config.getDiagnosticCollection().clear();
-
-			let ruleFileDiagnostics = await this._outputParser.parse(siemjExecutionResult.output);
-
-			// Фильтруем диагностики по текущему правилу.
-			ruleFileDiagnostics = ruleFileDiagnostics.filter(rfd => {
-				const path = rfd.Uri.path;
-				return path.includes(rule.getName());
-			});
-
-			for (const rfd of ruleFileDiagnostics) {
-				this._config.getDiagnosticCollection().set(rfd.Uri, rfd.Diagnostics);
-			}
+			this.clearTmpFiles(this._config, rootFolder);
+			return integrationTests;
 		}
+ 
+		this._config.getOutputChannel().show();
+		this._config.getDiagnosticCollection().clear();
+
+		const result = await this._outputParser.parse(siemjExecutionResult.output);
+
+		// Фильтруем диагностики по текущему правилу и показываем их в нативном окне.
+		const diagnostics = result.fileDiagnostics.filter(rfd => {
+			const path = rfd.uri.path;
+			return path.includes(rule.getName());
+		});
+
+		for (const diagnostic of diagnostics) {
+			this._config.getDiagnosticCollection().set(diagnostic.uri, diagnostic.diagnostics);
+		}
+
+		// Меняем статус непрошедших тестов.
+		for(const failedTestNumber of result.failedTestNumber) {
+			integrationTests[failedTestNumber - 1].setStatus(TestStatus.Failed);
+		}
+
+		integrationTests.forEach( (it) => {
+			if(it.getStatus() == TestStatus.Unknown) {
+				it.setStatus(TestStatus.Success);
+			}
+		});
 
 		return integrationTests;
 	}
 
 	private async clearTmpFiles(config : Configuration, rootFolder: string) : Promise<void> {
-		const siemjConfigPath = config.getTmpDirectoryPath(rootFolder);
-
+		
 		try {
-			// Очищаем временные файлы.
-			await fs.promises.access(siemjConfigPath).then(
-				() => { 
-					return fs.promises.unlink(siemjConfigPath); 
-				}
-			);
+			const siemjConfigPath = config.getTmpDirectoryPath(rootFolder);
+			return fs.promises.unlink(siemjConfigPath); 
 		}
 		catch (error) {
-			//
+			// TODO:
 		}
 	}
 
-	private readonly TEST_SUCCESS_SUBSTRING = "All tests OK";
+	private readonly TESTS_SUCCESS_SUBSTRING = "All tests OK";
 }

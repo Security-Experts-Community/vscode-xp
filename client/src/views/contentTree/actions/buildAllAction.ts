@@ -60,11 +60,12 @@ export class BuildAllAction {
 					this._config.getOutputChannel().show();
 
 					// Разбираем вывод siemJ и корректируем начало строки с диагностикой (исключаем пробельные символы)
-					const ruleFileDiagnostics = await this._outputParser.parse(siemJOutput);
+					const result = await this._outputParser.parse(siemJOutput);
+					const fileDiagnostics = result.fileDiagnostics; 
 
 					// Выводим ошибки и замечания для тестируемого правила.
-					for (const rfd of ruleFileDiagnostics) {
-						this._config.getDiagnosticCollection().set(rfd.Uri, rfd.Diagnostics);
+					for (const rfd of fileDiagnostics) {
+						this._config.getDiagnosticCollection().set(rfd.uri, rfd.diagnostics);
 					}
 
 					if(!siemJOutput.includes(this.SUCCESS_EXIT_CODE_SUBSTRING)) {

@@ -127,32 +127,21 @@ export class ProcessHelper {
 		
 			let output = "";
 		
+			child.stdout.setEncoding('utf8');
 			child.stdout.on('data', function(data : Buffer) {
-				// const body = new Buffer(data, 'binary');
-				const conv = iconv.Iconv('windows-1251', 'utf8');
-				const convertedData = conv.convert(data).toString();
-
-				// const someEncodedString = Buffer.from(data, ).toString();
-				outputChannel.append(convertedData);
-				output += convertedData;
+				outputChannel.append(data.toString());
+				output += data.toString();
 			});
 
-			// child.stdout.setEncoding('utf8');
-			child.stdout.on("error", function(data: Buffer) {
-				const conv = iconv.Iconv('windows-1251', 'utf8');
-				const convertedData = conv.convert(data).toString();
-
-				outputChannel.append(convertedData);
-				output += convertedData;
+			child.stdout.on("error", function(data) {
+				outputChannel.append(data.toString());
+				output += data.toString();
 			});
 		
-			///child.stderr.setEncoding('utf8');
-			child.stderr.on('data', function(data: Buffer) {
-				const conv = iconv.Iconv('windows-1251', 'utf8');
-				const convertedData = conv.convert(data).toString();
-
-				outputChannel.append(convertedData);
-				output += convertedData;
+			child.stderr.setEncoding('utf8');
+			child.stderr.on('data', function(data) {
+				outputChannel.append(data.toString());
+				output += data.toString();
 			});
 		
 			child.on('close', function(code) {
