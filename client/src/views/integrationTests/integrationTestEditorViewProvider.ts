@@ -480,14 +480,8 @@ export class IntegrationTestEditorViewProvider  {
 				}
 
 				// Переносим данные из быстрого теста в модульный.
-				// При этом вывод теста содержит событие, подходящее под expect секцию, поэтому очищаем его как и код теста.
-				const result = resultTest.getOutput();
-				const clearedResult = TestHelper.cleanTestCode(result);
-
-				// Вывод в тесте пока только храниться, а мы обновим его непосредственно.
-				tests[ruleTestIndex].setOutput(clearedResult);
-				this._config.getOutputChannel().clear();
-				this._config.getOutputChannel().append(clearedResult);
+				// Вывод в тесте пока только хранится, а мы обновим его непосредственно.
+				tests[ruleTestIndex].setOutput(resultTest.getOutput());
 
 				// Удаляем временные файлы.
 				return fs.promises.rmdir(randTmpPath, {recursive : true});
