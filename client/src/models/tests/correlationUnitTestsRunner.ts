@@ -101,15 +101,19 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			// Получаем путь к правилу для которого запускали тест
 			const ruleFileUri = vscode.Uri.file(ruleFilePath);
 
-			// Обновление статуса теста.
 			if(output.includes(this.SUCCESS_TEST_SUBSTRING)) {
-				// Так как тест успешный, то можно сохранить отформатированный результат.
+				// Обновление статуса теста.
 				test.setStatus(TestStatus.Success);
-				test.setOutput(this._outputParser.parseSuccessOutput(output));
 
-				// Очищаем неформатированный вывод и добавляем отформатированный.
-				this._config.getOutputChannel().clear();
-				this._config.getOutputChannel().append(test.getOutput());
+				// Вывод теста содержит событие, подходящее под expect секцию, поэтому извлекаем его и очищаем, как код теста.
+				const extrectedResult = this._outputParser.parseSuccessOutput(output);
+				const clearedResult = TestHelper.cleanTestCode(extrectedResult);
+
+				// Так как тест успешный, то можно сохранить отформатированный результат.
+				test.setOutput(clearedResult);
+
+				// Добавляем отформатированный результат в окно вывода.				
+				this._config.getOutputChannel().append("\n\nFormatted result:\n" + clearedResult);
 
 				// Очищаем ранее выявленные ошибки, если такие были.
 				this._config.getDiagnosticCollection().set(ruleFileUri, []);
