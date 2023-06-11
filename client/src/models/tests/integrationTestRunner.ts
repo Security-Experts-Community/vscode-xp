@@ -110,25 +110,26 @@ export class IntegrationTestRunner {
 			}
 		);
 
-		const ruleFileUri = vscode.Uri.file(rule.getRuleFilePath());
+		const siemjResult = await this._outputParser.parse(siemjExecutionResult.output);
 
-		if(siemjExecutionResult.output.includes(this.TESTS_SUCCESS_SUBSTRING)) {
+		// Все тесты прошли.
+		if(siemjResult.testStatus) {
 			integrationTests.forEach(it => it.setStatus(TestStatus.Success));
 
 			// Убираем ошибки по текущему правилу.
+			const ruleFileUri = vscode.Uri.file(rule.getRuleFilePath());
 			this._config.getDiagnosticCollection().set(ruleFileUri, []);
 
 			this.clearTmpFiles(this._config, rootFolder);
 			return integrationTests;
 		}
- 
+
+		// Либо тесты не прошли, либо мы до них не дошли.
 		this._config.getOutputChannel().show();
 		this._config.getDiagnosticCollection().clear();
 
-		const result = await this._outputParser.parse(siemjExecutionResult.output);
-
 		// Фильтруем диагностики по текущему правилу и показываем их в нативном окне.
-		const diagnostics = result.fileDiagnostics.filter(rfd => {
+		const diagnostics = siemjResult.fileDiagnostics.filter(rfd => {
 			const path = rfd.uri.path;
 			return path.includes(rule.getName());
 		});
@@ -137,16 +138,19 @@ export class IntegrationTestRunner {
 			this._config.getDiagnosticCollection().set(diagnostic.uri, diagnostic.diagnostics);
 		}
 
-		// Меняем статус непрошедших тестов.
-		for(const failedTestNumber of result.failedTestNumber) {
-			integrationTests[failedTestNumber - 1].setStatus(TestStatus.Failed);
-		}
-
-		integrationTests.forEach( (it) => {
-			if(it.getStatus() == TestStatus.Unknown) {
-				it.setStatus(TestStatus.Success);
+		// Если были не прошедшие тесты, выводим статус.
+		// Непрошедшие тесты могу отсутствовать, если до тестов дело не дошло.
+		if(siemjResult.failedTestNumbers.length > 0) {
+			for(const failedTestNumber of siemjResult.failedTestNumbers) {
+				integrationTests[failedTestNumber - 1].setStatus(TestStatus.Failed);
 			}
-		});
+	
+			integrationTests.forEach( (it) => {
+				if(it.getStatus() == TestStatus.Unknown) {
+					it.setStatus(TestStatus.Success);
+				}
+			});
+		}
 
 		return integrationTests;
 	}

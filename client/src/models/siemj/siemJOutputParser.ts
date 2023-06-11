@@ -13,10 +13,9 @@ export class FileDiagnostics {
 }
 
 export class SiemjExecutionResult {
-	public status : boolean;
+	public testStatus : boolean;
 	public fileDiagnostics : FileDiagnostics[] = [];
-	public successTestNumber : number[] = [];
-	public failedTestNumber : number[] = [];
+	public failedTestNumbers : number[] = [];
 }
 
 export class SiemJOutputParser {
@@ -28,7 +27,15 @@ export class SiemJOutputParser {
 	public async parse(siemjOutput : string) : Promise<SiemjExecutionResult> {
 		
 		const result = new SiemjExecutionResult();
+		this.processBuildRules(siemjOutput, result);
+		this.processTestRules(siemjOutput, result);
 
+		// Корректировка диагностиков (выделение конкретных токенов) по анализу файлов с ошибками
+		result.fileDiagnostics = await this.correctDiagnosticBeginCharRanges(result.fileDiagnostics);
+		return result;
+	}
+
+	private processBuildRules(siemjOutput: string, result: SiemjExecutionResult) {
 		// [ERROR] Compilation failed:
 		// c:\Work\-=SIEM=-\Content\knowledgebase\packages\esc\correlation_rules\active_directory\Active_Directory_Snapshot\rule.co:27:29: syntax error, unexpected '='
 		const fileDiagnostics: FileDiagnostics[] = [];
@@ -83,29 +90,45 @@ export class SiemJOutputParser {
 			fileDiagnostics.push(newRuleFileDiag);
 		}
 
-		// TEST_RULES :: Test Started: tests\\raw_events_1.json
-		// TEST_RULES :: Expected results are not obtained.
-		const failedTestRegExp = /TEST_RULES :: Test Started: tests\\raw_events_(\d+).json\s+TEST_RULES :: Expected results are not obtained./gm;
-		let t: RegExpExecArray | null;
-		while ((t = failedTestRegExp.exec(siemjOutput))) {
+	}
 
-			if(t.length != 2) {
-				continue;
+	private processTestRules(siemjOutput: string, result: SiemjExecutionResult) {
+		// Определяем статус тестов.
+		// Дошли до блока тестов.
+		const runningTestRegExp = /TEST_RULES \[Err\] :: Collected \d+ tests./gm;
+		if(siemjOutput.match(runningTestRegExp)) {
+
+			// Все тесты прошли.
+			if(siemjOutput.includes(this.TESTS_SUCCESS_SUBSTRING)) {
+				result.testStatus = true;
 			}
 
-			const failedTestNumber = parseInt(t[1]);
-			result.failedTestNumber.push(failedTestNumber);
+			// Не все прошли, значит есть ошибки.
+			// TEST_RULES :: Test Started: tests\\raw_events_1.json
+			// TEST_RULES :: Expected results are not obtained.
+			const failedTestRegExp = /TEST_RULES :: Test Started: tests\\raw_events_(\d+).json\s+TEST_RULES :: Expected results are not obtained./gm;
+			let t: RegExpExecArray | null;
+			while ((t = failedTestRegExp.exec(siemjOutput))) {
+
+				if(t.length != 2) {
+					continue;
+				}
+
+				const failedTestNumber = parseInt(t[1]);
+				result.failedTestNumbers.push(failedTestNumber);
+			}
+
+			// Если хоть одна ошибка, тогда выполнение Siemj завершилось неуспешно.
+			if(result.failedTestNumbers.length > 0) {
+				result.testStatus = false;
+			} else {
+				result.testStatus = true;
+			}
+
+			return;
 		}
 
-		// Если хоть одна ошибка, тогда выполнение Siemj завершилось неуспешно.
-		if(result.fileDiagnostics.some(fd => fd.diagnostics.some(d => d.severity == vscode.DiagnosticSeverity.Error))) {
-			result.status = false;
-		} else {
-			result.status = true;
-		}
-
-		result.fileDiagnostics = await this.correctDiagnosticBeginCharRanges(fileDiagnostics);
-		return result;
+		result.testStatus = false;
 	}
 
 	/**
@@ -130,4 +153,6 @@ export class SiemJOutputParser {
 
 		return FileDiagnostics;
 	}
+
+	private readonly TESTS_SUCCESS_SUBSTRING = "All tests OK";
 }

@@ -16,7 +16,7 @@ TEST_RULES :: Expected results are not obtained.`;
 
 		const status = await parser.parse(output);
 
-		assert.strictEqual(status.failedTestNumber.length, 1);
+		assert.strictEqual(status.failedTestNumbers.length, 1);
 	});
 
 	test('Одна строка с ошибкой', async () => {
