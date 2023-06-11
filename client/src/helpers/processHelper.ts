@@ -130,7 +130,7 @@ export class ProcessHelper {
 			child.stdout.on('data', function(data : Buffer) {
 				// const body = new Buffer(data, 'binary');
 				const conv = iconv.Iconv('windows-1251', 'utf8');
-				const convertedData = conv.convert(data).toString();				
+				const convertedData = conv.convert(data).toString();
 
 				// const someEncodedString = Buffer.from(data, ).toString();
 				outputChannel.append(convertedData);
