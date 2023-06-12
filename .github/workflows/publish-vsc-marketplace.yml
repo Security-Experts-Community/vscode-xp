@@ -31,8 +31,8 @@ jobs:
           echo "EXT_VERSION=${TAGGED_VERSION}"
           WRITTEN_VERSION="$(cat package.json | jq '.version' -r)"
           echo "WRITTEN_VERSION=${WRITTEN_VERSION}"
-          if [[ "${TAGGED_VERSION}" == *"-"* ]]; then
-            if [[ ! "${TAGGED_VERSION}" == "${WRITTEN_VERSION}"-rc.* ]]; then
+          if [[ $(($(echo "${TAGGED_VERSION}" | cut -f2 -d'.')%2)) -eq 1 ]]; then
+            if [[ ! "${TAGGED_VERSION}" == "${WRITTEN_VERSION}" ]]; then
               echo "Prerelease Tag and Version in package.json are not compatible: '${TAGGED_VERSION}' vs '${WRITTEN_VERSION}'"
               exit 1
             fi
@@ -60,8 +60,13 @@ jobs:
           npm ci
           npm run vscode:prepublish
 
-      - name: Package extension
+      - name: Package release extension
+        if: env.EXT_ISPREVIEW != 1
         run: npx vsce package -o "./vscode-xp-${{ env.EXT_VERSION }}.vsix"
+
+      - name: Package pre-release extension
+        if: env.EXT_ISPREVIEW == 1
+        run: npx vsce package --pre-release -o "./vscode-xp-${{ env.EXT_VERSION }}.vsix"
 
       - name: Create release
         id: create_release
@@ -89,9 +94,15 @@ jobs:
       - name: Publish at VSCode marketplace
         if: env.EXT_ISPREVIEW != 1
         run: npx vsce publish -i "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VS_MARKETPLACE_TOKEN }}"
-      
+
+      - name: Publish pre-release at VSCode marketplace
+        if: env.EXT_ISPREVIEW == 1
+        run: npx vsce publish --pre-release -i "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VS_MARKETPLACE_TOKEN }}"
+
       - name: Publish at Open VSIX
         if: env.EXT_ISPREVIEW != 1
         run: npx ovsx publish "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.OPEN_VSIX_TOKEN }}"
 
-      
+      - name: Publish pre-release at Open VSIX
+        if: env.EXT_ISPREVIEW == 1
+        run: npx ovsx publish --pre-release "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.OPEN_VSIX_TOKEN }}"
