@@ -45,13 +45,16 @@ export class SiemjManager {
 
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const siemjOutput = await ProcessHelper.executeWithArgsWithRealtimeOutput(
+		const siemjOutput = await ProcessHelper.execute(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
-			this._config.getOutputChannel()
+			{	
+				encoding: this._config.getEncoding(),
+				outputChannel: this._config.getOutputChannel()
+			}
 		);
 
-		this.processOutput(siemjOutput);
+		this.processOutput(siemjOutput.output);
 
 		const schemaFilePath = this._config.getSchemaFullPath(contentRootFolder);
 		if(!fs.existsSync(schemaFilePath)) {
@@ -96,13 +99,16 @@ export class SiemjManager {
 
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const siemjOutput = await ProcessHelper.executeWithArgsWithRealtimeOutput(
+		const siemjOutput = await ProcessHelper.execute(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
-			this._config.getOutputChannel()
+			{	
+				encoding: this._config.getEncoding(),
+				outputChannel: this._config.getOutputChannel()
+			}
 		);
 
-		this.processOutput(siemjOutput);
+		this.processOutput(siemjOutput.output);
 
 		const normEventsFilePath = this._config.getNormalizedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(normEventsFilePath)) {
@@ -156,13 +162,16 @@ export class SiemjManager {
 		
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const siemjOutput = await ProcessHelper.executeWithArgsWithRealtimeOutput(
+		const siemjOutput = await ProcessHelper.execute(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
-			this._config.getOutputChannel()
+			{	
+				encoding: this._config.getEncoding(),
+				outputChannel: this._config.getOutputChannel()
+			}
 		);
 
-		this.processOutput(siemjOutput);
+		this.processOutput(siemjOutput.output);
 
 		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(enrichEventsFilePath)) {
@@ -330,13 +339,16 @@ export class SiemjManager {
 
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const output = await ProcessHelper.executeWithArgsWithRealtimeOutput(
+		const output = await ProcessHelper.execute(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
-			this._config.getOutputChannel()
+			{	
+				encoding: this._config.getEncoding(),
+				outputChannel: this._config.getOutputChannel()
+			}
 		);
 
-		return output;
+		return output.output;
 	}
 
 	private processOutput(siemjOutput: string) {

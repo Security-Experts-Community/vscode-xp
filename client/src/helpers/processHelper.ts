@@ -1,10 +1,9 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as child_process from 'child_process';
-import * as iconv from 'iconv';
+import * as iconv from 'iconv-lite';
 
-type EncodingType = "windows-1251" | "utf-8"
-
+import { EncodingType } from '../models/configuration';
 
 export interface ExecutionProcessOptions {
 	encoding: EncodingType;
@@ -237,9 +236,7 @@ export class ProcessHelper {
 	}
 
 	private static encodeOutputToString(data: Buffer, inputEncoding: EncodingType) {
-		const conv = iconv.Iconv(inputEncoding, 'utf8');
-		const encodedData = conv.convert(data).toString();
-		return encodedData;
+		return iconv.decode(data, inputEncoding, {defaultEncoding: 'utf-8'});
 	}
 		
 	public static readProcessOutputSync(command: string,encoding: BufferEncoding) : string {
