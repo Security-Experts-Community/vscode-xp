@@ -90,6 +90,7 @@ export class SiemJOutputParser {
 			fileDiagnostics.push(newRuleFileDiag);
 		}
 
+		result.fileDiagnostics.push(...fileDiagnostics);
 	}
 
 	private processTestRules(siemjOutput: string, result: SiemjExecutionResult) {

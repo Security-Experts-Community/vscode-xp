@@ -6,16 +6,34 @@ import { TestFixture } from '../../helper';
 
 suite('SiemJOutputParser', () => {
 
+	test('Прошли все тесты', async () => {
+		const parser = new SiemJOutputParser();
+
+		const output = 
+`
+TEST_RULES [Err] :: Collected 5 tests.
+...
+TEST_RULES [Err] :: All tests OK`;
+
+		const status = await parser.parse(output);
+
+		assert.ok(status.testStatus);
+		assert.strictEqual(status.failedTestNumbers.length, 0);
+	});
+
 	test('Один тест не прошёл', async () => {
 		const parser = new SiemJOutputParser();
 
 		const output = 
 `
+TEST_RULES [Err] :: Collected 5 tests.
+...
 TEST_RULES :: Test Started: tests\\raw_events_1.json
 TEST_RULES :: Expected results are not obtained.`;
 
 		const status = await parser.parse(output);
 
+		assert.ok(!status.testStatus);
 		assert.strictEqual(status.failedTestNumbers.length, 1);
 	});
 

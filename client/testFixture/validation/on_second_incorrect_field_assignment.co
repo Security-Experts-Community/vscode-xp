@@ -1,4 +1,4 @@
-rule Rule: FirstEvent + timer 1m
+rule Rule: FirstEvent+ timer 1m
 
     on First_Event {
         $dst.fqdn = $event_src.fqdn
