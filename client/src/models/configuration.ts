@@ -12,6 +12,8 @@ import { EDRPathHelper } from './locator/EDRPathLocator';
 import { OsType, PathLocator } from './locator/pathLocator';
 import { SIEMPathHelper } from './locator/SIEMPathLocator';
 
+export type EncodingType = "windows-1251" | "utf-8"
+
 export class Configuration {
 
 	private constructor(context: vscode.ExtensionContext) {
@@ -107,6 +109,15 @@ export class Configuration {
 			case "linux" : return OsType.Linux;
 			case "darwin" : return OsType.Mac;
 			default: throw new Error("Платформа не поддеживается.");
+		}
+	}
+
+	public getEncoding() : EncodingType {
+		switch(this.getOsType()) {
+			case OsType.Windows: return "windows-1251";
+			case OsType.Linux: return "utf-8";
+			case OsType.Mac: return "utf-8";
+			default: throw new XpException("Платформа не поддерживается.");
 		}
 	}
 

@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
 import { SiemjConfigHelper } from '../siemj/siemjConfigHelper';
 import { SiemJOutputParser } from '../siemj/siemJOutputParser';
@@ -13,10 +12,8 @@ import { TestStatus } from './testStatus';
 import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
 import { XpException } from '../xpException';
 import { TestHelper } from '../../helpers/testHelper';
-import { CorrGraphRunner } from '../../views/сorrelationGraph/corrGraphRunner';
 import { Correlation } from '../content/correlation';
 import { Enrichment } from '../content/enrichment';
-import { FileSystemException } from '../fileSystemException';
 
 export class IntegrationTestRunner {
 
@@ -105,7 +102,7 @@ export class IntegrationTestRunner {
 		const siemjExecutionResult = await ProcessHelper.execute(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"], {
-				encoding : "windows-1251",
+				encoding : this._config.getEncoding(),
 				outputChannel : this._config.getOutputChannel()
 			}
 		);

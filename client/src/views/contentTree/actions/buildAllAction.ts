@@ -49,10 +49,15 @@ export class BuildAllAction {
 					// Типовая команда выглядит так:
 					// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
 					const siemjExePath = this._config.getSiemjPath();
-					const siemJOutput = await ProcessHelper.executeWithArgsWithRealtimeOutput(
+
+					const siemJOutput = await ProcessHelper.execute(
 						siemjExePath,
 						["-c", siemjConfigPath, "main"],
-						this._config.getOutputChannel());
+						{
+							encoding: this._config.getEncoding(),
+							outputChannel: this._config.getOutputChannel()
+						}
+					);
 					
 
 					// Добавляем новые строки, чтобы разделить разные запуски утилиты
@@ -60,7 +65,7 @@ export class BuildAllAction {
 					this._config.getOutputChannel().show();
 
 					// Разбираем вывод siemJ и корректируем начало строки с диагностикой (исключаем пробельные символы)
-					const result = await this._outputParser.parse(siemJOutput);
+					const result = await this._outputParser.parse(siemJOutput.output);
 					const fileDiagnostics = result.fileDiagnostics; 
 
 					// Выводим ошибки и замечания для тестируемого правила.
@@ -68,7 +73,7 @@ export class BuildAllAction {
 						this._config.getDiagnosticCollection().set(rfd.uri, rfd.diagnostics);
 					}
 
-					if(!siemJOutput.includes(this.SUCCESS_EXIT_CODE_SUBSTRING)) {
+					if(!siemJOutput.output.includes(this.SUCCESS_EXIT_CODE_SUBSTRING)) {
 						ExtensionHelper.showUserInfo(`Компиляция пакетов в папке ${rootFolder} успешно завершена.`);
 					}
 					else {

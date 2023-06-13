@@ -81,13 +81,16 @@ export class UnpackKbAction {
 					"-o", outputDirPath
 				];
 
-				const output = await ProcessHelper.executeWithArgsWithRealtimeOutput(
+				const output = await ProcessHelper.execute(
 					"dotnet",
 					params,
-					this._config.getOutputChannel()
+					{	
+						encoding: this._config.getEncoding(),
+						outputChannel: this._config.getOutputChannel()
+					}
 				);
 
-				if(!output.includes(this.SUCCESS_SUBSTRING)) {
+				if(!output.output.includes(this.SUCCESS_SUBSTRING)) {
 					// TODO: тут хорошо бы сделать ссылку или кнопку для перехода в нужный канал Output.
 					ExtensionHelper.showUserError(`Не удалось распаковать пакет. Подробности приведены в панели Output.`);
 					this._config.getOutputChannel().appendLine(knowledgeBasePackagerCli + " " + params.join(" "));

@@ -68,7 +68,7 @@ export class SDKUtilitiesWrappers {
 
 				// Запускаем утилиту с параметрами
 				// TODO: Возможно есть смысл отслеживать неуспешные запуски по кодам ошибки от дочернего процесса
-				const output = await ProcessHelper.executeWithArgsWithRealtimeOutput(
+				const output = await ProcessHelper.execute(
 					normalizeExePath,
 					[
 						"--sdk", sdkPath,
@@ -79,12 +79,16 @@ export class SDKUtilitiesWrappers {
 						"-x", appendixPath,
 						"-e"
 					],
-					outputChannel);
+					{	
+						encoding: this.config.getEncoding(),
+						outputChannel: outputChannel
+					}
+					);
 
 				outputChannel.appendLine("XP :: Нормализация тестового события завершена");
 				outputChannel.appendLine("");
 
-				return output;
+				return output.output;
 
 				// Анализируем вывод утилиты на наличие ошибок и предупреждений
 				// TODO: Возможно паттернов вывода больше. Нужно описать разные ситуации.

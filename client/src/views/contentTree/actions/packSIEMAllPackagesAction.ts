@@ -185,7 +185,7 @@ export class PackKbAction {
 
 				// Типовая команда выглядит так:
 				// dotnet kbpack.dll pack -s "c:\tmp\pack" -o "c:\tmp\pack\Esc.kb"
-				const output = await ProcessHelper.executeWithArgsWithRealtimeOutput(
+				const output = await ProcessHelper.execute(
 					"dotnet",
 					[
 						knowledgeBasePackagerCli, 
@@ -193,10 +193,13 @@ export class PackKbAction {
 						"-s", tmpSubDirectoryPath, 
 						"-o", unpackKbFilePath
 					],
-					this._config.getOutputChannel()
+					{	
+						encoding: this._config.getEncoding(),
+						outputChannel: this._config.getOutputChannel()
+					}
 				);
 
-				if(output.includes(this.successSubstring)) {
+				if(output.output.includes(this.successSubstring)) {
 					ExtensionHelper.showUserInfo(`Пакет '${packageName}' успешно собран.`);
 					return;
 				} 

@@ -22,7 +22,7 @@ import { MetainfoViewProvider } from './views/metaInfo/metainfoViewProvider';
 import { Configuration } from './models/configuration';
 import { XpCompletionItemProvider } from './providers/xpCompletionItemProvider';
 import { ContentTreeProvider } from './views/contentTree/contentTreeProvider';
-import { RunningCorrelationGraphProvider } from './views/сorrelationGraph/runningCorrelationGraphProvider';
+import { RunningCorrelationGraphProvider } from './views/correlationGraph/runningCorrelationGraphProvider';
 import { TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
 import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvier';
 import { TestsFormatContentMenuExtension } from './ext/contextMenuExtension';

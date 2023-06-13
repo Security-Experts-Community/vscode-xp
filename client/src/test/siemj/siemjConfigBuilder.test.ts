@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as path from 'path';
 
 import { SiemjConfBuilder } from '../../models/siemj/siemjConfigBuilder';
 import { Configuration } from '../../models/configuration';
@@ -17,7 +18,7 @@ suite('SiemjConfigBuilder', () => {
 		assert.ok(siemJConfig.includes("[make-loca]"));
 		assert.ok(siemJConfig.includes("type=BUILD_EVENT_LOCALIZATION"));
 		assert.ok(siemJConfig.includes(`rules_src=`));
-		assert.ok(siemJConfig.includes("out=${output_folder}\\langs"));
+		assert.ok(siemJConfig.includes(path.join("out=${output_folder}", "langs")));
 
 		// Вызов сценария
 		assert.ok(siemJConfig.includes("[main]"));
@@ -34,7 +35,7 @@ suite('SiemjConfigBuilder', () => {
 		assert.ok(result.includes("[make-loca]"));
 		assert.ok(result.includes("type=BUILD_EVENT_LOCALIZATION"));
 		assert.ok(result.includes("rules_src=C:\\Content\\knowledgebase\\packages"));
-		assert.ok(result.includes("out=${output_folder}\\langs"));
+		assert.ok(result.includes(path.join("out=${output_folder}", "langs")));
 
 		// Вызов сценария
 		assert.ok(result.includes("[main]"));
