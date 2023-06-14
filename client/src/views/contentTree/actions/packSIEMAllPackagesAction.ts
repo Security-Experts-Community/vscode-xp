@@ -194,7 +194,7 @@ export class PackKbAction {
 						"-o", unpackKbFilePath
 					],
 					{	
-						encoding: this._config.getEncoding(),
+						encoding: this._config.getSiemjOutputEncoding(),
 						outputChannel: this._config.getOutputChannel()
 					}
 				);

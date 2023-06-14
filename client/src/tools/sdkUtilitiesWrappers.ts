@@ -80,7 +80,7 @@ export class SDKUtilitiesWrappers {
 						"-e"
 					],
 					{	
-						encoding: this.config.getEncoding(),
+						encoding: this.config.getSiemjOutputEncoding(),
 						outputChannel: outputChannel
 					}
 					);

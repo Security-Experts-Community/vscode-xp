@@ -90,7 +90,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 					"--rules-filters", ruleFiltersDirPath
 				],
 				{
-					encoding : this._config.getEncoding(),
+					encoding : "utf-8",
 					outputChannel : this._config.getOutputChannel()
 				}
 			);

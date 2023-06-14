@@ -54,7 +54,7 @@ export class BuildAllAction {
 						siemjExePath,
 						["-c", siemjConfigPath, "main"],
 						{
-							encoding: this._config.getEncoding(),
+							encoding: this._config.getSiemjOutputEncoding(),
 							outputChannel: this._config.getOutputChannel()
 						}
 					);

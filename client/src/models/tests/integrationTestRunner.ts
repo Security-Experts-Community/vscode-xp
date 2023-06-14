@@ -102,7 +102,7 @@ export class IntegrationTestRunner {
 		const siemjExecutionResult = await ProcessHelper.execute(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"], {
-				encoding : this._config.getEncoding(),
+				encoding : this._config.getSiemjOutputEncoding(),
 				outputChannel : this._config.getOutputChannel()
 			}
 		);

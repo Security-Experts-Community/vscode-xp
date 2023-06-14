@@ -167,6 +167,10 @@ export class ProcessHelper {
 			}
 		
 			const executionResult : ExecutionResult = new ExecutionResult();
+
+			if(!options.encoding) {
+				options.encoding = "utf-8";
+			}
 		
 			child.stdout.on('data', function(data : Buffer) {
 				const encodedData = ProcessHelper.encodeOutputToString(data, options.encoding);

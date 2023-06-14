@@ -112,7 +112,7 @@ export class Configuration {
 		}
 	}
 
-	public getEncoding() : EncodingType {
+	public getSiemjOutputEncoding() : EncodingType {
 		switch(this.getOsType()) {
 			case OsType.Windows: return "windows-1251";
 			case OsType.Linux: return "utf-8";
@@ -154,10 +154,8 @@ export class Configuration {
 	}
 
 	public getSiemjPath() : string {
-		const osType = this.getOsType();
-		
 		let appName = "";
-		switch(osType) {
+		switch(this.getOsType()) {
 			case OsType.Windows: appName = "siemj.exe"; break;
 			case OsType.Linux: appName = "siemj"; break;
 
@@ -171,10 +169,8 @@ export class Configuration {
 	}
 
 	public getSiemkbTestsPath() : string {
-		const osType = this.getOsType();
-		
 		let appName = "";
-		switch(osType) {
+		switch(this.getOsType()) {
 			case OsType.Windows: appName = "siemkb_tests.exe"; break;
 			case OsType.Linux: appName = "siemkb_tests"; break;
 
