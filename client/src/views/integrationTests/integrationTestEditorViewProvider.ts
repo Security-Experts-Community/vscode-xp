@@ -126,7 +126,7 @@ export class IntegrationTestEditorViewProvider  {
 				plain["IntegrationalTests"].push({
 					"TestNumber" : 1,
 					"RawEvents" : '',
-					"NormEvent" : '',
+					"NormEvents" : '',
 					"TestCode" : `expect 1 {"correlation_name" : "${this._rule.getName()}"}`,
 					"TestOutput" : '',
 					"JsonedTestObject" : '',
@@ -160,7 +160,7 @@ export class IntegrationTestEditorViewProvider  {
 					plain["IntegrationalTests"].push({
 						"TestNumber" : it.getNumber(),
 						"RawEvents" : it.getRawEvents(),
-						"NormEvent" : formattedNormalizedEvents,
+						"NormEvents" : formattedNormalizedEvents,
 						"TestCode" : formattedTestCode,
 						"TestOutput" : it.getOutput(),
 						"JsonedTestObject" : jsonedTestObject,
@@ -203,7 +203,8 @@ export class IntegrationTestEditorViewProvider  {
 
 			case 'saveAllTests': {
 				try {
-					await this.saveAllTests(message);
+					// В данном руле сохраняются в памяти нормализованные события.
+					this._rule = await this.saveAllTests(message);
 					ExtensionHelper.showUserInfo(`Все тесты сохранены.`);
 				
 					// Добавляем в DOM новый тест.
@@ -542,7 +543,7 @@ export class IntegrationTestEditorViewProvider  {
 		return test;
 	}
 
-	async saveAllTests(message: any) {
+	async saveAllTests(message: any) : Promise<RuleBaseItem> {
 
 		// Номер активного теста.
 		const activeTestNumberString = message?.activeTestNumber;
@@ -550,6 +551,6 @@ export class IntegrationTestEditorViewProvider  {
 			throw new XpException(`Не задан номер активного теста.`);
 		}
 
-		await TestHelper.saveAllTest(message, this._rule);
+		return TestHelper.saveAllTest(message, this._rule);
 	}
 }
