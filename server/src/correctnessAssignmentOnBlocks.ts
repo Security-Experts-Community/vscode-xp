@@ -47,7 +47,7 @@ export class CorrectnessAssignmentOnBlocks extends IValidator {
 
 		let problems = 0;
 		const diagnostics : Diagnostic[] = [];
-		const incorrectEqualsRegEx = /\s([a-z.0-9_]+)\s*=\s*\S+/gm;
+		const incorrectEqualsRegEx = /\s([a-z.0-9_]+)\s*=(?!=)\s*\S+/gm;
 
 		let incorrectEqualsResult: RegExpExecArray | null;
 		while ((incorrectEqualsResult = incorrectEqualsRegEx.exec(blockCode)) && problems < settings.maxNumberOfProblems) {

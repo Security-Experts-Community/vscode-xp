@@ -6,6 +6,12 @@ rule Rule: FirstEvent+ timer 1m
 
     on Second_Event {
         dst.fqdn = $event_src.fqdn
+
+        if $count.subevents == 0 then
+            ...
+        elif count.subevents == 1 then
+            $alert.context = lower(subject.account.name)
+        endif
     }
 
 emit {
