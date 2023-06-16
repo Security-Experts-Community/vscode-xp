@@ -234,6 +234,25 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 				}
 			)
 		);
+
+		vscode.workspace.onDidOpenTextDocument(
+			async (td: vscode.TextDocument) => {
+				const fileName = td.fileName;
+				// Открываем только корреляции и обогащения.
+				if(!(fileName.endsWith(".co") || fileName.endsWith(".en"))) {
+					return;
+				}
+		
+				const correlationDirPath = path.dirname(fileName);
+				const explorerCorrelation = await ContentTreeProvider.createContentElement(correlationDirPath);
+				await kbTree.reveal(explorerCorrelation,
+					{
+						focus: true,
+						expand: false,
+						select: true
+					});
+			}
+		);
 	}
 
 	constructor(private _knowledgebaseDirectoryPath: string | undefined, _gitAPI : API, private _config: Configuration) {
@@ -417,10 +436,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		const parentDirName = path.basename(parentPath);
 
 		// Дошли до уровня пакета.
-		if(parentDirName.toLocaleLowerCase() === "packages" || parentDirName === "") {
+		if(parentDirName.toLocaleLowerCase() === "knowledgebase" || parentDirName === "") {
 			const packageFolder = await ContentFolder.create(parentPath, ContentFolderType.ContentRoot);
-			packageFolder.setName("Пакеты");
-
 			return Promise.resolve(packageFolder);
 		}
 

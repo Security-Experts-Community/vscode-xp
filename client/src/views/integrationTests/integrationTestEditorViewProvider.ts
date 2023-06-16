@@ -438,7 +438,7 @@ export class IntegrationTestEditorViewProvider  {
 		vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
-			title: `Запущен быстрый тест №${currTest.getNumber()}`
+			title: `Получение ожидаемого события для теста №${currTest.getNumber()}`
 		}, async (progress) => {
 
 			const modularTestContent = `${integrationalTestSimplifiedContent}\n\n${normalizedEvents}`;
@@ -457,24 +457,24 @@ export class IntegrationTestEditorViewProvider  {
 			fastTest.setTestExpectationPath(fastTestFilePath);
 			fastTest.setRule(this._rule);
 
-			const testRunner = this._rule.getUnitTestRunner();
 			try {
+				const testRunner = this._rule.getUnitTestRunner();
 				const resultTest = await testRunner.run(fastTest);
 
 				switch (resultTest.getStatus()) {
 					case TestStatus.Success: {
-						ExtensionHelper.showUserInfo(`Быстрый тест ${resultTest.getNumber()} пройден успешно.`);
+						ExtensionHelper.showUserInfo(`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено успешно.`);
 						break;
 					}
 					case TestStatus.Failed: {
-						ExtensionHelper.showUserError(`Быстрый тест ${resultTest.getNumber()} завершился неуспешно.`);
+						ExtensionHelper.showUserError(`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено неуспешно.`);
 						break;
 					}
 				}
 
 				// Обновление теста.
 				const tests = this._rule.getIntegrationTests();
-				const ruleTestIndex = tests.findIndex( it => it.getNumber() == resultTest.getNumber());
+				const ruleTestIndex = tests.findIndex(it => it.getNumber() == resultTest.getNumber());
 				if(ruleTestIndex == -1) {
 					ExtensionHelper.showUserError("Не удалось обновить интеграционный тест.");
 					return;
@@ -488,7 +488,7 @@ export class IntegrationTestEditorViewProvider  {
 				return fs.promises.rmdir(randTmpPath, {recursive : true});
 			} 
 			catch(error) {
-				ExceptionHelper.show(error, 'Не удалось запустить быстрый тест.');
+				ExceptionHelper.show(error, 'Не удалось получить ожидаемое событие');
 			}
 		});
 	}
