@@ -21,6 +21,21 @@ TEST_RULES [Err] :: All tests OK`;
 		assert.strictEqual(status.failedTestNumbers.length, 0);
 	});
 
+	test('Сырое событие без конверта', async () => {
+		const parser = new SiemJOutputParser();
+
+		const output = 
+`
+TEST_RULES [Err] :: Collected 1 tests.
+TEST_RULES [Err] :: Found invalid raw events (malformed JSON or lack of envelope fields) in "c:\\Content\\packages\\package1\\correlation_rules\\rule\\tests\\raw_events_1.json":
+TEST_RULES [Err] :: 	Lines: 1
+TEST_RULES [Err] :: Errors found.`;
+
+		const status = await parser.parse(output);
+
+		assert.ok(!status.testStatus);
+	});
+
 	test('Один тест не прошёл', async () => {
 		const parser = new SiemJOutputParser();
 

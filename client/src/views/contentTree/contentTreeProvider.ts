@@ -267,8 +267,19 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 						// Если файл раньше выбран не был, но был открыт при запуске vsCode.
 						if(vscode.window.activeTextEditor && vscode.window.activeTextEditor.document) {
 							const activeDocumentPath = vscode.window.activeTextEditor.document.fileName;
-							return ContentTreeProvider.showRuleTreeItem(contentTree, activeDocumentPath);
+							await ContentTreeProvider.showRuleTreeItem(contentTree, activeDocumentPath);
 						}
+					}
+				}
+			)
+		);
+
+		context.subscriptions.push(
+			contentTree.onDidChangeSelection(
+				async (e: vscode.TreeViewSelectionChangeEvent<KbTreeBaseItem>) => {
+					if(e.selection && e.selection.length == 1) {
+						const selectedItem = e.selection[0];
+						return ContentTreeProvider.selectItem(selectedItem);
 					}
 				}
 			)
@@ -524,6 +535,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 	public static async refresh() : Promise<void> {
 		return vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
+	}
+
+	public static async selectItem(item: KbTreeBaseItem) : Promise<boolean> {
+		return vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, item);
 	}
 
 	private _gitAPI : API;

@@ -119,6 +119,8 @@ export class IntegrationTestRunner {
 
 			this.clearTmpFiles(this._config, rootFolder);
 			return integrationTests;
+		} else {
+			integrationTests.forEach(it => it.setStatus(TestStatus.Failed));
 		}
 
 		// Либо тесты не прошли, либо мы до них не дошли.

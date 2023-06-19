@@ -119,6 +119,13 @@ export class SiemJOutputParser {
 				result.failedTestNumbers.push(failedTestNumber);
 			}
 
+			// Тесты даже не запустились.
+			// Например, сырое событие без конверта.
+			if(siemjOutput.includes(this.ERRORS_FOUND_SUBSTRING)) {
+				result.testStatus = false;
+				return;
+			}
+
 			// Если хоть одна ошибка, тогда выполнение Siemj завершилось неуспешно.
 			if(result.failedTestNumbers.length > 0) {
 				result.testStatus = false;
@@ -156,4 +163,5 @@ export class SiemJOutputParser {
 	}
 
 	private readonly TESTS_SUCCESS_SUBSTRING = "All tests OK";
+	private readonly ERRORS_FOUND_SUBSTRING = "TEST_RULES [Err] :: Errors found.";
 }
