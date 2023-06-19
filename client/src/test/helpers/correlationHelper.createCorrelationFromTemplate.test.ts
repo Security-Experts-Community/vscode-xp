@@ -3,11 +3,11 @@ import * as vscode from 'vscode';
 import * as assert from 'assert';
 import * as fs from 'fs';
 
-import { getDocUri, activate, TestFixture } from '../../helper';
-import { TestHelper } from '../../../helpers/testHelper';
-import { Correlation } from '../../../models/content/correlation';
-import { ContentHelper } from '../../../helpers/contentHelper';
-import { Configuration } from '../../../models/configuration';
+import { getDocUri, activate, TestFixture } from '../helper';
+import { TestHelper } from '../../helpers/testHelper';
+import { Correlation } from '../../models/content/correlation';
+import { ContentHelper } from '../../helpers/contentHelper';
+import { Configuration } from '../../models/configuration';
 
 suite('CorrelationHelper.createCorrelationFromTemplate', async () => {
 

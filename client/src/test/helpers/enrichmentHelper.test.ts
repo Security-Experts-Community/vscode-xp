@@ -1,6 +1,6 @@
 
 import * as assert from 'assert';
-import { ContentHelper } from '../../../helpers/contentHelper';
+import { ContentHelper } from '../../helpers/contentHelper';
 
 suite('EnrichmentHelper', async () => {
 
