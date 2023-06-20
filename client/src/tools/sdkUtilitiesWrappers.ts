@@ -76,11 +76,13 @@ export class SDKUtilitiesWrappers {
 						"-t", taxonomyPath,
 						"-s", formulaPath,
 						"-r", rawEventPath,
-						"-x", appendixPath,
+						// Параметр опциональный. 
+						// Отключили для совместимости с системными тестами
+						// "-x", appendixPath,
 						"-e"
 					],
 					{	
-						encoding: this.config.getSiemjOutputEncoding(),
+						encoding: 'utf-8',
 						outputChannel: outputChannel
 					}
 					);

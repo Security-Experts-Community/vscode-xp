@@ -85,7 +85,7 @@ export class UnpackKbAction {
 					"dotnet",
 					params,
 					{	
-						encoding: this._config.getSiemjOutputEncoding(),
+						encoding: 'utf-8',
 						outputChannel: this._config.getOutputChannel()
 					}
 				);
