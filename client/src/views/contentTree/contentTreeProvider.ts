@@ -100,14 +100,15 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 					} 
 	
 					ContentTreeProvider.setSelectedItem(item);
-	
-					// Открываем код правила
-					const elementUri = vscode.Uri.file(ruleFilePath);
-					const contentDocument = await vscode.workspace.openTextDocument(elementUri);
-					await vscode.window.showTextDocument(contentDocument, vscode.ViewColumn.One);
-					
-					await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
 
+					// Открываем код правила
+					if(ruleFilePath) {
+						const elementUri = vscode.Uri.file(ruleFilePath);
+						const contentDocument = await vscode.workspace.openTextDocument(elementUri);
+						await vscode.window.showTextDocument(contentDocument, vscode.ViewColumn.One);
+						await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
+					}
+	
 					// Выделяем только что созданное правило.
 					await contentTree.reveal(
 						item, 
