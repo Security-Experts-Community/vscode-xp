@@ -109,7 +109,7 @@ export class IntegrationTestRunner {
 
 		const siemjResult = await this._outputParser.parse(siemjExecutionResult.output);
 
-		// Все тесты прошли.
+		// Все тесты прошли, статусы не проверяем, все тесты зеленые.
 		if(siemjResult.testStatus) {
 			integrationTests.forEach(it => it.setStatus(TestStatus.Success));
 
@@ -120,7 +120,8 @@ export class IntegrationTestRunner {
 			this.clearTmpFiles(this._config, rootFolder);
 			return integrationTests;
 		} else {
-			integrationTests.forEach(it => it.setStatus(TestStatus.Failed));
+			// Есть ошибки, все неуспешные тесты не прошли.
+			integrationTests.filter(it => it.getStatus() === TestStatus.Success).forEach(it => it.setStatus(TestStatus.Failed));
 		}
 
 		// Либо тесты не прошли, либо мы до них не дошли.
