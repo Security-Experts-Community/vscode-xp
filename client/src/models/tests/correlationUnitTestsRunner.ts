@@ -78,7 +78,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			const schemaFilePath = this._config.getSchemaFullPath(rootFolder);
 			const ruleFiltersDirPath = this._config.getRulesDirFilters();
 
-			const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(ecaTestParam,
+			const output = await ProcessHelper.execute(ecaTestParam,
 				[
 					"--sdk", sdkDirPath,
 					"--taxonomy", taxonomyFilePath,
@@ -89,10 +89,13 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 					"--fpta-defaults", fptDefaults,
 					"--rules-filters", ruleFiltersDirPath
 				],
-				this._config.getOutputChannel()
+				{
+					encoding : "utf-8",
+					outputChannel : this._config.getOutputChannel()
+				}
 			);
 
-			if(!output) {
+			if(!output.output) {
 				ExtensionHelper.showUserError('Не удалось запустить модульные тесты, команда запуска не вернула ожидаемые данные. Проверьте путь до утилит KBT [в настройках расширения](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]).');
 				test.setStatus(TestStatus.Unknown);
 				return test;
@@ -101,15 +104,19 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			// Получаем путь к правилу для которого запускали тест
 			const ruleFileUri = vscode.Uri.file(ruleFilePath);
 
-			// Обновление статуса теста.
-			if(output.includes(this.SUCCESS_TEST_SUBSTRING)) {
-				// Так как тест успешный, то можно сохранить отформатированный результат.
+			if(output.output.includes(this.SUCCESS_TEST_SUBSTRING)) {
+				// Обновление статуса теста.
 				test.setStatus(TestStatus.Success);
-				test.setOutput(this._outputParser.parseSuccessOutput(output));
 
-				// Очищаем неформатированный вывод и добавляем отформатированный.
-				this._config.getOutputChannel().clear();
-				this._config.getOutputChannel().append(test.getOutput());
+				// Вывод теста содержит событие, подходящее под expect секцию, поэтому извлекаем его и очищаем, как код теста.
+				const extrectedResult = this._outputParser.parseSuccessOutput(output.output);
+				const clearedResult = TestHelper.cleanTestCode(extrectedResult);
+
+				// Так как тест успешный, то можно сохранить отформатированный результат.
+				test.setOutput(clearedResult);
+
+				// Добавляем отформатированный результат в окно вывода.				
+				this._config.getOutputChannel().append("\n\nFormatted result:\n" + clearedResult);
 
 				// Очищаем ранее выявленные ошибки, если такие были.
 				this._config.getDiagnosticCollection().set(ruleFileUri, []);
@@ -118,10 +125,10 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 
 			test.setStatus(TestStatus.Failed);
 			const expectation = test.getTestExpectation();
-			test.setOutput(this._outputParser.parseFailedOutput(output, expectation));
+			test.setOutput(this._outputParser.parseFailedOutput(output.output, expectation));
 
 			// Парсим ошибки из вывода.
-			let diagnostics = this._outputParser.parse(output);
+			let diagnostics = this._outputParser.parse(output.output);
 
 			// Коррекция вывода.
 			const ruleContent = await FileSystemHelper.readContentFile(ruleFilePath);

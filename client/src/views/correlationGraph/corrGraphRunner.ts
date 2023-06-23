@@ -66,10 +66,14 @@ export class CorrGraphRunner {
 
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const result = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+		await ProcessHelper.execute(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
-			this._config.getOutputChannel());
+			{
+				encoding: this._config.getSiemjOutputEncoding(),
+				outputChannel: this._config.getOutputChannel()
+			}
+		);
 
 		const corrEventsFilePath = this._config.getCorrelatedEventsFilePath(rootFolder);
 		if(!fs.existsSync(corrEventsFilePath)) {

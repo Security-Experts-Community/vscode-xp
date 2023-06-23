@@ -8,7 +8,7 @@ import { Configuration } from '../configuration';
 import { XpException } from '../xpException';
 import { RuleBaseItem } from '../content/ruleBaseItem';
 import { SiemjConfigHelper } from './siemjConfigHelper';
-import { FileNotFoundException } from '../fileNotFoundException';
+import { FileSystemException } from '../fileSystemException';
 import { SiemjConfBuilder } from './siemjConfigBuilder';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
@@ -45,13 +45,16 @@ export class SiemjManager {
 
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const siemjOutput = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+		const siemjOutput = await ProcessHelper.execute(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
-			this._config.getOutputChannel()
+			{	
+				encoding: this._config.getSiemjOutputEncoding(),
+				outputChannel: this._config.getOutputChannel()
+			}
 		);
 
-		this.processOutput(siemjOutput);
+		this.processOutput(siemjOutput.output);
 
 		const schemaFilePath = this._config.getSchemaFullPath(contentRootFolder);
 		if(!fs.existsSync(schemaFilePath)) {
@@ -62,12 +65,12 @@ export class SiemjManager {
 	public async normalize(rule: RuleBaseItem, rawEventsFilePath: string) : Promise<string> {
 
 		if(!fs.existsSync(rawEventsFilePath)) {
-			throw new FileNotFoundException(`Файл сырых событий '${rawEventsFilePath}' не существует.`);
+			throw new FileSystemException(`Файл сырых событий '${rawEventsFilePath}' не существует.`);
 		}
 
 		const contentFullPath = rule.getPackagePath(this._config);
 		if(!fs.existsSync(contentFullPath)) {
-			throw new FileNotFoundException(`Директория контента '${contentFullPath}' не существует.`);
+			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует.`);
 		}
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
@@ -96,13 +99,16 @@ export class SiemjManager {
 
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const siemjOutput = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+		const siemjOutput = await ProcessHelper.execute(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
-			this._config.getOutputChannel()
+			{	
+				encoding: this._config.getSiemjOutputEncoding(),
+				outputChannel: this._config.getOutputChannel()
+			}
 		);
 
-		this.processOutput(siemjOutput);
+		this.processOutput(siemjOutput.output);
 
 		const normEventsFilePath = this._config.getNormalizedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(normEventsFilePath)) {
@@ -120,12 +126,12 @@ export class SiemjManager {
 
 	public async normalizeAndEnrich(rule: RuleBaseItem, rawEventsFilePath: string) : Promise<string> {
 		if(!fs.existsSync(rawEventsFilePath)) {
-			throw new FileNotFoundException(`Файл сырых событий '${rawEventsFilePath}' не существует.`);
+			throw new FileSystemException(`Файл сырых событий '${rawEventsFilePath}' не существует.`);
 		}
 
 		const contentFullPath = rule.getPackagePath(this._config);
 		if(!fs.existsSync(contentFullPath)) {
-			throw new FileNotFoundException(`Директория контента '${contentFullPath}' не существует.`);
+			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует.`);
 		}
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
@@ -156,13 +162,16 @@ export class SiemjManager {
 		
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const siemjOutput = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+		const siemjOutput = await ProcessHelper.execute(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
-			this._config.getOutputChannel()
+			{	
+				encoding: this._config.getSiemjOutputEncoding(),
+				outputChannel: this._config.getOutputChannel()
+			}
 		);
 
-		this.processOutput(siemjOutput);
+		this.processOutput(siemjOutput.output);
 
 		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(enrichEventsFilePath)) {
@@ -181,7 +190,7 @@ export class SiemjManager {
 	public async correlateAndGetLocalizationExamples(rule: RuleBaseItem) : Promise<LocalizationExample[]> {
 		const contentFullPath = rule.getPackagePath(this._config);
 		if(!fs.existsSync(contentFullPath)) {
-			throw new FileNotFoundException(`Директория контента '${contentFullPath}' не существует.`);
+			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует.`);
 		}
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
@@ -330,13 +339,16 @@ export class SiemjManager {
 
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+		const output = await ProcessHelper.execute(
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
-			this._config.getOutputChannel()
+			{	
+				encoding: this._config.getSiemjOutputEncoding(),
+				outputChannel: this._config.getOutputChannel()
+			}
 		);
 
-		return output;
+		return output.output;
 	}
 
 	private processOutput(siemjOutput: string) {

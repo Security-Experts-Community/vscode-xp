@@ -4,32 +4,32 @@ This repository uses materials as listed below or described in the code.
 
 # DefinitelyTyped
 
-https://github.com/DefinitelyTyped/DefinitelyTyped
+https://github.com/DefinitelyTyped/DefinitelyTyped  
 License: MIT
 
 
 # vscode-webview-ui-toolkit
 
-https://github.com/microsoft/vscode-webview-ui-toolkit/
+https://github.com/microsoft/vscode-webview-ui-toolkit/  
 License: MIT
 
 # class-transformer
 
-https://github.com/typestack/class-transformer
+https://github.com/typestack/class-transformer  
 License: MIT
 
 
 # js-crc32
 
-https://github.com/SheetJS/js-crc32
-Copyright (C) 2014-present   SheetJS LLC
+https://github.com/SheetJS/js-crc32  
+Copyright (C) 2014-present   SheetJS LLC  
 License: Apache 2.0
 
 
 # jsdiff
 
-https://github.com/kpdecker/jsdiff
-License:
+https://github.com/kpdecker/jsdiff  
+License:  
 ```
 Software License Agreement (BSD License)
 
@@ -67,26 +67,26 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # node-fs-extra
 
-https://github.com/jprichardson/node-fs-extra
+https://github.com/jprichardson/node-fs-extra  
 License: MIT
 	
 
 # guid-typescript
 
-https://github.com/snico-dev/guid-typescript
+https://github.com/snico-dev/guid-typescript  
 License: ISC
 
 
 # js-yaml
 
-https://github.com/nodeca/js-yaml
+https://github.com/nodeca/js-yaml  
 License: MIT
 
 
 # node-lru-cache
 
-https://github.com/isaacs/node-lru-cache
-License:
+https://github.com/isaacs/node-lru-cache  
+License:  
 ```
 The ISC License
 
@@ -108,20 +108,20 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 # mustache.js
 
-https://github.com/janl/mustache.js
+https://github.com/janl/mustache.js  
 License: MIT
 		
 
 # prettier
 
-https://github.com/prettier/prettier
+https://github.com/prettier/prettier  
 License: MIT
 
 
 # rimraf
 
-https://github.com/isaacs/rimraf
-License:
+https://github.com/isaacs/rimraf  
+License:  
 ```
 The ISC License
 
@@ -143,44 +143,44 @@ IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 # TypeScript
 
-https://github.com/Microsoft/TypeScript
+https://github.com/Microsoft/TypeScript  
 License: Apache 2.0
 
 
 # node-util
 
-https://github.com/browserify/node-util
+https://github.com/browserify/node-util  
 License: MIT
 
 
 # uuid
 
-https://github.com/uuidjs/uuid
+https://github.com/uuidjs/uuid  
 License: MIT
 
 
 # vscode-languageserver-node
 
-https://github.com/Microsoft/vscode-languageserver-node
+https://github.com/Microsoft/vscode-languageserver-node  
 License: MIT
 
 
 # xml-typescript
 
-https://github.com/RobinBuschmann/xml-typescript
+https://github.com/RobinBuschmann/xml-typescript  
 License: MIT
 
 
 # xml2json
 
-https://github.com/enkidoo-ai/xml2json
+https://github.com/enkidoo-ai/xml2json  
 License: MIT
 
 
 # yaml
 
-https://github.com/eemeli/yaml
-License:
+https://github.com/eemeli/yaml  
+License:  
 ```
 Copyright Eemeli Aro <eemeli@gmail.com>
 
@@ -200,20 +200,59 @@ THIS SOFTWARE.
 
 # vscode-languageserver-node
 
-https://github.com/Microsoft/vscode-languageserver-node
+https://github.com/Microsoft/vscode-languageserver-node  
 License: MIT
 
 
 # vscode-languageserver-node
 
-https://github.com/Microsoft/vscode-languageserver-node
+https://github.com/Microsoft/vscode-languageserver-node  
 License: MIT
 
 
 # vscode-test
 
-https://github.com/Microsoft/vscode-test
+https://github.com/Microsoft/vscode-test  
 License: MIT
+
+# iconv
+https://github.com/bnoordhuis/node-iconv  
+License:  
+```
+node-iconv license
+==============================================================================
+Copyright (c) 2013, Ben Noordhuis <info@bnoordhuis.nl>
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice and this permission notice appear in all copies.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
+GNU libiconv license
+==============================================================================
+Copyright (C) 2000-2009, 2011 Free Software Foundation, Inc.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+```
 
 ---
 

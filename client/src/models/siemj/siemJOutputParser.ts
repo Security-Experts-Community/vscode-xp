@@ -1,25 +1,47 @@
 import * as vscode  from 'vscode';
+import * as fs  from 'fs';
 import { EOL } from 'os';
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { TestHelper } from '../../helpers/testHelper';
-import { RuleFileDiagnostics } from '../../views/integrationTests/ruleFileDiagnostics';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { stat } from 'fs';
+
+export class FileDiagnostics {
+	public uri : vscode.Uri;
+	public diagnostics : vscode.Diagnostic[] = [];
+}
+
+export class SiemjExecutionResult {
+	public testStatus : boolean;
+	public fileDiagnostics : FileDiagnostics[] = [];
+	public failedTestNumbers : number[] = [];
+}
 
 export class SiemJOutputParser {
 	/**
-	 * Разбирает ошибки из вывода модульных тестов.
-	 * @param testOutput вывод модульных тестов.
+	 * Разбирает ошибки из вывода SIEMJ.
+	 * @param siemjOutput вывод SIEMJ.
 	 * @returns список локаций ошибок.
 	 */
-	public async parse(testOutput : string) : Promise<RuleFileDiagnostics[]> {
-		let result: RuleFileDiagnostics[] = [];
+	public async parse(siemjOutput : string) : Promise<SiemjExecutionResult> {
+		
+		const result = new SiemjExecutionResult();
+		this.processBuildRules(siemjOutput, result);
+		this.processTestRules(siemjOutput, result);
 
+		// Корректировка диагностиков (выделение конкретных токенов) по анализу файлов с ошибками
+		result.fileDiagnostics = await this.correctDiagnosticBeginCharRanges(result.fileDiagnostics);
+		return result;
+	}
+
+	private processBuildRules(siemjOutput: string, result: SiemjExecutionResult) {
 		// [ERROR] Compilation failed:
 		// c:\Work\-=SIEM=-\Content\knowledgebase\packages\esc\correlation_rules\active_directory\Active_Directory_Snapshot\rule.co:27:29: syntax error, unexpected '='
+		const fileDiagnostics: FileDiagnostics[] = [];
 		const pattern = /BUILD_RULES \[Err\] :: (\S+?):(\d+):(\d+):([\S ]+)/gm;
 		let m: RegExpExecArray | null;
-		while ((m = pattern.exec(testOutput))) {
+		while ((m = pattern.exec(siemjOutput))) {
 
 			if(m.length != 5) {
 				continue;
@@ -52,42 +74,94 @@ export class SiemJOutputParser {
 			}
 
 			const fileUri = vscode.Uri.file(ruleFilePath);
-			const ruleFileDiags = result.find(rfd => rfd.Uri === fileUri);
+			const ruleFileDiags = fileDiagnostics.find(rfd => rfd.uri === fileUri);
 
 			if(ruleFileDiags) {
 				// Файл был, добавляем в конец.
-				ruleFileDiags.Diagnostics.push(diagnostic);
+				ruleFileDiags.diagnostics.push(diagnostic);
 				continue;
 			}
 
 			// Такого файла еще не было, создаем и добавляем.
-			const newRuleFileDiag = new RuleFileDiagnostics();
-			newRuleFileDiag.Uri = fileUri;
-			newRuleFileDiag.Diagnostics.push(diagnostic);
+			const newRuleFileDiag = new FileDiagnostics();
+			newRuleFileDiag.uri = fileUri;
+			newRuleFileDiag.diagnostics.push(diagnostic);
 
-			result.push(newRuleFileDiag);
+			fileDiagnostics.push(newRuleFileDiag);
 		}
 
-		result = await this.correctDiagnosticBeginCharRanges(result);
-		return result;
+		result.fileDiagnostics.push(...fileDiagnostics);
+	}
+
+	private processTestRules(siemjOutput: string, result: SiemjExecutionResult) {
+		// Определяем статус тестов.
+		// Дошли до блока тестов.
+		const runningTestRegExp = /TEST_RULES \[Err\] :: Collected \d+ tests./gm;
+		if(siemjOutput.match(runningTestRegExp)) {
+
+			// Все тесты прошли.
+			if(siemjOutput.includes(this.TESTS_SUCCESS_SUBSTRING)) {
+				result.testStatus = true;
+			}
+
+			// Не все прошли, значит есть ошибки.
+			// TEST_RULES :: Test Started: tests\\raw_events_1.json
+			// TEST_RULES :: Expected results are not obtained.
+			const failedTestRegExp = /TEST_RULES :: Test Started: tests\\raw_events_(\d+).json\s+TEST_RULES :: Expected results are not obtained./gm;
+			let t: RegExpExecArray | null;
+			while ((t = failedTestRegExp.exec(siemjOutput))) {
+
+				if(t.length != 2) {
+					continue;
+				}
+
+				const failedTestNumber = parseInt(t[1]);
+				result.failedTestNumbers.push(failedTestNumber);
+			}
+
+			// Тесты даже не запустились.
+			// Например, сырое событие без конверта.
+			if(siemjOutput.includes(this.ERRORS_FOUND_SUBSTRING)) {
+				result.testStatus = false;
+				return;
+			}
+
+			// Если хоть одна ошибка, тогда выполнение Siemj завершилось неуспешно.
+			if(result.failedTestNumbers.length > 0) {
+				result.testStatus = false;
+			} else {
+				result.testStatus = true;
+			}
+
+			return;
+		}
+
+		result.testStatus = false;
 	}
 
 	/**
 	 * Меняет начальное смещение ошибки на первый не пробельный символ, так как исходная ошибка возвращается в виде одного символа.
-	 * @param ruleFileDiagnostics список диагностик для файлов.
+	 * @param FileDiagnostics список диагностик для файлов.
 	 * @returns скорректированные диагностики.
 	 */
-	private async correctDiagnosticBeginCharRanges(ruleFileDiagnostics : RuleFileDiagnostics[]) : Promise<RuleFileDiagnostics[]> {
-		for(const rfd of ruleFileDiagnostics) {
-			const ruleFilePath = rfd.Uri.fsPath;
+	private async correctDiagnosticBeginCharRanges(FileDiagnostics : FileDiagnostics[]) : Promise<FileDiagnostics[]> {
+		for(const rfd of FileDiagnostics) {
+			const ruleFilePath = rfd.uri.fsPath;
+			if(!fs.existsSync(ruleFilePath)) {
+				continue;
+			}
+			
 			const ruleContent = await FileSystemHelper.readContentFile(ruleFilePath);
 			
 			const lines = ruleContent.split(EOL);
 			lines.forEach(line => {if(line.includes("\n")){ExtensionHelper.showUserInfo(`File ${ruleFilePath} contains mixed ends of lines`);}});
 
-			rfd.Diagnostics = TestHelper.correctWhitespaceCharacterFromErrorLines(ruleContent, rfd.Diagnostics);
+			rfd.diagnostics = TestHelper.correctWhitespaceCharacterFromErrorLines(ruleContent, rfd.diagnostics);
 		}
 
-		return ruleFileDiagnostics;
+		return FileDiagnostics;
 	}
+
+	private readonly TESTS_SUCCESS_SUBSTRING = "All tests OK";
+	private readonly ERRORS_FOUND_SUBSTRING = "TEST_RULES [Err] :: Errors found.";
 }

@@ -1,6 +1,19 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as child_process from 'child_process';
+import * as iconv from 'iconv-lite';
+
+import { EncodingType } from '../models/configuration';
+
+export interface ExecutionProcessOptions {
+	encoding: EncodingType;
+	outputChannel : vscode.OutputChannel;
+}
+
+export class ExecutionResult {
+	output: string;
+	exitCode : number;
+}
 
 export class ProcessHelper {
 	public static readProcessPathArgsOutputSync(command: string, args: string[], encoding: BufferEncoding) : string {
@@ -97,10 +110,11 @@ export class ProcessHelper {
 		});
 	}	
 
-	public static ExecuteWithArgsWithRealtimeOutput(command : string, params : string[], outputChannel : vscode.OutputChannel) : Promise<string> {
+	public static executeWithArgsWithRealtimeOutput(command : string, params : string[], outputChannel : vscode.OutputChannel) : Promise<string> {
 
 		return new Promise(function(resolve, reject) {
-			let child; 
+			let child : child_process.ChildProcessWithoutNullStreams;
+			// Вывод пополныемой команды для локализациии ошибки.
 			outputChannel.append(`${command} ${params.join(' ')} `);
 			try {
 				child = child_process.spawn(command, params);
@@ -113,12 +127,11 @@ export class ProcessHelper {
 			let output = "";
 		
 			child.stdout.setEncoding('utf8');
-			child.stdout.on('data', function(data) {
-				output += data.toString();
+			child.stdout.on('data', function(data : Buffer) {
 				outputChannel.append(data.toString());
+				output += data.toString();
 			});
 
-			child.stdout.setEncoding('utf8');
 			child.stdout.on("error", function(data) {
 				outputChannel.append(data.toString());
 				output += data.toString();
@@ -132,6 +145,54 @@ export class ProcessHelper {
 		
 			child.on('close', function(code) {
 				resolve(output);
+			});
+		});
+	}
+
+	public static execute(command : string, params : string[], options: ExecutionProcessOptions ) : Promise<ExecutionResult> {
+
+		return new Promise(function(resolve, reject) {
+			let child : child_process.ChildProcessWithoutNullStreams;
+			// Вывод пополныемой команды для локализациии ошибки.
+			if(options.outputChannel) {
+				options.outputChannel.append(`${command} ${params.join(' ')} `);
+			}
+			
+			try {
+				child = child_process.spawn(command, params);
+			} 
+			catch(error) {
+				reject(error);
+				return;
+			}
+		
+			const executionResult : ExecutionResult = new ExecutionResult();
+
+			if(!options.encoding) {
+				options.encoding = "utf-8";
+			}
+		
+			child.stdout.on('data', function(data : Buffer) {
+				const encodedData = ProcessHelper.encodeOutputToString(data, options.encoding);
+				executionResult.output += encodedData;
+
+				if(options.outputChannel) {
+					options.outputChannel.append(encodedData);
+				}
+			});
+
+			child.stdout.on("error", function(exception : Error) {
+				const encodedData = exception.toString();
+				executionResult.output += encodedData;
+
+				if(options.outputChannel) {
+					options.outputChannel.append(encodedData);
+				}
+			});
+		
+			child.on('close', function(code : number) {
+				executionResult.exitCode = code;
+				resolve(executionResult);
 			});
 		});
 	}
@@ -176,6 +237,10 @@ export class ProcessHelper {
 				resolve(output);
 			});
 		});
+	}
+
+	private static encodeOutputToString(data: Buffer, inputEncoding: EncodingType) {
+		return iconv.decode(data, inputEncoding, {defaultEncoding: 'utf-8'});
 	}
 		
 	public static readProcessOutputSync(command: string,encoding: BufferEncoding) : string {

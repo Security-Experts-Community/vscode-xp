@@ -54,7 +54,7 @@
 					<input type="checkbox" name="word-wrap" onclick="wrap(this);" checked>
 					<label for="word-wrap">переносить по словам</label>
 					<div class="dropdown">
-						<input class="dropbtn" type="button" value="MIME-тип">
+						<input class="dropbtn" type="button" value="Обернуть в конверт сырые события">
 						<div class="dropdown-content">
 							<div name="add_envelope">application/x-pt-eventlog</div>
 							<div name="add_envelope">application/json</div>
@@ -73,20 +73,20 @@
 			</div>
 
 			<!-- Norm Events -->
-			{{#NormEvent}}
+			{{#NormEvents}}
 			<div class="test_block">
 				<div class="block_header">
 					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
 					<label for="norm_event" class="label">Нормализованное событие:</label>
 				</div>
 				<div class="manage_buttons">
-					<input name="fast_test" type="button" value="&#9654;   Запустить быстрый тест  ">
+					<input name="fast_test" type="button" value="&#9654;   Получить ожидаемое событие  ">
 				</div>
 				<div class="text">
-					<div contenteditable="true" id="norm_event" name="norm_event">{{NormEvent}}</div>
+					<div contenteditable="true" id="norm_event" name="norm_event">{{NormEvents}}</div>
 				</div>
 			</div>
-			{{/NormEvent}}
+			{{/NormEvents}}
 
 			<!-- Test Conditions -->
 			<div class="test_block">
@@ -394,7 +394,7 @@
 							"number" : id,
 							"rawEvents" : rawEvents,
 							"testCode" : testCode,
-							"normEvent" : normEvents
+							"normEvents" : normEvents
 						});
 					});
 
@@ -429,28 +429,28 @@
 				});
 
 				// Сохраняем тест
-				$(document).on("click",'#save_test', function () {
+				// $(document).on("click",'#save_test', function () {
 
-					// Получаем текущий тест.
-					const activeTestNumber = $("#active_test_number").val();
-					console.log(`Выбран тесты № ${activeTestNumber}`);
-					var baseTestElement = $("#" + activeTestNumber);
+				// 	// Получаем текущий тест.
+				// 	const activeTestNumber = $("#active_test_number").val();
+				// 	console.log(`Выбран тесты № ${activeTestNumber}`);
+				// 	var baseTestElement = $("#" + activeTestNumber);
 					
-					// Получаем значения.
-					const testObject = baseTestElement.data("test");
-					const rawEvents = baseTestElement.find('[name="raw_event"]').val();
-					const testCode = baseTestElement.find('[name="expect"]').val();
+				// 	// Получаем значения.
+				// 	const testObject = baseTestElement.data("test");
+				// 	const rawEvents = baseTestElement.find('[name="raw_event"]').val();
+				// 	const testCode = baseTestElement.find('[name="expect"]').val();
 
-					vscode.postMessage({
-						command: 'saveTest',
-						test: testObject,
-						activeTestNumber : activeTestNumber,
-						newValues: {
-							"rawEvents" : rawEvents,
-							"testCode" : testCode,
-						}
-					});
-				});
+				// 	vscode.postMessage({
+				// 		command: 'saveTest',
+				// 		test: testObject,
+				// 		activeTestNumber : activeTestNumber,
+				// 		newValues: {
+				// 			"rawEvents" : rawEvents,
+				// 			"testCode" : testCode,
+				// 		}
+				// 	});
+				// });
 
 				// Сохраняем все тесты
 				$(document).on("click",'#save_all_tests', function () {
@@ -468,13 +468,13 @@
 
 						const rawEvents = $(this).find('[name="raw_event"]').val();
 						const testCode = $(this).find('[name="expect"]').val();
-						const normEvents = $(this).find('[name="norm_event"]').val();
+						const normEvents = $(this).find('[name="norm_event"]').text();
 
 						tests.push({
 							"number" : id,
 							"rawEvents" : rawEvents,
 							"testCode" : testCode,
-							"normEvent" : normEvents
+							"normEvents" : normEvents
 						});
 					});
 

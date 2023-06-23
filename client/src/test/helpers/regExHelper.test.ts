@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import { Position, Range } from 'vscode';
 
-import { RegExpHelper } from '../../../helpers/regExpHelper';
+import { RegExpHelper } from '../../helpers/regExpHelper';
 
 suite('RegExpHelper', async () => {
 

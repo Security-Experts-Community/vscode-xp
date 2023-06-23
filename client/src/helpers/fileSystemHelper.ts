@@ -30,6 +30,36 @@ export class FileSystemHelper {
 		return pathEntries.includes(directoryName);
 	}
 
+	/**
+	 * По пути к файлу из правила или табличного списка возвращает путь к директории правила.
+	 * @param ruleFilePath путь к файлу из директории правила
+	 * @returns 
+	 */
+	public static ruleFilePathToDirectory(ruleFilePath: string) : string {
+		// Код правила или табличного списка.
+		if(ruleFilePath.endsWith(".co") || ruleFilePath.endsWith(".en")	|| ruleFilePath.endsWith(".xp") || ruleFilePath.endsWith(".tl")) {
+			const ruleDirectoryPath = path.dirname(ruleFilePath);
+			return ruleDirectoryPath;
+		}
+
+		// Метаданные.
+		const fileName = path.basename(ruleFilePath);
+		if(fileName === "metainfo.yaml") {
+			const ruleDirectoryPath = path.dirname(ruleFilePath);
+			return ruleDirectoryPath;
+		}
+
+		// Тесты или локализации
+		const parentDirectoryPath = path.dirname(ruleFilePath);
+		const parentDirectoryName = path.basename(parentDirectoryPath);
+		if(parentDirectoryName === "tests" || parentDirectoryName === "i18n") {
+			const ruleDirectoryPath = path.dirname(parentDirectoryPath);
+			return ruleDirectoryPath;
+		}
+		
+		return null;
+	}
+
 	public static readContentFile(filePath:string): Promise<string> {
 		return fs.promises.readFile(filePath, FileSystemHelper._fileEncoding);
 	}
@@ -73,15 +103,6 @@ export class FileSystemHelper {
 		}
 		
 		return file.toString();
-	}
-
-	public static writeContentFileSync(filePath: string, fileContent: string) {
-		try {
-			fs.writeFileSync(filePath, fileContent, {encoding: this._fileEncoding});
-		}
-		catch (error) {
-			throw new Error(`Не удалось записать в файл '${filePath}'`);
-		}
 	}
 
 	public static readSubDirectories(filePath: string) {

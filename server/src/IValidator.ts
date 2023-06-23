@@ -43,17 +43,43 @@ export abstract class IValidator {
 		return diagnostic;
 	}
 
+	protected getDiagnosticsByOffset(
+		foundString : string,
+		stringOffset : number,
+		textDocument : TextDocument,
+		message : string,
+		diagnosticSeverity : DiagnosticSeverity) : Diagnostic {
+	
+		const text = textDocument.getText();
+
+		const trimmedFoundString = foundString.trim();
+		const startPosition = text.indexOf(trimmedFoundString, stringOffset);
+		const endPosition = startPosition + trimmedFoundString.length;
+
+		const diagnostic: Diagnostic = {
+			severity: diagnosticSeverity,
+			range: {
+				start: textDocument.positionAt(startPosition),
+				end: textDocument.positionAt(endPosition)
+			},
+			message: message,
+			source: 'xp'
+		};
+
+		return diagnostic;
+	}
+
 	protected getDiagnostics(
 		foundString : string,
 		textDocument : TextDocument,
 		message : string,
 		diagnosticSeverity : DiagnosticSeverity) : Diagnostic {
 	
-		const diagnostics : Diagnostic[] = [];
 		const text = textDocument.getText();
 
-		const startPosition = text.indexOf(foundString);
-		const endPosition = startPosition + foundString.length;
+		const trimmedFoundString = foundString.trim();
+		const startPosition = text.indexOf(trimmedFoundString);
+		const endPosition = startPosition + trimmedFoundString.length;
 
 		const diagnostic: Diagnostic = {
 			severity: diagnosticSeverity,

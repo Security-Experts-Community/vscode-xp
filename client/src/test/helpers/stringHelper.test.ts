@@ -2,9 +2,9 @@ import * as vscode from 'vscode';
 import * as assert from 'assert';
 import * as fs from 'fs';
 
-import { TestFixture } from '../../helper';
-import { Table } from '../../../models/content/table';
-import { StringHelper } from '../../../helpers/stringHelper';
+import { TestFixture } from '../helper';
+import { Table } from '../../models/content/table';
+import { StringHelper } from '../../helpers/stringHelper';
 
 suite('StringHelper', () => {
 

@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { KbHelper } from '../../../helpers/kbHelper';
+import { KbHelper } from '../../helpers/kbHelper';
 
 suite('KbHelper', async () => {
 	test('Два события скопированные через Ctrl+C из SIEM', async () => {

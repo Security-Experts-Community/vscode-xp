@@ -35,14 +35,14 @@ export class FilterEqualsValidator extends IValidator {
 	
 			const filterBlock = filterBlockResult[1];
 			
-			const blockDiagnostics = await this.validateFilterBlock(filterBlock, textDocument, documentSettings);
+			const blockDiagnostics = await this.validateFilterBlock(filterBlock, filterBlockResult.index, textDocument, documentSettings);
 			diagnostics.push(...blockDiagnostics);
 		}
 		
 		return diagnostics;
 	}
 
-	private async validateFilterBlock(filterBlock : string, textDocument : TextDocument, settings : DocumentSettings) : Promise<Diagnostic[]> {
+	private async validateFilterBlock(filterBlock : string, filterOffset: number, textDocument : TextDocument, settings : DocumentSettings) : Promise<Diagnostic[]> {
 
 		let problems = 0;
 		const diagnostics : Diagnostic[] = [];
@@ -58,8 +58,9 @@ export class FilterEqualsValidator extends IValidator {
 			const incorrectEquals = incorrectEqualsResult[1];
 	
 			const incorrectEqualsDiagnostic = 
-				this.getDiagnostics(
+				this.getDiagnosticsByOffset(
 					incorrectEquals,
+					filterOffset + incorrectEqualsResult.index,
 					textDocument,
 					"В блоке filter сравнение осуществляется с помощью ==",
 					DiagnosticSeverity.Error);

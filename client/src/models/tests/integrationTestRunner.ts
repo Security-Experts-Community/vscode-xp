@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { ProcessHelper } from '../../helpers/processHelper';
 import { SiemjConfigHelper } from '../siemj/siemjConfigHelper';
 import { SiemJOutputParser } from '../siemj/siemJOutputParser';
@@ -13,7 +12,6 @@ import { TestStatus } from './testStatus';
 import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
 import { XpException } from '../xpException';
 import { TestHelper } from '../../helpers/testHelper';
-import { CorrGraphRunner } from '../../views/сorrelationGraph/corrGraphRunner';
 import { Correlation } from '../content/correlation';
 import { Enrichment } from '../content/enrichment';
 
@@ -24,9 +22,14 @@ export class IntegrationTestRunner {
 
 	public async run(rule : RuleBaseItem) : Promise<IntegrationTest[]> {
 
+		// Проверяем наличие нужных утилит.
+		this._config.getSiemkbTestsPath();
+
 		const integrationTests = rule.getIntegrationTests();
+		integrationTests.forEach(it => it.setStatus(TestStatus.Unknown));
+
 		if(integrationTests.length == 0) {
-			throw new XpException("Не заданы тесты для запуска");
+			throw new XpException(`У правила *${rule.getName}* не найдено интеграционных тестов`);
 		}
 
 		// Хотя бы у одного теста есть сырые события и код теста.
@@ -43,8 +46,7 @@ export class IntegrationTestRunner {
 		});
 
 		if(!atLeastOneTestIsValid) {
-			ExtensionHelper.showUserError("Для запуска тестов нужно добавить сырые события и условия выполнения теста.");
-			return;
+			throw new XpException("Для запуска тестов нужно добавить сырые события и условия выполнения теста.");
 		}
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
@@ -62,9 +64,9 @@ export class IntegrationTestRunner {
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();
 
-		const ruleCode = await rule.getRuleCode();
 		// Если корреляция с сабрулями, то собираем полный граф корреляций для отработок сабрулей из других пакетов.
 		// В противном случае только корреляции из текущего пакета с правилами. Позволяет ускорить тесты.
+		const ruleCode = await rule.getRuleCode();
 		if(rule instanceof Correlation) {
 			if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
 				configBuilder.addCorrelationsGraphBuilding();
@@ -83,12 +85,11 @@ export class IntegrationTestRunner {
 		const siemjConfContent = configBuilder.build();
 
 		if(!siemjConfContent) {
-			ExtensionHelper.showUserError("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
-			return;
+			throw new XpException("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
 		}
 
+		// Сохраняем конфигурационный файл для siemj во временную директорию.
 		const siemjConfigPath = this._config.getTmpSiemjConfigPath(rootFolder);
-		// Централизованно сохраняем конфигурационный файл для siemj.
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 
 		// Очищаем и показываем окно Output.
@@ -97,55 +98,73 @@ export class IntegrationTestRunner {
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
 		const siemjExePath = this._config.getSiemjPath();
-		const siemJOutput = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+
+		const siemjExecutionResult = await ProcessHelper.execute(
 			siemjExePath,
-			["-c", siemjConfigPath, "main"],
-			this._config.getOutputChannel());
+			["-c", siemjConfigPath, "main"], {
+				encoding : this._config.getSiemjOutputEncoding(),
+				outputChannel : this._config.getOutputChannel()
+			}
+		);
 
-		const ruleFileUri = vscode.Uri.file(rule.getRuleFilePath());
+		const siemjResult = await this._outputParser.parse(siemjExecutionResult.output);
 
-		if(siemJOutput.includes(this.TEST_SUCCESS_SUBSTRING)) {
+		// Все тесты прошли, статусы не проверяем, все тесты зеленые.
+		if(siemjResult.testStatus) {
 			integrationTests.forEach(it => it.setStatus(TestStatus.Success));
 
 			// Убираем ошибки по текущему правилу.
+			const ruleFileUri = vscode.Uri.file(rule.getRuleFilePath());
 			this._config.getDiagnosticCollection().set(ruleFileUri, []);
 
-			await this.clearTmpFiles(this._config, rootFolder);
+			this.clearTmpFiles(this._config, rootFolder);
+			return integrationTests;
 		} else {
-			this._config.getOutputChannel().show();
-			this._config.getDiagnosticCollection().clear();
+			// Есть ошибки, все неуспешные тесты не прошли.
+			integrationTests.filter(it => it.getStatus() === TestStatus.Success).forEach(it => it.setStatus(TestStatus.Failed));
+		}
 
-			let ruleFileDiagnostics = await this._outputParser.parse(siemJOutput);
+		// Либо тесты не прошли, либо мы до них не дошли.
+		this._config.getOutputChannel().show();
+		this._config.getDiagnosticCollection().clear();
 
-			// Фильтруем диагностики по текущему правилу.
-			ruleFileDiagnostics = ruleFileDiagnostics.filter(rfd => {
-				const path = rfd.Uri.path;
-				return path.includes(rule.getName());
-			});
+		// Фильтруем диагностики по текущему правилу и показываем их в нативном окне.
+		const diagnostics = siemjResult.fileDiagnostics.filter(rfd => {
+			const path = rfd.uri.path;
+			return path.includes(rule.getName());
+		});
 
-			for (const rfd of ruleFileDiagnostics) {
-				this._config.getDiagnosticCollection().set(rfd.Uri, rfd.Diagnostics);
+		for (const diagnostic of diagnostics) {
+			this._config.getDiagnosticCollection().set(diagnostic.uri, diagnostic.diagnostics);
+		}
+
+		// Если были не прошедшие тесты, выводим статус.
+		// Непрошедшие тесты могу отсутствовать, если до тестов дело не дошло.
+		if(siemjResult.failedTestNumbers.length > 0) {
+			for(const failedTestNumber of siemjResult.failedTestNumbers) {
+				integrationTests[failedTestNumber - 1].setStatus(TestStatus.Failed);
 			}
+	
+			integrationTests.forEach( (it) => {
+				if(it.getStatus() == TestStatus.Unknown) {
+					it.setStatus(TestStatus.Success);
+				}
+			});
 		}
 
 		return integrationTests;
 	}
 
 	private async clearTmpFiles(config : Configuration, rootFolder: string) : Promise<void> {
-		const siemjConfigPath = config.getTmpDirectoryPath(rootFolder);
-
+		
 		try {
-			// Очищаем временные файлы.
-			await fs.promises.access(siemjConfigPath).then(
-				() => { 
-					return fs.promises.unlink(siemjConfigPath); 
-				}
-			);
+			const siemjConfigPath = config.getTmpDirectoryPath(rootFolder);
+			return fs.promises.unlink(siemjConfigPath); 
 		}
 		catch (error) {
-			//
+			// TODO:
 		}
 	}
 
-	private readonly TEST_SUCCESS_SUBSTRING = "All tests OK";
+	private readonly TESTS_SUCCESS_SUBSTRING = "All tests OK";
 }

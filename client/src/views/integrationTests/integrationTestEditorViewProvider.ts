@@ -126,7 +126,7 @@ export class IntegrationTestEditorViewProvider  {
 				plain["IntegrationalTests"].push({
 					"TestNumber" : 1,
 					"RawEvents" : '',
-					"NormEvent" : '',
+					"NormEvents" : '',
 					"TestCode" : `expect 1 {"correlation_name" : "${this._rule.getName()}"}`,
 					"TestOutput" : '',
 					"JsonedTestObject" : '',
@@ -160,7 +160,7 @@ export class IntegrationTestEditorViewProvider  {
 					plain["IntegrationalTests"].push({
 						"TestNumber" : it.getNumber(),
 						"RawEvents" : it.getRawEvents(),
-						"NormEvent" : formattedNormalizedEvents,
+						"NormEvents" : formattedNormalizedEvents,
 						"TestCode" : formattedTestCode,
 						"TestOutput" : it.getOutput(),
 						"JsonedTestObject" : jsonedTestObject,
@@ -203,7 +203,8 @@ export class IntegrationTestEditorViewProvider  {
 
 			case 'saveAllTests': {
 				try {
-					await this.saveAllTests(message);
+					// В данном руле сохраняются в памяти нормализованные события.
+					this._rule = await this.saveAllTests(message);
 					ExtensionHelper.showUserInfo(`Все тесты сохранены.`);
 				
 					// Добавляем в DOM новый тест.
@@ -292,11 +293,8 @@ export class IntegrationTestEditorViewProvider  {
 				}
 
 				case 'fullTest': {
-					const result = await this.runFullTests(message);
-					if(!result) {
-						return;
-					}
-					
+					await this.runFullTests(message);
+
 					const activeTestNumber = this.getActiveTestNumber(message);
 					await this.updateView(activeTestNumber);
 					break;
@@ -440,7 +438,7 @@ export class IntegrationTestEditorViewProvider  {
 		vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
-			title: `Запущен быстрый тест №${currTest.getNumber()}`
+			title: `Получение ожидаемого события для теста №${currTest.getNumber()}`
 		}, async (progress) => {
 
 			const modularTestContent = `${integrationalTestSimplifiedContent}\n\n${normalizedEvents}`;
@@ -459,44 +457,38 @@ export class IntegrationTestEditorViewProvider  {
 			fastTest.setTestExpectationPath(fastTestFilePath);
 			fastTest.setRule(this._rule);
 
-			const testRunner = this._rule.getUnitTestRunner();
 			try {
+				const testRunner = this._rule.getUnitTestRunner();
 				const resultTest = await testRunner.run(fastTest);
 
 				switch (resultTest.getStatus()) {
 					case TestStatus.Success: {
-						ExtensionHelper.showUserInfo(`Быстрый тест ${resultTest.getNumber()} пройден успешно.`);
+						ExtensionHelper.showUserInfo(`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено успешно.`);
 						break;
 					}
 					case TestStatus.Failed: {
-						ExtensionHelper.showUserError(`Быстрый тест ${resultTest.getNumber()} завершился неуспешно.`);
+						ExtensionHelper.showUserError(`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено неуспешно.`);
 						break;
 					}
 				}
 
 				// Обновление теста.
 				const tests = this._rule.getIntegrationTests();
-				const ruleTestIndex = tests.findIndex( it => it.getNumber() == resultTest.getNumber());
+				const ruleTestIndex = tests.findIndex(it => it.getNumber() == resultTest.getNumber());
 				if(ruleTestIndex == -1) {
 					ExtensionHelper.showUserError("Не удалось обновить интеграционный тест.");
 					return;
 				}
 
 				// Переносим данные из быстрого теста в модульный.
-				// При этом вывод теста содержит событие, подходящее под expect секцию, поэтому очищаем его как и код теста.
-				const result = resultTest.getOutput();
-				const clearedResult = TestHelper.cleanTestCode(result);
-
-				// Вывод в тесте пока только храниться, а мы обновим его непосредственно.
-				tests[ruleTestIndex].setOutput(clearedResult);
-				this._config.getOutputChannel().clear();
-				this._config.getOutputChannel().append(clearedResult);
+				// Вывод в тесте пока только хранится, а мы обновим его непосредственно.
+				tests[ruleTestIndex].setOutput(resultTest.getOutput());
 
 				// Удаляем временные файлы.
 				return fs.promises.rmdir(randTmpPath, {recursive : true});
 			} 
 			catch(error) {
-				ExceptionHelper.show(error, 'Не удалось запустить быстрый тест.');
+				ExceptionHelper.show(error, 'Не удалось получить ожидаемое событие');
 			}
 		});
 	}
@@ -511,9 +503,6 @@ export class IntegrationTestEditorViewProvider  {
 
 			await VsCodeApiHelper.saveRuleCodeFile(this._rule);
 
-			const outputParser = new SiemJOutputParser();
-			const testRunner = new IntegrationTestRunner(this._config, outputParser);
-
 			let tests : IntegrationTest [] = [];
 			try {
 				// Сохраняем активные тесты.
@@ -521,23 +510,24 @@ export class IntegrationTestEditorViewProvider  {
 				tests = rule.getIntegrationTests();
 			}
 			catch(error) {
-				ExceptionHelper.show(error, `Не удалось сохранить тесты.`);
+				ExceptionHelper.show(error, `Не удалось сохранить тесты`);
 				return false;
 			}
 
 			if(tests.length == 0) {
-				ExtensionHelper.showUserInfo(`Тесты для правила '${this._rule.getName()}' не найдены`);
+				vscode.window.showInformationMessage(`Тесты для правила '${this._rule.getName()}' не найдены. Добавьте хотя бы один тест и повторите.`);
 				return false;
 			}
 
 			try {
+				const outputParser = new SiemJOutputParser();
+				const testRunner = new IntegrationTestRunner(this._config, outputParser);
 				const executedTests = await testRunner.run(this._rule);
 
 				if(executedTests.every(it => it.getStatus() === TestStatus.Success)) {
 					ExtensionHelper.showUserInfo(`Интеграционные тесты прошли успешно.`);
 					return true;
 				} 
-				ExtensionHelper.showUserError(`Интеграционные тесты завершились неуспешно. Возможно в правиле используются вспомогательные правила из других пакетов.`);
 			}
 			catch(error) {
 				ExceptionHelper.show(error, `Ошибка запуска тестов`);
@@ -553,7 +543,7 @@ export class IntegrationTestEditorViewProvider  {
 		return test;
 	}
 
-	async saveAllTests(message: any) {
+	async saveAllTests(message: any) : Promise<RuleBaseItem> {
 
 		// Номер активного теста.
 		const activeTestNumberString = message?.activeTestNumber;
@@ -561,6 +551,6 @@ export class IntegrationTestEditorViewProvider  {
 			throw new XpException(`Не задан номер активного теста.`);
 		}
 
-		await TestHelper.saveAllTest(message, this._rule);
+		return TestHelper.saveAllTest(message, this._rule);
 	}
 }

@@ -32,6 +32,7 @@ import { GitHooks } from './gitHooks';
 import { InitKBRootCommand } from './commands/initKnowledgebaseRootCommand';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { KbTreeBaseItem } from '../../models/content/kbTreeBaseItem';
+import { listeners } from 'process';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseItem> {
 
@@ -44,6 +45,13 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 		const kbTreeProvider = new ContentTreeProvider(knowledgebaseDirectoryPath, gitApi, config);
 
+		const contentTree = vscode.window.createTreeView(
+			ContentTreeProvider.KnowledgebaseTreeId, {
+				treeDataProvider: kbTreeProvider,
+			}
+		);
+
+
 		if(gitApi) {
 			// Обновляем дерево при смене текущей ветки.
 			const gitHooks = new GitHooks(gitApi, config);
@@ -54,15 +62,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 				});
 			});
 		}
-	
-		const kbTree = vscode.window.createTreeView(
-			ContentTreeProvider.KnowledgebaseTreeId, {
-				treeDataProvider: kbTreeProvider,
-			}
-		);
-	
-		vscode.window.registerTreeDataProvider(ContentTreeProvider.KnowledgebaseTreeId, kbTreeProvider);
-	
+
+
 		// Ручное или автоматическое обновление дерева контента
 		vscode.commands.registerCommand(
 			ContentTreeProvider.refreshTreeCommmand,
@@ -99,16 +100,17 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 					} 
 	
 					ContentTreeProvider.setSelectedItem(item);
-	
-					// Открываем код правила
-					const elementUri = vscode.Uri.file(ruleFilePath);
-					const contentDocument = await vscode.workspace.openTextDocument(elementUri);
-					await vscode.window.showTextDocument(contentDocument, vscode.ViewColumn.One);
-					
-					await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
 
+					// Открываем код правила
+					if(ruleFilePath) {
+						const elementUri = vscode.Uri.file(ruleFilePath);
+						const contentDocument = await vscode.workspace.openTextDocument(elementUri);
+						await vscode.window.showTextDocument(contentDocument, vscode.ViewColumn.One);
+						await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
+					}
+	
 					// Выделяем только что созданное правило.
-					await kbTree.reveal(
+					await contentTree.reveal(
 						item, 
 						{
 							focus: true,
@@ -234,6 +236,77 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 				}
 			)
 		);
+
+		// Связка перехвата двух событий ниже позволяет организовать синхронизацию работы в Explorer и дереве контента.
+		// Если дерево открыто, то при переключении вкладок меняем выделенное правило в дереве.
+		// Если дерева не видно, тогда сохраняем редактор в переменную.
+		context.subscriptions.push(
+			vscode.window.onDidChangeActiveTextEditor(
+				async (te: vscode.TextEditor) => {
+					if(contentTree.visible && te) {
+						return ContentTreeProvider.showRuleTreeItem(contentTree, te.document.fileName);
+					}
+
+					// Почему-то проскакивает undefined.
+					if(te) {
+						ContentTreeProvider.selectedFilePath = te.document.fileName;
+					}
+				}
+			)
+		);
+
+		// Дерево снова видно, значит на основе сохраненного выше редактора показываем нужный узел в дереве контента.
+		context.subscriptions.push(
+			contentTree.onDidChangeVisibility(
+				async (e: vscode.TreeViewVisibilityChangeEvent) => {
+					if(e.visible) {
+						// Если ранее уже был выбран файл.
+						if(ContentTreeProvider.selectedFilePath) {
+							return ContentTreeProvider.showRuleTreeItem(contentTree, ContentTreeProvider.selectedFilePath);
+						}
+
+						// Если файл раньше выбран не был, но был открыт при запуске vsCode.
+						if(vscode.window.activeTextEditor && vscode.window.activeTextEditor.document) {
+							const activeDocumentPath = vscode.window.activeTextEditor.document.fileName;
+							await ContentTreeProvider.showRuleTreeItem(contentTree, activeDocumentPath);
+						}
+					}
+				}
+			)
+		);
+
+		context.subscriptions.push(
+			contentTree.onDidChangeSelection(
+				async (e: vscode.TreeViewSelectionChangeEvent<KbTreeBaseItem>) => {
+					if(e.selection && e.selection.length == 1) {
+						const selectedItem = e.selection[0];
+						return ContentTreeProvider.selectItem(selectedItem);
+					}
+				}
+			)
+		);
+		//
+	}
+
+	public static selectedFilePath: string;
+
+	private static async showRuleTreeItem(kbTree: vscode.TreeView<KbTreeBaseItem>, filePath: string) {
+		if(!filePath) {
+			return;
+		}
+
+		const ruleDirectoryPath = FileSystemHelper.ruleFilePathToDirectory(filePath);
+		if(!ruleDirectoryPath) {
+			return;
+		}
+
+		const explorerCorrelation = await ContentTreeProvider.createContentElement(ruleDirectoryPath);
+		await kbTree.reveal(explorerCorrelation,
+		{
+			focus: true,
+			expand: false,
+			select: true
+		});
 	}
 
 	constructor(private _knowledgebaseDirectoryPath: string | undefined, _gitAPI : API, private _config: Configuration) {
@@ -413,14 +486,13 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		}
 
 		const fullPath = element.getDirectoryPath();
+		const directoryName = path.basename(fullPath);
 		const parentPath = path.dirname(fullPath);
 		const parentDirName = path.basename(parentPath);
 
 		// Дошли до уровня пакета.
-		if(parentDirName.toLocaleLowerCase() === "packages" || parentDirName === "") {
+		if(directoryName === ContentTreeProvider.PACKAGES_DIRNAME || parentDirName === "") {
 			const packageFolder = await ContentFolder.create(parentPath, ContentFolderType.ContentRoot);
-			packageFolder.setName("Пакеты");
-
 			return Promise.resolve(packageFolder);
 		}
 
@@ -466,7 +538,13 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		return vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
 	}
 
+	public static async selectItem(item: KbTreeBaseItem) : Promise<boolean> {
+		return vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, item);
+	}
+
 	private _gitAPI : API;
+
+	public static readonly PACKAGES_DIRNAME = "packages";
 	
 	public static readonly KnowledgebaseTreeId = 'KnowledgebaseTree';
 	

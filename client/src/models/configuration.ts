@@ -4,13 +4,15 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { Guid } from 'guid-typescript';
-import { FileNotFoundException } from './fileNotFoundException';
+import { FileSystemException } from './fileSystemException';
 import { XpException as XpException } from './xpException';
 import { ContentType } from '../contentType/contentType';
 import { Localization } from './content/localization';
 import { EDRPathHelper } from './locator/EDRPathLocator';
 import { OsType, PathLocator } from './locator/pathLocator';
 import { SIEMPathHelper } from './locator/SIEMPathLocator';
+
+export type EncodingType = "windows-1251" | "utf-8"
 
 export class Configuration {
 
@@ -110,6 +112,15 @@ export class Configuration {
 		}
 	}
 
+	public getSiemjOutputEncoding() : EncodingType {
+		switch(this.getOsType()) {
+			case OsType.Windows: return "windows-1251";
+			case OsType.Linux: return "utf-8";
+			case OsType.Mac: return "utf-8";
+			default: throw new XpException("Платформа не поддерживается.");
+		}
+	}
+
 	/**
 	 * Возвращает путь к директории со всеми SDK утилитами.
 	 * @returns путь к директории со всеми SDK утилитами.
@@ -143,10 +154,8 @@ export class Configuration {
 	}
 
 	public getSiemjPath() : string {
-		const osType = this.getOsType();
-		
 		let appName = "";
-		switch(osType) {
+		switch(this.getOsType()) {
 			case OsType.Windows: appName = "siemj.exe"; break;
 			case OsType.Linux: appName = "siemj"; break;
 
@@ -154,6 +163,21 @@ export class Configuration {
 		}
 
 		const fullPath = path.join(this.getKbtBaseDirectory(), "extra-tools", "siemj", appName);
+		this.checkKbtToolPath(appName, fullPath);
+
+		return fullPath;
+	}
+
+	public getSiemkbTestsPath() : string {
+		let appName = "";
+		switch(this.getOsType()) {
+			case OsType.Windows: appName = "siemkb_tests.exe"; break;
+			case OsType.Linux: appName = "siemkb_tests"; break;
+
+			default: throw new XpException("Платформа не поддерживается.");
+		}
+
+		const fullPath = path.join(this.getKbtBaseDirectory(), this.BUILD_TOOLS_DIR_NAME, appName);
 		this.checkKbtToolPath(appName, fullPath);
 
 		return fullPath;
@@ -292,13 +316,13 @@ export class Configuration {
 		const outputDirectoryPath = extensionSettings.get<string>("outputDirectoryPath");
 
 		if (!outputDirectoryPath || outputDirectoryPath === ""){
-			throw new FileNotFoundException(
+			throw new FileSystemException(
 				`Выходная директория не задана. Задайте путь к [ней](command:workbench.action.openSettings?["xpConfig.outputDirectoryPath"])`,
 				outputDirectoryPath);
 		}
 
 		if (!fs.existsSync(outputDirectoryPath)){
-			throw new FileNotFoundException(
+			throw new FileSystemException(
 				`Выходная директория не найдена по пути ${outputDirectoryPath}. Проверьте путь к [ней](command:workbench.action.openSettings?["xpConfig.outputDirectoryPath"])`,
 				outputDirectoryPath);
 		}
@@ -539,16 +563,14 @@ export class Configuration {
 	}
 
 	private checkKbtToolPath(name : string, fullPath : string) : void {
-		if (!fullPath || fullPath === ""){
-			throw new FileNotFoundException(
+		if (!fullPath || fullPath === "") {
+			throw new FileSystemException(
 				`Путь к '${name}' не найден. Проверьте [настройки](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"])`,
 				fullPath);
 		}
 
-		if (!fs.existsSync(fullPath)){
-			throw new FileNotFoundException(
-				`Путь к ${fullPath} не найден. Проверьте [настройки](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"])`,
-				fullPath);
+		if (!fs.existsSync(fullPath)) {
+			throw FileSystemException.kbtToolNotFoundException(fullPath);
 		}
 	}
 
@@ -567,10 +589,9 @@ export class Configuration {
 	private static _instance : Configuration;
 
 	private _pathHelper: PathLocator;
-
 	private _outputChannel : vscode.OutputChannel;
-
 	private _context: vscode.ExtensionContext;
-
 	private _diagnosticCollection: vscode.DiagnosticCollection;
+
+	private BUILD_TOOLS_DIR_NAME = "build-tools";
 }

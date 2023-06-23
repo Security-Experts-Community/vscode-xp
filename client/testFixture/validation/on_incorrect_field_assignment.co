@@ -1,6 +1,6 @@
-rule Unauthorized_Access: Subrule_PC_Access+ timer 1m
+rule Rule: FirstEvent+ timer 1m
 
-    on Subrule_PC_Access {
+    on First_Event {
         dst.fqdn = $event_src.fqdn
     }
 

@@ -6,7 +6,7 @@ import { ExtensionHelper } from '../../../helpers/extensionHelper';
 import { ProcessHelper } from '../../../helpers/processHelper';
 import { Configuration } from '../../../models/configuration';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
-import { PackAction } from './action';
+import { PackAction } from './packAction';
 
 export class PackEDRPackageAction {
 	constructor(private config: Configuration) {}

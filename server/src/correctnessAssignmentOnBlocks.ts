@@ -36,18 +36,18 @@ export class CorrectnessAssignmentOnBlocks extends IValidator {
 			const blockName = filterBlockResult[1];
 			const blockCode = filterBlockResult[2];
 			
-			const blockDiagnostics = await this.validateFilterBlock(blockName, blockCode, textDocument, documentSettings);
+			const blockDiagnostics = await this.validateFilterBlock(blockName, blockCode, filterBlockResult.index, textDocument, documentSettings);
 			diagnostics.push(...blockDiagnostics);
 		}
 		
 		return diagnostics;
 	}
 
-	private async validateFilterBlock(blockName : string, blockCode: string, textDocument : TextDocument, settings : DocumentSettings) : Promise<Diagnostic[]> {
+	private async validateFilterBlock(blockName : string, blockCode: string, blockOffset: number, textDocument : TextDocument, settings : DocumentSettings) : Promise<Diagnostic[]> {
 
 		let problems = 0;
 		const diagnostics : Diagnostic[] = [];
-		const incorrectEqualsRegEx = /\s([a-z.0-9_]+)\s*=\s*\S+/gm;
+		const incorrectEqualsRegEx = /^\s+([a-z.0-9_]+)\s*=(?!=)\s*\S+/gm;
 
 		let incorrectEqualsResult: RegExpExecArray | null;
 		while ((incorrectEqualsResult = incorrectEqualsRegEx.exec(blockCode)) && problems < settings.maxNumberOfProblems) {
@@ -56,12 +56,13 @@ export class CorrectnessAssignmentOnBlocks extends IValidator {
 			if(incorrectEqualsResult.length != 2)
 				continue;
 
-			const incorrectLine = incorrectEqualsResult[0];
+			const incorrectCode = incorrectEqualsResult[0];
 			const eventField = incorrectEqualsResult[1];
-	
+
 			const incorrectEqualsDiagnostic = 
-				this.getDiagnostics(
-					incorrectLine,
+				this.getDiagnosticsByOffset(
+					incorrectCode,
+					blockOffset + incorrectEqualsResult.index,
 					textDocument,
 					`В блоке '${blockName}' запрещено присвоение значения полю ${eventField} события. Используйте $${eventField}`,
 					DiagnosticSeverity.Error);
