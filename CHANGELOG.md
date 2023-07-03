@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.5.4 (Pre-Release)
+
+- добавлены сниппеты и описание для функций декодирования Base64
+- исправлена ширина кнопки "обернуть в конверт"
+- исправлены шаблоны For_Profiling и Windows_Logon
+
 ## 3.5.3 (Pre-Release)
 
 - добавлены сниппеты для external_src.\*, external_dst.\*, datafield\* и datafieldN;
