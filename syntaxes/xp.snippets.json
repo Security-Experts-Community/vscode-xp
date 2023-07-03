@@ -457,11 +457,23 @@
 			""
 		]
 	},
+	"base64 decode": {
+		"prefix": ["decode", "base64"],
+		"body": [
+			"\\$raw_base64 = $1",
+			"\\$datafield11 = decode(buffer_from_base64(\\$raw_base64), \"UTF-8\")",
+			"if find_substr(\\$datafield11, \"\\u0000\") != null then",
+			"    \\$datafield11 = decode(buffer_from_base64(\\$raw_base64), \"UCS2-LE\")",
+			"endif",
+			""
+		]
+	},
 	"Алерт" : {
 		"prefix": ["$alert.*"],
 		"body": [
 			"\\$alert.key = $1",
-			"\\$alert.context = $2"
+			"\\$alert.regex_match = $2",
+			"\\$alert.context = $3"
 		]
 	},
 	"Ключ алерта" : {

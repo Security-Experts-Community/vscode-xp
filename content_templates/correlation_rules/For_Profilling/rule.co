@@ -36,7 +36,7 @@ event Anomaly_Logon_Application:
             null, # или указать свой dst_path, если он есть
             null # или указать дополнительную информацию additional_data
         )
-        
+
         and filter::CheckWL_Profiling("For_Profilling", lower(join([src.host, subject.account.name, event_src.host, event_src.title], "|")))
     }
     

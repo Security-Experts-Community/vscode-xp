@@ -1,5 +1,40 @@
 [ 
 	{
+		"name" : "decode",
+		"signature" : "String decode(Buffer $1, String $2)",
+		"description": "Функ­ция **decode** ис­поль­зу­ет­ся для пре­об­ра­зо­ва­ния дан­ных типа Buffer в стро­ку (дан­ные типа String). Мож­но ука­зать ко­ди­ров­ки стро­ки — UTF-8 или UCS2-LE.",
+		"params": [
+			"$1 - Буффер: buffer_from_base64($f), где $f - base64-закодированная строка",
+			"$2 - кодировка (UTF-8 или UCS2-LE)",
+			"Возвращает base64 decoded строку"
+		],
+		"examples" : [
+			"$raw_base64 = \"aGVsbG8gd29ybGQ=\"",
+			"$datafield11 = decode(buffer_from_base64($raw_base64), \"UTF-8\")",
+			"if find_substr($datafield11, \"\\u0000\") != null then",
+			"    $datafield11 = decode(buffer_from_base64($raw_base64), \"UCS2-LE\")",
+			"endif",
+			"# hello world"
+		]
+	},
+	{
+		"name" : "buffer_from_base64",
+		"signature" : "Buffer buffer_from_base64(String $1)",
+		"description": "Функ­ция **buffer_from_base64** ис­поль­зу­ет­ся для пре­об­ра­зо­ва­ния стро­ки в мас­сив бай­тов типа Buffer. Дан­ные типа Buffer не отоб­ра­жа­ют­ся в по­лях нор­ма­ли­зо­ван­но­го со­об­ще­ния, но мо­гут быть пре­об­ра­зо­ва­ны в тип String с по­мо­щью функ­ции **decode**.",
+		"params": [
+			"$1 - строка, которую необходимо преобразовать в массив байтов",
+			"Возвращает массив байтов"
+		],
+		"examples" : [
+			"$raw_base64 = \"aGVsbG8gd29ybGQ=\"",
+			"$datafield11 = decode(buffer_from_base64($raw_base64), \"UTF-8\")",
+			"if find_substr($datafield11, \"\\u0000\") != null then",
+			"    $datafield11 = decode(buffer_from_base64($raw_base64), \"UCS2-LE\")",
+			"endif",
+			"# hello world"
+		]
+	},
+	{
 		"name" : "match",
 		"signature" : "Bool match(String $1, String $2)",
 		"description": "Функция **match** используется для сравнения строки с заданным шаблоном.",
