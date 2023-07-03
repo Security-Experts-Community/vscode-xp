@@ -36,8 +36,8 @@ event Anomaly_Logon_Application:
             null, # или указать свой dst_path, если он есть
             null # или указать дополнительную информацию additional_data
         )
-		
-		and filter::CheckWL_Profiling("For_Profilling", lower(join([src.host, subject.account.name, event_src.host, event_src.title], "|")))
+        
+        and filter::CheckWL_Profiling("For_Profilling", lower(join([src.host, subject.account.name, event_src.host, event_src.title], "|")))
     }
     
 rule For_Profilling: Anomaly_Logon_Application
@@ -50,7 +50,7 @@ rule For_Profilling: Anomaly_Logon_Application
         
         # Если в табличке нет правила, то считаем, что правило работает в режиме автопрофилирования
         $auto_profile = coalesce(select_query_first("AutoProfile", ["For_Profilling"], "auto_profiling"), 1)
-		$labels = "CheckWL_Profiling"
+        $labels = "CheckWL_Profiling"
     }
     
     on Anomaly_Logon_Application {
@@ -125,10 +125,10 @@ rule For_Profilling: Anomaly_Logon_Application
             $reason = "no_user"
             $importance = "high" # Важность может быть low для систем вроде VPN, почты (которыми пользуются все сотрудники)
         # Если пользователь есть в профиле, ищем конкретные отличия
-		elif not exec_query("CheckHost", [$username, lower($src.host)]) then
+        elif not exec_query("CheckHost", [$username, lower($src.host)]) then
             $reason = "new_address"
             $importance = "high" # Тут всегда максимальная важность, потому что это самое опасное отличие от профиля
-		# Проверяем другие условия, характерные для приложения. Должно покрывать поля, передаваемый в фильтр
+        # Проверяем другие условия, характерные для приложения. Должно покрывать поля, передаваемый в фильтр
         # Обратите внимание, что проверки в порядке важности сработки
         # Далее примеры, которые нужно заменить своими, актуальными для конретного приложения
         # Repo
@@ -177,4 +177,3 @@ emit {
     $incident.category = "Undefined"
     $incident.aggregation.timeout = 2h
 }
-
