@@ -133,8 +133,8 @@ rule For_Profilling: Anomaly_Logon_Application
         access_type = $event_src.title
         src_ip = string($src.ip)
         src_host = lower($src.host)
-        dst_ip = coalesce(string($dst.ip),string(event_src.ip))
-        dst_host = coalesce(lower($dst.host),lower(event_src.host))
+        dst_ip = coalesce(string($dst.ip),string($event_src.ip))
+        dst_host = coalesce(lower($dst.host),lower($event_src.host))
         dst_path = ""
         additional_data = ""
     }
