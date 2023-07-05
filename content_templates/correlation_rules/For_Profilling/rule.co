@@ -3,15 +3,17 @@ query AutoProfile($rule) from Auto_Profile {
     rule == $rule
 }
 
-# Проверяем, если ли вообще в профиле такой пользователь
-query CheckUsername($username) from Risk_User_Logon_Correlation_Profile {
-    login == $username
+# Проверяем, если ли в профиле такой пользователь
+query CheckUsername($title, $username) from Risk_User_Logon_Correlation_Profile {
+    access_type == $title
+    and login == $username
 }
 
 # Проверяем, использовал ли пользователь раньше этот адрес
-query CheckHost($username, $src_host) from Risk_User_Logon_Correlation_Profile {
-    login == $username
-    and src_host == $src_host
+query CheckHost($title, $username, $src_ip) from Risk_User_Logon_Correlation_Profile {
+    access_type == $title
+    and login == $username
+    and src_ip == $src_ip
 }
 
 event Anomaly_Logon_Application:
@@ -19,22 +21,21 @@ event Anomaly_Logon_Application:
         event_src.host
     filter {
         filter::NotFromCorrelator()
+        and event_src.title == ""
         and action == "login"
         and status == "success"
         and subject.account.name != null
         and src.host != null
-        # Тут могут быть какие-то дополнительные условия
-        # and event_src.title == ""
 
         # Сверка с профилем
         and not filter::Check_Profile(
             event_src.title, # access_type
-            lower(subject.account.name), # username, заменить на свое значение
-            null, # src_ip, оставить null, если IP-адрес отсутствует
-            lower(src.host), # src_host
-            lower(dst.host), # dst_host (если dst.host = null, использовать event_src.host)
-            null, # или указать свой dst_path, если он есть
-            null # или указать дополнительную информацию additional_data
+            lower(subject.account.name),
+            string(src.ip),
+            lower(src.host),
+            lower(dst.host), # lower(event_src.host)
+            null, # dst_path
+            null # additional_data
         )
 
         and filter::CheckWL_Profiling("For_Profilling", lower(join([src.host, subject.account.name, event_src.host, event_src.title], "|")))
@@ -42,34 +43,18 @@ event Anomaly_Logon_Application:
     
 rule For_Profilling: Anomaly_Logon_Application
 
-    init {
-        # Табличный список для включения и отключения механизма автоматического сбора профилей:
-        # 0 - Профиль собран, обогащение отключено, правило обращается напрямую в профиль;
-        # 1 - Правило работает по собранному профилю, но профиль продолжает собираться;
-        # 2 - Профиль на стадии сбора, корреляция не срабатывает
-        
-        # Если в табличке нет правила, то считаем, что правило работает в режиме автопрофилирования
+    init {       
+        # Если в таблице Auto_Profile нет правила, то считаем, что правило работает в режиме автопрофилирования
         $auto_profile = coalesce(select_query_first("AutoProfile", ["For_Profilling"], "auto_profiling"), 1)
         $labels = "CheckWL_Profiling"
     }
     
     on Anomaly_Logon_Application {
-        # OLD
-        $subject.name = subject.name # OLD
-        $subject.domain = subject.domain # OLD
-        $subject.id = subject.id # OLD
-
         $subject.account.name = subject.account.name
         $subject.account.domain = subject.account.domain
         $subject.account.session_id = subject.account.session_id
         $subject.account.id = subject.account.id
         $subject.account.privileges = subject.account.privileges
-
-        $object.account.name = object.account.name
-        $object.account.domain = object.account.domain
-        $object.account.session_id = object.account.session_id
-        $object.account.id = object.account.id
-        $object.account.privileges = object.account.privileges
         
         $object.name = object.name
         $object.path = object.path
@@ -78,6 +63,7 @@ rule For_Profilling: Anomaly_Logon_Application
         $object.property = object.property
         $object.value = object.value
         $object.query = object.query
+        $object.state = object.state
 
         $datafield1 = datafield1
         $datafield2 = datafield2
@@ -120,48 +106,41 @@ rule For_Profilling: Anomaly_Logon_Application
         $event_src.category = event_src.category
         $event_src.rule = event_src.rule
         
-        # Проверка, если ли для пользователя собранный профиль
-        if not exec_query("CheckUsername", [lower(subject.account.name)]) then
+        # Проверяем отличие от профиля
+        if not exec_query("CheckUsername", [lower(event_src.title), lower(subject.account.name)]) then
             $reason = "no_user"
-            $importance = "high" # Важность может быть low для систем вроде VPN, почты (которыми пользуются все сотрудники)
-        # Если пользователь есть в профиле, ищем конкретные отличия
-        elif not exec_query("CheckHost", [$username, lower($src.host)]) then
+            $importance = "medium"
+        elif not exec_query("CheckHost", [lower(event_src.title), lower(subject.account.name), string(src.ip)]) then
             $reason = "new_address"
-            $importance = "high" # Тут всегда максимальная важность, потому что это самое опасное отличие от профиля
-        # Проверяем другие условия, характерные для приложения. Должно покрывать поля, передаваемый в фильтр
-        # Обратите внимание, что проверки в порядке важности сработки
-        # Далее примеры, которые нужно заменить своими, актуальными для конретного приложения
-        # Repo
-        #elif not exec_query("CheckRepo",  [lower(subject.account.name), lower(datafield2)]) then
-        #   $reason = "new_repo"
-        #   $importance = coalesce($importance, "low")
-        # Если все проверки завершились, но $reason остался пустым, запись могла не успеть попасть в ТС на момент сработки фильтра, такую сработку дропаем
+            $importance = "medium"
         else
             $importance = "info"
             $detect = "drop" 
         endif 
         
-        # Если правило работает в режиме сбора профиля, то emit не нужен. Но close не внесет запись в ТС, поэтому костыль через оборащение
+        # Если правило работает в режиме сбора профиля, то emit не нужен
         if $auto_profile == 2 then
             $importance = "info"
             $detect = "drop"
         endif 
 
-        $alert.key = 
+        $alert.key = lower(join([src.host, subject.account.name, event_src.host, event_src.title], "|"))
         $alert.context = $reason
     }
 
-    insert_into Risk_User_Logon_Correlation_Profile if $auto_profile != 0 {        
-        access_type = # $event_src.vendor or #event_src,title
-        login = # user lower($subject.account.name)      
-        src_ip = # source ip string($src.ip)
-        # dst_ip = lower($event_src.host) # destination ip 
-        # dst_path = coalesce(lower($datafield2), "")
-        # additional_data = coalesce(lower($subject.process.meta), "")
+    insert_into Risk_User_Logon_Correlation_Profile if $auto_profile != 0 {
+        login = lower($subject.account.name)    
+        access_type = $event_src.title
+        src_ip = string($src.ip)
+        src_host = lower($src.host)
+        dst_ip = coalesce(string($dst.ip),string($event_src.ip))
+        dst_host = coalesce(lower($dst.host),lower($event_src.host))
+        dst_path = ""
+        additional_data = ""
     }
    
 emit {
-    $correlation_type = ""
+    $correlation_type = "event"
 
     $subject = "account"
     $action = "login"
@@ -169,8 +148,8 @@ emit {
     $status = "success"
         
     $category.generic = "Anomaly"
-    $category.high = "User Behavior Anomaly"
-    $category.low = "Detection"
+    $category.high = "Lateral Movement"
+    $category.low = "Remote Services"
 
     $incident.aggregation.key = join([$correlation_name, $src.host, $subject.account.name], "|")
     $incident.severity = $importance
