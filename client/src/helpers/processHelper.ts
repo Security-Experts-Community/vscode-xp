@@ -167,6 +167,7 @@ export class ProcessHelper {
 			}
 		
 			const executionResult : ExecutionResult = new ExecutionResult();
+			executionResult.output = "";
 
 			if(!options.encoding) {
 				options.encoding = "utf-8";

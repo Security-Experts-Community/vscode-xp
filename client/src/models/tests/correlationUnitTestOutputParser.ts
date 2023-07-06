@@ -68,6 +68,12 @@ export class CorrelationUnitTestOutputParser implements UnitTestOutputParser {
 			}).join('\n');
 			return result;
 		}
+
+		// очищаем сообщение от неинтересных строк в начале
+		const success_output = /.*(SUCCESS!.*)/gms.exec(output);
+		if (success_output && success_output.length > 1) {
+			return success_output[1];
+		}
 		return output;
 	}
 
