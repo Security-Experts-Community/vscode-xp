@@ -80,7 +80,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 			)
 		);
 
-		// Изменение выбора правила с открытием визуализацием нужных данных.
+		// Изменение выбора правила с открытием визуализации нужных данных.
 		vscode.commands.registerCommand(
 			ContentTreeProvider.onRuleClickCommand,
 			async (item: RuleBaseItem|Table|Macros) : Promise<boolean> => {
@@ -107,17 +107,17 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 						const contentDocument = await vscode.workspace.openTextDocument(elementUri);
 						await vscode.window.showTextDocument(contentDocument, vscode.ViewColumn.One);
 						await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
+					
+						// Выделяем только что созданное правило.
+						await contentTree.reveal(
+							item, 
+							{
+								focus: true,
+								select: true,
+								expand: true 
+							}
+						);
 					}
-	
-					// Выделяем только что созданное правило.
-					await contentTree.reveal(
-						item, 
-						{
-							focus: true,
-							select: true,
-							expand: true 
-						}
-					);
 				}
 				catch(error) {
 					ExceptionHelper.show(error, `Ошибка во время обработки файла ${item.getFilePath()}`);
