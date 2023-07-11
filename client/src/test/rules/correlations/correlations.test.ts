@@ -73,6 +73,7 @@ suite('Корреляции', () => {
 	test('Правильное создание ObjectID', async () => {
 		const correlation = Correlation.create("New_correlation");
 		const expectedObjectId = "LOC-CR-109745836";
+		
 		assert.strictEqual(correlation.generateObjectId(), expectedObjectId);
 		assert.strictEqual(correlation.getMetaInfo().getObjectId(), expectedObjectId);
 	});
@@ -82,23 +83,27 @@ suite('Корреляции', () => {
 		const correlationTmpPath = TestFixture.getCorrelationPath(oldRuleName);
 		const correlation = await Correlation.parseFromDirectory(correlationTmpPath);
 
-		const newRuleName = "Super_Duper_Correlation";
-		await correlation.rename(newRuleName);
+		// Копируем во временную директорию.
+		const tmpPath = TestFixture.getTmpPath();
+		const correlationCopy = await correlation.copy(tmpPath);
 
-		const newRuleDirPath = correlation.getDirectoryPath();
+		const newRuleName = "Super_Duper_Correlation";
+		await correlationCopy.rename(newRuleName);
+
+		const newRuleDirPath = correlationCopy.getDirectoryPath();
 		const ruleDirectoryName = path.basename(newRuleDirPath);
 		assert.strictEqual(ruleDirectoryName, newRuleName);
 
-		assert.strictEqual(correlation.getName(), newRuleName);
+		assert.strictEqual(correlationCopy.getName(), newRuleName);
 
-		const metainfo = correlation.getMetaInfo();
+		const metainfo = correlationCopy.getMetaInfo();
 		assert.strictEqual(metainfo.getName(), newRuleName);
 
-		const newRuleCode = await correlation.getRuleCode();
+		const newRuleCode = await correlationCopy.getRuleCode();
 		assert.ok(newRuleCode.includes(newRuleName) && !newRuleCode.includes(oldRuleName));
 
 		// Интеграционные тесты.
-		const intTests = correlation.getIntegrationTests();
+		const intTests = correlationCopy.getIntegrationTests();
 		assert.strictEqual(intTests.length, 2);
 
 		const intTests1 = intTests[0];
@@ -110,7 +115,7 @@ suite('Корреляции', () => {
 		assert.ok(!testCode2.includes(oldRuleName));
 
 		// Модульные тесты.
-		const modTests = correlation.getUnitTests();
+		const modTests = correlationCopy.getUnitTests();
 		assert.strictEqual(modTests.length, 0);
 	});
 
