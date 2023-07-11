@@ -187,7 +187,7 @@ export class SiemjManager {
 		return enrichEventsContent;
 	}
 
-	public async correlateAndGetLocalizationExamples(rule: RuleBaseItem) : Promise<LocalizationExample[]> {
+	public async correlateAndGetLocalizationExamples(rule: RuleBaseItem, filtredTest : IntegrationTest[]) : Promise<LocalizationExample[]> {
 		const contentFullPath = rule.getPackagePath(this._config);
 		if(!fs.existsSync(contentFullPath)) {
 			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует.`);
@@ -212,24 +212,6 @@ export class SiemjManager {
 		const enLocalizationFilePath = this._config.getEnLocalizationFilePath(contentRootFolder);
 		if(fs.existsSync(enLocalizationFilePath)) {
 			await fs.promises.unlink(enLocalizationFilePath);
-		}
-
-		// Проверяем фильтруем тесты и проверяем, что есть тесты ожидающие события и без табличных списков.
-		const filtredTest = rule.getIntegrationTests().filter( it => {
-			// Исключаем тесты, которые не порождают события (вайтлистинг и тесты на фолзы).
-			const expectOneRegex = /expect\s+1\s+{/gm;
-			const tableListRegex = /\btable_list\s+{/gm;
-
-			const testCode = it.getTestCode();
-			if(!expectOneRegex.test(testCode) || tableListRegex.test(testCode)) {
-				return false;
-			}
-
-			return true;
-		});
-
-		if(filtredTest.length === 0) {
-			return [];
 		}
 
 		// Объединяем все сырые события для тестов в один файл.

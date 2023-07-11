@@ -264,7 +264,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			};
 		});
 
-		await this.writeLocalizationToDisk(ruLocFullPath, ruEventDescriptions);
+		await this.writeLocalizationToDisk(ruLocFullPath, ruEventDescriptions, this.getRuDescription());
 
 		// Английские локализации
 		const enLocFullPath = this.getLocalizationPath(LocalizationLanguage.En, fullPath);
@@ -285,19 +285,19 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			};
 		});
 
-		await this.writeLocalizationToDisk(enLocFullPath, enEventDescriptions);
+		await this.writeLocalizationToDisk(enLocFullPath, enEventDescriptions, this.getEnDescription());
 	}
 
-	private async writeLocalizationToDisk(localizationFullPath: string, eventDescriptions : any[]) : Promise<void> {
+	private async writeLocalizationToDisk(localizationFullPath: string, eventDescriptions : any[], description : string) : Promise<void> {
 		let localizationYamlContent : any;
 		if(eventDescriptions.length != 0) {
 			localizationYamlContent = YamlHelper.localizationsStringify({
-				"Description" : this.getRuDescription(),
+				"Description" : description,
 				"EventDescriptions" : eventDescriptions
 			});
 		} else {
 			localizationYamlContent = YamlHelper.localizationsStringify({
-				"Description" : this.getRuDescription()
+				"Description" : description
 			});
 		}
 
