@@ -44,7 +44,7 @@ export class Table extends KbTreeBaseItem {
 			table.setFileName(fileName);
 		}
 
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		// Добавляем команду на открытие.
 		table.setCommand({
 			command: ContentTreeProvider.onRuleClickCommand,
 			title: "Open File",

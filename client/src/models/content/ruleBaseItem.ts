@@ -264,12 +264,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			};
 		});
 
-		const ruLocalizationYamlContent = YamlHelper.localizationsStringify({
-			"Description" : this.getRuDescription(),
-			"EventDescriptions" : ruEventDescriptions
-		});
-
-		await FileSystemHelper.writeContentFile(ruLocFullPath, ruLocalizationYamlContent);
+		await this.writeLocalizationToDisk(ruLocFullPath, ruEventDescriptions);
 
 		// Английские локализации
 		const enLocFullPath = this.getLocalizationPath(LocalizationLanguage.En, fullPath);
@@ -290,12 +285,23 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			};
 		});
 
-		const enLocalizationYamlContent = YamlHelper.localizationsStringify({
-			"Description" : this.getEnDescription(),
-			"EventDescriptions" : enEventDescriptions
-		});
+		await this.writeLocalizationToDisk(enLocFullPath, enEventDescriptions);
+	}
 
-		await FileSystemHelper.writeContentFile(enLocFullPath, enLocalizationYamlContent);
+	private async writeLocalizationToDisk(localizationFullPath: string, eventDescriptions : any[]) : Promise<void> {
+		let localizationYamlContent : any;
+		if(eventDescriptions.length != 0) {
+			localizationYamlContent = YamlHelper.localizationsStringify({
+				"Description" : this.getRuDescription(),
+				"EventDescriptions" : eventDescriptions
+			});
+		} else {
+			localizationYamlContent = YamlHelper.localizationsStringify({
+				"Description" : this.getRuDescription()
+			});
+		}
+
+		await FileSystemHelper.writeContentFile(localizationFullPath, localizationYamlContent);
 	}
 
 	protected getLocalizationPath(localizationLanguage: LocalizationLanguage, fullPath : string) : string {
@@ -389,8 +395,18 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	}
 	
 
+	/**
+	 * Возвращает путь к файлу правила, либо undefined.
+	 * @returns возвращает путь к файлу правила. 
+	 */
 	public getRuleFilePath(): string {
-		return path.join(this.getDirectoryPath(), this.getFileName());
+		const directoryPath = this.getDirectoryPath();
+		const fileName = this.getFileName();
+		if(!directoryPath || !fileName) {
+			return undefined;
+		}
+
+		return path.join(directoryPath, fileName);
 	}
 
 	/**
@@ -400,7 +416,8 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	public async getRuleCode(): Promise<string> {
 		const rulePath = this.getRuleFilePath();
 		if(fs.existsSync(rulePath)) {
-			return fs.promises.readFile(rulePath, this.getRuleEncoding());
+			this._ruleCode = await fs.promises.readFile(rulePath, this.getRuleEncoding());
+			return this._ruleCode;
 		}
 
 		if(this._ruleCode) {
@@ -410,25 +427,37 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		return "";
 	}
 
+
+	/**
+	 * Изменяет код правила в памяти и на диске, если правило уже сохранено.
+	 * @param code новый код правила
+	 */
+	public setRuleCode(code: string): Promise<void> {
+		this._ruleCode = code;
+
+		// Меняем код правила на диске.
+		const ruleFilePath = this.getRuleFilePath();
+		if(fs.existsSync(ruleFilePath)) {
+			return FileSystemHelper.writeContentFile(ruleFilePath, code);
+		}
+	}
+
 	public async save(fullPath?: string) : Promise<void> {
 		throw new XpException("Сохранение данного типа контента не реализовано.");
 	}
 
-	public setRuleCode(text: string): void {
-		this._ruleCode = text;
-	}
-
 	iconPath = new vscode.ThemeIcon('file');
 
-	protected _localizations: Localization [] = [];
+	private _localizations: Localization [] = [];
+	private _localizationExamples : LocalizationExample [] = [];
+
 	protected _unitTests: BaseUnitTest [] = [];
 	protected _integrationTests : IntegrationTest [] = [];
 	
 	private _ruDescription : string;
 	private _enDescription : string;
 
-	private _localizationExamples : LocalizationExample [] = [];
+	private _ruleCode = "";
 
-	protected _ruleCode : string;
 	contextValue = "BaseRule";
 }

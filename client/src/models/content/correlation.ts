@@ -1,5 +1,6 @@
-import * as path from "path";
+import * as path from 'path';
 import * as fs from 'fs';
+import * as fse from 'fs-extra';
 
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { Localization } from './localization';
@@ -80,6 +81,10 @@ export class Correlation extends RuleBaseItem {
 		correlation.setMetaInfo(metaInfo);
 
 		const ruleFilePath = correlation.getRuleFilePath();
+		if (!fs.existsSync(ruleFilePath)) {
+			throw new XpException(`Файл с кодом правила '${ruleFilePath}' не существует.`);
+		}
+		
 		const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
 		correlation.setRuleCode(ruleCode);
 
@@ -102,7 +107,7 @@ export class Correlation extends RuleBaseItem {
 		const integrationalTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
 		correlation.addIntegrationTests(integrationalTests);
 
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		// Добавляем команду на открытие.
 		correlation.setCommand({
 			command: ContentTreeProvider.onRuleClickCommand,
 			title: "Open File",
@@ -120,7 +125,6 @@ export class Correlation extends RuleBaseItem {
 		}));
 
 		const duplicatedRule = Object.assign(Correlation.create(newName), copy) as Correlation;
-
 		
 		duplicatedRule.setCommand({
 				command: ContentTreeProvider.onRuleClickCommand,
@@ -196,7 +200,7 @@ export class Correlation extends RuleBaseItem {
 		const objectId = rule.generateObjectId();
 		metainfo.setObjectId(objectId);
 
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		// Добавляем команду на открытие.
 		rule.setCommand({
 			command: ContentTreeProvider.onRuleClickCommand,
 			title: "Open File",
@@ -208,6 +212,25 @@ export class Correlation extends RuleBaseItem {
 
 	public getObjectType(): string {
 		return XPObjectType.Correlation;
+	}
+
+	/**
+	 * Копирует правило без изменений по новому пути.
+	 * @param dstDirectory путь по которому будет скопировано правило.
+	 * @returns скопированная корреляция
+	 */
+	public async copy(dstDirectory: string ) : Promise<Correlation> {
+        const ruleDirectory = this.getDirectoryPath();
+        const ruleName = this.getName();
+
+		// Копируем в новую директорию.
+        const newRuleDirPath = path.join(dstDirectory, ruleName);
+        await fs.promises.mkdir(newRuleDirPath, { recursive: true });
+        await fse.copy(ruleDirectory, newRuleDirPath, { recursive: true });
+
+		// Возвращаем скопированную корреляцию.
+		const copiedCorrelation = await Correlation.parseFromDirectory(newRuleDirPath);
+		return copiedCorrelation;
 	}
 
 	public async save(parentFullPath?: string): Promise<void> {
@@ -230,17 +253,16 @@ export class Correlation extends RuleBaseItem {
 			await fs.promises.mkdir(corrDirPath, {recursive: true});
 		}
 
-		const ruleFullPath = path.join(corrDirPath, this.getFileName());
-		if (this._ruleCode) {
-			await FileSystemHelper.writeContentFile(ruleFullPath, this._ruleCode);
-		} else {
-			await FileSystemHelper.writeContentFile(ruleFullPath, "");
-		}
+		const ruleFullPath = this.getRuleFilePath();
+		const ruleCode = await this.getRuleCode();
+		await FileSystemHelper.writeContentFile(ruleFullPath, ruleCode);
 
-		await this.getMetaInfo().save(corrDirPath);
-		await this.saveLocalizationsImpl(corrDirPath);
-		await this.saveIntegrationTests(corrDirPath);
-		await this.saveUnitTests();
+		// Параллельно сохраняем все данные правила.
+		const metainfoPromise = this.getMetaInfo().save(corrDirPath);
+		const localizationPromise = this.saveLocalizationsImpl(corrDirPath);
+		const integrationTestsPromise = this.saveIntegrationTests(corrDirPath);
+		const unitTestsPromise = this.saveUnitTests();
+		await Promise.all([metainfoPromise, localizationPromise, integrationTestsPromise, unitTestsPromise]);
 	}
 
 	public async rename(newRuleName: string): Promise<void> {
@@ -248,13 +270,12 @@ export class Correlation extends RuleBaseItem {
 		// Старые значения.
 		const oldRuleName = this.getName();
 
-		this.setName(newRuleName);
-
 		// Переименовываем директорию с правилом
 		const parentDirectoryPath = this.getParentPath();
 		if(parentDirectoryPath && fs.existsSync(parentDirectoryPath)) {
 			// Переименовываем в коде правила.
 			const ruleCode = await this.getRuleCode();
+			
 			// Модифицируем код, если он есть
 			if (ruleCode) {
 				const newRuleCode = ContentHelper.replaceAllCorrelantionNameWithinCode(newRuleName, ruleCode);
@@ -264,6 +285,7 @@ export class Correlation extends RuleBaseItem {
 
 		// В метаинформации.
 		const metainfo = this.getMetaInfo();
+		this.setName(newRuleName);
 		metainfo.setName(newRuleName);
 
 		// Замена в критериях.

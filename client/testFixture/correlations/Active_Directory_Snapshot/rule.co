@@ -2,6 +2,6 @@ event Event {
 
 }
 
-rule Active_Directory_Snapshot : Event {
+rule Super_Duper_Correlation: Event {
 
 }

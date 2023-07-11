@@ -308,6 +308,9 @@ out=${output}`;
 		this._scenarios.push("run-correlate");
 	}
 
+	/**
+	 * Добавить генерацию локализаций по скоррелированным событиям.
+	 */
 	public addLocalization() : void {
 
 		const correlatedEvents = path.join('${output_folder}', this._config.getCorrelatedEventsFileName());

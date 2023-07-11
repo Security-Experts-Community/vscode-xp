@@ -78,7 +78,6 @@ suite('Корреляции', () => {
 	});
 
 	test('Переименование открытой корреляции без сохранения на диск', async () => {
-		// Копируем корреляцию во временную директорию.
 		const oldRuleName = "Active_Directory_Snapshot";
 		const correlationTmpPath = TestFixture.getCorrelationPath(oldRuleName);
 		const correlation = await Correlation.parseFromDirectory(correlationTmpPath);
@@ -158,11 +157,28 @@ suite('Корреляции', () => {
 		assert.strictEqual(unitTest.getNumber(), 1);
 	});
 
+	test('Изменение кода правила в памяти и на диске', async () => {
+		const oldRuleName = "Active_Directory_Snapshot";
+		const correlationTmpPath = TestFixture.getCorrelationPath(oldRuleName);
+		const correlation = await Correlation.parseFromDirectory(correlationTmpPath);
+
+		const tmpPath = TestFixture.getTmpPath();
+		const copiedCorrelation = await correlation.copy(tmpPath);
+		copiedCorrelation.setRuleCode("new rule code");
+
+		await copiedCorrelation.save();
+
+		const ruleCode = await copiedCorrelation.getRuleCode();
+		assert.strictEqual(ruleCode, "new rule code");
+	});
+
 	test('Перименование корреляции без кода', async () => {
 		const rulePath = TestFixture.getCorrelationPath("empty_correlation_code");
 		const correlation = await Correlation.parseFromDirectory(rulePath);
+
 		const newName = "NEW_CORRELATION_NAME";
-		correlation.rename(newName);
+		await correlation.rename(newName);
+		
 		assert.strictEqual(correlation.getName(), newName);
 	});
 

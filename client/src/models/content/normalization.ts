@@ -108,11 +108,8 @@ export class Normalization extends RuleBaseItem {
 		}
 
 		const ruleFullPath = path.join(rulePath, this.getFileName());
-		if (this._ruleCode) {
-			await FileSystemHelper.writeContentFile(ruleFullPath, this._ruleCode);
-		} else {
-			await FileSystemHelper.writeContentFile(ruleFullPath, "");
-		}
+		const ruleCode = await this.getRuleCode();
+		await FileSystemHelper.writeContentFile(ruleFullPath, ruleCode);
 
 		await this.getMetaInfo().save(rulePath);
 		await this.saveLocalizationsImpl(rulePath);
@@ -145,7 +142,7 @@ export class Normalization extends RuleBaseItem {
 		const objectId = rule.generateObjectId();
 		metainfo.setObjectId(objectId);
 
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		// Добавляем команду на открытие.
 		rule.setCommand({
 			command: ContentTreeProvider.onRuleClickCommand,
 			title: "Open File",
@@ -192,7 +189,7 @@ export class Normalization extends RuleBaseItem {
 		const unitTests = NormalizationUnitTest.parseFromRuleDirectory(normalization);
 		normalization.addUnitTests(unitTests);
 
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		// Добавляем команду на открытие.
 		normalization.setCommand({
 			command: ContentTreeProvider.onRuleClickCommand,
 			title: "Open File",
