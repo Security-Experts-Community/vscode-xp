@@ -412,7 +412,7 @@
 	"Макросы вайтлистинга": {
 		"prefix":  ["filter::CheckWL"],
 		"body": [
-			"filter::CheckWL_${1|Process_Creation,Powershell,Specific_Only,Windows_Login,Registry_Actions,Networking,File_Creation,LDAP_Request,Linux_Specific_Only,Linux_File_Operations,Windows_Shares,Web_Access,Tasks,Process_Access,Database_Actions|}(\"${TM_DIRECTORY/.*?(ESC.*?)/$1/}\",$2)"
+			"filter::CheckWL_${1|Process_Creation,Powershell,Specific_Only,Windows_Login,Registry_Actions,Networking,File_Creation,LDAP_Request,Linux_Specific_Only,Linux_File_Operations,Windows_Shares,Web_Access,Tasks,Process_Access,Database_Actions|}(\"$2\", $3)"
 		]
 	},	
 	"Макросы": {

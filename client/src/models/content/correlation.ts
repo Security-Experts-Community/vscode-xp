@@ -21,6 +21,7 @@ import { XpException } from '../xpException';
 import { UnitTestContentEditorViewProvider } from '../../views/unitTestEditor/unitTestEditorViewProvider';
 import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { XPObjectType } from './xpObjectType';
+import { FileSystemException } from '../fileSystemException';
 
 export class Correlation extends RuleBaseItem {
 	protected getLocalizationPrefix(): string {
@@ -62,7 +63,7 @@ export class Correlation extends RuleBaseItem {
 
 	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Correlation> {
 		if (!fs.existsSync(directoryPath)) {
-			throw new XpException(`Директория '${directoryPath}' не существует.`);
+			throw new FileSystemException(`Директория '${directoryPath}' не существует.`);
 		}
 
 		// Получаем имя корреляции и родительский путь.

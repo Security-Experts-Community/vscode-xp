@@ -400,7 +400,7 @@ export class IntegrationTestEditorViewProvider  {
 				return;
 			}
 
-			ExtensionHelper.showUserInfo("Нормализация сырого события завершена успешно.");
+			ExtensionHelper.showUserInfo("Нормализация сырых событий завершена успешно.");
 
 			// Обновляем правило.
 			tests[ruleTestIndex] = test;
@@ -498,7 +498,7 @@ export class IntegrationTestEditorViewProvider  {
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
-			title: `Интеграционные тесты для правила '${this._rule.getName()}'`
+			
 		}, async (progress) => {
 
 			await VsCodeApiHelper.saveRuleCodeFile(this._rule);
@@ -517,6 +517,18 @@ export class IntegrationTestEditorViewProvider  {
 			if(tests.length == 0) {
 				vscode.window.showInformationMessage(`Тесты для правила '${this._rule.getName()}' не найдены. Добавьте хотя бы один тест и повторите.`);
 				return false;
+			}
+
+			// Уточняем информацию для пользователей если в правиле обнаружено использование сабрулей.
+			const ruleCode = await this._rule.getRuleCode();
+			if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
+				progress.report({
+					message : `Интеграционные тесты для правила с сабрулями '${this._rule.getName()}'`
+				});
+			} else {
+				progress.report({
+					message : `Интеграционные тесты для правила '${this._rule.getName()}'`
+				});
 			}
 
 			try {

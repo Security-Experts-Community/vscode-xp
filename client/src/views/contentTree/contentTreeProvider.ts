@@ -107,16 +107,6 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 						const contentDocument = await vscode.workspace.openTextDocument(elementUri);
 						await vscode.window.showTextDocument(contentDocument, vscode.ViewColumn.One);
 						await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
-					
-						// Выделяем только что созданное правило.
-						await contentTree.reveal(
-							item, 
-							{
-								focus: true,
-								select: true,
-								expand: true 
-							}
-						);
 					}
 				}
 				catch(error) {
@@ -128,7 +118,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 			}
 		);
 	
-		// Форма создания корреляции.
+		// Форма создания правил.
 		await CreateRuleViewProvider.init(config);
 		
 		// Создание поддиректории.
