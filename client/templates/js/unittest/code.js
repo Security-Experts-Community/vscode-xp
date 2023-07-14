@@ -83,7 +83,7 @@ window.addEventListener(
 		switch (message.command) {
 			case 'sendTestStatus': {
 				const testStatus = message.testStatus;
-				
+				break;
 			}
 			case 'updateRawEvent': {
 				const rawEvent = message.rawEvent;

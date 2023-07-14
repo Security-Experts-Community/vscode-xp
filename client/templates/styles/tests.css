@@ -30,6 +30,7 @@
 	border: none;
 	margin-left: 1px;
 }
+
 .tablinks.active {
 	background-color: var(--vscode-tab-activeBackground);
 	border: none;
@@ -38,10 +39,12 @@
 .run.success {
 	color: var(--vscode-charts-green);
 }
+
 .run.failure {
 	background: var(--vscode-inputValidation-errorBackground);
 	color: var(--vscode-inputValidation-errorForeground);
 }
+
 .run.failure.active {
 	color: var(--vscode-charts-red);
 }
@@ -49,10 +52,12 @@
 button.success {
 	color: var(--vscode-charts-green);
 }
+
 button.failure {
 	background: var(--vscode-inputValidation-errorBackground);
 	color: var(--vscode-inputValidation-errorForeground);
 }
+
 button.failure.active {
 	color: var(--vscode-charts-red);
 }
@@ -62,6 +67,7 @@ button.failure.active {
 	border: none;
 	background-color: var(--vscode-tab-activeBackground);
 }
+
 .delete-tablink:hover {
 	background-color: var(--vscode-button-secondaryHoverBackground);
 }
@@ -72,6 +78,7 @@ button.failure.active {
 	border: none;
 	margin-left: 3px;
 }
+
 #add-test:hover {
 	background-color: var(--vscode-tab-secondaryHoverBackground);
 }
@@ -116,15 +123,14 @@ textarea {
 }
 
 #norm_event {
-	white-space: pre;
 	color: var(--vscode-input-foreground);
-	font-family: var(--vscode-editor-font-family);	
+	font-family: var(--vscode-editor-font-family);
 }
 
 #correlated_events {
 	white-space: pre;
 	color: var(--vscode-input-foreground);
-	font-family: var(--vscode-editor-font-family);	
+	font-family: var(--vscode-editor-font-family);
 }
 
 textarea:focus {
@@ -150,7 +156,7 @@ textarea:focus {
 	margin-left: 15px;
 }
 
-.tabs input[type=button]{
+.tabs input[type=button] {
 	float: right;
 	background-color: var(--vscode-button-secondaryBackground);
 	color: var(--vscode-button-secondaryForeground);
@@ -169,7 +175,7 @@ textarea:focus {
 	float: right;
 }
 
-.dropdown input{
+.dropdown input {
 	min-width: 100px;
 }
 
@@ -190,6 +196,10 @@ textarea:focus {
 	cursor: pointer;
 }
 
-.dropdown-content div:hover {background-color: var(--vscode-button-background);}
+.dropdown-content div:hover {
+	background-color: var(--vscode-button-background);
+}
 
-.dropdown:hover .dropdown-content {display: block;}
+.dropdown:hover .dropdown-content {
+	display: block;
+}

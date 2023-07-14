@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 
@@ -7,36 +8,127 @@
 		Use a content security policy to only allow loading images from https or from our extension directory,
 		and only allow scripts that have a specific nonce.
 	-->
-	
+
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Тесты</title>
 
 	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/main.css">
 	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/tests.css">
-	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/hljs.css">
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/prism.css">
 
 </head>
-	<body>
-		<!-- Common Panel -->
-		<div id="header">
-			<div id="navigation">
-				<input id="run_tests" class="run" name="full_test" type="button" value="&#9654;   Запустить все тесты  ">			
-				<input id="save_all_tests" class="save" type="button" value="Сохранить все">
-			</div>
-			<!-- Tab links -->
-			<div class="tab">
-				<div class = 'tablinks-wrap'>
-					{{#IntegrationalTests}}
-					<button class="tablinks {{TestStatus}}" onclick="openTest('{{TestNumber}}')">Тест №{{TestNumber}}</button>
-					<button class="delete-tablink" onclick="deleteTest('{{TestNumber}}')" hidden>&#128465;</button>
-					{{/IntegrationalTests}}
-					<button id="add-test" onclick="createTest()">+</button>
-				</div>
-			</div>
-	    </div>
 
-		<!-- Tab content -->
-		<div id="main-body" class="tabs">
+<style>
+	/* Please see the article */
+
+	#editing,
+	#highlighting {
+		/* Both elements need the same text and space styling so they are directly on top of each other */
+		margin: 10px;
+		padding: 10px;
+		border: 0;
+		width: calc(100% - 32px);
+		height: 100%;
+	}
+
+	#editing,
+	#highlighting,
+	#highlighting * {
+		/* Also add text styles to highlighing tokens */
+		font-size: var(--vscode-editor-font-size);
+		font-family: var(--vscode-editor-font-family);
+		line-height: 1.5;
+		tab-size: 2;
+	}
+
+	#expectation {
+		/* In the same place */
+		position: relative;
+		top: 20px;
+		left: 0;
+		width: 100%;
+		height: 1000px;
+	}
+
+	#editing,
+	#highlighting {
+		/* In the same place */
+		position: absolute;
+		top: 0;
+		left: 0;
+	}
+
+	/* Move the textarea in front of the result */
+
+	#editing {
+		z-index: 1;
+	}
+
+	#highlighting {
+		z-index: 0;
+	}
+
+	/* Make textarea almost completely transparent */
+
+	#editing {
+		color: transparent;
+		background: transparent;
+		caret-color: white;
+		/* Or choose your favourite color */
+	}
+
+	/* Can be scrolled */
+	#editing,
+	#highlighting {
+		overflow: auto;
+		white-space: nowrap;
+		/* Allows textarea to scroll horizontally */
+	}
+
+	/* No resize on textarea */
+	#editing {
+		resize: none;
+	}
+
+	p code {
+		border-radius: 2px;
+		background-color: #eee;
+		color: #111;
+	}
+
+	.norm-wrapper {
+		display: flex;
+	}
+
+	.block {
+		display: inline-block;
+		width: 100%;
+		margin: 2px;
+	}
+</style>
+
+<body>
+	<!-- Common Panel -->
+	<div id="header">
+		<div id="navigation">
+			<input id="run_tests" class="run" name="full_test" type="button" value="&#9654;   Запустить все тесты  ">
+			<input id="save_all_tests" class="save" type="button" value="Сохранить все">
+		</div>
+		<!-- Tab links -->
+		<div class="tab">
+			<div class='tablinks-wrap'>
+				{{#IntegrationalTests}}
+				<button class="tablinks {{TestStatus}}" onclick="openTest('{{TestNumber}}')">Тест
+					№{{TestNumber}}</button>
+				<button class="delete-tablink" onclick="deleteTest('{{TestNumber}}')" hidden>&#128465;</button>
+				{{/IntegrationalTests}}
+				<button id="add-test" onclick="createTest()">+</button>
+			</div>
+		</div>
+	</div>
+
+	<!-- Tab content -->
+	<div id="main-body" class="tabs">
 		{{#IntegrationalTests}}
 		<div id="{{TestNumber}}" name="test" data-test="{{JsonedTestObject}}" class="tabcontent">
 			<div class="alert {{TestStatus}}">
@@ -44,12 +136,12 @@
 			</div>
 
 			<!-- Raw Events -->
-			<div class="test_block">			
+			<div class="test_block">
 				<div class="block_header">
-					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
 					<label for="raw_event" class="label">Сырое событие:</label>
 				</div>
-				
+
 				<div class="manage_buttons">
 					<input type="checkbox" name="word-wrap" onclick="wrap(this);" checked>
 					<label for="word-wrap">переносить по словам</label>
@@ -69,21 +161,21 @@
 
 				<div class="text">
 					<textarea name="raw_event">{{RawEvents}}</textarea>
-				</div>	
+				</div>
 			</div>
 
 			<!-- Norm Events -->
 			{{#NormEvents}}
 			<div class="test_block">
 				<div class="block_header">
-					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
 					<label for="norm_event" class="label">Нормализованное событие:</label>
 				</div>
 				<div class="manage_buttons">
 					<input name="fast_test" type="button" value="&#9654;   Получить ожидаемое событие  ">
 				</div>
 				<div class="text">
-					<div contenteditable="true" id="norm_event" name="norm_event">{{NormEvents}}</div>
+					<code class="language-json" id="highlighting-content" name="norm_event">{{NormEvents}}</code>
 				</div>
 			</div>
 			{{/NormEvents}}
@@ -91,425 +183,426 @@
 			<!-- Test Conditions -->
 			<div class="test_block">
 				<div class="block_header">
-					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
 					<label for="expect" class="label">Условия прохождения теста:</label>
 				</div>
 				<div class="manage_buttons">
 					<input id="clean_test_button" type="button" value="Очистить">
 				</div>
 
-				<div class="text">
-					<!-- Если кода текста нет, выводим дефолтное заполнение -->
-					<textarea rows="20" name="expect" placeholder="expect 1 {&quot;correlation_name&quot; : &quot;{{RuleName}}&quot;}">{{TestCode}}</textarea>
+				<div class="expected text">
+					<div id="expectation">
+						<textarea rows="20" name="expect" id="editing" spellcheck="false"
+							oninput="update(this); sync_scroll(this);" onscroll="sync_scroll(this);"
+							onkeydown="check_tab(this, event);"
+							placeholder="expect 1 {&quot;correlation_name&quot; : &quot;{{RuleName}}&quot;}">{{TestCode}}
+						</textarea>
+						<pre id="highlighting" aria-hidden="true">
+							<code class="language-json" id="highlighting-content">{{TestCode}}</code>
+						</pre>
+					</div>
 				</div>
 			</div>
 		</div>
 		{{/IntegrationalTests}}
-		</div>
-		
-		<!-- Сохраняем временные данные. -->
-		<input id="active_test_number" type="hidden" value="{{ActiveTestNumber}}">
-		<input id="active_test_result" type="hidden" value="{{ActiveTestResult}}">
-		
-		<!-- Для отладки в браузере добавляю прямую ссылку на JQuery. -->
-		<script	src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-		<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
-		<script src="{{{ExtensionBaseUri}}}/client/templates/js/highlight-10.0.1.min.js"></script>
+	</div>
 
-		<script>
+	<!-- Сохраняем временные данные. -->
+	<input id="active_test_number" type="hidden" value="{{ActiveTestNumber}}">
+	<input id="active_test_result" type="hidden" value="{{ActiveTestResult}}">
 
-			function togleTextarea(arrow) {
-				labels = arrow.parentNode.parentNode.children[1];
-				txt = arrow.parentNode.parentNode.children[2];
-				if (txt.hidden == true) {
-					txt.hidden = false;
-					labels.hidden = false;
-					arrow.innerHTML = "ᐯ";
-				} else {
-					txt.hidden = true;
-					labels.hidden = true;
-					arrow.innerHTML = "❯";
-				}
+	<!-- Для отладки в браузере добавляю прямую ссылку на JQuery. -->
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
+	<script src="{{{ExtensionBaseUri}}}/client/templates/js/prism.js"></script>
+	<script src="{{{ExtensionBaseUri}}}/client/templates/js/integrationaltest/code.js"></script>
+
+	<script>
+
+		function toggleTextarea(arrow) {
+			labels = arrow.parentNode.parentNode.children[1];
+			txt = arrow.parentNode.parentNode.children[2];
+			if (txt.hidden == true) {
+				txt.hidden = false;
+				labels.hidden = false;
+				arrow.innerHTML = "ᐯ";
+			} else {
+				txt.hidden = true;
+				labels.hidden = true;
+				arrow.innerHTML = "❯";
 			}
-		
-			function openTest(TestID) {
-				$.each($('.tabcontent'), function(i,tab) {
-					tab.style.display = "none";
-				})
+		}
 
-				$.each($('.tablinks'), function(i,tab) {
-					tab.classList.remove('active');
-				})
-				$.each($('.delete-tablink'), function(i,tab) {
-					tab.classList.remove('active');
-					tab.hidden = true;
-				})
-				
-				$('#'+TestID).show();
-				$('.tablinks')[TestID-1].className += " active";
-				$('.delete-tablink')[TestID-1].className += " active";
-				$('.delete-tablink')[TestID-1].hidden = false;
-				$('#active_test_number').val(TestID);	
-				
-				$('[name="expect"]')[TestID-1].focus();
-			}
+		function openTest(TestID) {
+			$.each($('.tabcontent'), function (i, tab) {
+				tab.style.display = "none";
+			})
 
-			function createTest() {	
-				new_id = $('.tablinks').length + 1;
-				if ( $("#1").length ) {
-					tab_contect = $("#1")
-						.clone()
-						.attr("id", new_id)
-						.removeAttr('data-test')
-						.appendTo('.tabs');
-				} else {
-					tab_contect = $("#0")
-						.clone()
-						.attr("id", new_id)
-						.removeAttr('data-test')
-						.appendTo('.tabs');
-				}
-				
-				// change ID
-				new_id = $('.tablinks').length + 1;
+			$.each($('.tablinks'), function (i, tab) {
+				tab.classList.remove('active');
+			})
+			$.each($('.delete-tablink'), function (i, tab) {
+				tab.classList.remove('active');
+				tab.hidden = true;
+			})
 
-				// Empty fields
-				$(`#${new_id} [name=norm_event]`).val('');
+			$(`#${TestID}`).show();
+			$('.tablinks')[TestID - 1].className += " active";
+			$('.delete-tablink')[TestID - 1].className += " active";
+			$('.delete-tablink')[TestID - 1].hidden = false;
+			$('#active_test_number').val(TestID);
 
-				// Добавляю дефолтное заполнение кода теста
-				$(`#${new_id} [name=expect]`).val("expect 1 {\"correlation_name\" : \"{{RuleName}}\"}");
+			$('[name="expect"]')[TestID - 1].focus();
+		}
 
-				// create new TAB
-				$('.tablinks').slice(0,1)
+		function createTest() {
+			new_id = $('.tablinks').length + 1; // TODO: next test id
+			if ($("#1").length) {
+				tab_content = $("#1")
 					.clone()
-					.attr("onclick","openTest('" + new_id + "')")
-					.attr("class", "tablinks")
-					.text("Тест №" + new_id)
-					.appendTo('.tablinks-wrap')
-					.show();
-				$('.delete-tablink').slice(0,1)
+					.attr("id", new_id)
+					.removeAttr('data-test')
+					.appendTo('.tabs');
+			} else {
+				tab_content = $("#0")
 					.clone()
-					.attr("onclick","deleteTest('" + new_id + "')")
-					.attr("class", "delete-tablink")
-					.appendTo('.tablinks-wrap');
-				$('.tablinks-wrap').append($('#add-test'));
-
-				// Activate new tab
-				openTest(new_id);
+					.attr("id", new_id)
+					.removeAttr('data-test')
+					.appendTo('.tabs');
 			}
 
-			function deleteTest(TestID) {
-				// Не удаляем первый тест, а то нечего будет копировать
-				if (TestID == '1') {
-					$('#1 textarea').val('');
-					$('.tablinks')[TestID-1].hidden = true;
-					$('#1').attr("id", "0");
-					$('.tabcontent')[0].style.display = "none";
-					$('.delete-tablink')[0].hidden = true;
-					for (let i = 1; i <= $('.tablinks').length; i++) {
-						if ( $('.tablinks')[i].hidden == false ) {
-							openTest(i+1);
-							break;
-						}
-					}
-				} else { 
-					if (TestID == $('.tablinks').length) {
-						// Последнюю вкладку удаляем с концами
-						$('.tablinks')[TestID-1].remove()
-						$('.delete-tablink')[TestID-1].remove()
-					} else {
-						// Вкладки из середины скрываем, чтобы индексы в дальнейшем правильно считались
-						$('.tablinks')[TestID-1].hidden = true;
-						$('.delete-tablink')[TestID-1].hidden = true;
-					}
-					$("#" + TestID).remove();
-					for (let i = 2; i <= TestID; i++) {
-						if ( $('.tablinks')[TestID-i].hidden == false ) {
-							openTest(TestID-1);
-							break;
-						}
+			// change ID
+			new_id = $('.tablinks').length + 1;
+
+			// Empty fields
+			$(`#${new_id} [name=norm_event]`).val('');
+
+			// Добавляю дефолтное заполнение кода теста
+			$(`#${new_id} [name=expect]`).val("expect 1 {\"correlation_name\" : \"{{RuleName}}\"}");
+			update($(`#${new_id} [name=expect]`)[0]);
+
+			// create new TAB
+			$('.tablinks').slice(0, 1)
+				.clone()
+				.attr("onclick", `openTest('${new_id}')`)
+				.attr("class", "tablinks")
+				.text(`Тест №${new_id}`)
+				.appendTo('.tablinks-wrap')
+				.show();
+			$('.delete-tablink').slice(0, 1)
+				.clone()
+				.attr("onclick", `deleteTest('${new_id}')`)
+				.attr("class", "delete-tablink")
+				.appendTo('.tablinks-wrap');
+			$('.tablinks-wrap').append($('#add-test'));
+
+			// Activate new tab
+			openTest(new_id);
+		}
+
+		function deleteTest(TestID) {
+			// Не удаляем первый тест, а то нечего будет копировать
+			if (TestID == 1) {
+				$('#1 textarea').val('');
+				$('.tablinks')[TestID - 1].hidden = true;
+				$('#1').attr("id", "0");
+				$('.tabcontent')[0].style.display = "none";
+				$('.delete-tablink')[0].hidden = true;
+				for (let i = 1; i <= $('.tablinks').length; i++) {
+					if ($('.tablinks')[i].hidden == false) {
+						openTest(i + 1);
+						break;
 					}
 				}
-			}
-
-			// word wrap/unwrap with button
-			function wrap(check) {
-				const textField = check.parentNode.parentNode.children[2].children[0];
-				if (textField.wrap == "off") {
-					check.checked = true;
-					textField.wrap = "on";
-					textField.style.height = textField.scrollHeight + "px";
+			} else {
+				if (TestID == $('.tablinks').length) {
+					// Последнюю вкладку удаляем с концами
+					$('.tablinks')[TestID - 1].remove();
+					$('.delete-tablink')[TestID - 1].remove();
 				} else {
-					check.checked = false;
-					textField.wrap = "off";
-					//textField.focus();
+					// Вкладки из середины скрываем, чтобы индексы в дальнейшем правильно считались
+					$('.tablinks')[TestID - 1].hidden = true;
+					$('.delete-tablink')[TestID - 1].hidden = true;
+				}
+				$("#" + TestID).remove();
+				for (let i = 2; i <= TestID; i++) {
+					if ($('.tablinks')[TestID - i].hidden == false) {
+						openTest(TestID - 1);
+						break;
+					}
 				}
 			}
+		}
 
-			var vscode = acquireVsCodeApi();
+		// word wrap/unwrap with button
+		function wrap(check) {
+			const textField = check.parentNode.parentNode.children[2].children[0];
+			if (textField.wrap == "off") {
+				check.checked = true;
+				textField.wrap = "on";
+				textField.style.height = textField.scrollHeight + "px";
+			} else {
+				check.checked = false;
+				textField.wrap = "off";
+				//textField.focus();
+			}
+		}
 
-			// Получение команд от расширения.
-			window.addEventListener(
-				'message', 
-				(event) => {
-					const message = event.data; 
-					switch (message.command) {
-						case 'updateRawEvents': {
-							const rawEvents = message.rawEvents;
-							if(!rawEvents) {
-								alert("Ошибка обновления сырых событий.");
-								return;
-							}
+		var vscode = acquireVsCodeApi();
 
-							// Получаем текущий тест.
-							const activeTestNumber = $("#active_test_number").val();
-							var baseTestElement = $("#" + activeTestNumber); 
-							
-							// Задаем новое значение сырых событий.
-							baseTestElement.find('[name="raw_event"]').val(rawEvents);
-							break;
+		// Получение команд от расширения.
+		window.addEventListener(
+			'message',
+			(event) => {
+				const message = event.data;
+				switch (message.command) {
+					case 'updateRawEvents': {
+						const rawEvents = message.rawEvents;
+						if (!rawEvents) {
+							alert("Ошибка обновления сырых событий.");
+							return;
 						}
-						case 'updateTestCode': {
-							const cleanedTestCode = message.cleanedTestCode;
-							if(!cleanedTestCode) {
-								alert("Ошибка обновления кода теста событий.");
-								return;
-							}
 
-							// Получаем текущий тест.
-							const activeTestNumber = $("#active_test_number").val();
-							var baseTestElement = $("#" + activeTestNumber); 
-							
-							// Задаем новое значение сырых событий.
-							baseTestElement.find('[name="expect"]').val(cleanedTestCode);
-							break;
-						}
+						// Получаем текущий тест.
+						const activeTestNumber = $("#active_test_number").val();
+						var baseTestElement = $("#" + activeTestNumber);
+
+						// Задаем новое значение сырых событий.
+						baseTestElement.find('[name="raw_event"]').val(rawEvents);
+						break;
 					}
+					case 'updateTestCode': {
+						const cleanedTestCode = message.cleanedTestCode;
+						if (!cleanedTestCode) {
+							alert("Ошибка обновления кода теста событий.");
+							return;
+						}
+
+						// Получаем текущий тест.
+						const activeTestNumber = $("#active_test_number").val();
+						var baseTestElement = $("#" + activeTestNumber);
+
+						// Задаем новое значение сырых событий.
+						baseTestElement.find('[name="expect"]').val(cleanedTestCode);
+						break;
+					}
+				}
 			});
 
-			$('textarea').on('focusin', function() {
-				$(this).height(this.scrollHeight);
-			});
+		$('textarea').on('focusin', function () {
+			$(this).height(this.scrollHeight);
+		});
 
-			$(document).ready(function() {
+		$(document).ready(function () {
 
+			const activeTestNumber = $("#active_test_number").val();
+			// Открытие теста по номеру.
+			openTest(activeTestNumber);
+
+			// Выводим восклицательный узнак у неуспешно прошедших тестов
+			tablinks = $(".tablinks");
+			for (i = 0; i < tablinks.length; i++) {
+				if (tablinks[i].classList.contains("failure") == true) {
+					tablinks[i].innerHTML = "&#9888 " + tablinks[i].innerHTML
+				}
+			}
+
+			raws = $('[name=word-wrap]');
+			for (i = 0; i < raws.length; i++) {
+				wrap(raws[i]);
+			}
+
+			// Нормализация события
+			$(document).on("click", '[name="normalize"]', function () {
+
+				// Получаем текущий тест.
 				const activeTestNumber = $("#active_test_number").val();
-				// Открытие теста по номеру.
-			  	openTest(activeTestNumber);
+				const baseTestElement = $("#" + activeTestNumber);
+				const test = baseTestElement.data("test");
 
-				// Выводим восклицательный узнак у неуспешно прошедших тестов
-				tablinks = $(".tablinks");
-				for (i = 0; i < tablinks.length; i++) {
-					if (tablinks[i].classList.contains("failure") == true) {
-						tablinks[i].innerHTML = "&#9888 " + tablinks[i].innerHTML
-					}
-				}
+				// Получаем актуальные сырые события.
+				const rawEvents = baseTestElement.find('[name="raw_event"]').val();
 
-				raws = $('[name=word-wrap]');
-				for (i = 0; i < raws.length; i++) {
-					wrap(raws[i]);
-				}
-
-				// Подсветка нормализованного события.
-				$("[name=norm_event]").each( function (index) {
-					// const normEventTextarea = $("#norm_event");
-					let normEventText = $(this).text();
-
-					const highlightNormEvent = hljs.highlightAuto(normEventText).value;
-					$(this).html(highlightNormEvent);
-				});
-				
-				// Нормализация события
-				$(document).on("click",'[name="normalize"]', function () {
-
-					// Получаем текущий тест.
-					const activeTestNumber = $("#active_test_number").val();
-					const baseTestElement = $("#" + activeTestNumber);
-					const test = baseTestElement.data("test");
-					
-					// Получаем актуальные сырые события.
-					const rawEvents = baseTestElement.find('[name="raw_event"]').val();
-
-					// Передает тест как параметр запроса.
-					vscode.postMessage({
-						command: 'normalize',
-						test: test,
-						rawEvents : rawEvents
-					});
-				});
-
-				// Нормализовать и обогатить.
-				$(document).on("click",'[name="normalize_and_enrich"]', function () {
-
-					// Получаем текущий тест.
-					const activeTestNumber = $("#active_test_number").val();
-					const baseTestElement = $("#" + activeTestNumber);
-					const test = baseTestElement.data("test");
-					
-					// Получаем актуальные сырые события.
-					const rawEvents = baseTestElement.find('[name="raw_event"]').val();
-
-					// Передает тест как параметр запроса.
-					vscode.postMessage({
-						command: 'normalizeAndEnrich',
-						test: test,
-						rawEvents : rawEvents
-					});
-				});
-
-				// Быстрый тест
-				$(document).on("click",'[name="fast_test"]', function () {
-
-					// Получаем текущий тест.
-					const activeTestNumber = $("#active_test_number").val();
-					var baseTestElement = $("#" + activeTestNumber); 
-
-					// Передает тест как параметр запроса.
-					const test = baseTestElement.data("test");
-					vscode.postMessage({
-						command: 'fastTest',
-						test: test
-					});
-				});
-
-				// Полный тест
-				$(document).on("click",'[name="full_test"]', function () {
-
-					// Находим все тесты.
-					const tests = [];
-					$(document).find("[name='test']").each(function () {
-						// Получаем поля теста.
-						const testObject = $(this).data("test");
-
-						const id = $(this).attr('id');
-						if(id == "0") {
-							return;
-						}
-
-						const rawEvents = $(this).find('[name="raw_event"]').val();
-						const testCode = $(this).find('[name="expect"]').val();
-						const normEvents = $(this).find('[name="norm_event"]').val();
-
-						tests.push({
-							"number" : id,
-							"rawEvents" : rawEvents,
-							"testCode" : testCode,
-							"normEvents" : normEvents
-						});
-					});
-
-					// Передаем номер активного теста, чтобы после сохранения он таким и остался.
-					const activeTestNumber = $("#active_test_number").val();
-
-					vscode.postMessage({
-						command: 'fullTest',
-						activeTestNumber : activeTestNumber,
-						tests: tests
-					});
-				});
-
-				// Добавить конверт
-				$(document).on("click",'[name="add_envelope"]', function () {
-					// Получаем текущий тест.
-					const activeTestNumber = $("#active_test_number").val();
-					var baseTestElement = $("#" + activeTestNumber); 
-					
-					// Получаем значения.
-					const testObject = baseTestElement.data("test");
-					const rawEvents = baseTestElement.find('[name="raw_event"]').val();
-
-					// Передает тест как параметр запроса.
-					const test = baseTestElement.data("test");
-					vscode.postMessage({
-						command: 'addEnvelope',
-						test: test,
-						rawEvents : rawEvents,
-						mimeType : $(this).text(),
-					});
-				});
-
-				// Сохраняем тест
-				// $(document).on("click",'#save_test', function () {
-
-				// 	// Получаем текущий тест.
-				// 	const activeTestNumber = $("#active_test_number").val();
-				// 	console.log(`Выбран тесты № ${activeTestNumber}`);
-				// 	var baseTestElement = $("#" + activeTestNumber);
-					
-				// 	// Получаем значения.
-				// 	const testObject = baseTestElement.data("test");
-				// 	const rawEvents = baseTestElement.find('[name="raw_event"]').val();
-				// 	const testCode = baseTestElement.find('[name="expect"]').val();
-
-				// 	vscode.postMessage({
-				// 		command: 'saveTest',
-				// 		test: testObject,
-				// 		activeTestNumber : activeTestNumber,
-				// 		newValues: {
-				// 			"rawEvents" : rawEvents,
-				// 			"testCode" : testCode,
-				// 		}
-				// 	});
-				// });
-
-				// Сохраняем все тесты
-				$(document).on("click",'#save_all_tests', function () {
-
-					// Находим все тесты.
-					const tests = [];
-					$(document).find("[name='test']").each(function () {
-						// Получаем поля теста.
-						const testObject = $(this).data("test");
-
-						const id = $(this).attr('id');
-						if(id == "0") {
-							return;
-						}
-
-						const rawEvents = $(this).find('[name="raw_event"]').val();
-						const testCode = $(this).find('[name="expect"]').val();
-						const normEvents = $(this).find('[name="norm_event"]').text();
-
-						tests.push({
-							"number" : id,
-							"rawEvents" : rawEvents,
-							"testCode" : testCode,
-							"normEvents" : normEvents
-						});
-					});
-
-					// Передаем номер активного теста, чтобы после сохранения он таким и остался.
-					const activeTestNumber = $("#active_test_number").val();
-
-					vscode.postMessage({
-						command: 'saveAllTests',
-						activeTestNumber : activeTestNumber,
-						tests: tests
-					});
-				});
-
-				// Очищаем код тестов он лишних полей.
-				$(document).on("click",'#clean_test_button', function () {
-
-					// Получаем текущий тест.
-					const activeTestNumber = $("#active_test_number").val();
-					var baseTestElement = $("#" + activeTestNumber);
-					
-					// Получаем значения.
-					const testObject = baseTestElement.data("test");
-					const testCode = baseTestElement.find('[name="expect"]').val();
-
-					vscode.postMessage({
-						command: 'cleanTestCode',
-
-						test: testObject,
-						activeTestNumber : activeTestNumber,
-
-						testCode : testCode,
-					});
+				// Передает тест как параметр запроса.
+				vscode.postMessage({
+					command: 'normalize',
+					test: test,
+					rawEvents: rawEvents
 				});
 			});
-			
+
+			// Нормализовать и обогатить.
+			$(document).on("click", '[name="normalize_and_enrich"]', function () {
+
+				// Получаем текущий тест.
+				const activeTestNumber = $("#active_test_number").val();
+				const baseTestElement = $("#" + activeTestNumber);
+				const test = baseTestElement.data("test");
+
+				// Получаем актуальные сырые события.
+				const rawEvents = baseTestElement.find('[name="raw_event"]').val();
+
+				// Передает тест как параметр запроса.
+				vscode.postMessage({
+					command: 'normalizeAndEnrich',
+					test: test,
+					rawEvents: rawEvents
+				});
+			});
+
+			// Быстрый тест
+			$(document).on("click", '[name="fast_test"]', function () {
+
+				// Получаем текущий тест.
+				const activeTestNumber = $("#active_test_number").val();
+				var baseTestElement = $("#" + activeTestNumber);
+
+				// Передает тест как параметр запроса.
+				const test = baseTestElement.data("test");
+				vscode.postMessage({
+					command: 'fastTest',
+					test: test
+				});
+			});
+
+			// Полный тест
+			$(document).on("click", '[name="full_test"]', function () {
+
+				// Находим все тесты.
+				const tests = [];
+				$(document).find("[name='test']").each(function () {
+					// Получаем поля теста.
+					const testObject = $(this).data("test");
+
+					const id = $(this).attr('id');
+					if (id == "0") {
+						return;
+					}
+
+					const rawEvents = $(this).find('[name="raw_event"]').val();
+					const testCode = $(this).find('[name="expect"]').val();
+					const normEvents = $(this).find('[name="norm_event"]').val();
+
+					tests.push({
+						"number": id,
+						"rawEvents": rawEvents,
+						"testCode": testCode,
+						"normEvent": normEvents
+					});
+				});
+
+				// Передаем номер активного теста, чтобы после сохранения он таким и остался.
+				const activeTestNumber = $("#active_test_number").val();
+
+				vscode.postMessage({
+					command: 'fullTest',
+					activeTestNumber: activeTestNumber,
+					tests: tests
+				});
+			});
+
+			// Добавить конверт
+			$(document).on("click", '[name="add_envelope"]', function () {
+				// Получаем текущий тест.
+				const activeTestNumber = $("#active_test_number").val();
+				var baseTestElement = $("#" + activeTestNumber);
+
+				// Получаем значения.
+				const testObject = baseTestElement.data("test");
+				const rawEvents = baseTestElement.find('[name="raw_event"]').val();
+
+				// Передает тест как параметр запроса.
+				const test = baseTestElement.data("test");
+				vscode.postMessage({
+					command: 'addEnvelope',
+					test: test,
+					rawEvents: rawEvents,
+					mimeType: $(this).text(),
+				});
+			});
+
+			// Сохраняем тест
+			$(document).on("click", '#save_test', function () {
+
+				// Получаем текущий тест.
+				const activeTestNumber = $("#active_test_number").val();
+				console.log(`Выбран тесты № ${activeTestNumber}`);
+				var baseTestElement = $("#" + activeTestNumber);
+
+				// Получаем значения.
+				const testObject = baseTestElement.data("test");
+				const rawEvents = baseTestElement.find('[name="raw_event"]').val();
+				const testCode = baseTestElement.find('[name="expect"]').val();
+
+				vscode.postMessage({
+					command: 'saveTest',
+					test: testObject,
+					activeTestNumber: activeTestNumber,
+					newValues: {
+						"rawEvents": rawEvents,
+						"testCode": testCode,
+					}
+				});
+			});
+
+			// Сохраняем все тесты
+			$(document).on("click", '#save_all_tests', function () {
+
+				// Находим все тесты.
+				const tests = [];
+				$(document).find("[name='test']").each(function () {
+					// Получаем поля теста.
+					const testObject = $(this).data("test");
+
+					const id = $(this).attr('id');
+					if (id == "0") {
+						return;
+					}
+
+					const rawEvents = $(this).find('[name="raw_event"]').val();
+					const testCode = $(this).find('[name="expect"]').val();
+					const normEvents = $(this).find('[name="norm_event"]').val();
+
+					tests.push({
+						"number": id,
+						"rawEvents": rawEvents,
+						"testCode": testCode,
+						"normEvent": normEvents
+					});
+				});
+
+				// Передаем номер активного теста, чтобы после сохранения он таким и остался.
+				const activeTestNumber = $("#active_test_number").val();
+
+				vscode.postMessage({
+					command: 'saveAllTests',
+					activeTestNumber: activeTestNumber,
+					tests: tests
+				});
+			});
+
+			// Очищаем код тестов он лишних полей.
+			$(document).on("click", '#clean_test_button', function () {
+
+				// Получаем текущий тест.
+				const activeTestNumber = $("#active_test_number").val();
+				var baseTestElement = $("#" + activeTestNumber);
+
+				// Получаем значения.
+				const testObject = baseTestElement.data("test");
+				const testCode = baseTestElement.find('[name="expect"]').val();
+
+				vscode.postMessage({
+					command: 'cleanTestCode',
+
+					test: testObject,
+					activeTestNumber: activeTestNumber,
+
+					testCode: testCode,
+				});
+			});
+		});
+
 
 			// Контекстное меню.
 			// const codeText = document.getElementById("norm_event");
@@ -531,7 +624,7 @@
 
 			// Форматирование кода через контекстное меню.
 			// var formatContextMenu = document.getElementById("format");
-			// formatContextMenu.addEventListener("click", 
+			// formatContextMenu.addEventListener("click",
 			// 	function (event) {
 			// 		// Команда на форматирование кода текста.
 			// 		const codeTest = document.getElementById("testCode").value;
@@ -548,7 +641,7 @@
 
 			// // Форматирование кода через контекстное меню.
 			// var formatContextMenu = document.getElementById("compress");
-			// formatContextMenu.addEventListener("click", 
+			// formatContextMenu.addEventListener("click",
 			// 	function (event) {
 			// 		// Команда на форматирование кода текста.
 			// 		const codeTest = document.getElementById("testCode").value;
@@ -561,6 +654,7 @@
 			// 	}
 			// );
 
-		</script>
-	</body>
+	</script>
+</body>
+
 </html>
