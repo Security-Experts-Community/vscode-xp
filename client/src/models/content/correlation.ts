@@ -87,7 +87,7 @@ export class Correlation extends RuleBaseItem {
 		}
 		
 		const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
-		correlation.setRuleCode(ruleCode);
+		await correlation.setRuleCode(ruleCode);
 
 		// Парсим описания на разных языках.
 		const ruDescription = await Localization.parseRuDescription(directoryPath);
@@ -280,7 +280,7 @@ export class Correlation extends RuleBaseItem {
 			// Модифицируем код, если он есть
 			if (ruleCode) {
 				const newRuleCode = ContentHelper.replaceAllCorrelantionNameWithinCode(newRuleName, ruleCode);
-				this.setRuleCode(newRuleCode);
+				await this.setRuleCode(newRuleCode);
 			}
 		}
 
