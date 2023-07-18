@@ -367,6 +367,7 @@
 					// Передает тест как параметр запроса.
 					const test = baseTestElement.data("test");
 					vscode.postMessage({
+						activeTestNumber : activeTestNumber,
 						command: 'fastTest',
 						test: test
 					});

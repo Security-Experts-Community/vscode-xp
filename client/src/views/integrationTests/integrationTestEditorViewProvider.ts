@@ -288,7 +288,10 @@ export class IntegrationTestEditorViewProvider  {
 				}
 
 				case 'fastTest': {
-					await this.fastTest(message);
+					await this.getExpectedSection(message);
+
+					const activeTestNumber = this.getActiveTestNumber(message);
+					this.updateView(activeTestNumber);
 					break;
 				}
 
@@ -408,7 +411,7 @@ export class IntegrationTestEditorViewProvider  {
 		});
 	}
 
-	async fastTest(message: any) {
+	async getExpectedSection(message: any) {
 
 		await VsCodeApiHelper.saveRuleCodeFile(this._rule);
 
@@ -435,7 +438,7 @@ export class IntegrationTestEditorViewProvider  {
 			return;
 		}
 
-		vscode.window.withProgress({
+		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
 			title: `Получение ожидаемого события для теста №${currTest.getNumber()}`
@@ -482,7 +485,16 @@ export class IntegrationTestEditorViewProvider  {
 
 				// Переносим данные из быстрого теста в модульный.
 				// Вывод в тесте пока только хранится, а мы обновим его непосредственно.
+				const currentIngTest = tests[ruleTestIndex];
 				tests[ruleTestIndex].setOutput(resultTest.getOutput());
+
+				// Меняем код теста на новый
+				const generatedExpectSection = `expect 1 ${resultTest.getOutput()}`;
+				const currectTestCode = currentIngTest.getTestCode();
+				const newTestCode = currectTestCode.replace(
+					RegExpHelper.getExpectSection(),
+					generatedExpectSection);
+				currentIngTest.setTestCode(newTestCode);
 
 				// Удаляем временные файлы.
 				return fs.promises.rmdir(randTmpPath, {recursive : true});

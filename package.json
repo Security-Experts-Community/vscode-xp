@@ -66,6 +66,15 @@
 				]
 			},
 			{
+				"id": "yaml",
+				"aliases": [
+					"Wld"
+				],
+				"extensions": [
+					".wld"
+				]
+			},
+			{
 				"id": "json",
 				"aliases": [
 					"NormEvents"
