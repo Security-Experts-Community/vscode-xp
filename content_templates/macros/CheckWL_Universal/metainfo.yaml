@@ -1,0 +1,39 @@
+Filter:
+    Name:
+        ru: 'Проверяет специфичное значение для событий вайтлистинга, связанных с ...'
+        en: 'Checks a specific value for ... events according to the whitelisting system'
+    Description:
+        ru: 'Данный фильтр используется для сокращения повторяющейся части проверки через систему табличных списков'
+        en: 'This filter is used to reduce the repetitive part of the check through the table list system'
+    UseAsEventName: false
+Args:
+    rule_name:
+        Type: String
+        Name:
+            ru: 'название правила корреляции'
+            en: 'correlation rule name'
+        Default:
+    specific_value:
+        Type: String
+        Name:
+            ru: 'проверяемое специфическое значение'
+            en: 'specific value'
+        Default:
+Tags:
+    - whitelisting
+ObjectId: PT-RF-96
+ContentRelations:
+    Uses:
+        SIEMKB:
+            Auto:
+                RulesFilters:
+                    PT-RF-41: CheckWL_Auto
+                    PT-RF-42: CheckWL_BlackListRegex
+                    PT-RF-43: CheckWL_BlackListRegex_Exc
+                    PT-RF-44: CheckWL_BlackListValue
+                    PT-RF-45: CheckWL_BlackListValue_Exc
+                    PT-RF-46: CheckWL_WhiteListRegex
+                    PT-RF-47: CheckWL_WhiteListValue
+                    PT-RF-83: CheckWL_WhiteListValue_2
+                    PT-RF-85: CheckWL_WhiteListValue_4
+ContentAutoName: CheckWL_Universal
