@@ -21,6 +21,7 @@ import { XpException } from '../xpException';
 import { UnitTestContentEditorViewProvider } from '../../views/unitTestEditor/unitTestEditorViewProvider';
 import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { XPObjectType } from './xpObjectType';
+import { FileSystemException } from '../fileSystemException';
 
 export class Correlation extends RuleBaseItem {
 	protected getLocalizationPrefix(): string {
@@ -62,7 +63,7 @@ export class Correlation extends RuleBaseItem {
 
 	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Correlation> {
 		if (!fs.existsSync(directoryPath)) {
-			throw new XpException(`Директория '${directoryPath}' не существует.`);
+			throw new FileSystemException(`Директория '${directoryPath}' не существует.`);
 		}
 
 		// Получаем имя корреляции и родительский путь.
@@ -86,7 +87,7 @@ export class Correlation extends RuleBaseItem {
 		}
 		
 		const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
-		correlation.setRuleCode(ruleCode);
+		await correlation.setRuleCode(ruleCode);
 
 		// Парсим описания на разных языках.
 		const ruDescription = await Localization.parseRuDescription(directoryPath);
@@ -279,7 +280,7 @@ export class Correlation extends RuleBaseItem {
 			// Модифицируем код, если он есть
 			if (ruleCode) {
 				const newRuleCode = ContentHelper.replaceAllCorrelantionNameWithinCode(newRuleName, ruleCode);
-				this.setRuleCode(newRuleCode);
+				await this.setRuleCode(newRuleCode);
 			}
 		}
 

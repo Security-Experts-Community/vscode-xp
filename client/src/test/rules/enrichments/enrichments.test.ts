@@ -63,7 +63,7 @@ suite('Обогащение', () => {
 	test('Переименование обогащения с тестами и локализациями в памяти', async () => {
 		const enrichmentName = `Super_Duper_Enrichment`;
 		const enrichment = Enrichment.create(enrichmentName);
-		enrichment.setRuleCode(
+		await enrichment.setRuleCode(
 `enrichment ${enrichmentName}
     enrich correlation:
 `);

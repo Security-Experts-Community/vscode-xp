@@ -367,7 +367,8 @@ export class TestHelper {
 	public static isRuleCodeContainsSubrules(ruleCode : string) : boolean {
 		const correlationNameCompareRegex = /correlation_name\s*==\s*"\w+"/gm;
 		const correlationNameWithLowerCompareRegex = /lower\(\s*correlation_name\s*\)\s*==\s*"\w+"/gm;
-		const correlationNameInListRegex = /in_list\(\s*\[[\w\W]+\]\s*,\s*lower\(correlation_name\)/gm;
+		const lowerCorrelationNameInListRegex = /in_list\(\s*\[[\w\W]+\]\s*,\s*lower\s*\(\s*correlation_name\s*\)/gm;
+
 
 		const correlationNameCompareResult = correlationNameCompareRegex.test(ruleCode);
 		if(correlationNameCompareResult) {
@@ -379,6 +380,16 @@ export class TestHelper {
 			return true;
 		}
 
+		const lowerCorrelationNameInListResult = lowerCorrelationNameInListRegex.test(ruleCode);
+		if(lowerCorrelationNameInListResult) {
+			return true;
+		}
+
+		// in_list([
+		// 	"Subrule_Windows_Host_Abnormal_Access", 
+		// 	"Subrule_Unix_Server_Abnormal_Access"
+		// ], correlation_name)
+		const correlationNameInListRegex = /in_list\(\s*\[[\w\W]+\]\s*,\s*correlation_name\s*\)/gm;
 		const correlationNameInListResult = correlationNameInListRegex.test(ruleCode);
 		if(correlationNameInListResult) {
 			return true;

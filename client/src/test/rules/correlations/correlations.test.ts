@@ -169,7 +169,7 @@ suite('Корреляции', () => {
 
 		const tmpPath = TestFixture.getTmpPath();
 		const copiedCorrelation = await correlation.copy(tmpPath);
-		copiedCorrelation.setRuleCode("new rule code");
+		await copiedCorrelation.setRuleCode("new rule code");
 
 		await copiedCorrelation.save();
 

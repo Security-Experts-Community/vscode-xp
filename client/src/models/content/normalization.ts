@@ -172,7 +172,7 @@ export class Normalization extends RuleBaseItem {
 
 		const ruleFilePath = normalization.getRuleFilePath();
 		const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
-		normalization.setRuleCode(ruleCode);
+		await normalization.setRuleCode(ruleCode);
 
 		// Парсим описания на разных языках.
 		const ruDescription = await Localization.parseRuDescription(directoryPath);

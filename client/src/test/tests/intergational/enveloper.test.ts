@@ -1,7 +1,23 @@
 import assert = require('assert');
-import { Enveloper } from '../../models/enveloper';
+import { Enveloper } from '../../../models/enveloper';
 
 suite('Enveloper', () => {
+
+	test('Потеря } в тестовом событии', async () => {
+		const xmlEvent =
+		`2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='dfedosov' client 'General' {"CallingStationId":"45.137.112.251"}`;
+
+		const enveloped = await Enveloper.addEnvelope(xmlEvent, "text/plain");
+		const json = JSON.parse(enveloped);
+		
+		assert.ok(json);
+
+		const body = json.body;
+		assert.strictEqual(body, `2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='dfedosov' client 'General' {"CallingStationId":"45.137.112.251"}`);
+		
+		assert.ok(json.recv_time);
+		assert.ok(json.uuid);
+	});
 
 	test('Оборачиваем в конверт xml несколько событий из EventViewer с артефактами копирования', async () => {
 		const xmlEvent = 

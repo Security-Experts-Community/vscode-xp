@@ -94,6 +94,11 @@ export class IntegrationTestEditorViewProvider  {
 				enableFindWidget : true
 			});
 
+		this._view.onDidDispose( (e: void) => {
+			this._view = undefined;
+		},
+		this);
+
 		this._view.webview.options = {
 			enableScripts: true
 		};
@@ -108,7 +113,10 @@ export class IntegrationTestEditorViewProvider  {
 
 	private async updateView(focusTestNumber?: number) : Promise<void> {
 
-		const intergrationalTest = this._rule.getIntegrationTests();
+		// Пользователь уже закрыл вьюшку.
+		if(!this._view) {
+			return;
+		}
 
 		const resoucesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
@@ -121,6 +129,8 @@ export class IntegrationTestEditorViewProvider  {
 		};
 
 		try {
+			const intergrationalTest = this._rule.getIntegrationTests();
+
 			// Если тестов нет, то создаём пустую форму для первого теста
 			if (intergrationalTest.length === 0){
 				plain["IntegrationalTests"].push({
@@ -288,7 +298,10 @@ export class IntegrationTestEditorViewProvider  {
 				}
 
 				case 'fastTest': {
-					await this.fastTest(message);
+					await this.getExpectedSection(message);
+
+					const activeTestNumber = this.getActiveTestNumber(message);
+					this.updateView(activeTestNumber);
 					break;
 				}
 
@@ -400,7 +413,7 @@ export class IntegrationTestEditorViewProvider  {
 				return;
 			}
 
-			ExtensionHelper.showUserInfo("Нормализация сырого события завершена успешно.");
+			ExtensionHelper.showUserInfo("Нормализация сырых событий завершена успешно.");
 
 			// Обновляем правило.
 			tests[ruleTestIndex] = test;
@@ -408,7 +421,7 @@ export class IntegrationTestEditorViewProvider  {
 		});
 	}
 
-	async fastTest(message: any) {
+	async getExpectedSection(message: any) {
 
 		await VsCodeApiHelper.saveRuleCodeFile(this._rule);
 
@@ -435,7 +448,7 @@ export class IntegrationTestEditorViewProvider  {
 			return;
 		}
 
-		vscode.window.withProgress({
+		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
 			title: `Получение ожидаемого события для теста №${currTest.getNumber()}`
@@ -482,7 +495,16 @@ export class IntegrationTestEditorViewProvider  {
 
 				// Переносим данные из быстрого теста в модульный.
 				// Вывод в тесте пока только хранится, а мы обновим его непосредственно.
+				const currentIngTest = tests[ruleTestIndex];
 				tests[ruleTestIndex].setOutput(resultTest.getOutput());
+
+				// Меняем код теста на новый
+				const generatedExpectSection = `expect 1 ${resultTest.getOutput()}`;
+				const currectTestCode = currentIngTest.getTestCode();
+				const newTestCode = currectTestCode.replace(
+					RegExpHelper.getExpectSection(),
+					generatedExpectSection);
+				currentIngTest.setTestCode(newTestCode);
 
 				// Удаляем временные файлы.
 				return fs.promises.rmdir(randTmpPath, {recursive : true});
@@ -498,7 +520,7 @@ export class IntegrationTestEditorViewProvider  {
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
-			title: `Интеграционные тесты для правила '${this._rule.getName()}'`
+			
 		}, async (progress) => {
 
 			await VsCodeApiHelper.saveRuleCodeFile(this._rule);
@@ -517,6 +539,18 @@ export class IntegrationTestEditorViewProvider  {
 			if(tests.length == 0) {
 				vscode.window.showInformationMessage(`Тесты для правила '${this._rule.getName()}' не найдены. Добавьте хотя бы один тест и повторите.`);
 				return false;
+			}
+
+			// Уточняем информацию для пользователей если в правиле обнаружено использование сабрулей.
+			const ruleCode = await this._rule.getRuleCode();
+			if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
+				progress.report({
+					message : `Интеграционные тесты для правила с сабрулями '${this._rule.getName()}'`
+				});
+			} else {
+				progress.report({
+					message : `Интеграционные тесты для правила '${this._rule.getName()}'`
+				});
 			}
 
 			try {

@@ -457,13 +457,14 @@
 				const activeTestNumber = $("#active_test_number").val();
 				var baseTestElement = $("#" + activeTestNumber);
 
-				// Передает тест как параметр запроса.
-				const test = baseTestElement.data("test");
-				vscode.postMessage({
-					command: 'fastTest',
-					test: test
+					// Передает тест как параметр запроса.
+					const test = baseTestElement.data("test");
+					vscode.postMessage({
+						activeTestNumber : activeTestNumber,
+						command: 'fastTest',
+						test: test
+					});
 				});
-			});
 
 			// Полный тест
 			$(document).on("click", '[name="full_test"]', function () {
