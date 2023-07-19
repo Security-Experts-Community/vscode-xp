@@ -94,6 +94,11 @@ export class IntegrationTestEditorViewProvider  {
 				enableFindWidget : true
 			});
 
+		this._view.onDidDispose( (e: void) => {
+			this._view = undefined;
+		},
+		this);
+
 		this._view.webview.options = {
 			enableScripts: true
 		};
@@ -108,7 +113,10 @@ export class IntegrationTestEditorViewProvider  {
 
 	private async updateView(focusTestNumber?: number) : Promise<void> {
 
-		const intergrationalTest = this._rule.getIntegrationTests();
+		// Пользователь уже закрыл вьюшку.
+		if(!this._view) {
+			return;
+		}
 
 		const resoucesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
@@ -121,6 +129,8 @@ export class IntegrationTestEditorViewProvider  {
 		};
 
 		try {
+			const intergrationalTest = this._rule.getIntegrationTests();
+
 			// Если тестов нет, то создаём пустую форму для первого теста
 			if (intergrationalTest.length === 0){
 				plain["IntegrationalTests"].push({

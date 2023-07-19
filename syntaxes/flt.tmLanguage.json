@@ -138,7 +138,7 @@
             },
             {
                 "name": "variable.parameter",
-                "match": "(correlation_name|reason|category|data|msgid|event_src|subject|action|object|status|src|dst|table::|column::|logon_type)[a-z0-9_.]*"
+                "match": "(correlation_name|reason|category|data|msgid|event_src|subject|action|object|status|src|dst|table::|column::|logon_type)[a-zA-Z0-9_.]*"
             }]
         },
         "digits": {
