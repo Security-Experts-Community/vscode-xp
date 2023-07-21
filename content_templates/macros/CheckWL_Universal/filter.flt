@@ -8,7 +8,7 @@ filter CheckWL_Universal(string $rule_name, string $specific_value)
     (
         # Один блок на одно поле subject.account.name
         # Проверяется на полное совпадание параметры $rule_name, event_src.host, subject.account.name и $specific_value 
-        and not filter::CheckWL_BlackListValue_Exc(
+        not filter::CheckWL_BlackListValue_Exc(
             $rule_name,
             lower(event_src.host),
             lower(subject.account.name),
@@ -31,7 +31,7 @@ filter CheckWL_Universal(string $rule_name, string $specific_value)
         (
             # For Unix with $specific_value in as-is register
             # subject.account.name
-            or filter::CheckWL_BlackListValue(
+            filter::CheckWL_BlackListValue(
                 $rule_name,
                 lower(event_src.host),
                 lower(subject.account.name),
@@ -50,7 +50,7 @@ filter CheckWL_Universal(string $rule_name, string $specific_value)
         (
             # check manual whitelists for the specific value
             # subject.account.name
-            and not filter::CheckWL_WhiteListValue(
+            not filter::CheckWL_WhiteListValue(
                 $rule_name,
                 lower(event_src.host),
                 lower(subject.account.name),
@@ -62,8 +62,19 @@ filter CheckWL_Universal(string $rule_name, string $specific_value)
                 lower(subject.account.name),
                 lower($specific_value)
             )
-            # and not filter::CheckWL_WhiteListRegex(
             # TODO: Повторить блок выше для различных значений третьего параметра
+            # and not filter::CheckWL_WhiteListValue(
+            #     $rule_name,
+            #     lower(event_src.host),
+            #     lower(...),
+            #     lower($specific_value)
+            # )
+            # and not filter::CheckWL_WhiteListRegex(
+            #     $rule_name,
+            #     lower(event_src.host),
+            #     lower(...),
+            #     lower($specific_value)
+            # )
 
             # Проверка ручного вайтлистинга от добавленных исключения из UI 
             # Проверка specific_value параметров на равенство с 4го по 8ой параметр.
@@ -71,6 +82,7 @@ filter CheckWL_Universal(string $rule_name, string $specific_value)
                 $rule_name,
                 lower(event_src.host),
                 lower(subject.account.id),
+
                 lower(subject.account.domain),
                 lower(event_src.title),
                 src.ip,
@@ -80,6 +92,7 @@ filter CheckWL_Universal(string $rule_name, string $specific_value)
                 $rule_name,
                 lower(event_src.host),
                 lower(subject.account.name),
+
                 lower(subject.account.domain),
                 lower(event_src.title),
                 src.ip,
@@ -92,6 +105,7 @@ filter CheckWL_Universal(string $rule_name, string $specific_value)
                 $rule_name,
                 lower(event_src.host),
                 lower(subject.account.id),
+
                 lower(subject.account.domain) + "|" + src.ip,
                 lower(subject.account.domain + "|" + src.host)
             )
@@ -99,6 +113,7 @@ filter CheckWL_Universal(string $rule_name, string $specific_value)
                 $rule_name,
                 lower(event_src.host),
                 lower(subject.account.name),
+
                 lower(subject.account.domain) + "|" + src.ip,
                 lower(subject.account.domain + "|" + src.host)
             )
@@ -110,12 +125,14 @@ filter CheckWL_Universal(string $rule_name, string $specific_value)
                 $rule_name,
                 lower(event_src.host),
                 lower(subject.account.id),
+
                 lower(join([event_src.host, event_src.title, subject.account.name, subject.account.domain, src.host], "|"))
             )
             and not filter::CheckWL_WhiteListRegex(
                 $rule_name,
                 lower(event_src.host),
                 lower(subject.account.id),
+                
                 lower(join([event_src.host, event_src.title, subject.account.name, subject.account.domain, src.ip], "|"))
             )
 

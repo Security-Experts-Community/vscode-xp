@@ -270,18 +270,25 @@
 							break;
 						}
 						case 'updateTestCode': {
-							const cleanedTestCode = message.cleanedTestCode;
-							if(!cleanedTestCode) {
+							const testCode = message.newTestCode;
+							if(!testCode) {
 								alert("Ошибка обновления кода теста событий.");
 								return;
 							}
 
-							// Получаем текущий тест.
-							const activeTestNumber = $("#active_test_number").val();
-							var baseTestElement = $("#" + activeTestNumber); 
-							
+							let baseTestElement;
+							const testNumberString = message.testNumber;
+							if(!testNumberString) {
+								// Получаем текущий тест.
+								const activeTestNumber = $("#active_test_number").val();
+								baseTestElement = $("#" + activeTestNumber); 
+							} else {
+								const testNumber = parseInt(testNumberString);
+								baseTestElement = $("#" + activeTestNumber); 
+							}
+
 							// Задаем новое значение сырых событий.
-							baseTestElement.find('[name="expect"]').val(cleanedTestCode);
+							baseTestElement.find('[name="expect"]').val(testCode);
 							break;
 						}
 					}

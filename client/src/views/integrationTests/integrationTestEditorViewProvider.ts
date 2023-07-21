@@ -298,11 +298,8 @@ export class IntegrationTestEditorViewProvider  {
 				}
 
 				case 'fastTest': {
-					await this.getExpectedSection(message);
-
-					const activeTestNumber = this.getActiveTestNumber(message);
-					this.updateView(activeTestNumber);
-					break;
+					const newTestCode = await this.generateTestCode(message);
+					return this.updateTestCode(newTestCode);
 				}
 
 				case 'fullTest': {
@@ -421,7 +418,7 @@ export class IntegrationTestEditorViewProvider  {
 		});
 	}
 
-	async getExpectedSection(message: any) {
+	async generateTestCode(message: any) : Promise<string> {
 
 		await VsCodeApiHelper.saveRuleCodeFile(this._rule);
 
@@ -454,60 +451,60 @@ export class IntegrationTestEditorViewProvider  {
 			title: `Получение ожидаемого события для теста №${currTest.getNumber()}`
 		}, async (progress) => {
 
-			const modularTestContent = `${integrationalTestSimplifiedContent}\n\n${normalizedEvents}`;
-
-			// Сохраняем модульный тест во временный файл.
-			const rootPath = this._config.getRootByPath(currTest.getRuleDirectoryPath());
-			const rootFolder = path.basename(rootPath);
-			const randTmpPath = this._config.getRandTmpSubDirectoryPath(rootFolder);
-			await fs.promises.mkdir(randTmpPath, {recursive: true});
-
-			const fastTestFilePath = path.join(randTmpPath, "fast_test.sc");
-			await FileSystemHelper.writeContentFile(fastTestFilePath, modularTestContent);
-
-			// Создаем временный модульный тест для быстрого тестирования.
-			const fastTest = new FastTest(currTest.getNumber());
-			fastTest.setTestExpectationPath(fastTestFilePath);
-			fastTest.setRule(this._rule);
-
 			try {
+				const modularTestContent = `${integrationalTestSimplifiedContent}\n\n${normalizedEvents}`;
+
+				// Сохраняем модульный тест во временный файл.
+				const rootPath = this._config.getRootByPath(currTest.getRuleDirectoryPath());
+				const rootFolder = path.basename(rootPath);
+				const randTmpPath = this._config.getRandTmpSubDirectoryPath(rootFolder);
+				await fs.promises.mkdir(randTmpPath, {recursive: true});
+	
+				const fastTestFilePath = path.join(randTmpPath, "fast_test.sc");
+				await FileSystemHelper.writeContentFile(fastTestFilePath, modularTestContent);
+	
+				// Создаем временный модульный тест для быстрого тестирования.
+				const fastTest = new FastTest(currTest.getNumber());
+				fastTest.setTestExpectationPath(fastTestFilePath);
+				fastTest.setRule(this._rule);
+
 				const testRunner = this._rule.getUnitTestRunner();
 				const resultTest = await testRunner.run(fastTest);
 
-				switch (resultTest.getStatus()) {
-					case TestStatus.Success: {
-						ExtensionHelper.showUserInfo(`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено успешно.`);
-						break;
-					}
-					case TestStatus.Failed: {
-						ExtensionHelper.showUserError(`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено неуспешно.`);
-						break;
-					}
+				if (resultTest.getStatus() === TestStatus.Failed) {
+					throw new XpException(`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено неуспешно.`);
 				}
 
-				// Обновление теста.
+				// Проверка, что не было ошибки и нам вернулся json.
+				const testOutput = resultTest.getOutput();
+				try {
+					JSON.parse(testOutput);
+				}
+				catch(error) {
+					throw new XpException("Полученный данные не являются событием формата json", error);
+				}
+
+				// Получаем имеющийся код теста и заменяем секцию expect {}
 				const tests = this._rule.getIntegrationTests();
 				const ruleTestIndex = tests.findIndex(it => it.getNumber() == resultTest.getNumber());
 				if(ruleTestIndex == -1) {
-					ExtensionHelper.showUserError("Не удалось обновить интеграционный тест.");
-					return;
+					throw new XpException("Не удалось получить интеграционный тест.");
 				}
 
 				// Переносим данные из быстрого теста в модульный.
-				// Вывод в тесте пока только хранится, а мы обновим его непосредственно.
 				const currentIngTest = tests[ruleTestIndex];
-				tests[ruleTestIndex].setOutput(resultTest.getOutput());
 
 				// Меняем код теста на новый
-				const generatedExpectSection = `expect 1 ${resultTest.getOutput()}`;
+				const generatedExpectSection = `expect 1 ${testOutput}`;
 				const currectTestCode = currentIngTest.getTestCode();
 				const newTestCode = currectTestCode.replace(
 					RegExpHelper.getExpectSection(),
 					generatedExpectSection);
-				currentIngTest.setTestCode(newTestCode);
 
 				// Удаляем временные файлы.
-				return fs.promises.rmdir(randTmpPath, {recursive : true});
+				await fs.promises.rmdir(randTmpPath, {recursive : true});
+
+				return newTestCode;
 			} 
 			catch(error) {
 				ExceptionHelper.show(error, 'Не удалось получить ожидаемое событие');
@@ -586,5 +583,13 @@ export class IntegrationTestEditorViewProvider  {
 		}
 
 		return TestHelper.saveAllTest(message, this._rule);
+	}
+
+	private async updateTestCode(newTestCode : string, testNumber? : number) { 
+		return this._view.webview.postMessage({
+			'command': 'updateTestCode',
+			'newTestCode': newTestCode,
+			'testNumber': testNumber
+		});
 	}
 }

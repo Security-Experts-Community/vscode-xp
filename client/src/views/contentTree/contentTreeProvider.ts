@@ -32,7 +32,6 @@ import { GitHooks } from './gitHooks';
 import { InitKBRootCommand } from './commands/initKnowledgebaseRootCommand';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { KbTreeBaseItem } from '../../models/content/kbTreeBaseItem';
-import { listeners } from 'process';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseItem> {
 
@@ -50,7 +49,6 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 				treeDataProvider: kbTreeProvider,
 			}
 		);
-
 
 		if(gitApi) {
 			// Обновляем дерево при смене текущей ветки.

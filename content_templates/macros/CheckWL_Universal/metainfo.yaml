@@ -21,7 +21,7 @@ Args:
         Default:
 Tags:
     - whitelisting
-ObjectId: PT-RF-96
+ObjectId: PT-RF-1000
 ContentRelations:
     Uses:
         SIEMKB:
