@@ -15,6 +15,7 @@ import { NormalizationUnitTestOutputParser } from '../tests/normalizationUnitTes
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { XPObjectType } from './xpObjectType';
 import { ContentHelper } from '../../helpers/contentHelper';
+import { XpException } from '../xpException';
 
 
 export class Normalization extends RuleBaseItem {
@@ -98,7 +99,7 @@ export class Normalization extends RuleBaseItem {
 		} else {
 			const parentPath = this.getParentPath();
 			if (!parentPath) {
-				throw new Error("Не задан путь для сохранения нормализации.");
+				throw new XpException("Не задан путь для сохранения нормализации.");
 			}
 			rulePath = this.getDirectoryPath();
 		}

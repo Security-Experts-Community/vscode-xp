@@ -75,12 +75,12 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			return packageDirectoryPath;
 		}
 
-		throw new Error(`Путь к правилу '${this.getName()}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
+		throw new XpException(`Путь к правилу '${this.getName()}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
 	}
 
 
 	public getTestsPath():string {
-		return path.join(this.getDirectoryPath(), 'tests');
+		return path.join(this.getDirectoryPath(), RuleBaseItem.TESTS_DIRNAME);
 	}
 
 	public async saveUnitTests(): Promise<void> {	
@@ -250,7 +250,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		const ruEventDescriptions = this._localizations.map( function(loc) {
 			const locId = loc.getLocalizationId();
 			if(!locId) {
-				throw new Error(`Ошибка целостности локализаций правила ${fullPath}, не задан localizationId`);
+				throw new XpException(`Ошибка целостности локализаций правила ${fullPath}, не задан localizationId`);
 			}
 
 			let ruText = loc.getRuLocalizationText();
@@ -271,7 +271,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		const enEventDescriptions = this._localizations.map( function(loc) {
 			const locId = loc.getLocalizationId();
 			if(!locId) {
-				throw new Error("Ошибка целостности локализации, не задан localizationId");
+				throw new XpException("Ошибка целостности локализации, не задан localizationId");
 			}
 
 			let enText = loc.getEnLocalizationText();
@@ -460,4 +460,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	private _ruleCode = "";
 
 	contextValue = "BaseRule";
+
+	public static TESTS_DIRNAME = `tests`;
 }

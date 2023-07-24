@@ -29,7 +29,7 @@ export class Table extends KbTreeBaseItem {
 	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Table> {
 
 		if (!fs.existsSync(directoryPath)) {
-			throw new Error(`Директория '${directoryPath}' не существует.`);
+			throw new XpException(`Директория '${directoryPath}' не существует.`);
 		}
 
 		// Получаем название табличного списка и родительский путь.

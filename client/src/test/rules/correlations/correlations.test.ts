@@ -7,6 +7,7 @@ import { Correlation } from '../../../models/content/correlation';
 import { TestFixture } from '../../helper';
 import { ContentTreeProvider } from '../../../views/contentTree/contentTreeProvider';
 import { MetaInfo } from '../../../models/metaInfo/metaInfo';
+import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 
 suite('Корреляции', () => {
 
@@ -29,7 +30,7 @@ suite('Корреляции', () => {
 		assert.strictEqual(rule.getEnDescription(), templateRule.getEnDescription());
 		assert.strictEqual(rule.getRuDescription(), templateRule.getRuDescription());
 		
-		assert.strictEqual(rule.getTestsPath(), path.join(newRuleDir, "tests"));
+		assert.strictEqual(rule.getTestsPath(), path.join(newRuleDir, RuleBaseItem.TESTS_DIRNAME));
 		assert.deepStrictEqual(rule.getUnitTestOutputParser(), templateRule.getUnitTestOutputParser());
 		assert.deepStrictEqual(rule.getUnitTestRunner(), templateRule.getUnitTestRunner());		
 		rule.getUnitTests().forEach((unitTest) => {
