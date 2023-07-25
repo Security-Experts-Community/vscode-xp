@@ -362,7 +362,8 @@ export class IntegrationTestEditorViewProvider  {
 		
 		let envelopedRawEventsString : string;
 		try {
-			envelopedRawEventsString = await Enveloper.addEnvelope(rawEvents, mimeType);
+            const envelopedEvents = await Enveloper.addEnvelope(rawEvents, mimeType);
+			envelopedRawEventsString = envelopedEvents.join(IntegrationTestEditorViewProvider.TEXTAREA_END_OF_LINE);
 		}
 		catch(error) {
 			ExceptionHelper.show(error, "Ошибка добавления конверта.");
@@ -592,4 +593,6 @@ export class IntegrationTestEditorViewProvider  {
 			'testNumber': testNumber
 		});
 	}
+
+	public static TEXTAREA_END_OF_LINE = "\n";
 }

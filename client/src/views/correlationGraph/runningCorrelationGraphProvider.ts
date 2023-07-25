@@ -169,11 +169,13 @@ export class RunningCorrelationGraphProvider {
         });
 	}
 
-	public async addEnvelope(rawEvents: string, mimeType: EventMimeType) {
+	public async addEnvelope(rawEventsString: string, mimeType: EventMimeType) {
 		
 		let envelopedRawEventsString : string;
 		try {
-			envelopedRawEventsString = await Enveloper.addEnvelope(rawEvents, mimeType);
+            const rawEvents = rawEventsString.split(RunningCorrelationGraphProvider.TEXTAREA_END_OF_LINE);
+            const envelopedEvents = await Enveloper.addEnvelope(rawEventsString, mimeType);
+			envelopedRawEventsString = envelopedEvents.join(RunningCorrelationGraphProvider.TEXTAREA_END_OF_LINE);
 		}
 		catch(error) {
 			ExceptionHelper.show(error, "Ошибка добавления конверта.");
@@ -186,6 +188,7 @@ export class RunningCorrelationGraphProvider {
 		});
 	}
 
-
+    // TODO: вынести в общий класс для всех вьюшек.
+    public static TEXTAREA_END_OF_LINE = "\n";
     private _view: vscode.WebviewPanel;
 }

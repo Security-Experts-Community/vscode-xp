@@ -7,7 +7,7 @@ suite('TestHelper.compressRawEvents', async () => {
 
 	test('Сжатие одного события с новыми строками', async () => {
 
-const rawEventsFromSIEM = 
+		const rawEventsFromSIEM = 
 `{
 	"Event": {
 		"xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
@@ -75,9 +75,9 @@ const rawEventsFromSIEM =
 	}
 }`;
 
-		const formatedTestCode = TestHelper.compressRawEvents(rawEventsFromSIEM);
+		const compressedRawEventsString = TestHelper.compressRawEvents(rawEventsFromSIEM);
 
-		const lines = formatedTestCode.split("\n");
+		const lines = compressedRawEventsString.split("\n");
 		assert.strictEqual(lines.length, 1);
 	});
 

@@ -208,7 +208,6 @@ export class PackKbAction {
 				this._config.getOutputChannel().show();
 			}
 			catch(error) {
-				// TODO: Нужно все внутренние ошибки обрабатывть единообразно
 				ExceptionHelper.show(error, "Внутренняя ошибка расширения.");
 			}
 		});

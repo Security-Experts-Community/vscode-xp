@@ -16,21 +16,23 @@ export class Enveloper {
 		}
 
 		// Проверяем, если исходное событие в формате xml (EventViewer)
-		let rawEventsTrimmed = rawEvents.trim();
+		const rawEventsTrimmed = rawEvents.trim();
 		if(this.isRawEventXml(rawEventsTrimmed)) {
-			rawEventsTrimmed = this.convertXmlRawEventsToJson(rawEventsTrimmed);
+			const convertedXmlEvents = this.convertXmlRawEventsToJson(rawEventsTrimmed);
+			return this.addEventsToEnvelope(convertedXmlEvents, mimeType);
 		}
 
 		if(this.isEnvelopedEvents(rawEventsTrimmed)) {
 			throw new XpException("Конверт для событий уже добавлен.");
 		}
 		
-		// Сжали список событий и обернули в конверт.
-		const compressedRawEvents = TestHelper.compressRawEvents(rawEventsTrimmed);
-		const envelopedRawEvents = this.addEventsToEnvelope(compressedRawEvents, mimeType);
-		const envelopedRawEventsString = envelopedRawEvents.join('\n');
+		// Сжимаем json-события 
+		const compressedRawEventsString = TestHelper.compressRawEvents(rawEventsTrimmed);
+		const compressedRawEvents = compressedRawEventsString.split(Enveloper.END_OF_LINE);
 
-		return envelopedRawEventsString;
+		// Добавляем каждому конверт
+		const envelopedRawEvents = this.addEventsToEnvelope(compressedRawEvents, mimeType);
+		return envelopedRawEvents;
 	}
 
 	public static isRawEventXml(rawEvent : string) : any {
@@ -85,55 +87,52 @@ export class Enveloper {
 	 * @param mimeType тип событий
 	 * @returns массив сырых событий, в котором каждое событие обёрнуто в конверт заданного типа и начинается с новой строки
 	 */
-	public static addEventsToEnvelope(compressedRawEvents : string, mimeType : EventMimeType) : string[] {
+	public static addEventsToEnvelope(compressedRawEvents : string[], mimeType : EventMimeType) : string[] {
 		const newRawEvents = [];
 		
-		const trimmedCompressedRawEvents = compressedRawEvents.trim();
+		for(let index = 0; index < compressedRawEvents.length; index++) {
 
-		trimmedCompressedRawEvents.split("\n").forEach(
-			(rawEvent, index) => {
-
-				if(rawEvent === "") {
-					return;
-				}
-
-				// Убираем пустое поле в начале при копироваине из SIEM-а группы (одного) события
-				// importance = low и info добавляет пустое поле
-				// importance = medium добавляет поле medium
-				const regCorrection = /^"(?:medium)?","(.*?)"$/;
-				const regExResult = rawEvent.match(regCorrection);
-				if(regExResult && regExResult.length == 2) {
-					rawEvent = regExResult[1];
-				}
-				
-				// '2012-11-04T14:51:06.157Z'
-				const date = new Date().toISOString();
-				const uuidSeed = index + 1;
-
-				const envelopedRawEvents = {
-					body : rawEvent,
-					recv_ipv4 : "127.0.0.1",
-					recv_time : date.toString(),
-					task_id : '00000000-0000-0000-0000-000000000000',
-					tag : "some_tag",
-					mime : mimeType,
-					normalized : false,
-					input_id : "00000000-0000-0000-0000-000000000000",
-					type : "raw",
-					uuid : uuidv4(uuidSeed)
-				};
-		
-				const newRawEvent = JSON.stringify(envelopedRawEvents);
-				newRawEvents.push(newRawEvent);
+			let rawEvent = compressedRawEvents[index];
+			if(rawEvent === "") {
+				return;
 			}
-		);
+
+			// Убираем пустое поле в начале при копироваине из SIEM-а группы (одного) события
+			// importance = low и info добавляет пустое поле
+			// importance = medium добавляет поле medium
+			const regCorrection = /^"(?:medium)?","(.*?)"$/;
+			const regExResult = rawEvent.match(regCorrection);
+			if(regExResult && regExResult.length == 2) {
+				rawEvent = regExResult[1];
+			}
+			
+			// '2012-11-04T14:51:06.157Z'
+			const date = new Date().toISOString();
+			const uuidSeed = index + 1;
+
+			const envelopedRawEvents = {
+				body : rawEvent,
+				recv_ipv4 : "127.0.0.1",
+				recv_time : date.toString(),
+				task_id : '00000000-0000-0000-0000-000000000000',
+				tag : "some_tag",
+				mime : mimeType,
+				normalized : false,
+				input_id : "00000000-0000-0000-0000-000000000000",
+				type : "raw",
+				uuid : uuidv4(uuidSeed)
+			};
+	
+			const newRawEvent = JSON.stringify(envelopedRawEvents);
+			newRawEvents.push(newRawEvent);
+		}
 
 		return newRawEvents;
 	}
 
-	public static convertXmlRawEventsToJson(xmlRawEvent : string) : string {
+	public static convertXmlRawEventsToJson(xmlRawEvent : string) : string[] {
 
-		let resultJson = "";
+		const events : string[] = [];
 		const xmlRawEventCorrected = xmlRawEvent
 			.replace(/^- <Event /gm, "<Event ")
 			.replace(/^- <System>/gm, "<System>")
@@ -155,9 +154,12 @@ export class Enveloper {
 			// Исправляем xml.
 			const resultXmlRawEvent = jsonEventString.replace(/_@ttribute/gm, "text");
 			
-			resultJson += resultXmlRawEvent + "\n";
+			events.push(resultXmlRawEvent);
 		}
 
-		return resultJson;
+		return events;
 	}
+
+	// TODO: решить вопрос с визуализацией и кроссплатформенностью.
+	public static END_OF_LINE = "\n";
 }

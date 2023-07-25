@@ -94,6 +94,11 @@ export class TestHelper {
 	 * @returns строка с сырыми событиями, в которых json-события сжаты
 	 * TODO: возвращать список сжатых событий
 	 */
+	/**
+	 * Сжатие json-событий.
+	 * @param rawEvents строка с сырыми событиями
+	 * @returns строка с сырыми событиями, в которых json-события сжаты
+	 */
 	public static compressRawEvents(rawEvents: string) : string {
 
 		if(!rawEvents) {
@@ -145,6 +150,12 @@ export class TestHelper {
 		}
 
 		return comressedRawEvents.trim();
+	}
+
+	public static compressRawEvent(rawEvent: string) : string {
+		const eventObject = JSON.parse(rawEvent);
+		const compressedJson = JSON.stringify(eventObject);
+		return compressedJson;
 	}
 
 	public static compressTestCode(testCode: string) {
