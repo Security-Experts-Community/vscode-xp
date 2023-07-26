@@ -22,13 +22,13 @@ export class Enveloper {
 			return this.addEventsToEnvelope(convertedXmlEvents, mimeType);
 		}
 
-		if(this.isEnvelopedEvents(rawEventsTrimmed)) {
-			throw new XpException("Конверт для событий уже добавлен.");
-		}
-		
-		// Сжимаем json-события 
+		// Сжимаем json-события.
 		const compressedRawEventsString = TestHelper.compressRawEvents(rawEventsTrimmed);
 		const compressedRawEvents = compressedRawEventsString.split(Enveloper.END_OF_LINE);
+
+		if(!this.thereAreUnenvelopedEvents(compressedRawEvents)) {
+			throw new XpException("Конверт для всех событий уже добавлен.");
+		}
 
 		// Добавляем каждому конверт
 		const envelopedRawEvents = this.addEventsToEnvelope(compressedRawEvents, mimeType);
@@ -81,6 +81,28 @@ export class Enveloper {
 		return isEnvelopedEvent;
 	}
 
+	public static thereAreUnenvelopedEvents(rawEvents : string[]) : boolean {
+
+		let envelopedEvents = 0;
+		for (const rawEvent of rawEvents) {
+			try {
+				const newRawEvent = JSON.parse(rawEvent);
+				if(newRawEvent['body']) {
+					envelopedEvents++;
+				}
+			}
+			catch (error) {
+				let var1: string;
+			}
+		}
+
+		if(rawEvents.length === envelopedEvents) {
+			return false;
+		}
+
+		return true;
+	}
+
 	/**
 	 * Оборачивает сжатые сырые события в конверт.
 	 * @param compressedRawEvents список сырых событий в строке
@@ -88,13 +110,18 @@ export class Enveloper {
 	 * @returns массив сырых событий, в котором каждое событие обёрнуто в конверт заданного типа и начинается с новой строки
 	 */
 	public static addEventsToEnvelope(compressedRawEvents : string[], mimeType : EventMimeType) : string[] {
-		const newRawEvents = [];
+		const envelopedEvents = [];
 		
 		for(let index = 0; index < compressedRawEvents.length; index++) {
 
 			let rawEvent = compressedRawEvents[index];
 			if(rawEvent === "") {
-				return;
+				continue;
+			}
+
+			if(this.isEnvelopedEvents(rawEvent)) {
+				envelopedEvents.push(rawEvent);
+				continue;
 			}
 
 			// Убираем пустое поле в начале при копироваине из SIEM-а группы (одного) события
@@ -124,10 +151,10 @@ export class Enveloper {
 			};
 	
 			const newRawEvent = JSON.stringify(envelopedRawEvents);
-			newRawEvents.push(newRawEvent);
+			envelopedEvents.push(newRawEvent);
 		}
 
-		return newRawEvents;
+		return envelopedEvents;
 	}
 
 	public static convertXmlRawEventsToJson(xmlRawEvent : string) : string[] {

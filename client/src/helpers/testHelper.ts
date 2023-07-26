@@ -105,57 +105,28 @@ export class TestHelper {
 			throw new Error("Переданный список событий пуст.");
 		}
 
-		const compressedNormalizedEventReg = /{\s*[\s\S]*?\n}/gm;
+		const compressedNormalizedEventReg = /^{(?!"body")\s*[\s\S]*?\n}/gm;
 
-		let comressedRawEvents = "";
 		let comNormEventResult: RegExpExecArray | null;
+		let compressedRawEvents = rawEvents;
 		while ((comNormEventResult = compressedNormalizedEventReg.exec(rawEvents))) {
 			if (comNormEventResult.length != 1) {
 				continue;
 			}
 
-			let compressedEvent = comNormEventResult[0];
-			compressedEvent = compressedEvent
-				.replace(/^[ \t]+/gm, "")
-				.replace(/":\s*/gm, "\":")
-				.replace(/,\r\n/gm, ",")
-				.replace(/,\n/gm, ",");
-
-			// {}
-			compressedEvent = compressedEvent
-				.replace(/{\r\n/gm, "{")
-				.replace(/\r\n}/gm, "}")
-				.replace(/{\n/gm, "{")
-				.replace(/\n}/gm, "}");
-
-			// []
-			compressedEvent = compressedEvent
-				.replace(/\[\r\n/gm, "[")
-				.replace(/\r\n\]/gm, "]")
-				.replace(/\[\n/gm, "[")
-				.replace(/\n\]/gm, "]");
-
-			// Все оставшиеся специальный символы заменяем экранированными.
-			compressedEvent = compressedEvent
-				.replace(/\r\n/gm, "\\r\\n")
-				.replace(/\r/gm, "\\r")
-				.replace(/\n/gm, "\\n")
-				.replace(/\t/gm, "\\t");
-
-			comressedRawEvents += compressedEvent + "\n";
+			const jsonRawEvent = comNormEventResult[0];
+			try {
+				const jsonObject = JSON.parse(jsonRawEvent);
+				const compressedEventString = JSON.stringify(jsonObject);
+	
+				compressedRawEvents = compressedRawEvents.replace(jsonRawEvent, compressedEventString);
+			}
+			catch(error) {
+				console.warn(error.message);
+			}
 		}
 
-		if(comressedRawEvents === "") {
-			return rawEvents.trim();
-		}
-
-		return comressedRawEvents.trim();
-	}
-
-	public static compressRawEvent(rawEvent: string) : string {
-		const eventObject = JSON.parse(rawEvent);
-		const compressedJson = JSON.stringify(eventObject);
-		return compressedJson;
+		return compressedRawEvents.trim();
 	}
 
 	public static compressTestCode(testCode: string) {

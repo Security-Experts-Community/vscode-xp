@@ -1,26 +1,44 @@
 import assert = require('assert');
 import { Enveloper } from '../../../models/enveloper';
+import { XpException } from '../../../models/xpException';
 
 suite('Enveloper', () => {
 
-// 	test('Оборачивание в конверт события без конверта, когда уже есть событие в конверте', async () => {
-// 		const xmlEvent =
-// `{"body":"2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='dfedosov' client 'General' {\\"CallingStationId\\":\\"45.137.112.251\\"}","recv_ipv4":"127.0.0.1","recv_time":"2023-07-25T10:37:56.519Z","task_id":"00000000-0000-0000-0000-000000000000","tag":"some_tag","mime":"text/plain","normalized":false,"input_id":"00000000-0000-0000-0000-000000000000","type":"raw","uuid":"2a514acd-6c9d-408b-84eb-793896c240ca"}
-// 2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='dfedosov' client 'General' {"CallingStationId":"45.137.112.251"}`;
+	test('Все события уже имеют конверт', async () => {
+		const xmlEvent =
+`{"body":"2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='dfedosov' client 'General' {\\"CallingStationId\\":\\"45.137.112.251\\"}","recv_ipv4":"127.0.0.1","recv_time":"2023-07-25T10:37:56.519Z","task_id":"00000000-0000-0000-0000-000000000000","tag":"some_tag","mime":"text/plain","normalized":false,"input_id":"00000000-0000-0000-0000-000000000000","type":"raw","uuid":"2a514acd-6c9d-408b-84eb-793896c240ca"}
+{"body":"2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='dfedosov' client 'General' {\\"CallingStationId\\":\\"45.137.112.251\\"}","recv_ipv4":"127.0.0.1","recv_time":"2023-07-25T10:37:56.519Z","task_id":"00000000-0000-0000-0000-000000000000","tag":"some_tag","mime":"text/plain","normalized":false,"input_id":"00000000-0000-0000-0000-000000000000","type":"raw","uuid":"2a514acd-6c9d-408b-84eb-793896c240ca"}`;
 
-// 		const envelopedEvents = await Enveloper.addEnvelope(xmlEvent, "text/plain");
+		assert.rejects(async() => await Enveloper.addEnvelope(xmlEvent, "text/plain"));
+	});
 
-// 		assert.strictEqual(envelopedEvents.length, 1);
-// 		const json = JSON.parse(envelopedEvents[1]);
+	test('Оборачивание в конверт события без конверта, когда уже есть событие в конверте', async () => {
+		const xmlEvent =
+`{"body":"2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='dfedosov' client 'General' {\\"CallingStationId\\":\\"45.137.112.251\\"}","recv_ipv4":"127.0.0.1","recv_time":"2023-07-25T10:37:56.519Z","task_id":"00000000-0000-0000-0000-000000000000","tag":"some_tag","mime":"text/plain","normalized":false,"input_id":"00000000-0000-0000-0000-000000000000","type":"raw","uuid":"2a514acd-6c9d-408b-84eb-793896c240ca"}
+2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='dfedosov' client 'General' {"CallingStationId":"45.137.112.251"}`;
+
+		const envelopedEvents = await Enveloper.addEnvelope(xmlEvent, "text/plain");
+
+		assert.strictEqual(envelopedEvents.length, 2);
+
+		const json1 = JSON.parse(envelopedEvents[0]);
+		assert.ok(json1);
+
+		// Проверяем первое событие.
+		const body = json1.body;
+		assert.strictEqual(body, `2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='dfedosov' client 'General' {"CallingStationId":"45.137.112.251"}`);
 		
-// 		assert.ok(json);
+		assert.ok(json1.recv_time);
+		assert.ok(json1.uuid);
 
-// 		const body = json.body;
-// 		assert.strictEqual(body, `2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='dfedosov' client 'General' {"CallingStationId":"45.137.112.251"}`);
+		// Проверяем второе событие.
+		const json2 = JSON.parse(envelopedEvents[1]);
+		const body2 = json2.body;
+		assert.strictEqual(body2, `2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='dfedosov' client 'General' {"CallingStationId":"45.137.112.251"}`);
 		
-// 		assert.ok(json.recv_time);
-// 		assert.ok(json.uuid);
-// 	});
+		assert.ok(json2.recv_time);
+		assert.ok(json2.uuid);
+	});
 
 	test('Потеря } в тестовом событии', async () => {
 		const xmlEvent =

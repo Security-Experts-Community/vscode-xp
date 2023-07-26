@@ -64,7 +64,7 @@ suite('TestHelper.compressRawEvents', async () => {
 		},
 		"RenderingInfo": {
 			"Culture": "en-US",
-			"Message": "Creating Scriptblock text (1 of 1):\r\n(‘6e,6f,74,65,70,61,64'.SPLiT(‘,’) |fOREAch {( [cHar]([COnVERt]::tOINt16(([STRINg]$_ ) ,16 ))) })-jOIn ''\r\n\r\nScriptBlock ID: 627f927a-2f62-4ce7-b988-966fa1030ec6\r\nPath: ",
+			"Message": "Creating Scriptblock text (1 of 1):\\r\\n(‘6e,6f,74,65,70,61,64'.SPLiT(‘,’) |fOREAch {( [cHar]([COnVERt]::tOINt16(([STRINg]$_ ) ,16 ))) })-jOIn ''\\r\\n\\r\\nScriptBlock ID: 627f927a-2f62-4ce7-b988-966fa1030ec6\\r\\nPath: ",
 			"Level": "Verbose",
 			"Task": "Execute a Remote Command",
 			"Opcode": "On create calls",
@@ -110,7 +110,7 @@ suite('TestHelper.compressRawEvents', async () => {
 		},
 		"EventData": {
 			"Data": [
-				"DOMAIN\\Sv",
+				"DOMAIN\\\\Sv",
 				" [CLIENT: 111.111.111.111]"
 			],
 			"Binary": "436127235725400025130510230612034601230460103460713047013047010234070123"
@@ -143,7 +143,7 @@ suite('TestHelper.compressRawEvents', async () => {
 		},
 		"EventData": {
 			"Data": [
-				"DOMAIN\\Svc",
+				"DOMAIN\\\\Svc",
 				" [CLIENT: 111.111.111.111]"
 			],
 			"Binary": "436127235725400025130510230612034601230460103460713047013047010234070123"
