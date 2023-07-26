@@ -92,12 +92,6 @@ export class TestHelper {
 	 * Сжатие json-событий.
 	 * @param rawEvents строка с сырыми событиями
 	 * @returns строка с сырыми событиями, в которых json-события сжаты
-	 * TODO: возвращать список сжатых событий
-	 */
-	/**
-	 * Сжатие json-событий.
-	 * @param rawEvents строка с сырыми событиями
-	 * @returns строка с сырыми событиями, в которых json-события сжаты
 	 */
 	public static compressRawEvents(rawEvents: string) : string {
 
@@ -105,7 +99,7 @@ export class TestHelper {
 			throw new Error("Переданный список событий пуст.");
 		}
 
-		const compressedNormalizedEventReg = /^{(?!"body")\s*[\s\S]*?\n}/gm;
+		const compressedNormalizedEventReg = /^{\s*"Event"\s*[\s\S]*?\n}/gm;
 
 		let comNormEventResult: RegExpExecArray | null;
 		let compressedRawEvents = rawEvents;

@@ -16,10 +16,9 @@ export class Enveloper {
 		}
 
 		// Проверяем, если исходное событие в формате xml (EventViewer)
-		const rawEventsTrimmed = rawEvents.trim();
+		let rawEventsTrimmed = rawEvents.trim();
 		if(this.isRawEventXml(rawEventsTrimmed)) {
-			const convertedXmlEvents = this.convertXmlRawEventsToJson(rawEventsTrimmed);
-			return this.addEventsToEnvelope(convertedXmlEvents, mimeType);
+			rawEventsTrimmed = this.newConvertXmlRawEventsToJson(rawEventsTrimmed);
 		}
 
 		// Сжимаем json-события.
@@ -155,6 +154,37 @@ export class Enveloper {
 		}
 
 		return envelopedEvents;
+	}
+
+	public static newConvertXmlRawEventsToJson(xmlRawEvent : string) : string {
+
+		const events : string[] = [];
+		let xmlRawEventCorrected = xmlRawEvent
+			.replace(/^- <Event /gm, "<Event ")
+			.replace(/^- <System>/gm, "<System>")
+			.replace(/^- <EventData>/gm, "<EventData>");
+
+		const xmlEventsRegex = /<Event[\s\S]*?<\/Event>/gm;
+
+		let xmlRawEventResult: RegExpExecArray | null;
+		while ((xmlRawEventResult = xmlEventsRegex.exec(xmlRawEventCorrected))) {
+			if (xmlRawEventResult.length != 1) {
+				continue;
+			}
+
+			const xmlEvent = xmlRawEventResult[0];
+			
+			// Конвертируем xml в json.
+			const jsonEventObject = xml2json_light.xml2json(xmlEvent);
+			const jsonEventString = JSON.stringify(jsonEventObject);
+
+			// Результирующий json.
+			const resultXmlRawEvent = jsonEventString.replace(/_@ttribute/gm, "text");
+
+			xmlRawEventCorrected = xmlRawEventCorrected.replace(xmlEvent, resultXmlRawEvent);
+		}
+
+		return xmlRawEventCorrected;
 	}
 
 	public static convertXmlRawEventsToJson(xmlRawEvent : string) : string[] {
