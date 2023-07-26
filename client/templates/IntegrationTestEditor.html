@@ -173,8 +173,9 @@
 				// change ID
 				new_id = $('.tablinks').length + 1;
 
-				// Empty fields
+				// Пустые поля нормализованных и сырых событий.
 				$(`#${new_id} [name=norm_event]`).val('');
+				$(`#${new_id} [name=raw_event]`).val('');
 
 				// Добавляю дефолтное заполнение кода теста
 				$(`#${new_id} [name=expect]`).val("expect 1 {\"correlation_name\" : \"{{RuleName}}\"}");
