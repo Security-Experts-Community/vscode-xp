@@ -268,7 +268,7 @@ export class IntegrationTestEditorViewProvider  {
 			switch (message.command) {
 				case 'normalize': {
 					if(!message.test) {
-						ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
+						ExtensionHelper.showUserInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
 						return;
 					}
 	
@@ -283,7 +283,7 @@ export class IntegrationTestEditorViewProvider  {
 				}
 				case 'normalizeAndEnrich': {
 					if(!message.test) {
-						ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
+						ExtensionHelper.showUserInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
 						return;
 					}
 	
@@ -332,7 +332,7 @@ export class IntegrationTestEditorViewProvider  {
 
 	private async cleanTestCode(message: any) {
 		if(!message.test) {
-			ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
+			ExtensionHelper.showUserInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
 			return;
 		}
 		

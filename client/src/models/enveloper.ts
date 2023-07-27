@@ -158,63 +158,24 @@ export class Enveloper {
 
 	public static newConvertXmlRawEventsToJson(xmlRawEvent : string) : string {
 
-		const events : string[] = [];
-		let xmlRawEventCorrected = xmlRawEvent
-			.replace(/^- <Event /gm, "<Event ")
-			.replace(/^- <System>/gm, "<System>")
-			.replace(/^- <EventData>/gm, "<EventData>");
-
-		const xmlEventsRegex = /<Event[\s\S]*?<\/Event>/gm;
-
-		let xmlRawEventResult: RegExpExecArray | null;
-		while ((xmlRawEventResult = xmlEventsRegex.exec(xmlRawEventCorrected))) {
-			if (xmlRawEventResult.length != 1) {
-				continue;
-			}
-
-			const xmlEvent = xmlRawEventResult[0];
+        const events = [];
+        let xmlRawEventCorrected = xmlRawEvent
+            .replace(/^- <Event/gm, "<Event")
+            .replace(/^- <System>/gm, "<System>")
+            .replace(/^- <EventData>/gm, "<EventData>");
+        const xmlEventsRegex = /<Event [\s\S]*?<\/Event>/g;
+        
+        const allXmlEvents = xmlRawEventCorrected.match(xmlEventsRegex);
+        for (const xmlEvent of allXmlEvents) {
+            // Конвертируем xml в json.
+            const jsonEventObject = xml2json_light.xml2json(xmlEvent);
+            const jsonEventString = JSON.stringify(jsonEventObject);
 			
-			// Конвертируем xml в json.
-			const jsonEventObject = xml2json_light.xml2json(xmlEvent);
-			const jsonEventString = JSON.stringify(jsonEventObject);
-
-			// Результирующий json.
-			const resultXmlRawEvent = jsonEventString.replace(/_@ttribute/gm, "text");
-
-			xmlRawEventCorrected = xmlRawEventCorrected.replace(xmlEvent, resultXmlRawEvent);
-		}
-
-		return xmlRawEventCorrected;
-	}
-
-	public static convertXmlRawEventsToJson(xmlRawEvent : string) : string[] {
-
-		const events : string[] = [];
-		const xmlRawEventCorrected = xmlRawEvent
-			.replace(/^- <Event /gm, "<Event ")
-			.replace(/^- <System>/gm, "<System>")
-			.replace(/^- <EventData>/gm, "<EventData>");
-
-		const xmlEventsRegex = /<Event[\s\S]*?<\/Event>/gm;
-		let xmlRawEventResult: RegExpExecArray | null;
-		while ((xmlRawEventResult = xmlEventsRegex.exec(xmlRawEventCorrected))) {
-			if (xmlRawEventResult.length != 1) {
-				continue;
-			}
-
-			const xmlEvent = xmlRawEventResult[0];
-			
-			// Конвертируем xml в json.
-			const jsonEventObject = xml2json_light.xml2json(xmlEvent);
-			const jsonEventString = JSON.stringify(jsonEventObject);
-
-			// Исправляем xml.
-			const resultXmlRawEvent = jsonEventString.replace(/_@ttribute/gm, "text");
-			
-			events.push(resultXmlRawEvent);
-		}
-
-		return events;
+            // Результирующий json.
+            const resultXmlRawEvent = jsonEventString.replace(/_@ttribute/gm, "text");
+            xmlRawEventCorrected = xmlRawEventCorrected.replace(xmlEvent, resultXmlRawEvent);
+        }
+        return xmlRawEventCorrected;
 	}
 
 	// TODO: решить вопрос с визуализацией и кроссплатформенностью.
