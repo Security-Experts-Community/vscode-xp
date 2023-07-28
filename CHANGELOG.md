@@ -2,7 +2,7 @@
 
 ## 3.5.12 (Pre-Release)
 
-- PoC фичи [#111](https://github.com/Security-Experts-Community/vscode-xp/issues/88) - добавление конверта на события без конверта в интеграционных тестах;
+- PoC фичи [#88](https://github.com/Security-Experts-Community/vscode-xp/issues/88) - добавление конверта на события без конверта в интеграционных тестах;
 - в создаваемый интеграционный тест теперь не копируются сырые события из предыдущего теста.
 
 ## 3.5.11 (Pre-Release)
