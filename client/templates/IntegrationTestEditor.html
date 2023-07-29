@@ -584,21 +584,26 @@
 				};
 
 				// $("[name='expect']").each( (index) => {
-				// 	const s = $(this).text();
+				// 	const s = $(this).html();
 				// 	const highlightNormEvent = hljs.highlightAuto(s).value;
 				// 	$(this).html(highlightNormEvent);
 				// });
 
-				// $("[name='expect']")
-				const el = document.querySelector('#expect_event');
-				const s = el.innerHTML;
-				const highlighted = hljs.highlightAuto(s).value;
-				el.innerHTML = highlighted;
+				// Добавление дополнительных ключевых слов.
+				// hljs.getLanguage('mathematica').keywords += ' not table_lists';
 
-				editor(el, jsonHighlighter);
-				
-				// const el = expect.get(0);
-				// editor(el, jsonHighlighter);
+				// $("[name='expect']")
+				const elements = document.querySelectorAll("[name='expect']");
+				for(el of elements) {
+					const s = el.innerHTML;
+
+					// Не удалось сменить язык.
+					// const highlighted = hljs.highlight(s, {"language": "json"}).value;
+					const highlighted = hljs.highlightAuto(s).value;
+					el.innerHTML = highlighted;
+
+					editor(el, jsonHighlighter);
+				}
 			});
 		</script>
 	</body>
