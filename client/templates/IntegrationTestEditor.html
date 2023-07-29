@@ -83,7 +83,12 @@
 					<input name="fast_test" type="button" value="&#9654;   Получить ожидаемое событие  ">
 				</div>
 				<div class="text">
-					<div contenteditable="true" id="norm_event" name="norm_event">{{NormEvents}}</div>
+					<div 
+						contenteditable="true" 
+						oncut="return false"
+						onpaste="return false"
+						onkeydown="if(event.metaKey) return true; return false;"
+						class="highlight" id="norm_event" name="norm_event">{{NormEvents}}</div>
 				</div>
 			</div>
 			{{/NormEvents}}
@@ -100,7 +105,7 @@
 
 				<div class="text">
 					<!-- Если кода текста нет, выводим дефолтное заполнение -->
-					<div contenteditable="true" id="expect_event" name="expect" placeholder="expect 1 {&quot;correlation_name&quot; : &quot;{{RuleName}}&quot;}">{{TestCode}}</div>
+					<div contenteditable="true" class='highlight' id="expect_event" name="expect" placeholder="expect 1 {&quot;correlation_name&quot; : &quot;{{RuleName}}&quot;}">{{TestCode}}</div>
 				</div>
 			</div>
 		</div>
@@ -317,25 +322,6 @@
 				for (i = 0; i < raws.length; i++) {
 					wrap(raws[i]);
 				}
-
-				// Подсветка нормализованного события.
-				$("[name=norm_event]").each( function (index) {
-					let normEventText = $(this).text();
-
-					const highlightNormEvent = hljs.highlightAuto(normEventText).value;
-					$(this).html(highlightNormEvent);
-				});
-
-				// $("[name=norm_event]").each( function (index) {
-				// 	// Первичная раскраска.
-				// 	const el = document.querySelector('#expect_event');
-					
-				// 	const s = el.innerHTML;
-				// 	const highlightNormEvent = hljs.highlightAuto(s).value;
-
-				// 	el.innerHTML = highlightNormEvent;
-				// 	editor(el, jsonHighlighter);
-				// });
 
 				
 				// Нормализация события
@@ -575,12 +561,9 @@
 				hljs.getLanguage('json').keywords.literal.push('not', 'expect', 'table_list', 'default');
 				hljs.getLanguage('json').contains.push({begin:"#", end: "$", scope: "comment"});
 
-				const elements = document.querySelectorAll("[name='expect']");
+				// Добавляем автоподстветку для каждого из полей кода тестов.
+				const elements = document.querySelectorAll(".highlight");
 				for(el of elements) {
-					const s = el.innerText;
-					const highlightNormEvent = hljs.highlight(s, {language: 'json'}).value;
-					el.innerHTML = highlightNormEvent;
-
 					editor(el, jsonHighlighter);
 				}
 			});
