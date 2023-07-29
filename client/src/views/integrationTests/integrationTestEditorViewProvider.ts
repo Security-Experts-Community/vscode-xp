@@ -53,8 +53,11 @@ export class IntegrationTestEditorViewProvider  {
 				IntegrationTestEditorViewProvider.showEditorCommand, 
 				async (rule: Correlation) => {
 					// Обновляем интеграционные тесты для того, чтобы можно было увидеть актуальные тесты при их модификации на ЖД.
+					if(!rule) {
+						ExtensionHelper.showUserError("Ошибка открытия интеграционных тестов.");
+					}
 					rule.reloadIntegrationalTests();
-					provider.showEditor(rule);
+					return provider.showEditor(rule);
 				}
 			)
 		);

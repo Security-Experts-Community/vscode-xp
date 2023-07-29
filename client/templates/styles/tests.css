@@ -121,6 +121,12 @@ textarea {
 	font-family: var(--vscode-editor-font-family);	
 }
 
+#expect_event {
+	white-space: pre;
+	color: var(--vscode-input-foreground);
+	font-family: var(--vscode-editor-font-family);	
+}
+
 #correlated_events {
 	white-space: pre;
 	color: var(--vscode-input-foreground);

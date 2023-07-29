@@ -100,7 +100,7 @@
 
 				<div class="text">
 					<!-- Если кода текста нет, выводим дефолтное заполнение -->
-					<textarea rows="20" name="expect" placeholder="expect 1 {&quot;correlation_name&quot; : &quot;{{RuleName}}&quot;}">{{TestCode}}</textarea>
+					<div contenteditable="true" id="expect_event" name="expect" placeholder="expect 1 {&quot;correlation_name&quot; : &quot;{{RuleName}}&quot;}">{{TestCode}}</div>
 				</div>
 			</div>
 		</div>
@@ -320,12 +320,23 @@
 
 				// Подсветка нормализованного события.
 				$("[name=norm_event]").each( function (index) {
-					// const normEventTextarea = $("#norm_event");
 					let normEventText = $(this).text();
 
 					const highlightNormEvent = hljs.highlightAuto(normEventText).value;
 					$(this).html(highlightNormEvent);
 				});
+
+				// $("[name=norm_event]").each( function (index) {
+				// 	// Первичная раскраска.
+				// 	const el = document.querySelector('#expect_event');
+					
+				// 	const s = el.innerHTML;
+				// 	const highlightNormEvent = hljs.highlightAuto(s).value;
+
+				// 	el.innerHTML = highlightNormEvent;
+				// 	editor(el, jsonHighlighter);
+				// });
+
 				
 				// Нормализация события
 				$(document).on("click",'[name="normalize"]', function () {
@@ -437,30 +448,6 @@
 					});
 				});
 
-				// Сохраняем тест
-				// $(document).on("click",'#save_test', function () {
-
-				// 	// Получаем текущий тест.
-				// 	const activeTestNumber = $("#active_test_number").val();
-				// 	console.log(`Выбран тесты № ${activeTestNumber}`);
-				// 	var baseTestElement = $("#" + activeTestNumber);
-					
-				// 	// Получаем значения.
-				// 	const testObject = baseTestElement.data("test");
-				// 	const rawEvents = baseTestElement.find('[name="raw_event"]').val();
-				// 	const testCode = baseTestElement.find('[name="expect"]').val();
-
-				// 	vscode.postMessage({
-				// 		command: 'saveTest',
-				// 		test: testObject,
-				// 		activeTestNumber : activeTestNumber,
-				// 		newValues: {
-				// 			"rawEvents" : rawEvents,
-				// 			"testCode" : testCode,
-				// 		}
-				// 	});
-				// });
-
 				// Сохраняем все тесты
 				$(document).on("click",'#save_all_tests', function () {
 
@@ -476,8 +463,8 @@
 						}
 
 						const rawEvents = $(this).find('[name="raw_event"]').val();
-						const testCode = $(this).find('[name="expect"]').val();
-						const normEvents = $(this).find('[name="norm_event"]').text();
+						const testCode = $(this).find('[name="expect"]').text();
+						const normEvents = $(this).find('[name="norm_event"]').val();
 
 						tests.push({
 							"number" : id,
@@ -517,59 +504,102 @@
 						testCode : testCode,
 					});
 				});
+
+
+				// Подсветка синтаксиса
+				const jsonHighlighter = el => {
+					for (const node of el.children) {
+					//   const s = node.innerText
+					//     .replace(/(\/\/.*)/g, '<em>$1</em>')
+					//     .replace(
+					//       /\b(new|if|else|do|while|switch|for|in|of|continue|break|return|typeof|function|var|const|let|\.length|\.\w+)(?=[^\w])/g,
+					//       '<strong>$1</strong>',
+					//     )
+					//     .replace(/(".*?"|'.*?'|`.*?`)/g, '<strong><em>$1</em></strong>')
+					//     .replace(/\b(\d+)/g, '<em><strong>$1</strong></em>');
+					//   node.innerHTML = s.split('\n').join('<br/>');
+
+						// hljs.highlightElement(node)
+						const s = node.innerText;
+						const highlightNormEvent = hljs.highlightAuto(s).value;
+						node.innerHTML = highlightNormEvent;
+					}
+				};
+
+				const editor = (el, highlight, tab = '    ') => {
+					const caret = () => {
+						const range = window.getSelection().getRangeAt(0);
+						const prefix = range.cloneRange();
+						prefix.selectNodeContents(el);
+						prefix.setEnd(range.endContainer, range.endOffset);
+						return prefix.toString().length;
+					};
+
+					const setCaret = (pos, parent = el) => {
+						for (const node of parent.childNodes) {
+						if (node.nodeType == Node.TEXT_NODE) {
+							if (node.length >= pos) {
+							const range = document.createRange();
+							const sel = window.getSelection();
+							range.setStart(node, pos);
+							range.collapse(true);
+							sel.removeAllRanges();
+							sel.addRange(range);
+							return -1;
+							} else {
+							pos = pos - node.length;
+							}
+						} else {
+							pos = setCaret(pos, node);
+							if (pos < 0) {
+							return pos;
+							}
+						}
+						}
+						return pos;
+					};
+
+					highlight(el);
+
+					// Обработка символа табуляции
+					el.addEventListener('keydown', e => {
+						if (e.which === 9) {
+						const pos = caret() + tab.length;
+						const range = window.getSelection().getRangeAt(0);
+						range.deleteContents();
+						range.insertNode(document.createTextNode(tab));
+						highlight(el);
+						setCaret(pos);
+						e.preventDefault();
+						}
+					});
+
+					el.addEventListener('keyup', e => {
+						if (e.keyCode >= 0x30 || e.keyCode == 0x20) {
+							const pos = caret();
+							highlight(el);
+							setCaret(pos);
+						}
+					});
+				};
+
+				// $("[name='expect']").each( (index) => {
+				// 	const s = $(this).text();
+				// 	const highlightNormEvent = hljs.highlightAuto(s).value;
+				// 	$(this).html(highlightNormEvent);
+				// });
+
+				// $("[name='expect']")
+				const el = document.querySelector('#expect_event');
+				const s = el.innerHTML;
+				const highlighted = hljs.highlightAuto(s).value;
+				el.innerHTML = highlighted;
+
+				editor(el, jsonHighlighter);
+				
+				// const el = expect.get(0);
+				// editor(el, jsonHighlighter);
 			});
-			
-
-			// Контекстное меню.
-			// const codeText = document.getElementById("norm_event");
-			// codeText.addEventListener("contextmenu", function(event){
-			// 	event.preventDefault();
-			// 	var ctxMenu = document.getElementById("ctxMenu");
-			// 	ctxMenu.style.display = "block";
-			// 	ctxMenu.style.left = (event.pageX - 10)+"px";
-			// 	ctxMenu.style.top = (event.pageY - 10)+"px";
-			// 	return false;
-			// }, false);
-
-			// codeText.addEventListener("click", function(event){
-			// 	var ctxMenu = document.getElementById("ctxMenu");
-			// 	ctxMenu.style.display = "";
-			// 	ctxMenu.style.left = "";
-			// 	ctxMenu.style.top = "";
-			// }, false);
-
-			// Форматирование кода через контекстное меню.
-			// var formatContextMenu = document.getElementById("format");
-			// formatContextMenu.addEventListener("click", 
-			// 	function (event) {
-			// 		// Команда на форматирование кода текста.
-			// 		const codeTest = document.getElementById("testCode").value;
-			// 		const object = document.getElementById("object").value;
-			// 		vscode.postMessage({
-			// 			command: 'formatTest',
-			// 			test: {
-			// 				'testCode' : codeTest,
-			// 				'object' : object
-			// 			}
-			// 		});
-			// 	}
-			// );
-
-			// // Форматирование кода через контекстное меню.
-			// var formatContextMenu = document.getElementById("compress");
-			// formatContextMenu.addEventListener("click", 
-			// 	function (event) {
-			// 		// Команда на форматирование кода текста.
-			// 		const codeTest = document.getElementById("testCode").value;
-			// 		vscode.postMessage({
-			// 			command: 'compressTest',
-			// 			test: {
-			// 				'testCode' : codeTest,
-			// 			}
-			// 		});
-			// 	}
-			// );
-
 		</script>
 	</body>
 </html>

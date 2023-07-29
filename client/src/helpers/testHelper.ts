@@ -429,7 +429,7 @@ export class TestHelper {
 			// Код теста.
 			let testCode = plainTest?.testCode;
 			if(!testCode || testCode == "") {
-				throw new XpException("Попытка сохранения теста без сырых событий.");
+				throw new XpException("Попытка сохранения теста без тестового кода событий.");
 			}
 
 			// Из textarea новые строки только \n, поэтому надо их поправить под систему.
