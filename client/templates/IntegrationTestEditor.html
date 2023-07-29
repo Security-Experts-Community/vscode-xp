@@ -114,7 +114,7 @@
 		<!-- Для отладки в браузере добавляю прямую ссылку на JQuery. -->
 		<script	src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
-		<script src="{{{ExtensionBaseUri}}}/client/templates/js/highlight-10.0.1.min.js"></script>
+		<script src="{{{ExtensionBaseUri}}}/client/templates/js/highlight-11.7.0.min.js"></script>
 
 		<script>
 
@@ -508,26 +508,9 @@
 
 				// Подсветка синтаксиса
 				const jsonHighlighter = el => {
-					for (const node of el.children) {
-					// //   const s = node.innerText
-					// //     .replace(/(\/\/.*)/g, '<em>$1</em>')
-					// //     .replace(
-					// //       /\b(new|if|else|do|while|switch|for|in|of|continue|break|return|typeof|function|var|const|let|\.length|\.\w+)(?=[^\w])/g,
-					// //       '<strong>$1</strong>',
-					// //     )
-					// //     .replace(/(".*?"|'.*?'|`.*?`)/g, '<strong><em>$1</em></strong>')
-					// //     .replace(/\b(\d+)/g, '<em><strong>$1</strong></em>');
-					// //   node.innerHTML = s.split('\n').join('<br/>');
-
-						// hljs.highlightElement(node)
-						const s = node.innerText;
-						const highlightNormEvent = hljs.highlightAuto(s).value;
-						node.innerHTML = highlightNormEvent;
-					}
-
-					// const s = el.text;
-					// const highlightNormEvent = hljs.highlightAuto(s).value;
-					// el.innerHTML = highlightNormEvent;
+					const s = el.innerText;
+					const highlightNormEvent = hljs.highlight(s, {language: 'json'}).value;
+					el.innerHTML = highlightNormEvent;
 				};
 
 				const editor = (el, highlight, tab = '    ') => {
@@ -587,24 +570,16 @@
 					});
 				};
 
-				// $("[name='expect']").each( (index) => {
-				// 	const s = $(this).html();
-				// 	const highlightNormEvent = hljs.highlightAuto(s).value;
-				// 	$(this).html(highlightNormEvent);
-				// });
+				// TODO: Перенести выше.
+				// Добавляем наши ключевые слова в json.
+				hljs.getLanguage('json').keywords.literal.push('not', 'expect', 'table_list', 'default');
+				hljs.getLanguage('json').contains.push({begin:"#", end: "$", scope: "comment"});
 
-				// Добавление дополнительных ключевых слов.
-				// hljs.getLanguage('mathematica').keywords += ' not table_lists';
-
-				// $("[name='expect']")
 				const elements = document.querySelectorAll("[name='expect']");
 				for(el of elements) {
-					const s = el.innerHTML;
-
-					// Не удалось сменить язык.
-					// const highlighted = hljs.highlight(s, {"language": "json"}).value;
-					const highlighted = hljs.highlightAuto(s).value;
-					el.innerHTML = highlighted;
+					const s = el.innerText;
+					const highlightNormEvent = hljs.highlight(s, {language: 'json'}).value;
+					el.innerHTML = highlightNormEvent;
 
 					editor(el, jsonHighlighter);
 				}
