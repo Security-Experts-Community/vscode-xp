@@ -219,7 +219,7 @@ suite('Enveloper', () => {
 	test('Оборачивание в конверт события без конверта, когда уже есть событие в конверте', async () => {
 		const xmlEvent =
 `{"body":"2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='sivanov' client 'General' {\\"CallingStationId\\":\\"11.222.33.44\\"}","recv_ipv4":"127.0.0.1","recv_time":"2023-07-25T10:37:56.519Z","task_id":"00000000-0000-0000-0000-000000000000","tag":"some_tag","mime":"text/plain","normalized":false,"input_id":"00000000-0000-0000-0000-000000000000","type":"raw","uuid":"2a514acd-6c9d-408b-84eb-793896c240ca"}
-2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='sivanov' client 'General' {"CallingStationId":"11.222.33.441"}`;
+2023-07-13 16:01:43.978 +03:00 [INF] General-100156 Received AccessRequest from 10.10.8.16:49521 id=237 user='sivanov' client 'General' {"CallingStationId":"11.222.33.44"}`;
 
 		const envelopedEvents = await Enveloper.addEnvelope(xmlEvent, "text/plain");
 
