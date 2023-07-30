@@ -55,6 +55,7 @@ export class IntegrationTestEditorViewProvider  {
 					// Обновляем интеграционные тесты для того, чтобы можно было увидеть актуальные тесты при их модификации на ЖД.
 					if(!rule) {
 						ExtensionHelper.showUserError("Ошибка открытия интеграционных тестов.");
+						return;
 					}
 					rule.reloadIntegrationalTests();
 					return provider.showEditor(rule);
@@ -150,6 +151,7 @@ export class IntegrationTestEditorViewProvider  {
 				intergrationalTest.forEach(it => {
 					const jsonedTestObject = JSON.stringify(it);
 
+					const formattedRawEvents = TestHelper.formatTestCodeAndEvents(it.getRawEvents());
 					const formattedTestCode = TestHelper.formatTestCodeAndEvents(it.getTestCode());
 					const formattedNormalizedEvents = TestHelper.formatTestCodeAndEvents(it.getNormalizedEvents());
 
@@ -172,7 +174,7 @@ export class IntegrationTestEditorViewProvider  {
 
 					plain["IntegrationalTests"].push({
 						"TestNumber" : it.getNumber(),
-						"RawEvents" : it.getRawEvents(),
+						"RawEvents" : formattedRawEvents,
 						"NormEvents" : formattedNormalizedEvents,
 						"TestCode" : formattedTestCode,
 						"TestOutput" : it.getOutput(),
@@ -276,8 +278,14 @@ export class IntegrationTestEditorViewProvider  {
 					}
 	
 					// Актуализируем сырые события в тесте из вьюшки.
-					const rawEvents = message.rawEvents;
+					let rawEvents = message.rawEvents;
+					if(!rawEvents) {
+						ExtensionHelper.showUserInfo("Не заданы сырые события для нормализации. Задайте события и повторите.");
+						return;
+					}
+
 					const currTest = IntegrationTest.convertFromObject(message.test);
+					rawEvents = TestHelper.compressTestCode(rawEvents);
 					currTest.setRawEvents(rawEvents);
 					await currTest.save();
 	

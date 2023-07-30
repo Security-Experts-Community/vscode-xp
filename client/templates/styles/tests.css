@@ -115,13 +115,10 @@ textarea {
 	font-family: var(--vscode-editor-font-family);
 }
 
-#norm_event {
-	white-space: pre;
-	color: var(--vscode-input-foreground);
-	font-family: var(--vscode-editor-font-family);	
-}
-
-#expect_event {
+/*
+Универсальный стиль для редактора кода.
+*/
+.xp_code {
 	white-space: pre;
 	color: var(--vscode-input-foreground);
 	font-family: var(--vscode-editor-font-family);	

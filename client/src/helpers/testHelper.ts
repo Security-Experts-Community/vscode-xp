@@ -424,7 +424,7 @@ export class TestHelper {
 
 			// Из textarea новые строки только \n, поэтому надо их поправить под систему.
 			rawEvents = rawEvents.replace(/(?<!\\)\n/gm, EOL);
-			test.setRawEvents(rawEvents);
+			test.setRawEvents(TestHelper.compressTestCode(rawEvents));
 
 			// Код теста.
 			let testCode = plainTest?.testCode;

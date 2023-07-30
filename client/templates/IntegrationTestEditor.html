@@ -68,7 +68,11 @@
 				</div>
 
 				<div class="text">
-					<textarea name="raw_event">{{RawEvents}}</textarea>
+					<div 
+					contenteditable="true"
+					class='xp_code json_highlight' 
+					name="raw_events" 
+					placeholder="expect 1 {&quot;correlation_name&quot; : &quot;{{RuleName}}&quot;}">{{RawEvents}}</div>
 				</div>	
 			</div>
 
@@ -88,7 +92,8 @@
 						oncut="return false"
 						onpaste="return false"
 						onkeydown="if(event.metaKey) return true; return false;"
-						class="highlight" id="norm_event" name="norm_event">{{NormEvents}}</div>
+						class="xp_code json_highlight" 
+						name="norm_event">{{NormEvents}}</div>
 				</div>
 			</div>
 			{{/NormEvents}}
@@ -104,8 +109,11 @@
 				</div>
 
 				<div class="text">
-					<!-- Если кода текста нет, выводим дефолтное заполнение -->
-					<div contenteditable="true" class='highlight' id="expect_event" name="expect" placeholder="expect 1 {&quot;correlation_name&quot; : &quot;{{RuleName}}&quot;}">{{TestCode}}</div>
+					<div 
+						contenteditable="true"
+						class='xp_code xp-test_highlight' 
+						name="expect" 
+						placeholder="expect 1 {&quot;correlation_name&quot; : &quot;{{RuleName}}&quot;}">{{TestCode}}</div>
 				</div>
 			</div>
 		</div>
@@ -122,6 +130,85 @@
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/highlight-11.7.0.min.js"></script>
 
 		<script>
+
+			// Глобальное определение функций.
+
+			// Подсветка синтаксиса кода теста.
+			const xpTestCodeHighlighter = el => {
+				const s = el?.innerText;
+				if(!s)  {
+					return;
+				}
+				const highlightNormEvent = hljs.highlight(s, {language: 'xp-test-code'}).value;
+				el.innerHTML = highlightNormEvent;
+			};
+
+			// Подсветка синтаксиса json.
+			const jsonHighlighter = el => {
+				const s = el?.innerText;
+				if(!s)  {
+					return;
+				}
+				const highlightNormEvent = hljs.highlight(s, {language: 'json'}).value;
+				el.innerHTML = highlightNormEvent;
+			};
+			
+			const editor = (el, highlight, tab = '    ') => {
+					const caret = () => {
+						const range = window.getSelection().getRangeAt(0);
+						const prefix = range.cloneRange();
+						prefix.selectNodeContents(el);
+						prefix.setEnd(range.endContainer, range.endOffset);
+						return prefix.toString().length;
+					};
+
+					const setCaret = (pos, parent = el) => {
+						for (const node of parent.childNodes) {
+						if (node.nodeType == Node.TEXT_NODE) {
+							if (node.length >= pos) {
+							const range = document.createRange();
+							const sel = window.getSelection();
+							range.setStart(node, pos);
+							range.collapse(true);
+							sel.removeAllRanges();
+							sel.addRange(range);
+							return -1;
+							} else {
+							pos = pos - node.length;
+							}
+						} else {
+							pos = setCaret(pos, node);
+							if (pos < 0) {
+							return pos;
+							}
+						}
+						}
+						return pos;
+					};
+
+					highlight(el);
+
+					// Обработка символа табуляции
+					el.addEventListener('keydown', e => {
+						if (e.which === 9) {
+						const pos = caret() + tab.length;
+						const range = window.getSelection().getRangeAt(0);
+						range.deleteContents();
+						range.insertNode(document.createTextNode(tab));
+						highlight(el);
+						setCaret(pos);
+						e.preventDefault();
+						}
+					});
+
+					el.addEventListener('keyup', e => {
+						if (e.keyCode >= 0x30 || e.keyCode == 0x20) {
+							const pos = caret();
+							highlight(el);
+							setCaret(pos);
+						}
+					});
+				};
 
 			function togleTextarea(arrow) {
 				labels = arrow.parentNode.parentNode.children[1];
@@ -159,50 +246,6 @@
 				$('[name="expect"]')[TestID-1].focus();
 			}
 
-			function createTest() {	
-				new_id = $('.tablinks').length + 1;
-				if ( $("#1").length ) {
-					tab_contect = $("#1")
-						.clone()
-						.attr("id", new_id)
-						.removeAttr('data-test')
-						.appendTo('.tabs');
-				} else {
-					tab_contect = $("#0")
-						.clone()
-						.attr("id", new_id)
-						.removeAttr('data-test')
-						.appendTo('.tabs');
-				}
-				
-				// change ID
-				new_id = $('.tablinks').length + 1;
-
-				// Пустые поля нормализованных и сырых событий.
-				$(`#${new_id} [name=norm_event]`).val('');
-				$(`#${new_id} [name=raw_event]`).val('');
-
-				// Добавляю дефолтное заполнение кода теста
-				$(`#${new_id} [name=expect]`).val("expect 1 {\"correlation_name\" : \"{{RuleName}}\"}");
-
-				// create new TAB
-				$('.tablinks').slice(0,1)
-					.clone()
-					.attr("onclick","openTest('" + new_id + "')")
-					.attr("class", "tablinks")
-					.text("Тест №" + new_id)
-					.appendTo('.tablinks-wrap')
-					.show();
-				$('.delete-tablink').slice(0,1)
-					.clone()
-					.attr("onclick","deleteTest('" + new_id + "')")
-					.attr("class", "delete-tablink")
-					.appendTo('.tablinks-wrap');
-				$('.tablinks-wrap').append($('#add-test'));
-
-				// Activate new tab
-				openTest(new_id);
-			}
 
 			function deleteTest(TestID) {
 				// Не удаляем первый тест, а то нечего будет копировать
@@ -272,7 +315,7 @@
 							var baseTestElement = $("#" + activeTestNumber); 
 							
 							// Задаем новое значение сырых событий.
-							baseTestElement.find('[name="raw_event"]').val(rawEvents);
+							baseTestElement.find('[name="raw_events"]').val(rawEvents);
 							break;
 						}
 						case 'updateTestCode': {
@@ -304,7 +347,22 @@
 				$(this).height(this.scrollHeight);
 			});
 
+			function addEditorEvents() {
+				// Добавляем автоподстветку для каждого из полей кода тестов.
+				const xpTestElements = document.querySelectorAll(".xp-test_highlight");
+				for(el of xpTestElements) {
+					editor(el, xpTestCodeHighlighter);
+				}
+
+				const jsonElements = document.querySelectorAll(".json_highlight");
+				for(el of jsonElements) {
+					editor(el, jsonHighlighter);
+				}
+			}
+
 			$(document).ready(function() {
+
+				console.log("document.ready");
 
 				const activeTestNumber = $("#active_test_number").val();
 				// Открытие теста по номеру.
@@ -333,7 +391,7 @@
 					const test = baseTestElement.data("test");
 					
 					// Получаем актуальные сырые события.
-					const rawEvents = baseTestElement.find('[name="raw_event"]').val();
+					const rawEvents = baseTestElement.find('[name="raw_events"]').text();
 
 					// Передает тест как параметр запроса.
 					vscode.postMessage({
@@ -352,7 +410,7 @@
 					const test = baseTestElement.data("test");
 					
 					// Получаем актуальные сырые события.
-					const rawEvents = baseTestElement.find('[name="raw_event"]').val();
+					const rawEvents = baseTestElement.find('[name="raw_events"]').val();
 
 					// Передает тест как параметр запроса.
 					vscode.postMessage({
@@ -392,9 +450,9 @@
 							return;
 						}
 
-						const rawEvents = $(this).find('[name="raw_event"]').val();
-						const testCode = $(this).find('[name="expect"]').val();
-						const normEvents = $(this).find('[name="norm_event"]').val();
+						const rawEvents = $(this).find('[name="raw_events"]').text();
+						const testCode = $(this).find('[name="expect"]').text();
+						const normEvents = $(this).find('[name="norm_event"]').text();
 
 						tests.push({
 							"number" : id,
@@ -422,7 +480,7 @@
 					
 					// Получаем значения.
 					const testObject = baseTestElement.data("test");
-					const rawEvents = baseTestElement.find('[name="raw_event"]').val();
+					const rawEvents = baseTestElement.find('[name="raw_events"]').text();
 
 					// Передает тест как параметр запроса.
 					const test = baseTestElement.data("test");
@@ -448,9 +506,9 @@
 							return;
 						}
 
-						const rawEvents = $(this).find('[name="raw_event"]').val();
+						const rawEvents = $(this).find('[name="raw_events"]').text();
 						const testCode = $(this).find('[name="expect"]').text();
-						const normEvents = $(this).find('[name="norm_event"]').val();
+						const normEvents = $(this).find('[name="norm_event"]').text();
 
 						tests.push({
 							"number" : id,
@@ -479,7 +537,7 @@
 					
 					// Получаем значения.
 					const testObject = baseTestElement.data("test");
-					const testCode = baseTestElement.find('[name="expect"]').val();
+					const testCode = baseTestElement.find('[name="expect"]').text();
 
 					vscode.postMessage({
 						command: 'cleanTestCode',
@@ -492,81 +550,69 @@
 				});
 
 
-				// Подсветка синтаксиса
-				const jsonHighlighter = el => {
-					const s = el.innerText;
-					const highlightNormEvent = hljs.highlight(s, {language: 'json'}).value;
-					el.innerHTML = highlightNormEvent;
-				};
-
-				const editor = (el, highlight, tab = '    ') => {
-					const caret = () => {
-						const range = window.getSelection().getRangeAt(0);
-						const prefix = range.cloneRange();
-						prefix.selectNodeContents(el);
-						prefix.setEnd(range.endContainer, range.endOffset);
-						return prefix.toString().length;
-					};
-
-					const setCaret = (pos, parent = el) => {
-						for (const node of parent.childNodes) {
-						if (node.nodeType == Node.TEXT_NODE) {
-							if (node.length >= pos) {
-							const range = document.createRange();
-							const sel = window.getSelection();
-							range.setStart(node, pos);
-							range.collapse(true);
-							sel.removeAllRanges();
-							sel.addRange(range);
-							return -1;
-							} else {
-							pos = pos - node.length;
-							}
-						} else {
-							pos = setCaret(pos, node);
-							if (pos < 0) {
-							return pos;
-							}
-						}
-						}
-						return pos;
-					};
-
-					highlight(el);
-
-					// Обработка символа табуляции
-					el.addEventListener('keydown', e => {
-						if (e.which === 9) {
-						const pos = caret() + tab.length;
-						const range = window.getSelection().getRangeAt(0);
-						range.deleteContents();
-						range.insertNode(document.createTextNode(tab));
-						highlight(el);
-						setCaret(pos);
-						e.preventDefault();
-						}
-					});
-
-					el.addEventListener('keyup', e => {
-						if (e.keyCode >= 0x30 || e.keyCode == 0x20) {
-							const pos = caret();
-							highlight(el);
-							setCaret(pos);
-						}
-					});
-				};
-
 				// TODO: Перенести выше.
 				// Добавляем наши ключевые слова в json.
-				hljs.getLanguage('json').keywords.literal.push('not', 'expect', 'table_list', 'default');
-				hljs.getLanguage('json').contains.push({begin:"#", end: "$", scope: "comment"});
+				const xpTestCode = hljs.getLanguage('json');
+				xpTestCode.keywords.literal.push('not', 'expect', 'table_list', 'default');
+				xpTestCode.contains.push({begin:"#", end: "$", scope: "comment"});
+				hljs.registerLanguage(
+					'xp-test-code', 
+					() => {return xpTestCode;}
+				);
 
 				// Добавляем автоподстветку для каждого из полей кода тестов.
-				const elements = document.querySelectorAll(".highlight");
-				for(el of elements) {
-					editor(el, jsonHighlighter);
-				}
+				addEditorEvents();
 			});
+
+			function createTest() {	
+				new_id = $('.tablinks').length + 1;
+				if ( $("#1").length ) {
+					tab_contect = $("#1")
+						.clone()
+						.attr("id", new_id)
+						.removeAttr('data-test')
+						.appendTo('.tabs');
+				} else {
+					tab_contect = $("#0")
+						.clone()
+						.attr("id", new_id)
+						.removeAttr('data-test')
+						.appendTo('.tabs');
+				}
+				
+				// change ID
+				new_id = $('.tablinks').length + 1;
+
+				// Очищаем нужные поля и добавляем подсветку.
+				const rawEvent = $(`#${new_id} [name=raw_events]`);
+				rawEvent.text('');
+
+				const normEvent = $(`#${new_id} [name=norm_event]`);
+				normEvent.text('');
+				
+				const expect = $(`#${new_id} [name=expect]`);
+				expect.text("expect 1 {\"correlation_name\" : \"{{RuleName}}\"}");
+
+				// create new TAB
+				$('.tablinks').slice(0,1)
+					.clone()
+					.attr("onclick","openTest('" + new_id + "')")
+					.attr("class", "tablinks")
+					.text("Тест №" + new_id)
+					.appendTo('.tablinks-wrap')
+					.show();
+				$('.delete-tablink').slice(0,1)
+					.clone()
+					.attr("onclick","deleteTest('" + new_id + "')")
+					.attr("class", "delete-tablink")
+					.appendTo('.tablinks-wrap');
+				$('.tablinks-wrap').append($('#add-test'));
+
+				// Activate new tab
+				openTest(new_id);
+
+				addEditorEvents();
+			}
 		</script>
 	</body>
 </html>
