@@ -51,10 +51,10 @@ export class IntegrationTestEditorViewProvider  {
 		config.getContext().subscriptions.push(
 			vscode.commands.registerCommand(
 				IntegrationTestEditorViewProvider.showEditorCommand, 
-				async (rule: Correlation) => {
+				async (rule: Correlation|Enrichment) => {
 					// Обновляем интеграционные тесты для того, чтобы можно было увидеть актуальные тесты при их модификации на ЖД.
 					if(!rule) {
-						ExtensionHelper.showUserError("Ошибка открытия интеграционных тестов.");
+						ExtensionHelper.showUserError("Правило еще не успело подгрузиться. Повторите еще раз.");
 						return;
 					}
 					rule.reloadIntegrationalTests();
