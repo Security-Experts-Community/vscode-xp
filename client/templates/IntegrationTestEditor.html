@@ -117,6 +117,85 @@
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/highlight-10.0.1.min.js"></script>
 
 		<script>
+			// Глобальное определение функций.
+
+			// Подсветка синтаксиса кода теста.
+			const xpTestCodeHighlighter = el => {
+				const s = el?.innerText;
+				if(!s)  {
+					return;
+				}
+				const highlightNormEvent = hljs.highlight(s, {language: 'xp-test-code'}).value;
+				el.innerHTML = highlightNormEvent;
+			};
+
+			// Подсветка синтаксиса json.
+			const jsonHighlighter = el => {
+				const s = el?.innerText;
+				if(!s)  {
+					return;
+				}
+				const highlightNormEvent = hljs.highlight(s, {language: 'json'}).value;
+				el.innerHTML = highlightNormEvent;
+			};
+			
+			const editor = (el, highlight, tab = '    ') => {
+					const caret = () => {
+						const range = window.getSelection().getRangeAt(0);
+						const prefix = range.cloneRange();
+						prefix.selectNodeContents(el);
+						prefix.setEnd(range.endContainer, range.endOffset);
+						return prefix.toString().length;
+					};
+
+					const setCaret = (pos, parent = el) => {
+						for (const node of parent.childNodes) {
+						if (node.nodeType == Node.TEXT_NODE) {
+							if (node.length >= pos) {
+							const range = document.createRange();
+							const sel = window.getSelection();
+							range.setStart(node, pos);
+							range.collapse(true);
+							sel.removeAllRanges();
+							sel.addRange(range);
+							return -1;
+							} else {
+							pos = pos - node.length;
+							}
+						} else {
+							pos = setCaret(pos, node);
+							if (pos < 0) {
+							return pos;
+							}
+						}
+						}
+						return pos;
+					};
+
+					highlight(el);
+
+					// Обработка символа табуляции
+					el.addEventListener('keydown', e => {
+						if (e.which === 9) {
+							const pos = caret() + tab.length;
+							const range = window.getSelection().getRangeAt(0);
+							range.deleteContents();
+							range.insertNode(document.createTextNode(tab));
+							highlight(el);
+							setCaret(pos);
+							e.preventDefault();
+						}
+					});
+
+					// Обработка вставки символа.
+					el.addEventListener('keyup', e => {
+						if (e.keyCode >= 0x30 || e.keyCode == 0x20) {
+							const pos = caret();
+							highlight(el);
+							setCaret(pos);
+						}
+					});
+				};
 
 			function togleTextarea(arrow) {
 				labels = arrow.parentNode.parentNode.children[1];
@@ -256,8 +335,9 @@
 					const message = event.data; 
 					switch (message.command) {
 						case 'updateRawEvents': {
-							const rawEvents = message.rawEvents;
-							if(!rawEvents) {
+							const newRawEvents = message.rawEvents;
+							if(!newRawEvents) {
+								// TODO: вернуть ошибку через backend, такая не отработает.
 								alert("Ошибка обновления сырых событий.");
 								return;
 							}
@@ -266,13 +346,15 @@
 							const activeTestNumber = $("#active_test_number").val();
 							var baseTestElement = $("#" + activeTestNumber); 
 							
-							// Задаем новое значение сырых событий.
-							baseTestElement.find('[name="raw_event"]').val(rawEvents);
+							// Раскрашиваем новый код и обновляем его.
+							const rawEventsElement = baseTestElement.find('[name="raw_events"]');
+							const highlightNormEvent = hljs.highlight(newRawEvents, {language: 'json'}).value;
+							rawEventsElement.html(highlightNormEvent);
 							break;
 						}
 						case 'updateTestCode': {
-							const testCode = message.newTestCode;
-							if(!testCode) {
+							const newTestCode = message.newTestCode;
+							if(!newTestCode) {
 								alert("Ошибка обновления кода теста событий.");
 								return;
 							}
@@ -289,7 +371,9 @@
 							}
 
 							// Задаем новое значение сырых событий.
-							baseTestElement.find('[name="expect"]').val(testCode);
+							const rawEventsElement = baseTestElement.find('[name="expect"]');
+							const highlightNormEvent = hljs.highlight(newTestCode, {language: 'xp-test-code'}).value;
+							rawEventsElement.html(highlightNormEvent);
 							break;
 						}
 					}

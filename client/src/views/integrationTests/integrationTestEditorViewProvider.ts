@@ -147,6 +147,7 @@ export class IntegrationTestEditorViewProvider  {
 				intergrationalTest.forEach(it => {
 					const jsonedTestObject = JSON.stringify(it);
 
+					const rawEvents = it.getRawEvents();
 					const formattedTestCode = TestHelper.formatTestCodeAndEvents(it.getTestCode());
 					const formattedNormalizedEvents = TestHelper.formatTestCodeAndEvents(it.getNormalizedEvents());
 
@@ -169,7 +170,7 @@ export class IntegrationTestEditorViewProvider  {
 
 					plain["IntegrationalTests"].push({
 						"TestNumber" : it.getNumber(),
-						"RawEvents" : it.getRawEvents(),
+						"RawEvents" : rawEvents,
 						"NormEvents" : formattedNormalizedEvents,
 						"TestCode" : formattedTestCode,
 						"TestOutput" : it.getOutput(),
