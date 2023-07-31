@@ -51,10 +51,14 @@ export class IntegrationTestEditorViewProvider  {
 		config.getContext().subscriptions.push(
 			vscode.commands.registerCommand(
 				IntegrationTestEditorViewProvider.showEditorCommand, 
-				async (rule: Correlation) => {
+				async (rule: Correlation|Enrichment) => {
 					// Обновляем интеграционные тесты для того, чтобы можно было увидеть актуальные тесты при их модификации на ЖД.
+					if(!rule) {
+						ExtensionHelper.showUserError("Правило еще не успело подгрузиться. Повторите еще раз.");
+						return;
+					}
 					rule.reloadIntegrationalTests();
-					provider.showEditor(rule);
+					return provider.showEditor(rule);
 				}
 			)
 		);
@@ -274,8 +278,14 @@ export class IntegrationTestEditorViewProvider  {
 					}
 	
 					// Актуализируем сырые события в тесте из вьюшки.
-					const rawEvents = message.rawEvents;
+					let rawEvents = message.rawEvents;
+					if(!rawEvents) {
+						ExtensionHelper.showUserInfo("Не заданы сырые события для нормализации. Задайте события и повторите.");
+						return;
+					}
+
 					const currTest = IntegrationTest.convertFromObject(message.test);
+					rawEvents = TestHelper.compressTestCode(rawEvents);
 					currTest.setRawEvents(rawEvents);
 					await currTest.save();
 	

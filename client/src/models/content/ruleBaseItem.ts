@@ -433,12 +433,16 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	 * @param code новый код правила
 	 */
 	public setRuleCode(code: string): Promise<void> {
+		if(code === undefined) {
+			throw new XpException("Код правила не задан.");
+		}
+		
 		this._ruleCode = code;
 
 		// Меняем код правила на диске.
 		const ruleFilePath = this.getRuleFilePath();
 		if(fs.existsSync(ruleFilePath)) {
-			return FileSystemHelper.writeContentFile(ruleFilePath, code);
+			return FileSystemHelper.writeContentFileIfChanged(ruleFilePath, code);
 		}
 	}
 

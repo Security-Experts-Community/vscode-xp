@@ -256,7 +256,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 						// Если файл раньше выбран не был, но был открыт при запуске vsCode.
 						if(vscode.window.activeTextEditor && vscode.window.activeTextEditor.document) {
 							const activeDocumentPath = vscode.window.activeTextEditor.document.fileName;
-							await ContentTreeProvider.showRuleTreeItem(contentTree, activeDocumentPath);
+							return ContentTreeProvider.showRuleTreeItem(contentTree, activeDocumentPath);
 						}
 					}
 				}
@@ -278,7 +278,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 	public static selectedFilePath: string;
 
-	private static async showRuleTreeItem(kbTree: vscode.TreeView<KbTreeBaseItem>, filePath: string) {
+	private static async showRuleTreeItem(kbTree: vscode.TreeView<KbTreeBaseItem>, filePath: string) : Promise<void>{
 		if(!filePath) {
 			return;
 		}
@@ -289,7 +289,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		}
 
 		const explorerCorrelation = await ContentTreeProvider.createContentElement(ruleDirectoryPath);
-		await kbTree.reveal(explorerCorrelation,
+		return kbTree.reveal(explorerCorrelation,
 		{
 			focus: true,
 			expand: false,
