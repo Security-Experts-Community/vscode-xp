@@ -8,6 +8,7 @@ import { NormalizationUnitTest } from '../models/tests/normalizationUnitTest';
 // import { RuleFileDiagnostics } from '../views/integrationTests/ruleFileDiagnostics';
 import { ProcessHelper } from '../helpers/processHelper';
 import { ExtensionHelper } from '../helpers/extensionHelper';
+import { ExceptionHelper } from '../helpers/exceptionHelper';
 // import { RuleBaseItem } from '../models/content/ruleBaseItem';
 // import { BuildLocsOutputParser, FillFPTAOutputParser } from './outputParsers/fillFptaOutputParser';
 // import { RCCOutputParser } from './outputParsers/rccOutputParser';
@@ -85,28 +86,15 @@ export class SDKUtilitiesWrappers {
 						encoding: 'utf-8',
 						outputChannel: outputChannel
 					}
-					);
+				);
 
 				outputChannel.appendLine("XP :: Нормализация тестового события завершена");
 				outputChannel.appendLine("");
 
 				return output.output;
-
-				// Анализируем вывод утилиты на наличие ошибок и предупреждений
-				// TODO: Возможно паттернов вывода больше. Нужно описать разные ситуации.
-				// const outputParser = new RCCOutputParser();
-				//const ruleFileDiagnostics = outputParser.parse(output);
-
-				// Выводим ошибки и замечания для тестируемого правила.
-				//for (const rfd of ruleFileDiagnostics) {
-				//	this.config.getDiagnosticCollection().set(rfd.Uri, rfd.Diagnostics);
-				//}
-
-				// Если есть ошибки, то прерываем цепочку выполнения
-				//return this.not_contains_errors(ruleFileDiagnostics);
 			}
 			catch(error) {
-				ExtensionHelper.showUserError(`Произошла неожиданная ошибка: ${error.message}`);
+				ExceptionHelper.show(error, `Произошла неожиданная ошибка при нормализации события через нормализатор.`);
 				return "";
 			}
 		});

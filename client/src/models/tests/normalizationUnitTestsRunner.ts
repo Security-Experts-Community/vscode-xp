@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 
 import { Configuration } from '../configuration';
 import { TestStatus } from './testStatus';
@@ -8,6 +9,8 @@ import { diffJson } from 'diff';
 import { UnitTestRunner } from './unitTestsRunner';
 import { UnitTestOutputParser } from './unitTestOutputParser';
 import { XpException } from '../xpException';
+import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
+import { SiemjConfigHelper } from '../siemj/siemjConfigHelper';
 
 export class NormalizationUnitTestsRunner implements UnitTestRunner {
 
@@ -16,21 +19,21 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 
 	public async run(unitTest: BaseUnitTest): Promise<BaseUnitTest> {
 
-		const wrapper = new SDKUtilitiesWrappers(this._config);
+		// TODO: добавить сбор графа нормализации для данного правила.
+		
 		const rule = unitTest.getRule();
 
+		// Парсим ошибки из вывода.
+		const wrapper = new SDKUtilitiesWrappers(this._config);
 		const utilityOutput = await wrapper.testNormalization(unitTest);
-		if(utilityOutput) {
+		if(!utilityOutput) {
 			throw new XpException("Нормализатор не вернул никакого события. Исправьте правило нормализации и повторите.");
 		}
-
-		// Получаем путь к правилу для которого запускали тест
-		const ruleFileUri = vscode.Uri.file(rule.getFilePath());
-
-		// Парсим ошибки из вывода.
+		
 		const diagnostics = this._outputParser.parse(utilityOutput);
 
 		// Выводим ошибки в нативной для VsCode форме.
+		const ruleFileUri = vscode.Uri.file(rule.getFilePath());
 		this._config.getDiagnosticCollection().set(ruleFileUri, diagnostics);			
 		
 		unitTest.setStatus(TestStatus.Failed);
