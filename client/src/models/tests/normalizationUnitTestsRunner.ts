@@ -7,6 +7,7 @@ import { SDKUtilitiesWrappers } from '../../tools/sdkUtilitiesWrappers';
 import { diffJson } from 'diff';
 import { UnitTestRunner } from './unitTestsRunner';
 import { UnitTestOutputParser } from './unitTestOutputParser';
+import { XpException } from '../xpException';
 
 export class NormalizationUnitTestsRunner implements UnitTestRunner {
 
@@ -19,6 +20,9 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 		const rule = unitTest.getRule();
 
 		const utilityOutput = await wrapper.testNormalization(unitTest);
+		if(utilityOutput) {
+			throw new XpException("Нормализатор не вернул никакого события. Исправьте правило нормализации и повторите.");
+		}
 
 		// Получаем путь к правилу для которого запускали тест
 		const ruleFileUri = vscode.Uri.file(rule.getFilePath());
@@ -35,9 +39,17 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 			return unitTest;
 		}
 
-		const normalizedEvent = /\{.*\}/is.exec(utilityOutput)[0];
+		const normalizedEventResult = /\{.*\}/is.exec(utilityOutput);
+		if(!normalizedEventResult || normalizedEventResult.length != 1) {
+			throw new XpException("Нормализатор не вернул никакого события. Исправьте правило нормализации и повторите.");
+		}
+		const normalizedEvent = normalizedEventResult[0];
 
-		const difference = diffJson(JSON.parse(unitTest.getTestExpectation()), JSON.parse(normalizedEvent));
+		// Проверяем ожидаемого и фактическое событие.
+		const expectation = JSON.parse(unitTest.getTestExpectation());
+		const actual = JSON.parse(normalizedEvent);
+
+		const difference = diffJson(expectation, actual);
 		
 		let result_diff = "";
 		for (const part of difference) {
