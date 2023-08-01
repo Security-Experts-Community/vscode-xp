@@ -10,12 +10,10 @@ export class FileSystemHelper {
 	 * @returns 
 	 */
 	public static isValidPath(path : string): boolean {
-		const result = /^\S*$/.exec(path);
-		if(!result || result.length != 1) {
-			return false;
-		}
-
-		return true;
+		
+		const regExp = /^[A-z0-9./!$%&;:{}=\-_`~()]+$/g;
+		// const regExp = new RegExp("^[A-z\u00C0-\u00ff\s'.,-\\/#!$%^&*;:{}=\-_`~()]+$", "g");
+		return regExp.test(path);
 	}
 
 	public static rename(path : string, newPath : string): Promise<void> {

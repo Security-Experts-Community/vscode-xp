@@ -49,9 +49,12 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 		const normalizedEvent = normalizedEventResult[0];
 
 		// Проверяем ожидаемого и фактическое событие.
-		const expectation = JSON.parse(unitTest.getTestExpectation());
-		const actual = JSON.parse(normalizedEvent);
+		let expectation = JSON.parse(unitTest.getTestExpectation());
+		expectation = this.clearIrrelevantFields(expectation);
 
+		let actual = JSON.parse(normalizedEvent);
+		actual = this.clearIrrelevantFields(actual);
+		
 		const difference = diffJson(expectation, actual);
 		
 		let result_diff = "";
@@ -64,10 +67,22 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 		}
 		unitTest.setOutput(result_diff);
 
-		if (difference.length == 1){
+		if (difference.length == 1) {
 			unitTest.setStatus(TestStatus.Success);
 		}
 
 		return unitTest;
+	}
+
+	private clearIrrelevantFields(eventObject: any): any {
+		if(eventObject['recv_time']) {
+			delete eventObject['recv_time'];
+		}
+
+		if(eventObject['time']) {
+			delete eventObject['time'];
+		}
+
+		return eventObject;
 	}
 }
