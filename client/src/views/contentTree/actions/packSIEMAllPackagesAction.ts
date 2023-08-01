@@ -91,7 +91,7 @@ export class PackSIEMAllPackagesAction {
 				 * kbtools.exe pack -s "c:\src\path" -o "c:\dst\path\packages.kb
 				 */
 				emitter.fire(`\n\nXP:: Промежуточный статус: Запущена команда архивации файлов, это может занимать длительное время!\n\n`);
-				const output  = await ProcessHelper.ExecuteWithArgsWithRealtimeEmmiterOutput(
+				const output  = await ProcessHelper.executeWithArgsWithRealtimeEmmiterOutput(
 					"dotnet",
 					[
 						knowledgeBasePackagerCli,

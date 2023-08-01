@@ -9,6 +9,8 @@ import { NormalizationUnitTest } from '../models/tests/normalizationUnitTest';
 import { ProcessHelper } from '../helpers/processHelper';
 import { ExtensionHelper } from '../helpers/extensionHelper';
 import { ExceptionHelper } from '../helpers/exceptionHelper';
+import { FileSystemHelper } from '../helpers/fileSystemHelper';
+import { FileSystemException } from '../models/fileSystemException';
 // import { RuleBaseItem } from '../models/content/ruleBaseItem';
 // import { BuildLocsOutputParser, FillFPTAOutputParser } from './outputParsers/fillFptaOutputParser';
 // import { RCCOutputParser } from './outputParsers/rccOutputParser';
@@ -62,7 +64,12 @@ export class SDKUtilitiesWrappers {
 				const tempPath = this.config.getTmpDirectoryPath(rootFolder);				
 				const taxonomyPath = this.config.getTaxonomyFullPath();
 				const appendixPath = this.config.getAppendixFullPath();
+
 				const formulaPath = rule.getFilePath();
+				if(!FileSystemHelper.isValidPath(formulaPath)) {
+					throw new FileSystemException(`В пути ${formulaPath} к правилу нормализации содержаться недопустимые символы. Допустима только латинский буквы, цифры и знак подчёркивания.`);
+				}
+
 				const rawEventPath = unitTest.getTestInputDataPath();
 
 				process.env.PTSIEM_SDK_ROOT = this.config.getSiemSdkDirectoryPath();

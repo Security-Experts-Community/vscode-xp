@@ -4,7 +4,19 @@ import * as crypto from 'crypto';
 
 export class FileSystemHelper {
 
-	public static _fileEncoding : BufferEncoding = 'utf8';
+	/**
+	 * Проверяем корректность пути для использования в KBT, без кириллици и пробелов.
+	 * @param path путь к файлу или директории
+	 * @returns 
+	 */
+	public static isValidPath(path : string): boolean {
+		const result = /^\S*$/.exec(path);
+		if(!result || result.length != 1) {
+			return false;
+		}
+
+		return true;
+	}
 
 	public static rename(path : string, newPath : string): Promise<void> {
 		return new Promise((resolve) => {
@@ -203,4 +215,6 @@ export class FileSystemHelper {
 
 		return results;
 	}
+
+	public static _fileEncoding : BufferEncoding = 'utf8';
 }

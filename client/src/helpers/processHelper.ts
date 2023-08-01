@@ -16,25 +16,6 @@ export class ExecutionResult {
 }
 
 export class ProcessHelper {
-	public static readProcessPathArgsOutputSync(command: string, args: string[], encoding: BufferEncoding) : string {
-		const childProcess = child_process.spawnSync(
-			command,
-			args, {
-				shell: true,
-				cwd: process.cwd(),
-				env: process.env,
-				stdio: 'pipe',
-				encoding
-			}
-		);
-
-		if(childProcess.status != 0) {
-			throw new Error(`Не удалось запустить внешний процесс '${command}'. \n` + childProcess.stderr);
-		}
-
-		return childProcess.stdout;
-	}
-
 	/**
 	 * Позволяет собрать сложную команду в виде запускаемого модуля и списка параметров *без экранирования*
 	 * @param command базовая команда для запуска процесса
@@ -61,54 +42,6 @@ export class ProcessHelper {
 
 		return childProcess.stdout;
 	}
-
-	
-	public static StdIOExecuteWithArgsWithRealtimeOutput(
-		filePath: string, 
-		command : string, params : string[], 
-		outputChannel : vscode.OutputChannel) : Promise<string> {
-
-		return new Promise(function(resolve, reject) {
-
-			const file = fs.readFileSync(filePath);
-			
-			let child; 
-			try {
-				child = child_process.spawn(command, params);
-			} 
-			catch(error) {
-				reject(error.message);
-				return;
-			}
-
-			child.stdin.write(file);
-			child.stdin.end();
-		
-			let output = "";
-		
-			child.stdout.setEncoding('utf8');
-			child.stdout.on('data', function(data) {
-				output += data.toString();
-				//outputChannel.append(data.toString());
-			});
-
-			child.stdout.setEncoding('utf8');
-			child.stdout.on("error", function(data) {
-				outputChannel.append(data.toString());
-				output += data.toString();
-			});
-		
-			child.stderr.setEncoding('utf8');
-			child.stderr.on('data', function(data) {
-				outputChannel.append(data.toString());
-				reject(data.toString());				
-			});
-		
-			child.on('close', function(code) {
-				resolve(output);
-			});
-		});
-	}	
 
 	public static executeWithArgsWithRealtimeOutput(command : string, params : string[], outputChannel : vscode.OutputChannel) : Promise<string> {
 
@@ -198,7 +131,7 @@ export class ProcessHelper {
 		});
 	}
 
-	public static ExecuteWithArgsWithRealtimeEmmiterOutput(command : string, params : string[], emmiter : vscode.EventEmitter<string>) : Promise<string> {
+	public static executeWithArgsWithRealtimeEmmiterOutput(command : string, params : string[], emmiter : vscode.EventEmitter<string>) : Promise<string> {
 
 		return new Promise(function(resolve, reject) {
 			
@@ -242,24 +175,5 @@ export class ProcessHelper {
 
 	private static encodeOutputToString(data: Buffer, inputEncoding: EncodingType) {
 		return iconv.decode(data, inputEncoding, {defaultEncoding: 'utf-8'});
-	}
-		
-	public static readProcessOutputSync(command: string,encoding: BufferEncoding) : string {
-		const childProcess = child_process.spawnSync(
-			command,
-			{
-				shell: true,
-				cwd: process.cwd(),
-				env: process.env,
-				stdio: 'pipe',
-				encoding
-			}
-		);
-
-		if(childProcess.status != 0) {
-			throw new Error(`Не удалось запустить внешний процесс '${command}'. \n` + childProcess.stderr);
-		}
-
-		return childProcess.stdout;
 	}
 }
