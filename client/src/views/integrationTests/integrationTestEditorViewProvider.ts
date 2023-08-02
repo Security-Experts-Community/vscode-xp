@@ -300,6 +300,11 @@ export class IntegrationTestEditorViewProvider  {
 	
 					// Актуализируем сырые события в тесте из вьюшки.
 					const rawEvents = message.rawEvents;
+					if(!rawEvents) {
+						ExtensionHelper.showUserInfo("Не заданы сырые события для нормализации. Задайте события и повторите.");
+						return;
+					}
+
 					const currTest = IntegrationTest.convertFromObject(message.test);
 					currTest.setRawEvents(rawEvents);
 					await currTest.save();
@@ -393,16 +398,17 @@ export class IntegrationTestEditorViewProvider  {
 
 		vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
-			title: `Нормализация событий для теста №${test.getNumber()}`
+			cancellable: false
 		}, async (progress) => {
 
 			try {
 				const siemjManager = new SiemjManager(this._config);
 				let normEvents : string;
 				if(enrich) {
+					progress.report({message: `Нормализация и обогащение сырых событий для теста №${test.getNumber()}`});
 					normEvents = await siemjManager.normalizeAndEnrich(this._rule, rawEventsFilePath);
 				} else {
+					progress.report({message: `Нормализация сырых событий для теста №${test.getNumber()}`});
 					normEvents = await siemjManager.normalize(this._rule, rawEventsFilePath);
 				}
 				
@@ -422,7 +428,12 @@ export class IntegrationTestEditorViewProvider  {
 				return;
 			}
 
-			ExtensionHelper.showUserInfo("Нормализация сырых событий завершена успешно.");
+			// Выводим статус.
+			if(enrich) {
+				ExtensionHelper.showUserInfo("Нормализация и обогащение сырых событий завершено успешно.");
+			} else {
+				ExtensionHelper.showUserInfo("Нормализация сырых событий завершена успешно.");
+			}
 
 			// Обновляем правило.
 			tests[ruleTestIndex] = test;

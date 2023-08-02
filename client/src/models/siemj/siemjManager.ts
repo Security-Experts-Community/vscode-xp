@@ -14,6 +14,8 @@ import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { Localization, LocalizationExample } from '../content/localization';
 import { IntegrationTest } from '../tests/integrationTest';
+import { StringHelper } from '../../helpers/stringHelper';
+import { EOF } from 'dns';
 
 export class SiemjManager {
 
@@ -115,7 +117,27 @@ export class SiemjManager {
 			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
 		}
 
-		const normEventsContent = await FileSystemHelper.readContentFile(normEventsFilePath);
+		let normEventsContent = await FileSystemHelper.readContentFile(normEventsFilePath);
+		
+		// Удаляем поле body из нормализованного события.
+		try {
+			const normEventStrings = StringHelper.splitStringOnLines(normEventsContent); 
+
+			normEventsContent = normEventStrings
+				.map(nes => JSON.parse(nes))
+				.map(neo => {
+					if(neo['body']) {
+						delete neo['body'];
+					}
+					return neo;
+				})
+				.map(neo => JSON.stringify(neo))
+				.join(os.EOL);
+
+		} catch(error) {
+			// Не удалось и ничего страшного.
+		}
+
 		if(!normEventsContent) {
 			throw new XpException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
 		}

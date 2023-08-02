@@ -415,7 +415,7 @@
 					const test = baseTestElement.data("test");
 					
 					// Получаем актуальные сырые события.
-					const rawEvents = baseTestElement.find('[name="raw_events"]').val();
+					const rawEvents = baseTestElement.find('[name="raw_events"]').text();
 
 					// Передает тест как параметр запроса.
 					vscode.postMessage({
