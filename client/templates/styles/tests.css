@@ -136,14 +136,14 @@ textarea {
 Универсальный стиль для редактора кода.
 */
 .xp_code {
-	white-space: pre-line;
+	white-space: pre-wrap;
 	min-height: 100px;
 	color: var(--vscode-input-foreground);
 	font-family: var(--vscode-editor-font-family);	
 }
 
 #correlated_events {
-	white-space: pre-line;
+	white-space: pre-wrap;
 	color: var(--vscode-input-foreground);
 	font-family: var(--vscode-editor-font-family);	
 }
