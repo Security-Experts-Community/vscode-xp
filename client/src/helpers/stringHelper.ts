@@ -9,7 +9,7 @@ export class StringHelper {
 		return str.replace(/(?:\r\n|\r|\n)/g, '').trim();
 	}
 
-	public static splitStringOnLines(str: string) : string [] {
+	public static splitTextOnLines(str: string) : string [] {
 		return str.replace(/\r?\n/gm, '\n')
 			.split('\n')
 			.filter(l => l);

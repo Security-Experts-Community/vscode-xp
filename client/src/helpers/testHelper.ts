@@ -7,6 +7,7 @@ import { RegExpHelper } from './regExpHelper';
 import { XpException } from '../models/xpException';
 import { ParseException } from '../models/parseException';
 import { BaseUnitTest } from '../models/tests/baseUnitTest';
+import { StringHelper } from './stringHelper';
 
 export type EventMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
@@ -93,13 +94,14 @@ export class TestHelper {
 	 * @param rawEvents строка с сырыми событиями
 	 * @returns строка с сырыми событиями, в которых json-события сжаты
 	 */
-	public static compressRawEvents(rawEvents: string) : string {
+	public static compressJsonRawEvents(rawEvents: string) : string {
 
 		if(!rawEvents) {
 			throw new Error("Переданный список событий пуст.");
 		}
 
-		const compressedNormalizedEventReg = /^{\s*"Event"\s*[\s\S]*?\n}/gm;
+		// TODO: надо поддержать упаковку любых json-ов
+		const compressedNormalizedEventReg = /^{\s+"(?:Event|node)"\s*[\s\S]*?\n}/gm;
 
 		let comNormEventResult: RegExpExecArray | null;
 		let compressedRawEvents = rawEvents;
@@ -116,11 +118,38 @@ export class TestHelper {
 				compressedRawEvents = compressedRawEvents.replace(jsonRawEvent, compressedEventString);
 			}
 			catch(error) {
-				console.warn(error.message);
+				throw new XpException("Неудалось распарсить сырое JSON-событие", error);
 			}
 		}
 
 		return compressedRawEvents.trim();
+	}
+
+	public static removeFieldsFromJsonl(jsonlStr : string, ...fields: string[]) : string {
+		let jsonlCleaned = "";
+		try {
+			const jsonLines = StringHelper.splitTextOnLines(jsonlStr); 
+
+			jsonlCleaned = jsonLines
+				.map(nes => JSON.parse(nes))
+				.map(neo => {
+					// Очищаем поля из списка.
+					for(const field of fields) {
+						if(neo[field]) {
+							delete neo[field];
+						}
+					}
+	
+					return neo;
+				})
+				.map(neo => JSON.stringify(neo))
+				.join(EOL);
+
+		} 
+		catch(error) {
+			throw new XpException("Ошибка очистки JSON от полей", error);
+		}
+		return jsonlCleaned;
 	}
 
 	public static compressTestCode(testCode: string) {

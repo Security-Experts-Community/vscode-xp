@@ -9,8 +9,6 @@ import { diffJson } from 'diff';
 import { UnitTestRunner } from './unitTestsRunner';
 import { UnitTestOutputParser } from './unitTestOutputParser';
 import { XpException } from '../xpException';
-import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
-import { SiemjConfigHelper } from '../siemj/siemjConfigHelper';
 
 export class NormalizationUnitTestsRunner implements UnitTestRunner {
 

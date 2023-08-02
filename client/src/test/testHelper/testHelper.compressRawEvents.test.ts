@@ -75,7 +75,7 @@ suite('TestHelper.compressRawEvents', async () => {
 	}
 }`;
 
-		const compressedRawEventsString = TestHelper.compressRawEvents(rawEventsFromSIEM);
+		const compressedRawEventsString = TestHelper.compressJsonRawEvents(rawEventsFromSIEM);
 
 		const lines = compressedRawEventsString.split("\n");
 		assert.strictEqual(lines.length, 1);
@@ -151,7 +151,7 @@ suite('TestHelper.compressRawEvents', async () => {
 	}
 }`;
 
-		const formatedTestCode = TestHelper.compressRawEvents(rawEventsFromSIEM);
+		const formatedTestCode = TestHelper.compressJsonRawEvents(rawEventsFromSIEM);
 
 		const lines = formatedTestCode.split("\n");
 		assert.strictEqual(lines.length, 2);

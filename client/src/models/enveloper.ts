@@ -5,6 +5,12 @@ import { EventMimeType, TestHelper } from '../helpers/testHelper';
 import { XpException } from './xpException';
 
 export class Enveloper {
+	/**
+	 * Оборачивает необёртнутые события в конверт с соответствующим mimiType и раскладывает их в одну строку.
+	 * @param rawEvents сырые события
+	 * @param mimeType тип конверта для необертнутых событий
+	 * @returns события без конверта обёрнуты в конверт и разложены в одну строку каждое
+	 */
 	public static async addEnvelope(rawEvents: string, mimeType : EventMimeType) {
 		
 		if(!rawEvents) {
@@ -22,7 +28,7 @@ export class Enveloper {
 		}
 
 		// Сжимаем json-события.
-		const compressedRawEventsString = TestHelper.compressRawEvents(rawEventsTrimmed);
+		const compressedRawEventsString = TestHelper.compressJsonRawEvents(rawEventsTrimmed);
 		const compressedRawEvents = compressedRawEventsString.split(Enveloper.END_OF_LINE);
 
 		if(!this.thereAreUnenvelopedEvents(compressedRawEvents)) {

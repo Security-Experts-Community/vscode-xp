@@ -1,8 +1,35 @@
 import assert = require('assert');
 import { Enveloper } from '../../../models/enveloper';
 import { XpException } from '../../../models/xpException';
+import { StringHelper } from '../../../helpers/stringHelper';
 
 suite('Enveloper', () => {
+
+	test('Json-событие из syslog', async () => {
+		const events =
+`{
+	"node": "10.125.136.100",
+	"timestamp": "1690295668",
+	"timestampfractional": "405",
+	"eventid": "15356495",
+	"items": {
+		"SOCKADDR": [
+			"saddr=020000357F0000350000000000000000 SADDR={ fam=inet laddr=127.0.0.53 lport=53 }"
+		],
+		"SYSCALL": [
+			"arch=c000003e syscall=42 success=yes exit=0 a0=5 a1=c0003dc58c a2=10 a3=0 items=0 ppid=1 pid=850 auid=4294967295 uid=0 gid=0 euid=0 suid=0 fsuid=0 egid=0 sgid=0 fsgid=0 tty=(none) ses=4294967295 comm=\\"gitlab-runner\\" exe=\\"/usr/local/bin/gitlab-runner\\" key=\\"pt_siem_api_connect\\" ARCH=x86_64 SYSCALL=connect AUID=\\"unset\\" UID=\\"root\\" GID=\\"root\\" EUID=\\"root\\" SUID=\\"root\\" FSUID=\\"root\\" EGID=\\"root\\" SGID=\\"root\\" FSGID=\\"root\\""
+		],
+		"PROCTITLE": [
+			"proctitle=2F7573722F6C6F63616C2F62696E2F6769746C61622D72756E6E65720072756E002D2D776F726B696E672D6469726563746F7279002F686F6D652F6769746C61622D72756E6E6572002D2D636F6E666967002F6574632F6769746C61622D72756E6E65722F636F6E6669672E746F6D6C002D2D73657276696365006769746C61"
+		]
+	}
+}`;
+
+		const envelopedEvents = await Enveloper.addEnvelope(events, "application/json");
+
+		assert.strictEqual(envelopedEvents.length, 1);
+	});
+
 
 	test('К событию в конверте добавляется xml-событие из журнала Windows', async () => {
 		const events =

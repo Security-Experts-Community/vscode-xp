@@ -191,7 +191,7 @@ export class IntegrationTestEditorViewProvider  {
 			this._view.webview.html = htmlContent;
 		}
 		catch(error) {
-			ExtensionHelper.showError("Не удалось открыть интеграционные тесты.", error);
+			ExtensionHelper.showError("Не удалось открыть интеграционные тесты", error);
 		}
 	}
 
@@ -220,7 +220,7 @@ export class IntegrationTestEditorViewProvider  {
 				try {
 					// В данном руле сохраняются в памяти нормализованные события.
 					this._rule = await this.saveAllTests(message);
-					ExtensionHelper.showUserInfo(`Все тесты сохранены.`);
+					ExtensionHelper.showUserInfo(`Все тесты сохранены`);
 				
 					// Добавляем в DOM новый тест.
 					const activeTestNumber = this.getActiveTestNumber(message);
@@ -415,7 +415,7 @@ export class IntegrationTestEditorViewProvider  {
 				test.setNormalizedEvents(normEvents);
 			}
 			catch(error) {
-				ExceptionHelper.show(error, "Не удалось нормализовать событие.");
+				ExceptionHelper.show(error, "Не удалось нормализовать событие");
 				this._config.getOutputChannel().show();
 				return;
 			}
@@ -424,15 +424,15 @@ export class IntegrationTestEditorViewProvider  {
 			const tests = this._rule.getIntegrationTests();
 			const ruleTestIndex = tests.findIndex(it => it.getNumber() == test.getNumber());
 			if(ruleTestIndex == -1) {
-				ExtensionHelper.showUserError("Не удалось обновить интеграционный тест.");
+				ExtensionHelper.showUserError("Не удалось обновить интеграционный тест");
 				return;
 			}
 
 			// Выводим статус.
 			if(enrich) {
-				ExtensionHelper.showUserInfo("Нормализация и обогащение сырых событий завершено успешно.");
+				ExtensionHelper.showUserInfo("Нормализация и обогащение сырых событий завершено успешно");
 			} else {
-				ExtensionHelper.showUserInfo("Нормализация сырых событий завершена успешно.");
+				ExtensionHelper.showUserInfo("Нормализация сырых событий завершена успешно");
 			}
 
 			// Обновляем правило.

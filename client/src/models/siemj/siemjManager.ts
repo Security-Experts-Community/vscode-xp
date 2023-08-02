@@ -16,6 +16,7 @@ import { Localization, LocalizationExample } from '../content/localization';
 import { IntegrationTest } from '../tests/integrationTest';
 import { StringHelper } from '../../helpers/stringHelper';
 import { EOF } from 'dns';
+import { TestHelper } from '../../helpers/testHelper';
 
 export class SiemjManager {
 
@@ -118,25 +119,7 @@ export class SiemjManager {
 		}
 
 		let normEventsContent = await FileSystemHelper.readContentFile(normEventsFilePath);
-		
-		// Удаляем поле body из нормализованного события.
-		try {
-			const normEventStrings = StringHelper.splitStringOnLines(normEventsContent); 
-
-			normEventsContent = normEventStrings
-				.map(nes => JSON.parse(nes))
-				.map(neo => {
-					if(neo['body']) {
-						delete neo['body'];
-					}
-					return neo;
-				})
-				.map(neo => JSON.stringify(neo))
-				.join(os.EOL);
-
-		} catch(error) {
-			// Не удалось и ничего страшного.
-		}
+		normEventsContent = TestHelper.removeFieldsFromJsonl(normEventsContent, 'body');
 
 		if(!normEventsContent) {
 			throw new XpException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
@@ -196,11 +179,14 @@ export class SiemjManager {
 		this.processOutput(siemjOutput.output);
 
 		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(contentRootFolder);
+		
 		if(!fs.existsSync(enrichEventsFilePath)) {
 			throw new XpException("Ошибка нормализации и обогащения событий. Файл с результирующим событием не создан.");
 		}
 
-		const enrichEventsContent = await FileSystemHelper.readContentFile(enrichEventsFilePath);
+		let enrichEventsContent = await FileSystemHelper.readContentFile(enrichEventsFilePath);
+		enrichEventsContent = TestHelper.removeFieldsFromJsonl(enrichEventsContent, 'body');
+		
 		if(!enrichEventsContent) {
 			throw new XpException("Обогатитель вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
 		}
