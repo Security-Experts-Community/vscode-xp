@@ -6,6 +6,41 @@ import { TestFixture } from '../../helper';
 
 suite('SiemJOutputParser', () => {
 
+// 	test('Баг новой версии KBT', async () => {
+// 		const parser = new SiemJOutputParser();
+
+// 		const output = 
+// `
+// TEST_RULES [Err] :: Collected 8 tests.
+// ...
+// TEST_RULES [Err] :: Test Started: tests\\raw_events_1.json
+// TEST_RULES [Err] :: Expected results are not obtained.
+// TEST_RULES [Err] :: Details:
+// TEST_RULES [Err] :: Expected json:
+// TEST_RULES [Err] :: Expected 1, got 0
+// TEST_RULES [Err] :: Rule name is detected in expect. Building diff for all emits with the same \\"ExpectCorrelation\\" field..
+// TEST_RULES [Err] :: There are no emits with same correlation_name \\"ActualCorrelation\\".
+// TEST_RULES [Err] :: Emitted CR: ActualCorrelation
+// TEST_RULES [Err] :: Test Failed. See messages above
+// TEST_RULES [Err] :: 
+// TEST_RULES [Err] :: Correlator statistics:
+// TEST_RULES [Err] :: rule ActualCorrelation
+// TEST_RULES [Err] ::     emit: 1
+// TEST_RULES [Err] :: 
+// TEST_RULES [Err] :: Test Finished: tests\\raw_events_1.json
+// TEST_RULES [Err] :: 
+// TEST_RULES [Err] :: 
+// TEST_RULES [Err] :: 
+// TEST_RULES [Err] :: 
+// TEST_RULES [Err] :: 
+// TEST_RULES [Err] ::  1 tests failed`;
+
+// 		const status = await parser.parse(output);
+
+// 		assert.ok(!status.testStatus);
+// 		assert.strictEqual(status.failedTestNumbers.length, 1);
+// 	});
+
 	test('Прошли все тесты', async () => {
 		const parser = new SiemJOutputParser();
 

@@ -1,5 +1,15 @@
 # Change Log
 
+## 3.6.0 (Release)
+
+- фича [#44](https://github.com/Security-Experts-Community/vscode-xp/issues/44) - добавлена подсветка кода в интеграционных тестах с её обновлением в процессе редактирования;
+- фича [#88](https://github.com/Security-Experts-Community/vscode-xp/issues/88) - добавление конверта на события без конверта в интеграционных тестах;
+- добавлено автоматическое выделение правила в дереве контента при открытии файлов \*.co, \*.en, \*.xp в Explorer (Activity Bar);
+- добавлены сниппеты для external_src.\*, external_dst.\*, datafield\* и datafieldN;
+- добавлены сниппеты и описание для функций декодирования Base64: `decode`, `buffer_from_base64`;
+- обновлены шаблоны корреляций `For_Profiling` и `Windows_Logon`;
+- исправлены ошибки и повышена стабильность.
+
 ## 3.5.13 (Pre-Release)
 
 - PoC фичи [#44](https://github.com/Security-Experts-Community/vscode-xp/issues/44) - добавлена подсветка кода в интеграционных тестах с её обновлением в процессе редактирования;
