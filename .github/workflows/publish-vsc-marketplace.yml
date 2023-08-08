@@ -23,7 +23,7 @@ jobs:
       - name: Get release version
         id: release_version
         run: |
-          TAGGED_VERSION="${GITHUB_REF/refs\/tags\/v/}"
+          TAGGED_VERSION="${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
           echo "TAGGED_VERSION=${TAGGED_VERSION}"
           if [[ ! "${TAGGED_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
             echo "Invalid version tag '${TAGGED_VERSION}'"
