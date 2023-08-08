@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -51,8 +53,10 @@ jobs:
 
       - name: Get tag message body
         run: |
-          TAG_BODY="$(git tag -l --format='%(contents:body)' v${TAGGED_VERSION})"
-          echo "${TAG_BODY}" >> $GITHUB_OUTPUT        
+          EOF=${{ github.sha }}
+          echo "msg<<$EOF" >> $GITHUB_OUTPUT
+          echo "$(git tag -l --format='%(contents:body)' ${{ github.ref_name }})" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT      
         id: get_tag_message
 
       - name: Stamp version
@@ -81,7 +85,7 @@ jobs:
           draft: false
           prerelease: ${{env.EXT_ISPREVIEW == 1}}
           body: |
-            ${{join(steps.get_tag_message.outputs.*, '\n')}}
+            ${{ steps.get_tag_message.outputs.msg }}
 
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
