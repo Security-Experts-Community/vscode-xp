@@ -375,9 +375,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 				kbItems.push(kbItem);
 			}
 			catch (error) {
-				Configuration.get()
-					.getOutputChannel()
-					.append(`Ошибка парсинга директории ${directoryPath}`);
+				ExceptionHelper.show(error, `Ошибка парсинга директории ${directoryPath}`);
 			}
 		}
 

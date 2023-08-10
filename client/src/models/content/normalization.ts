@@ -183,9 +183,14 @@ export class Normalization extends RuleBaseItem {
 		normalization.setEnDescription(enDescription);
 
 		const localizations = await Localization.parseFromDirectory(directoryPath);
-			localizations.forEach((loc) => {
-				normalization.addLocalization(loc);
-			});
+		if(!normalization.checkLocalizationConsistency(localizations, normalization.getMetaInfo())) {
+			throw new XpException(
+				`В правиле ${name} наборы идентификаторов локализаций (LocalizationId) в файлах метаинформации и локализаций не совпадают. Необходимо их скорректировать вручную и обновить дерево контента.`);
+		}
+
+		localizations.forEach((loc) => {
+			normalization.addLocalization(loc);
+		});
 
 		const unitTests = NormalizationUnitTest.parseFromRuleDirectory(normalization);
 		normalization.addUnitTests(unitTests);

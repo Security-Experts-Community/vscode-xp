@@ -98,8 +98,10 @@ export class Correlation extends RuleBaseItem {
 
 		const localizations = await Localization.parseFromDirectory(directoryPath);
 		if(!correlation.checkLocalizationConsistency(localizations, correlation.getMetaInfo())) {
-			throw new XpException("Наборы идентификаторов локализаций в файле метаинформации и файлах локализаций не совпадают.");
+			throw new XpException(
+				`В правиле ${correlationName} наборы идентификаторов локализаций (LocalizationId) в файлах метаинформации и локализаций не совпадают. Необходимо их скорректировать вручную и обновить дерево контента.`);
 		}
+
 		correlation.setLocalizationTemplates(localizations);
 		
 		const modularTests = CorrelationUnitTest.parseFromRuleDirectory(correlation);
