@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import * as crypto from 'crypto';
 
 export class FileSystemHelper {
@@ -10,26 +11,26 @@ export class FileSystemHelper {
 	 * @returns 
 	 */
 	public static isValidPath(path : string): boolean {
-		
 		const regExp = /^[A-z0-9./!$%&;:{}=\-_`~()]+$/g;
-		// const regExp = new RegExp("^[A-z\u00C0-\u00ff\s'.,-\\/#!$%^&*;:{}=\-_`~()]+$", "g");
 		return regExp.test(path);
 	}
 
 	public static checkIfFilesIsExisting(startPath: string, fileNameRegexPattern: RegExp) : boolean {
-		const getFileList = (dirName) : string[] => {
+		const getFileList = (dirName : string) : string[] => {
 			let files = [];
 			const items = fs.readdirSync(dirName, { withFileTypes: true });
 
 			for (const item of items) {
 				if (item.isDirectory()) {
+					const newPath = path.join(dirName, item.name);
 					files = [
 						...files,
-						...(getFileList(`${dirName}/${item.name}`)),
+						...(getFileList(newPath)),
 					];
 				} else {
-					if (fileNameRegexPattern.exec(item.name) != undefined){
-						files.push(`${dirName}/${item.name}`);
+					if (fileNameRegexPattern.exec(item.name) != undefined) {
+						const newPath = path.join(dirName, item.name);
+						files.push(newPath);
 					}
 				}
 			}

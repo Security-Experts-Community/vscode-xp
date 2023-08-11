@@ -1,4 +1,4 @@
 Description: Description
 EventDescriptions:
-    - LocalizationId: LocalizationId
+    - LocalizationId: PT_Microsoft_Windows_eventlog_1001_Application_Error
       EventDescription: 'EventDescription'
