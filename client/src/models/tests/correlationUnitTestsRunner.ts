@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { EOL } from 'os';
-import { ProcessHelper } from '../../helpers/processHelper';
+import { ExecutionResult, ProcessHelper } from '../../helpers/processHelper';
 import { TestHelper } from '../../helpers/testHelper';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { Configuration } from '../configuration';
@@ -78,22 +78,41 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			const schemaFilePath = this._config.getSchemaFullPath(rootFolder);
 			const ruleFiltersDirPath = this._config.getRulesDirFilters();
 
-			const output = await ProcessHelper.execute(ecaTestParam,
-				[
-					"--sdk", sdkDirPath,
-					"--taxonomy", taxonomyFilePath,
-					"--temp", tmpDirPath,
-					"-s", ruleFilePath,
-					"-c", testFilepath,
-					"--schema", schemaFilePath,
-					"--fpta-defaults", fptDefaults,
-					"--rules-filters", ruleFiltersDirPath
-				],
-				{
-					encoding : "utf-8",
-					outputChannel : this._config.getOutputChannel()
-				}
-			);
+			let output : ExecutionResult; 
+			if(!fs.existsSync(schemaFilePath)) {
+				// Если нет ТС, то не будет и схемы.
+				output = await ProcessHelper.execute(ecaTestParam,
+					[
+						"--sdk", sdkDirPath,
+						"--taxonomy", taxonomyFilePath,
+						"--temp", tmpDirPath,
+						"-s", ruleFilePath,
+						"-c", testFilepath,
+						"--rules-filters", ruleFiltersDirPath
+					],
+					{
+						encoding : "utf-8",
+						outputChannel : this._config.getOutputChannel()
+					}
+				);
+			} else {
+				output = await ProcessHelper.execute(ecaTestParam,
+					[
+						"--sdk", sdkDirPath,
+						"--taxonomy", taxonomyFilePath,
+						"--temp", tmpDirPath,
+						"-s", ruleFilePath,
+						"-c", testFilepath,
+						"--schema", schemaFilePath,
+						"--fpta-defaults", fptDefaults,
+						"--rules-filters", ruleFiltersDirPath
+					],
+					{
+						encoding : "utf-8",
+						outputChannel : this._config.getOutputChannel()
+					}
+				);
+			}
 
 			if(!output.output) {
 				ExtensionHelper.showUserError('Не удалось запустить модульные тесты, команда запуска не вернула ожидаемые данные. Проверьте путь до утилит KBT [в настройках расширения](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]).');

@@ -451,7 +451,7 @@ export class Configuration {
 	}
 
 	public getTmpSiemjConfigPath(rootFolder: string) : string {
-		return path.join(this.getTmpDirectoryPath(rootFolder), "siemj.conf");
+		return path.join(this.getRandTmpSubDirectoryPath(rootFolder), "siemj.conf");
 	}
 
 	public getRandTmpSubDirectoryPath(rootFolder?: string) : string {

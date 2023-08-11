@@ -16,6 +16,31 @@ export class FileSystemHelper {
 		return regExp.test(path);
 	}
 
+	public static checkIfFilesIsExisting(startPath: string, fileNameRegexPattern: RegExp) : boolean {
+		const getFileList = (dirName) : string[] => {
+			let files = [];
+			const items = fs.readdirSync(dirName, { withFileTypes: true });
+
+			for (const item of items) {
+				if (item.isDirectory()) {
+					files = [
+						...files,
+						...(getFileList(`${dirName}/${item.name}`)),
+					];
+				} else {
+					if (fileNameRegexPattern.exec(item.name) != undefined){
+						files.push(`${dirName}/${item.name}`);
+					}
+				}
+			}
+
+			return files;
+		};
+
+		const files = getFileList(startPath);
+		return files.length > 0;
+	}
+
 	public static rename(path : string, newPath : string): Promise<void> {
 		return new Promise((resolve) => {
             fs.access(path, fs.constants.F_OK, (err) => {
