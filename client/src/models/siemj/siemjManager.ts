@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { ProcessHelper } from '../../helpers/processHelper';
+import { ExecutionResult, ProcessHelper } from '../../helpers/processHelper';
 import { Configuration } from '../configuration';
 import { XpException } from '../xpException';
 import { RuleBaseItem } from '../content/ruleBaseItem';
@@ -22,7 +22,7 @@ export class SiemjManager {
 
 	constructor(private _config : Configuration) {}
 
-	public async buildSchema(rule: RuleBaseItem) : Promise<void> {
+	public async buildSchema(rule: RuleBaseItem) : Promise<string> {
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
 
@@ -39,30 +39,15 @@ export class SiemjManager {
 		configBuilder.addTablesSchemaBuilding();
 		const siemjConfContent = configBuilder.build();
 
-		// Централизованно сохраняем конфигурационный файл для siemj.
-		const siemjConfigPath = this._config.getTmpSiemjConfigPath(contentRootFolder);
-		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
-		const siemjExePath = this._config.getSiemjPath();
-
-		this._config.getOutputChannel().clear();
-
-		// Типовая команда выглядит так:
-		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const siemjOutput = await ProcessHelper.execute(
-			siemjExePath,
-			["-c", siemjConfigPath, "main"],
-			{	
-				encoding: this._config.getSiemjOutputEncoding(),
-				outputChannel: this._config.getOutputChannel()
-			}
-		);
-
+		const siemjOutput = await this.executeSiemjConfig(rule, siemjConfContent);
 		this.processOutput(siemjOutput.output);
 
 		const schemaFilePath = this._config.getSchemaFullPath(contentRootFolder);
 		if(!fs.existsSync(schemaFilePath)) {
 			throw new XpException("Ошибка компиляции схемы БД. Результирующий файл не создан.");
 		}
+
+		return schemaFilePath;
 	}
 
 	public async normalize(rule: RuleBaseItem, rawEventsFilePath: string) : Promise<string> {
@@ -93,25 +78,8 @@ export class SiemjManager {
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		const siemjConfContent = configBuilder.build();
 
-		// Централизованно сохраняем конфигурационный файл для siemj.
-		const siemjConfigPath = this._config.getTmpSiemjConfigPath(contentRootFolder);
-		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
-		const siemjExePath = this._config.getSiemjPath();
-
-		this._config.getOutputChannel().clear();
-
-		// Типовая команда выглядит так:
-		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const siemjOutput = await ProcessHelper.execute(
-			siemjExePath,
-			["-c", siemjConfigPath, "main"],
-			{	
-				encoding: this._config.getSiemjOutputEncoding(),
-				outputChannel: this._config.getOutputChannel()
-			}
-		);
-
-		this.processOutput(siemjOutput.output);
+		const siemjExecutionResult = await this.executeSiemjConfig(rule, siemjConfContent);
+		this.processOutput(siemjExecutionResult.output);
 
 		const normEventsFilePath = this._config.getNormalizedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(normEventsFilePath)) {
@@ -125,7 +93,6 @@ export class SiemjManager {
 			throw new XpException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
 		}
 
-		await fs.promises.unlink(siemjConfigPath);
 		return normEventsContent;
 	}
 
@@ -158,25 +125,8 @@ export class SiemjManager {
 		configBuilder.addEventsEnrichment();
 		const siemjConfContent = configBuilder.build();
 
-		// Централизованно сохраняем конфигурационный файл для siemj.
-		const siemjConfigPath = this._config.getTmpSiemjConfigPath(contentRootFolder);
-		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
-		const siemjExePath = this._config.getSiemjPath();
-
-		this._config.getOutputChannel().clear();
-		
-		// Типовая команда выглядит так:
-		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const siemjOutput = await ProcessHelper.execute(
-			siemjExePath,
-			["-c", siemjConfigPath, "main"],
-			{	
-				encoding: this._config.getSiemjOutputEncoding(),
-				outputChannel: this._config.getOutputChannel()
-			}
-		);
-
-		this.processOutput(siemjOutput.output);
+		const siemjExecutionResult = await this.executeSiemjConfig(rule, siemjConfContent);
+		this.processOutput(siemjExecutionResult.output);
 
 		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(contentRootFolder);
 		
@@ -191,8 +141,42 @@ export class SiemjManager {
 			throw new XpException("Обогатитель вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
 		}
 
-		await fs.promises.unlink(siemjConfigPath);
 		return enrichEventsContent;
+	}
+
+	public async executeSiemjConfig(rule: RuleBaseItem, siemjConfContent: string) : Promise<ExecutionResult> { 
+	
+		// Централизованно сохраняем конфигурационный файл для siemj.
+		const contentRootPath = rule.getContentRootPath(this._config);
+		const contentRootFolder = path.basename(contentRootPath);
+		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
+
+		// Создаем пустую схему и дефолты для того, чтобы работали все утилиты.	
+		if (!FileSystemHelper.checkIfFilesIsExisting(contentRootPath, /\.tl$/)) {
+			const corrDefaultsPath = path.join(outputFolder, "correlation_defaults.json");
+			await FileSystemHelper.writeContentFile(corrDefaultsPath,  "{}");
+
+			const schemaPath = path.join(outputFolder, "schema.json");
+			await FileSystemHelper.writeContentFile(schemaPath,  "{}");
+		}	
+		
+		const siemjConfigPath = this._config.getTmpSiemjConfigPath(contentRootFolder);
+		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
+		const siemjExePath = this._config.getSiemjPath();
+
+		this._config.getOutputChannel().clear();
+		
+		// Типовая команда выглядит так:
+		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
+		const result = await ProcessHelper.execute(
+			siemjExePath,
+			["-c", siemjConfigPath, "main"],
+			{	
+				encoding: this._config.getSiemjOutputEncoding(),
+				outputChannel: this._config.getOutputChannel()
+			}
+		);
+		return result;
 	}
 
 	public async correlateAndGetLocalizationExamples(rule: RuleBaseItem, filtredTest : IntegrationTest[]) : Promise<LocalizationExample[]> {
@@ -245,8 +229,8 @@ export class SiemjManager {
 		configBuilder.addLocalization();
 
 		const siemjConfContent = configBuilder.build();
-		const siemjOutput = await this.saveConfigAndExecute(contentRootFolder, siemjConfContent);
-		this.processOutput(siemjOutput);
+		const siemjOutput = await this.executeSiemjConfig(rule, siemjConfContent);
+		this.processOutput(siemjOutput.output);
 
 		const locExamples = this.readCurrentLocalizationExample(contentRootFolder, rule.getName());
 		return locExamples;
@@ -319,26 +303,6 @@ export class SiemjManager {
 		}
 
 		return locExamples;
-	}
-
-	private async saveConfigAndExecute(contentRootFolder: string, siemjConfContent: string) : Promise<string> {
-		// Централизованно сохраняем конфигурационный файл для siemj.
-		const siemjConfigPath = this._config.getRandTmpSubDirectoryPath(contentRootFolder);
-		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
-		const siemjExePath = this._config.getSiemjPath();
-
-		// Типовая команда выглядит так:
-		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		const output = await ProcessHelper.execute(
-			siemjExePath,
-			["-c", siemjConfigPath, "main"],
-			{	
-				encoding: this._config.getSiemjOutputEncoding(),
-				outputChannel: this._config.getOutputChannel()
-			}
-		);
-
-		return output.output;
 	}
 
 	private processOutput(siemjOutput: string) {

@@ -132,6 +132,39 @@
 		<script>
 			// Глобальное определение функций.
 
+			// Сохраняем все тесты.
+			function saveAllTests() {					
+				const tests = [];
+				$(document).find("[name='test']").each(function () {
+					// Получаем поля теста.
+					const testObject = $(this).data("test");
+
+					const id = $(this).attr('id');
+					if(id == "0") {
+						return;
+					}
+
+					const rawEvents = $(this).find('[name="raw_events"]').text();
+					const testCode = $(this).find('[name="expect"]').text();
+					const normEvents = $(this).find('[name="norm_event"]').text();
+
+					tests.push({
+						"number" : id,
+						"rawEvents" : rawEvents,
+						"testCode" : testCode,
+						"normEvents" : normEvents
+					});
+				});
+
+				// Передаем номер активного теста, чтобы после сохранения он таким и остался.
+				const activeTestNumber = $("#active_test_number").val();
+
+				vscode.postMessage({
+					command: 'saveAllTests',
+					activeTestNumber : activeTestNumber,
+					tests: tests
+				});
+			};
 			// Подсветка синтаксиса кода теста.
 			const xpTestCodeHighlighter = el => {
 				const s = el?.innerText;
@@ -497,40 +530,18 @@
 					});
 				});
 
-				// Сохраняем все тесты
+				// Сохраняем все тесты по нажатию кнопки.
 				$(document).on("click",'#save_all_tests', function () {
+					saveAllTests();
+				});
 
-					// Находим все тесты.
-					const tests = [];
-					$(document).find("[name='test']").each(function () {
-						// Получаем поля теста.
-						const testObject = $(this).data("test");
-
-						const id = $(this).attr('id');
-						if(id == "0") {
-							return;
-						}
-
-						const rawEvents = $(this).find('[name="raw_events"]').text();
-						const testCode = $(this).find('[name="expect"]').text();
-						const normEvents = $(this).find('[name="norm_event"]').text();
-
-						tests.push({
-							"number" : id,
-							"rawEvents" : rawEvents,
-							"testCode" : testCode,
-							"normEvents" : normEvents
-						});
-					});
-
-					// Передаем номер активного теста, чтобы после сохранения он таким и остался.
-					const activeTestNumber = $("#active_test_number").val();
-
-					vscode.postMessage({
-						command: 'saveAllTests',
-						activeTestNumber : activeTestNumber,
-						tests: tests
-					});
+				// Сохраняем все тесты по хот кею Ctrl+S
+				$(document).on("keydown", e => {
+					if (e.ctrlKey && e.key === 's') {
+						console.log(e.keyCode);
+						e.preventDefault();
+						saveAllTests();
+					}
 				});
 
 				// Очищаем код тестов он лишних полей.

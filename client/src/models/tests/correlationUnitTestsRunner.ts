@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { EOL } from 'os';
-import { ProcessHelper } from '../../helpers/processHelper';
+import { ExecutionResult, ProcessHelper } from '../../helpers/processHelper';
 import { TestHelper } from '../../helpers/testHelper';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { Configuration } from '../configuration';

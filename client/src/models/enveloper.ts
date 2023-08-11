@@ -3,6 +3,7 @@ import * as xml2json_light from 'xml2json-light';
 
 import { EventMimeType, TestHelper } from '../helpers/testHelper';
 import { XpException } from './xpException';
+import { StringHelper } from '../helpers/stringHelper';
 
 export class Enveloper {
 	/**
@@ -173,10 +174,26 @@ export class Enveloper {
         
         const allXmlEvents = xmlRawEventCorrected.match(xmlEventsRegex);
         for (const xmlEvent of allXmlEvents) {
-            // Конвертируем xml в json.
-            const jsonEventObject = xml2json_light.xml2json(xmlEvent);
-            const jsonEventString = JSON.stringify(jsonEventObject);
-			
+            
+			const xmlEventsRegex = /<Data>[\s\S]*?<\/Data>/g;
+			const dataResult = xmlEvent.match(xmlEventsRegex);
+
+			let jsonEventString = "";
+			// TODO: возможность не потерять символы новых строк для событий MSSQL
+            // if (dataResult && dataResult.length == 1) {
+			// 	const originalData = dataResult[0];
+			// 	const escapedData = StringHelper.escapeSpecialChars(originalData);
+			// 	const xmlEventEscapeSpecSymbols = xmlEvent.replace(originalData, escapedData);
+
+			// 	const jsonEventObject = xml2json_light.xml2json(xmlEventEscapeSpecSymbols);
+			// 	jsonEventString = JSON.stringify(jsonEventObject);
+			// 	jsonEventString = jsonEventString.replace(/\\\\n/gm, '\\n');
+			// } else {
+				// Конвертируем xml в json.
+				const jsonEventObject = xml2json_light.xml2json(xmlEvent);
+				jsonEventString = JSON.stringify(jsonEventObject);
+			// }
+
             // Результирующий json.
             const resultXmlRawEvent = jsonEventString.replace(/_@ttribute/gm, "text");
             xmlRawEventCorrected = xmlRawEventCorrected.replace(xmlEvent, resultXmlRawEvent);

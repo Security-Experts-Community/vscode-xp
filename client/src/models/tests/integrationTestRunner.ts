@@ -14,6 +14,7 @@ import { XpException } from '../xpException';
 import { TestHelper } from '../../helpers/testHelper';
 import { Correlation } from '../content/correlation';
 import { Enrichment } from '../content/enrichment';
+import { SiemjManager } from '../siemj/siemjManager';
 
 export class IntegrationTestRunner {
 
@@ -83,30 +84,12 @@ export class IntegrationTestRunner {
 		configBuilder.addTestsRun(rule.getDirectoryPath());
 
 		const siemjConfContent = configBuilder.build();
-
 		if(!siemjConfContent) {
 			throw new XpException("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
 		}
 
-		// Сохраняем конфигурационный файл для siemj во временную директорию.
-		const siemjConfigPath = this._config.getTmpSiemjConfigPath(rootFolder);
-		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
-
-		// Очищаем и показываем окно Output.
-		this._config.getOutputChannel().clear();
-		
-		// Типовая команда выглядит так:
-		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
-		const siemjExePath = this._config.getSiemjPath();
-
-		const siemjExecutionResult = await ProcessHelper.execute(
-			siemjExePath,
-			["-c", siemjConfigPath, "main"], {
-				encoding : this._config.getSiemjOutputEncoding(),
-				outputChannel : this._config.getOutputChannel()
-			}
-		);
-
+		const siemjManager = new SiemjManager(this._config);
+		const siemjExecutionResult = await siemjManager.executeSiemjConfig(rule, siemjConfContent);
 		const siemjResult = await this._outputParser.parse(siemjExecutionResult.output);
 
 		// Все тесты прошли, статусы не проверяем, все тесты зеленые.

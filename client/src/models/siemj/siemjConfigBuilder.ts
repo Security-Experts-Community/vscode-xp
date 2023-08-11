@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { Configuration } from '../configuration';
+import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 
 
 /**
@@ -11,7 +12,7 @@ export class SiemjConfBuilder {
 
 	constructor(private _config : Configuration, private _contentRootPath: string) {
 		this._contentRootFolder = path.basename(this._contentRootPath);
-		const outputFolder = this._config.getOutputDirectoryPath(this._contentRootFolder);
+		this._outputFolder = this._config.getOutputDirectoryPath(this._contentRootFolder);
 
 		// Заполнение конфига по умолчанию.
 		this._siemjConfigSection = 
@@ -19,7 +20,7 @@ export class SiemjConfBuilder {
 ptsiem_sdk=${this._config.getSiemSdkDirectoryPath()}
 build_tools=${this._config.getBuildToolsDirectoryFullPath()}
 taxonomy=${this._config.getTaxonomyFullPath()}
-output_folder=${outputFolder}
+output_folder=${this._outputFolder}
 temp=${this._config.getTmpDirectoryPath(this._contentRootFolder)}`;
 	}
 
@@ -57,36 +58,16 @@ out=${output}`;
 	 * @param fileNameRegexPattern регулярное выражение для поиска
 	 * @returns 
 	 */
-	private checkIfFilesIsExisting(startPath: string, fileNameRegexPattern: RegExp) : boolean {
-		const getFileList = (dirName) : string[] => {
-			let files = [];
-			const items = fs.readdirSync(dirName, { withFileTypes: true });
 
-			for (const item of items) {
-				if (item.isDirectory()) {
-					files = [
-						...files,
-						...(getFileList(`${dirName}/${item.name}`)),
-					];
-				} else {
-					if (fileNameRegexPattern.exec(item.name) != undefined){
-						files.push(`${dirName}/${item.name}`);
-					}
-				}
-			}
-
-			return files;
-		};
-
-		const files = getFileList(startPath);
-		return files.length > 0;
-	}
 
 	public addTablesSchemaBuilding() : void {
 		// Если нет табличных списков, то не собираем схему		
-		// if (!this.checkIfFilesIsExisting(this._contentRootPath, /\.tl$/)){
-		// 	return;
-		// }		
+		if (!FileSystemHelper.checkIfFilesIsExisting(this._contentRootPath, /\.tl$/)) {
+
+			const corrDefaultsPath = path.join(this._outputFolder, "correlation_defaults.json");
+			const schemaPath = path.join(this._outputFolder, "schema.json");
+			return;
+		}		
 
 		const contract = this._config.getTablesContract();
 		const tablesSchemaBuildingSection = 
@@ -102,12 +83,6 @@ out=\${output_folder}`;
 	}
 
 	public addTablesDbBuilding() : void {
-
-		// Если нет файла схемы, то не собираем БД
-		// const schemaFilePath = this._config.getSchemaFullPath(this._contentRootFolder);
-		// if(!fs.existsSync(schemaFilePath)) {
-		// 	return;
-		// }
 
 		const table_list_schema = path.join('${output_folder}', this._config.getSchemaFileName());
 		const table_list_defaults= path.join('${output_folder}', this._config.getCorrelationDefaultsFileName());
@@ -178,6 +153,7 @@ out=${output}`;
 		const rulesFilters = this._config.getRulesDirFilters();
 		const table_list_schema = path.join('${output_folder}', this._config.getSchemaFileName());
 		const output = path.join('${output_folder}', this._config.getEnrichmentsGraphFileName());
+
 		const efgraphBuildingSection = 
 `
 [make-ergraph]
@@ -348,6 +324,8 @@ scenario=${this._scenarios.join(" ")}
 	}
 
 	private _contentRootFolder : string;
+	private _outputFolder : string;
+
 	private _siemjConfigSection : string;
 	private _scenarios : string[] = [];
 	private _crTimeout = 180;

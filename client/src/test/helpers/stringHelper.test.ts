@@ -1,12 +1,28 @@
-import * as vscode from 'vscode';
 import * as assert from 'assert';
-import * as fs from 'fs';
 
-import { TestFixture } from '../helper';
-import { Table } from '../../models/content/table';
 import { StringHelper } from '../../helpers/stringHelper';
 
 suite('StringHelper', () => {
+
+	test('Сохранение новой строки \\n с присутствием \\n', () => {
+		const actual = StringHelper.escapeSpecialChars(
+`session_server_principal_name:rf\\Administrator
+server_principal_name:\\nrf\\Administrator`
+		);
+
+		const expected = "session_server_principal_name:rf\\Administrator\\nserver_principal_name:\\nrf\\Administrator";
+		assert.strictEqual(actual, expected);
+	});
+
+	test('Сохранение новой строки \\n без присутствия \\n', () => {
+		const actual = StringHelper.escapeSpecialChars(
+`session_server_principal_name:rf\\Administrator
+server_principal_name:rf\\Administrator`
+		);
+
+		const expected = "session_server_principal_name:rf\\Administrator\\nserver_principal_name:rf\\Administrator";
+		assert.strictEqual(actual, expected);
+	});
 
 	test('Исключение новой строки \\n', () => {
 		const actual = StringHelper.textToOneLine("Обнаружена попытка пользователя {subject.account.name} \n({subject.account.domain}) повысить привилегии с использованием уязвимости сервиса печати Print Spooler (CVE-2022-30206) с помощью утилиты {object.process.name} на узле {event_src.host}");
