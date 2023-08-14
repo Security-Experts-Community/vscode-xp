@@ -208,7 +208,7 @@
 			"        \\$event_src.subsys = event_src.subsys",
 			"        \\$event_src.category = event_src.category",
 			"",
-			"        \\$alert.key = lower(object.process.fullpath)",
+			"        \\$alert.key = lower(object.process.cmdline)",
 			"",
 			"        \\$labels = \\$labels + \"|CheckWL_Process_Creation\"",
 			"    }"

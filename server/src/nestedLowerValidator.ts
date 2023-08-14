@@ -28,9 +28,9 @@ export class NestedLowerValidator extends IValidator {
 		const text = textDocument.getText();
 
 		const nestedCalls = [
-			/find_substr\s*\(\s*lower\s*\(\s*\S+\s*\)\s*,\s*"(.+)"\s*\)/gm,
-			/match\s*\(\s*lower\s*\(\s*\S+\s*\)\s*,\s*"(.+)"\s*\)/gm,
-			/regex\s*\(\s*lower\s*\(\s*\S+\s*\)\s*,\s*"(.+)"\s*,\s*\d+\s*\)/gm
+			/find_substr\s*\(\s*lower\s*\(\s*\S+\s*\)\s*,\s*"(.+?)"/gm,
+			/match\s*\(\s*lower\s*\(\s*\S+\s*\)\s*,\s*"(.+?)"/gm,
+			/regex\s*\(\s*lower\s*\(\s*\S+\s*\)\s*,\s*"(.+?)"/gm
 		];
 
 		for (const nestedCall of nestedCalls) {
