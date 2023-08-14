@@ -6,11 +6,15 @@ on:
       - v*
 jobs:
   release:
+    permissions:
+      contents: write
     name: Create release and publish
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -21,7 +25,7 @@ jobs:
       - name: Get release version
         id: release_version
         run: |
-          TAGGED_VERSION="${GITHUB_REF/refs\/tags\/v/}"
+          TAGGED_VERSION="${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
           echo "TAGGED_VERSION=${TAGGED_VERSION}"
           if [[ ! "${TAGGED_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
             echo "Invalid version tag '${TAGGED_VERSION}'"
@@ -49,8 +53,10 @@ jobs:
 
       - name: Get tag message body
         run: |
-          TAG_BODY="$(git tag -l --format='%(contents:body)' v${TAGGED_VERSION})"
-          echo "${TAG_BODY}" >> $GITHUB_OUTPUT        
+          EOF=${{ github.sha }}
+          echo "msg<<$EOF" >> $GITHUB_OUTPUT
+          echo "$(git tag -l --format='%(contents:body)' ${{ github.ref_name }})" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT      
         id: get_tag_message
 
       - name: Stamp version
@@ -72,19 +78,19 @@ jobs:
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.VSCODE_XP_GH_RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
           release_name: v${{ env.EXT_VERSION }}
           draft: false
           prerelease: ${{env.EXT_ISPREVIEW == 1}}
           body: |
-            ${{join(steps.get_tag_message.outputs.*, '\n')}}
+            ${{ steps.get_tag_message.outputs.msg }}
 
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.VSCODE_XP_GH_RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./vscode-xp-${{ env.EXT_VERSION }}.vsix
