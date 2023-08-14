@@ -8,7 +8,7 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import { IValidator } from './IValidator';
-import { getDocumentSettings } from './server';
+import { getDocumentSettings } from '../server';
 
 export class WhitelistingAndAlertKeyValidator extends IValidator {
 	constructor() {

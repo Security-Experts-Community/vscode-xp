@@ -81,6 +81,10 @@ export class TestFixture {
 		return vscode.Uri.file(path.resolve(__dirname, '../../testFixture', "validation", name));
 	}
 
+	public static getValidatioDirUri(dir: string, name : string) {
+		return vscode.Uri.file(path.resolve(__dirname, '../../testFixture', "validation", dir, name));
+	}
+
 	public static getTmpPath() {
 		const tmpDirectory = Configuration.get().getRandTmpSubDirectoryPath();
 		fs.mkdirSync(tmpDirectory, { recursive: true });

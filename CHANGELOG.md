@@ -2,7 +2,8 @@
 
 ## 3.7.1 (Pre-Release)
 
-- фича [100](https://github.com/Security-Experts-Community/vscode-xp/issues/100) - добавлена возможность остановить выполнение интеграционных тестов.
+- фича [100](https://github.com/Security-Experts-Community/vscode-xp/issues/100) - добавлена возможность остановки выполнения интеграционных тестов;
+- добавлена проверка неявного приведения типа Number (поля `dst.port`, `src.port` и т.д.) к строке.
 
 ## 3.7.0 (Pre-Release)
 

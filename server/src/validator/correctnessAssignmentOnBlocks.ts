@@ -8,7 +8,7 @@ import {
 } from 'vscode-languageserver-textdocument';
 
 import { IValidator } from './IValidator';
-import { DocumentSettings, getDocumentSettings } from './server';
+import { DocumentSettings, getDocumentSettings } from '../server';
 
 export class CorrectnessAssignmentOnBlocks extends IValidator {
 	constructor() {
