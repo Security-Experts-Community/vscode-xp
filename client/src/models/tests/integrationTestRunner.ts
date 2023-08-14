@@ -15,10 +15,14 @@ import { TestHelper } from '../../helpers/testHelper';
 import { Correlation } from '../content/correlation';
 import { Enrichment } from '../content/enrichment';
 import { SiemjManager } from '../siemj/siemjManager';
+import { OperationCanceledException } from '../operationCanceledException';
 
 export class IntegrationTestRunner {
 
-	constructor(private _config: Configuration, private _outputParser: SiemJOutputParser) {
+	constructor(
+		private _config: Configuration,
+		private _outputParser: SiemJOutputParser,
+		private _token?: vscode.CancellationToken) {
 	}
 
 	public async run(rule : RuleBaseItem) : Promise<IntegrationTest[]> {
@@ -88,10 +92,14 @@ export class IntegrationTestRunner {
 			throw new XpException("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
 		}
 
-		const siemjManager = new SiemjManager(this._config);
+		const siemjManager = new SiemjManager(this._config, this._token);
 		const siemjExecutionResult = await siemjManager.executeSiemjConfig(rule, siemjConfContent);
-		const siemjResult = await this._outputParser.parse(siemjExecutionResult.output);
 
+		if(siemjExecutionResult.isInterrupted) {
+			throw new OperationCanceledException(`Запуск интеграционных тестов правила ${rule.getName()} был отменён.`);
+		}
+
+		const siemjResult = await this._outputParser.parse(siemjExecutionResult.output);
 		// Все тесты прошли, статусы не проверяем, все тесты зеленые.
 		if(siemjResult.testStatus) {
 			integrationTests.forEach(it => it.setStatus(TestStatus.Success));

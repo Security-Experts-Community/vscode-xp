@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import * as vscode from 'vscode';
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { ExecutionResult, ProcessHelper } from '../../helpers/processHelper';
@@ -15,12 +16,11 @@ import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { Localization, LocalizationExample } from '../content/localization';
 import { IntegrationTest } from '../tests/integrationTest';
 import { StringHelper } from '../../helpers/stringHelper';
-import { EOF } from 'dns';
 import { TestHelper } from '../../helpers/testHelper';
 
 export class SiemjManager {
 
-	constructor(private _config : Configuration) {}
+	constructor(private _config : Configuration, private _token?: vscode.CancellationToken) {}
 
 	public async buildSchema(rule: RuleBaseItem) : Promise<string> {
 
@@ -173,7 +173,8 @@ export class SiemjManager {
 			["-c", siemjConfigPath, "main"],
 			{	
 				encoding: this._config.getSiemjOutputEncoding(),
-				outputChannel: this._config.getOutputChannel()
+				outputChannel: this._config.getOutputChannel(),
+				token: this._token
 			}
 		);
 		return result;

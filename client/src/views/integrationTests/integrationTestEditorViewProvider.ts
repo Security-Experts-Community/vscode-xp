@@ -539,9 +539,8 @@ export class IntegrationTestEditorViewProvider  {
 
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
-			
-		}, async (progress) => {
+			cancellable: true,
+		}, async (progress, token: vscode.CancellationToken) => {
 
 			await VsCodeApiHelper.saveRuleCodeFile(this._rule);
 
@@ -575,7 +574,7 @@ export class IntegrationTestEditorViewProvider  {
 
 			try {
 				const outputParser = new SiemJOutputParser();
-				const testRunner = new IntegrationTestRunner(this._config, outputParser);
+				const testRunner = new IntegrationTestRunner(this._config, outputParser, token);
 				const executedTests = await testRunner.run(this._rule);
 
 				if(executedTests.every(it => it.getStatus() === TestStatus.Success)) {

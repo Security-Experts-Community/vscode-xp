@@ -5,28 +5,23 @@ import { XpException } from '../models/xpException';
 import { IncorrectFieldFillingException } from '../views/incorrectFieldFillingException';
 import { ExtensionHelper } from './extensionHelper';
 import { Configuration } from '../models/configuration';
+import { OperationCanceledException } from 'typescript';
 
 export class ExceptionHelper {
 	public static async show(error: Error, defaultMessage?: string) {
 		const errorType = error.constructor.name;
+		const outputChannel = Configuration.get().getOutputChannel();
 
 		switch(errorType)  {
 			case XpException.name: 
-			case FileSystemException.name: {
-				const typedError = error as FileSystemException;
-
-				// Информирование пользователя.
-				// const errorString = `Ошибка обращения по пути ${typedError.getPath()}. ${ExceptionHelper.FEEDBACK_WAY_INFO}`;
-				vscode.window.showErrorMessage(typedError.message);
-
-				// Детальный вывод
-				const outputChannel = Configuration.get().getOutputChannel();
-				outputChannel.appendLine(typedError.stack);
-				return;
-			}
-			case IncorrectFieldFillingException.name:  {
+			case FileSystemException.name: 
+			case IncorrectFieldFillingException.name: 
+			case OperationCanceledException.name: {
 				const typedError = error as XpException;
-				return ExtensionHelper.showError(typedError.message, error);
+
+				vscode.window.showErrorMessage(typedError.message);
+				ExceptionHelper.recursiveWriteXpExceptionToOutput(typedError, outputChannel);
+				break;
 			}
 			default: {
 				if(defaultMessage) {
@@ -35,15 +30,25 @@ export class ExceptionHelper {
 					vscode.window.showErrorMessage(`Обнаружена неожиданная ошибка. ${ExceptionHelper.FEEDBACK_WAY_INFO}`);
 				}
 
-				ExceptionHelper.showLogStack(error);
+				// Пишем stack в output.
+				outputChannel.appendLine(error.stack);
+				outputChannel.show();
 			}
 		}
 	}
 
-	private static showLogStack(error: Error) {
-		const outputChannel = Configuration.get().getOutputChannel();
+	private static recursiveWriteXpExceptionToOutput(error: XpException|Error, outputChannel: vscode.OutputChannel) {
 		outputChannel.appendLine(error.stack);
-		outputChannel.show();
+		if(error instanceof XpException && error.getInnerException()) {
+			// Пишем в Output.
+			ExceptionHelper.recursiveWriteXpExceptionToOutput(error.getInnerException(), outputChannel);
+		} else {
+			outputChannel.appendLine(error.stack);
+		}
+
+		// Пишем в браузерный лог.
+		console.log(error.message);
+		console.log(error.stack);
 	}
 
 	public static FEEDBACK_WAY_INFO = 

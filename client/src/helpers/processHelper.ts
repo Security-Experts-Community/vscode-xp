@@ -8,11 +8,13 @@ import { EncodingType } from '../models/configuration';
 export interface ExecutionProcessOptions {
 	encoding: EncodingType;
 	outputChannel : vscode.OutputChannel;
+	token?: vscode.CancellationToken
 }
 
 export class ExecutionResult {
 	output: string;
 	exitCode : number;
+	isInterrupted  = false;
 }
 
 export class ProcessHelper {
@@ -43,45 +45,6 @@ export class ProcessHelper {
 		return childProcess.stdout;
 	}
 
-	public static executeWithArgsWithRealtimeOutput(command : string, params : string[], outputChannel : vscode.OutputChannel) : Promise<string> {
-
-		return new Promise(function(resolve, reject) {
-			let child : child_process.ChildProcessWithoutNullStreams;
-			// Вывод пополныемой команды для локализациии ошибки.
-			outputChannel.append(`${command} ${params.join(' ')} `);
-			try {
-				child = child_process.spawn(command, params);
-			} 
-			catch(error) {
-				reject(error.message);
-				return;
-			}
-		
-			let output = "";
-		
-			child.stdout.setEncoding('utf8');
-			child.stdout.on('data', function(data : Buffer) {
-				outputChannel.append(data.toString());
-				output += data.toString();
-			});
-
-			child.stdout.on("error", function(data) {
-				outputChannel.append(data.toString());
-				output += data.toString();
-			});
-		
-			child.stderr.setEncoding('utf8');
-			child.stderr.on('data', function(data) {
-				outputChannel.append(data.toString());
-				output += data.toString();
-			});
-		
-			child.on('close', function(code) {
-				resolve(output);
-			});
-		});
-	}
-
 	public static execute(command : string, params : string[], options: ExecutionProcessOptions ) : Promise<ExecutionResult> {
 
 		return new Promise(function(resolve, reject) {
@@ -101,6 +64,15 @@ export class ProcessHelper {
 		
 			const executionResult : ExecutionResult = new ExecutionResult();
 			executionResult.output = "";
+
+			if(options.token) {
+				options.token.onCancellationRequested( (e) => {
+					child.kill();
+					executionResult.exitCode = child.exitCode;
+					executionResult.isInterrupted = true;
+					resolve(executionResult);
+				});
+			}
 
 			if(!options.encoding) {
 				options.encoding = "utf-8";
