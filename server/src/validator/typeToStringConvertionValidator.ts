@@ -29,7 +29,7 @@ export class TypeToStringConversionValidator extends IValidator {
 
 		// TODO: проверять все поля с типом Number согласно таксономии.
 		const typeConcatination = 
-		/((?:(?:dst.port|src.port|assigned_dst_port|assigned_src_port|count|dst.geo.asn|src.geo.asn|duration|external_dst.geo.asn|external_src.geo.asn|logon_type|numfield\d+)\s*\+\s*".*")|(?:".*"\s*\+\s*(?:(?:dst.port|src.port|assigned_dst_port|assigned_src_port|count|dst.geo.asn|src.geo.asn|duration|external_dst.geo.asn|external_src.geo.asn|logon_type|numfield\d+))))/gm;
+		/((?:(?:dst.port|src.port|assigned_dst_port|assigned_src_port|count|dst.geo.asn|src.geo.asn|duration|external_dst.geo.asn|external_src.geo.asn|logon_type|numfield\d+|count|count.bytes|count.bytes_in|count.bytes_out|count.packets|count.packets_in|count.packets_out|count.subevents|incident.aggregation.timeout|object.num_value)\s*\+\s*".*")|(?:".*"\s*\+\s*(?:(?:dst.port|src.port|assigned_dst_port|assigned_src_port|count|dst.geo.asn|src.geo.asn|duration|external_dst.geo.asn|external_src.geo.asn|logon_type|numfield\d+|count|count.bytes|count.bytes_in|count.bytes_out|count.packets|count.packets_in|count.packets_out|count.subevents|incident.aggregation.timeout|object.num_value))))/gm;
 
 		while ((typeConversionResult = typeConcatination.exec(text)) && problems < settings.maxNumberOfProblems) {
 			problems++;
