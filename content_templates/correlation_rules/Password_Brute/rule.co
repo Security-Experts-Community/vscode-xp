@@ -1,0 +1,120 @@
+event Login_Failure:
+    key:
+        event_src.host, event_src.title, src.host, subject.account.name
+    filter {
+        filter::Bruteforce_Attempted_Vendors()
+		# Задать условие неудачной авторизации
+        and event_src.title == "postgresql"
+		
+		# TODO: исключить технические учётные записи
+        # and not in_list(["technical_account"], lower(subject.account.name))
+        and filter::CheckWL_Password_Guessing("Password_Brute", lower(join([event_src.title, event_src.host, coalesce(subject.account.name, subject.account.id), src.host],"|")))
+    }
+
+event Login_Success:
+    key:
+        event_src.host, event_src.title, src.host, subject.account.name
+    filter {
+        filter::NotFromCorrelator()
+		# TODO: задать условие успешной авторизации
+        and action == "login"
+        and object == "application"
+        and status == "success"
+		
+		# TODO: исключить технические учётные записи
+        # and not in_list(["technical_account"], lower(subject.account.name))
+    }
+
+# TODO: при необходимости, скорретировать логику выявления брутфорса
+rule Password_Brute: (Login_Failure[9,] and Login_Success?) timer 11m
+
+    init {
+        $labels = "CheckWL_Password_Guessing"
+        $count_total = 0
+    }
+
+    on Login_Failure {
+        # Блок выполняется только при первом событии
+        if $count_total == 0 then  
+            $subject.account.name = subject.account.name
+            $subject.account.fullname = subject.account.fullname
+            $subject.account.domain = subject.account.domain
+            $subject.account.session_id = subject.account.session_id
+            $subject.account.id = subject.account.id
+            $subject.account.privileges = subject.account.privileges
+
+            $src.host = src.host
+            $src.ip = src.ip
+            $src.hostname = src.hostname
+            $src.fqdn = src.fqdn
+            $src.mac = src.mac
+            $src.port = src.port
+            $src.asset = src.asset
+
+            $dst.host = dst.host
+            $dst.ip = dst.ip
+            $dst.hostname = dst.hostname
+            $dst.fqdn = dst.fqdn
+            $dst.mac = dst.mac
+            $dst.port = dst.port
+            $dst.asset = dst.asset
+
+            $logon_auth_method = logon_auth_method
+            $logon_service = logon_service
+            $logon_type = logon_type
+
+            $event_src.ip = event_src.ip
+            $event_src.hostname = event_src.hostname
+            $event_src.host = event_src.host
+            $event_src.fqdn = event_src.fqdn
+            $event_src.asset = event_src.asset
+            $event_src.title = event_src.title
+            $event_src.subsys = event_src.subsys
+            $event_src.vendor = event_src.vendor
+            $event_src.category = event_src.category
+            $event_src.rule = event_src.rule
+        endif
+
+        $count_total = $count_total + 1    
+    }
+
+    on Login_Success {
+        $status = status
+
+        $subject.account.name = subject.account.name
+        $subject.account.fullname = subject.account.fullname
+        $subject.account.domain = subject.account.domain
+        $subject.account.session_id = subject.account.session_id
+        $subject.account.id = subject.account.id
+        $subject.account.privileges = subject.account.privileges
+    }
+
+emit {
+    $importance = "medium"
+
+    $subject = "account"
+    $action = "initiate"
+    $object = "attack"
+    
+    $alert.key = lower(join([$event_src.title, $event_src.host, coalesce($subject.account.name, $subject.account.id), $src.host],"|"))
+    $datafield1 = $count_total # количество неудачных попыток входа
+    $numfield1 = $count_total
+
+    $alert.context = "Attempts: " + string($count_total)
+    if $status == "success" then
+        $correlation_type = "incident"
+        $alert.context = join([$alert.context, "| Password guessed for:", $subject.account.name], " ")
+    else
+        $correlation_type = "event"
+        $status = "failure"
+    endif
+
+    $category.generic = "Attack"
+    $category.high = "Credential Access"
+    $category.low = "Password Guessing"
+    
+    $incident.aggregation.key = join([$correlation_name, $alert.key], "|")
+    $incident.severity = $importance
+    $incident.category = "BruteForce"
+    $incident.aggregation.timeout = 2h
+}

@@ -192,6 +192,7 @@ export async function activate(context: ExtensionContext) {
 			)
 		);
 
+		// TODO: реализовать
 		context.subscriptions.push(
 			vscode.languages.registerRenameProvider(
 				{

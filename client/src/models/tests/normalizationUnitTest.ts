@@ -9,7 +9,7 @@ import { XpException } from '../xpException';
 
 export class NormalizationUnitTest extends BaseUnitTest {
 	public getDefaultExpectation(): string {
-		return `# Запиши сюда ожидаемое нормализованное событие\n`;
+		return `{}`;
 	}
 
 	public getDefaultInputData(): string {

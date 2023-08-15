@@ -228,6 +228,7 @@ export class UnitTestContentEditorViewProvider  {
 			}
 			catch(error) {
 				ExceptionHelper.show(error);
+				Configuration.get().getOutputChannel().show();
 			}
 		});
 	}

@@ -1,0 +1,2 @@
+# Неуспешный брут
+expect 1 {"correlation_name": "PostgreSQL_Password_Brute"}

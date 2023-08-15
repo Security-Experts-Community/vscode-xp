@@ -40,9 +40,9 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 			return unitTest;
 		}
 
-		const normalizedEventResult = /\{.*\}/is.exec(utilityOutput);
+		const normalizedEventResult = /^\{.*\}/is.exec(utilityOutput);
 		if(!normalizedEventResult || normalizedEventResult.length != 1) {
-			throw new XpException("Нормализатор не вернул никакого события. Исправьте правило нормализации и повторите.");
+			throw new XpException("Нормализатор не вернул никакого события или вернул ошибку. Исправьте правило нормализации и повторите.");
 		}
 		const normalizedEvent = normalizedEventResult[0];
 
