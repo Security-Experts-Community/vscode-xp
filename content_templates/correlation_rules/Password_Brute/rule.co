@@ -3,8 +3,7 @@ event Login_Failure:
         event_src.host, event_src.title, src.host, subject.account.name
     filter {
         filter::Bruteforce_Attempted_Vendors()
-		# Задать условие неудачной авторизации
-        and event_src.title == "postgresql"
+		# TODO: задать условие неудачной авторизации
 		
 		# TODO: исключить технические учётные записи
         # and not in_list(["technical_account"], lower(subject.account.name))
@@ -25,7 +24,7 @@ event Login_Success:
         # and not in_list(["technical_account"], lower(subject.account.name))
     }
 
-# TODO: при необходимости, скорретировать логику выявления брутфорса
+# TODO: при необходимости, скорректировать логику выявления брутфорса
 rule Password_Brute: (Login_Failure[9,] and Login_Success?) timer 11m
 
     init {
