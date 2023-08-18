@@ -62,7 +62,9 @@ rule Windows_Process_Start: Process_Start
         #endif
         
         $datafield6 = datafield6    # Идентификатор сессии в формате UUID
-        $datafield10 = datafield10  # цепочка имен процессов
+
+        $datafield18 = datafield18 # Цепочка процесса-субъекта с идентификаторами
+        $datafield19 = datafield19 # Цепочка процесса-объекта с идентификаторами
 
         $event_src.ip = event_src.ip
         $event_src.hostname = event_src.hostname
@@ -76,6 +78,7 @@ rule Windows_Process_Start: Process_Start
         
         $alert.key = 
         $alert.context = # join([$alert.context, "regex_match: " + regex(lower(object.process.cmdline), "regex_from_filter", 0)], "|")
+        $alert.regex_match =
     }
 
 emit {

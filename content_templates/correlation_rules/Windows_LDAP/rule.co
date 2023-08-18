@@ -6,13 +6,13 @@ event LDAP_Request:
         and event_src.title == "windows"
         and msgid == "1644"
         
-        and filter::CheckWL_Specific_Only("Windows_LDAP", )
+        and filter::CheckWL_LDAP_Request("Windows_LDAP", )
     }
     
 rule Windows_LDAP: LDAP_Request
 
     init {
-        $labels = "w_auto|CheckWL_Specific_Only"
+        $labels = "w_auto|CheckWL_LDAP_Request"
     }
 
     on LDAP_Request {
@@ -65,6 +65,7 @@ rule Windows_LDAP: LDAP_Request
 
         $alert.key = 
         $alert.context = 
+        $alert.regex_match = 
     }
 
 emit {

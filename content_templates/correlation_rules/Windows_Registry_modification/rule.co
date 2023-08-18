@@ -70,6 +70,7 @@ rule Windows_Registry_modification: Registry_Action
         
         $alert.key = 
         $alert.context = 
+        $alert.regex_match =
     }
 
 emit {

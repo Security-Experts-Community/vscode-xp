@@ -14,6 +14,8 @@ rule Unix_Universal: Event
     }
        
     on Event {
+        $status = status
+
         $subject.account.id = subject.account.id
         $subject.account.domain = subject.account.domain
         $subject.account.fullname = subject.account.fullname
@@ -29,6 +31,7 @@ rule Unix_Universal: Event
         $subject.process.cwd = subject.process.cwd
         $subject.process.meta = subject.process.meta
         $subject.process.parent.id = subject.process.parent.id
+        $subject.process.chain = subject.process.chain
         
         $object.account.name = object.account.name # root
         $object.account.domain = object.account.domain
@@ -43,6 +46,7 @@ rule Unix_Universal: Event
         $object.process.meta = object.process.meta
         $object.process.cwd = object.process.cwd
         $object.process.parent.id = object.process.parent.id
+        $object.process.chain = object.process.chain
      
         $object.name = object.name
         $object.domain = object.domain
@@ -51,8 +55,8 @@ rule Unix_Universal: Event
         $object.fullpath = object.fullpath
         $object.property = object.property
         $object.value = object.value
-        $object.state = object.state
-        
+        $object.state = object.state       
+      
         $logon_service = logon_service
         
         $protocol = protocol
@@ -64,6 +68,9 @@ rule Unix_Universal: Event
         $datafield3 = datafield3
         $datafield4 = datafield4
         $datafield5 = datafield5
+               
+        $datafield18 = datafield18 # chain with PID for subject
+        $datafield19 = datafield19 # chain with PID for object
         
         $numfield2 = numfield2
 
@@ -80,6 +87,7 @@ rule Unix_Universal: Event
                
         $alert.key =           
         $alert.context = 
+        $alert.regex_match = 
     }
 
 emit {  
@@ -88,7 +96,6 @@ emit {
     $subject = ""
     $action = ""
     $object = ""
-    $status = "success"
 
     $importance = ""
 

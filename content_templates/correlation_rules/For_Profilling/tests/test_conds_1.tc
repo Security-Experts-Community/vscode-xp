@@ -1,3 +1,4 @@
 # Новый пользователь
 table_list default
+expect table_list {"Risk_User_Logon_Correlation_Profile": [{"access_type": "placeholder", "src_host": "placeholder", "login": "placeholder", "dst_host": "placeholder", "additional_data": "placeholder", "dst_path": "placeholder", "src_ip": "placeholder"}]}
 expect 1 {"correlation_name": "For_Profilling", "reason": "no_user"}

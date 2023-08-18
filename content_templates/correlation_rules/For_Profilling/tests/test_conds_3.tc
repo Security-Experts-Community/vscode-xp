@@ -1,4 +1,4 @@
 # Нет отличия от профиля
 table_list default
-table_list {"User_Logon_Profile": [{"additional_data": "", "dst_ip": "", "login": "", "access_type": "", "dst_host": "", "dst_path": "", "src_ip": ""}]}
+table_list {"Risk_User_Logon_Correlation_Profile": [{"access_type": "placeholder", "src_host": "placeholder", "login": "placeholder", "dst_host": "placeholder", "additional_data": "placeholder", "dst_path": "placeholder", "src_ip": "placeholder"}]}
 expect not {"correlation_name": "For_Profilling"}

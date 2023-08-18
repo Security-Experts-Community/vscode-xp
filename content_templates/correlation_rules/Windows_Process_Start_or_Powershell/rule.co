@@ -90,7 +90,9 @@ rule Windows_Process_Start_or_Powershell: Process_Start or Powershell_Pipeline_E
         #endif
         
         $datafield6 = datafield6    # Идентификатор сессии в формате UUID
-        $datafield10 = datafield10  # цепочка имен процессов
+
+        $datafield18 = datafield18 # Цепочка процесса-субъекта с идентификаторами
+        $datafield19 = datafield19 # Цепочка процесса-объекта с идентификаторами
 
         $event_src.ip = event_src.ip
         $event_src.hostname = event_src.hostname
@@ -104,6 +106,8 @@ rule Windows_Process_Start_or_Powershell: Process_Start or Powershell_Pipeline_E
         
         $alert.key = 
         $alert.context = # join([$alert.context, "regex_match: " + regex(lower(object.process.cmdline), "regex_from_filter", 0)], "|")
+        $alert.regex_match =
+        
         $labels = $labels + "|CheckWL_Process_Creation"
     }
 
@@ -136,6 +140,7 @@ rule Windows_Process_Start_or_Powershell: Process_Start or Powershell_Pipeline_E
         $object.value = object.value
 
         $datafield8 = datafield8  # версия модуля
+        $datafield9 = datafield9 # Командлайн без приведения к нижнему регистру
 
         $chain_id = chain_id
 
@@ -152,6 +157,8 @@ rule Windows_Process_Start_or_Powershell: Process_Start or Powershell_Pipeline_E
 
         $alert.key = 
         $alert.context = # join([$alert.context, "regex_match: " + regex(lower(object.process.cmdline), "regex_from_filter", 0)], "|")
+        $alert.regex_match =
+
         $labels = $labels + "|CheckWL_Powershell"
     }
 
@@ -190,6 +197,8 @@ rule Windows_Process_Start_or_Powershell: Process_Start or Powershell_Pipeline_E
 
         $alert.key = 
         $alert.context = # join([$alert.context, "regex_match: " + regex(lower(object.process.cmdline), "regex_from_filter", 0)], "|")
+        $alert.regex_match =
+
         $labels = $labels + "|CheckWL_Powershell"
     }
 
