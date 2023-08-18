@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from "path";
 
 import { Configuration } from '../../../models/configuration';
+import { ContentTreeProvider } from '../contentTreeProvider';
 
 
 /**
@@ -27,6 +28,8 @@ export class InitKBRootCommand {
 		const requiredRootDirectories = config.getRequiredRootDirectories();
 		for(const dir of requiredRootDirectories){
 			fs.promises.mkdir(path.join(rootFolder, dir), {recursive: true});
-		}		
+		}
+
+		return ContentTreeProvider.refresh();
 	}
 }

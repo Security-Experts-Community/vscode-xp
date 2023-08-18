@@ -1,27 +1,23 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as child_process from 'child_process';
+import * as iconv from 'iconv-lite';
+
+import { EncodingType } from '../models/configuration';
+
+export interface ExecutionProcessOptions {
+	encoding: EncodingType;
+	outputChannel : vscode.OutputChannel;
+	token?: vscode.CancellationToken
+}
+
+export class ExecutionResult {
+	output: string;
+	exitCode : number;
+	isInterrupted  = false;
+}
 
 export class ProcessHelper {
-	public static readProcessPathArgsOutputSync(command: string, args: string[], encoding: BufferEncoding) : string {
-		const childProcess = child_process.spawnSync(
-			command,
-			args, {
-				shell: true,
-				cwd: process.cwd(),
-				env: process.env,
-				stdio: 'pipe',
-				encoding
-			}
-		);
-
-		if(childProcess.status != 0) {
-			throw new Error(`Не удалось запустить внешний процесс '${command}'. \n` + childProcess.stderr);
-		}
-
-		return childProcess.stdout;
-	}
-
 	/**
 	 * Позволяет собрать сложную команду в виде запускаемого модуля и списка параметров *без экранирования*
 	 * @param command базовая команда для запуска процесса
@@ -49,94 +45,65 @@ export class ProcessHelper {
 		return childProcess.stdout;
 	}
 
-	
-	public static StdIOExecuteWithArgsWithRealtimeOutput(
-		filePath: string, 
-		command : string, params : string[], 
-		outputChannel : vscode.OutputChannel) : Promise<string> {
+	public static execute(command : string, params : string[], options: ExecutionProcessOptions ) : Promise<ExecutionResult> {
 
 		return new Promise(function(resolve, reject) {
-
-			const file = fs.readFileSync(filePath);
+			let child : child_process.ChildProcessWithoutNullStreams;
+			// Вывод пополныемой команды для локализациии ошибки.
+			if(options.outputChannel) {
+				options.outputChannel.append(`${command} ${params.join(' ')} `);
+			}
 			
-			let child; 
 			try {
 				child = child_process.spawn(command, params);
 			} 
 			catch(error) {
-				reject(error.message);
-				return;
-			}
-
-			child.stdin.write(file);
-			child.stdin.end();
-		
-			let output = "";
-		
-			child.stdout.setEncoding('utf8');
-			child.stdout.on('data', function(data) {
-				output += data.toString();
-				//outputChannel.append(data.toString());
-			});
-
-			child.stdout.setEncoding('utf8');
-			child.stdout.on("error", function(data) {
-				outputChannel.append(data.toString());
-				output += data.toString();
-			});
-		
-			child.stderr.setEncoding('utf8');
-			child.stderr.on('data', function(data) {
-				outputChannel.append(data.toString());
-				reject(data.toString());				
-			});
-		
-			child.on('close', function(code) {
-				resolve(output);
-			});
-		});
-	}	
-
-	public static ExecuteWithArgsWithRealtimeOutput(command : string, params : string[], outputChannel : vscode.OutputChannel) : Promise<string> {
-
-		return new Promise(function(resolve, reject) {
-			let child; 
-			outputChannel.append(`${command} ${params.join(' ')} `);
-			try {
-				child = child_process.spawn(command, params);
-			} 
-			catch(error) {
-				reject(error.message);
+				reject(error);
 				return;
 			}
 		
-			let output = "";
+			const executionResult : ExecutionResult = new ExecutionResult();
+			executionResult.output = "";
+
+			if(options.token) {
+				options.token.onCancellationRequested( (e) => {
+					child.kill();
+					executionResult.exitCode = child.exitCode;
+					executionResult.isInterrupted = true;
+					resolve(executionResult);
+				});
+			}
+
+			if(!options.encoding) {
+				options.encoding = "utf-8";
+			}
 		
-			child.stdout.setEncoding('utf8');
-			child.stdout.on('data', function(data) {
-				output += data.toString();
-				outputChannel.append(data.toString());
+			child.stdout.on('data', function(data : Buffer) {
+				const encodedData = ProcessHelper.encodeOutputToString(data, options.encoding);
+				executionResult.output += encodedData;
+
+				if(options.outputChannel) {
+					options.outputChannel.append(encodedData);
+				}
 			});
 
-			child.stdout.setEncoding('utf8');
-			child.stdout.on("error", function(data) {
-				outputChannel.append(data.toString());
-				output += data.toString();
+			child.stdout.on("error", function(exception : Error) {
+				const encodedData = exception.toString();
+				executionResult.output += encodedData;
+
+				if(options.outputChannel) {
+					options.outputChannel.append(encodedData);
+				}
 			});
 		
-			child.stderr.setEncoding('utf8');
-			child.stderr.on('data', function(data) {
-				outputChannel.append(data.toString());
-				output += data.toString();
-			});
-		
-			child.on('close', function(code) {
-				resolve(output);
+			child.on('close', function(code : number) {
+				executionResult.exitCode = code;
+				resolve(executionResult);
 			});
 		});
 	}
 
-	public static ExecuteWithArgsWithRealtimeEmmiterOutput(command : string, params : string[], emmiter : vscode.EventEmitter<string>) : Promise<string> {
+	public static executeWithArgsWithRealtimeEmmiterOutput(command : string, params : string[], emmiter : vscode.EventEmitter<string>) : Promise<string> {
 
 		return new Promise(function(resolve, reject) {
 			
@@ -177,23 +144,8 @@ export class ProcessHelper {
 			});
 		});
 	}
-		
-	public static readProcessOutputSync(command: string,encoding: BufferEncoding) : string {
-		const childProcess = child_process.spawnSync(
-			command,
-			{
-				shell: true,
-				cwd: process.cwd(),
-				env: process.env,
-				stdio: 'pipe',
-				encoding
-			}
-		);
 
-		if(childProcess.status != 0) {
-			throw new Error(`Не удалось запустить внешний процесс '${command}'. \n` + childProcess.stderr);
-		}
-
-		return childProcess.stdout;
+	private static encodeOutputToString(data: Buffer, inputEncoding: EncodingType) {
+		return iconv.decode(data, inputEncoding, {defaultEncoding: 'utf-8'});
 	}
 }

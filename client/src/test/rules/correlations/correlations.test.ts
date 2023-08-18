@@ -7,6 +7,7 @@ import { Correlation } from '../../../models/content/correlation';
 import { TestFixture } from '../../helper';
 import { ContentTreeProvider } from '../../../views/contentTree/contentTreeProvider';
 import { MetaInfo } from '../../../models/metaInfo/metaInfo';
+import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 
 suite('Корреляции', () => {
 
@@ -29,7 +30,7 @@ suite('Корреляции', () => {
 		assert.strictEqual(rule.getEnDescription(), templateRule.getEnDescription());
 		assert.strictEqual(rule.getRuDescription(), templateRule.getRuDescription());
 		
-		assert.strictEqual(rule.getTestsPath(), path.join(newRuleDir, "tests"));
+		assert.strictEqual(rule.getTestsPath(), path.join(newRuleDir, RuleBaseItem.TESTS_DIRNAME));
 		assert.deepStrictEqual(rule.getUnitTestOutputParser(), templateRule.getUnitTestOutputParser());
 		assert.deepStrictEqual(rule.getUnitTestRunner(), templateRule.getUnitTestRunner());		
 		rule.getUnitTests().forEach((unitTest) => {
@@ -73,33 +74,37 @@ suite('Корреляции', () => {
 	test('Правильное создание ObjectID', async () => {
 		const correlation = Correlation.create("New_correlation");
 		const expectedObjectId = "LOC-CR-109745836";
+		
 		assert.strictEqual(correlation.generateObjectId(), expectedObjectId);
 		assert.strictEqual(correlation.getMetaInfo().getObjectId(), expectedObjectId);
 	});
 
 	test('Переименование открытой корреляции без сохранения на диск', async () => {
-		// Копируем корреляцию во временную директорию.
 		const oldRuleName = "Active_Directory_Snapshot";
 		const correlationTmpPath = TestFixture.getCorrelationPath(oldRuleName);
 		const correlation = await Correlation.parseFromDirectory(correlationTmpPath);
 
-		const newRuleName = "Super_Duper_Correlation";
-		await correlation.rename(newRuleName);
+		// Копируем во временную директорию.
+		const tmpPath = TestFixture.getTmpPath();
+		const correlationCopy = await correlation.copy(tmpPath);
 
-		const newRuleDirPath = correlation.getDirectoryPath();
+		const newRuleName = "Super_Duper_Correlation";
+		await correlationCopy.rename(newRuleName);
+
+		const newRuleDirPath = correlationCopy.getDirectoryPath();
 		const ruleDirectoryName = path.basename(newRuleDirPath);
 		assert.strictEqual(ruleDirectoryName, newRuleName);
 
-		assert.strictEqual(correlation.getName(), newRuleName);
+		assert.strictEqual(correlationCopy.getName(), newRuleName);
 
-		const metainfo = correlation.getMetaInfo();
+		const metainfo = correlationCopy.getMetaInfo();
 		assert.strictEqual(metainfo.getName(), newRuleName);
 
-		const newRuleCode = await correlation.getRuleCode();
+		const newRuleCode = await correlationCopy.getRuleCode();
 		assert.ok(newRuleCode.includes(newRuleName) && !newRuleCode.includes(oldRuleName));
 
 		// Интеграционные тесты.
-		const intTests = correlation.getIntegrationTests();
+		const intTests = correlationCopy.getIntegrationTests();
 		assert.strictEqual(intTests.length, 2);
 
 		const intTests1 = intTests[0];
@@ -111,7 +116,7 @@ suite('Корреляции', () => {
 		assert.ok(!testCode2.includes(oldRuleName));
 
 		// Модульные тесты.
-		const modTests = correlation.getUnitTests();
+		const modTests = correlationCopy.getUnitTests();
 		assert.strictEqual(modTests.length, 0);
 	});
 
@@ -158,11 +163,28 @@ suite('Корреляции', () => {
 		assert.strictEqual(unitTest.getNumber(), 1);
 	});
 
+	test('Изменение кода правила в памяти и на диске', async () => {
+		const oldRuleName = "Active_Directory_Snapshot";
+		const correlationTmpPath = TestFixture.getCorrelationPath(oldRuleName);
+		const correlation = await Correlation.parseFromDirectory(correlationTmpPath);
+
+		const tmpPath = TestFixture.getTmpPath();
+		const copiedCorrelation = await correlation.copy(tmpPath);
+		await copiedCorrelation.setRuleCode("new rule code");
+
+		await copiedCorrelation.save();
+
+		const ruleCode = await copiedCorrelation.getRuleCode();
+		assert.strictEqual(ruleCode, "new rule code");
+	});
+
 	test('Перименование корреляции без кода', async () => {
 		const rulePath = TestFixture.getCorrelationPath("empty_correlation_code");
 		const correlation = await Correlation.parseFromDirectory(rulePath);
+
 		const newName = "NEW_CORRELATION_NAME";
-		correlation.rename(newName);
+		await correlation.rename(newName);
+		
 		assert.strictEqual(correlation.getName(), newName);
 	});
 

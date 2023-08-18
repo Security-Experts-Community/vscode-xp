@@ -7,6 +7,7 @@ import { RegExpHelper } from './regExpHelper';
 import { XpException } from '../models/xpException';
 import { ParseException } from '../models/parseException';
 import { BaseUnitTest } from '../models/tests/baseUnitTest';
+import { StringHelper } from './stringHelper';
 
 export type EventMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
@@ -92,59 +93,63 @@ export class TestHelper {
 	 * Сжатие json-событий.
 	 * @param rawEvents строка с сырыми событиями
 	 * @returns строка с сырыми событиями, в которых json-события сжаты
-	 * TODO: возвращать список сжатых событий
 	 */
-	public static compressRawEvents(rawEvents: string) : string {
+	public static compressJsonRawEvents(rawEvents: string) : string {
 
 		if(!rawEvents) {
 			throw new Error("Переданный список событий пуст.");
 		}
 
-		const compressedNormalizedEventReg = /{\s*[\s\S]*?\n}/gm;
+		// TODO: надо поддержать упаковку любых json-ов
+		const compressedNormalizedEventReg = /^{\s+"(?:Event|node)"\s*[\s\S]*?\n}/gm;
 
-		let comressedRawEvents = "";
 		let comNormEventResult: RegExpExecArray | null;
+		let compressedRawEvents = rawEvents;
 		while ((comNormEventResult = compressedNormalizedEventReg.exec(rawEvents))) {
 			if (comNormEventResult.length != 1) {
 				continue;
 			}
 
-			let compressedEvent = comNormEventResult[0];
-			compressedEvent = compressedEvent
-				.replace(/^[ \t]+/gm, "")
-				.replace(/":\s*/gm, "\":")
-				.replace(/,\r\n/gm, ",")
-				.replace(/,\n/gm, ",");
-
-			// {}
-			compressedEvent = compressedEvent
-				.replace(/{\r\n/gm, "{")
-				.replace(/\r\n}/gm, "}")
-				.replace(/{\n/gm, "{")
-				.replace(/\n}/gm, "}");
-
-			// []
-			compressedEvent = compressedEvent
-				.replace(/\[\r\n/gm, "[")
-				.replace(/\r\n\]/gm, "]")
-				.replace(/\[\n/gm, "[")
-				.replace(/\n\]/gm, "]");
-
-			// Все оставшиеся специальный символы заменяем экранированными.
-			compressedEvent = compressedEvent
-				.replace(/\r\n/gm, "\\r\\n")
-				.replace(/\r/gm, "\\r")
-				.replace(/\n/gm, "\\n")
-				.replace(/\t/gm, "\\t");
-
-			comressedRawEvents += compressedEvent + "\n";
+			const jsonRawEvent = comNormEventResult[0];
+			try {
+				const jsonObject = JSON.parse(jsonRawEvent);
+				const compressedEventString = JSON.stringify(jsonObject);
+	
+				compressedRawEvents = compressedRawEvents.replace(jsonRawEvent, compressedEventString);
+			}
+			catch(error) {
+				throw new XpException("Неудалось распарсить сырое JSON-событие", error);
+			}
 		}
 
-		if(comressedRawEvents === "") {
-			return rawEvents.trim();
-		}
+		return compressedRawEvents.trim();
+	}
 
-		return comressedRawEvents.trim();
+	public static removeFieldsFromJsonl(jsonlStr : string, ...fields: string[]) : string {
+		let jsonlCleaned = "";
+		try {
+			const jsonLines = StringHelper.splitTextOnLines(jsonlStr); 
+
+			jsonlCleaned = jsonLines
+				.map(nes => JSON.parse(nes))
+				.map(neo => {
+					// Очищаем поля из списка.
+					for(const field of fields) {
+						if(neo[field]) {
+							delete neo[field];
+						}
+					}
+	
+					return neo;
+				})
+				.map(neo => JSON.stringify(neo))
+				.join(EOL);
+
+		} 
+		catch(error) {
+			throw new XpException("Ошибка очистки JSON от полей", error);
+		}
+		return jsonlCleaned;
 	}
 
 	public static compressTestCode(testCode: string) {
@@ -367,7 +372,8 @@ export class TestHelper {
 	public static isRuleCodeContainsSubrules(ruleCode : string) : boolean {
 		const correlationNameCompareRegex = /correlation_name\s*==\s*"\w+"/gm;
 		const correlationNameWithLowerCompareRegex = /lower\(\s*correlation_name\s*\)\s*==\s*"\w+"/gm;
-		const correlationNameInListRegex = /in_list\(\s*\[[\w\W]+\]\s*,\s*lower\(correlation_name\)/gm;
+		const lowerCorrelationNameInListRegex = /in_list\(\s*\[[\w\W]+\]\s*,\s*lower\s*\(\s*correlation_name\s*\)/gm;
+
 
 		const correlationNameCompareResult = correlationNameCompareRegex.test(ruleCode);
 		if(correlationNameCompareResult) {
@@ -379,6 +385,16 @@ export class TestHelper {
 			return true;
 		}
 
+		const lowerCorrelationNameInListResult = lowerCorrelationNameInListRegex.test(ruleCode);
+		if(lowerCorrelationNameInListResult) {
+			return true;
+		}
+
+		// in_list([
+		// 	"Subrule_Windows_Host_Abnormal_Access", 
+		// 	"Subrule_Unix_Server_Abnormal_Access"
+		// ], correlation_name)
+		const correlationNameInListRegex = /in_list\(\s*\[[\w\W]+\]\s*,\s*correlation_name\s*\)/gm;
 		const correlationNameInListResult = correlationNameInListRegex.test(ruleCode);
 		if(correlationNameInListResult) {
 			return true;
@@ -437,12 +453,12 @@ export class TestHelper {
 
 			// Из textarea новые строки только \n, поэтому надо их поправить под систему.
 			rawEvents = rawEvents.replace(/(?<!\\)\n/gm, EOL);
-			test.setRawEvents(rawEvents);
+			test.setRawEvents(TestHelper.compressTestCode(rawEvents));
 
 			// Код теста.
 			let testCode = plainTest?.testCode;
 			if(!testCode || testCode == "") {
-				throw new XpException("Попытка сохранения теста без сырых событий.");
+				throw new XpException("Попытка сохранения теста без тестового кода событий.");
 			}
 
 			// Из textarea новые строки только \n, поэтому надо их поправить под систему.

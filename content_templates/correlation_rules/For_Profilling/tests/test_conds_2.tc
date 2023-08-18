@@ -1,4 +1,5 @@
 # Новый адрес
 table_list default
-table_list {"Risk_User_Logon_Correlation_Profile": [{"access_type": "placeholder", "src_host": "placeholder", "login": "placeholder", "dst_host": "placeholder", "additional_data": "placeholder", "dst_path": "placeholder", "src_ip": "placeholder"}]}
+table_list {"Risk_User_Logon_Correlation_Profile": [{"login": "", "access_type": "", "src_ip": "", "src_host": "", "dst_ip": "", "dst_host": "", "dst_path": "", "additional_data": ""}]}
+
 expect 1 {"correlation_name": "For_Profilling", "reason": "new_address"}

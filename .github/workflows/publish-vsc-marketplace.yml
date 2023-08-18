@@ -6,11 +6,15 @@ on:
       - v*
 jobs:
   release:
+    permissions:
+      contents: write
     name: Create release and publish
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
         uses: actions/checkout@v3
+        with:
+          ref: ${{ github.ref }}
 
       - name: Setup Node
         uses: actions/setup-node@v3
@@ -21,7 +25,7 @@ jobs:
       - name: Get release version
         id: release_version
         run: |
-          TAGGED_VERSION="${GITHUB_REF/refs\/tags\/v/}"
+          TAGGED_VERSION="${GITHUB_REF/refs\/tags\/v/}" >> $GITHUB_ENV
           echo "TAGGED_VERSION=${TAGGED_VERSION}"
           if [[ ! "${TAGGED_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
             echo "Invalid version tag '${TAGGED_VERSION}'"
@@ -31,8 +35,8 @@ jobs:
           echo "EXT_VERSION=${TAGGED_VERSION}"
           WRITTEN_VERSION="$(cat package.json | jq '.version' -r)"
           echo "WRITTEN_VERSION=${WRITTEN_VERSION}"
-          if [[ "${TAGGED_VERSION}" == *"-"* ]]; then
-            if [[ ! "${TAGGED_VERSION}" == "${WRITTEN_VERSION}"-rc.* ]]; then
+          if [[ $(($(echo "${TAGGED_VERSION}" | cut -f2 -d'.')%2)) -eq 1 ]]; then
+            if [[ ! "${TAGGED_VERSION}" == "${WRITTEN_VERSION}" ]]; then
               echo "Prerelease Tag and Version in package.json are not compatible: '${TAGGED_VERSION}' vs '${WRITTEN_VERSION}'"
               exit 1
             fi
@@ -49,8 +53,10 @@ jobs:
 
       - name: Get tag message body
         run: |
-          TAG_BODY="$(git tag -l --format='%(contents:body)' v${TAGGED_VERSION})"
-          echo "${TAG_BODY}" >> $GITHUB_OUTPUT        
+          EOF=${{ github.sha }}
+          echo "msg<<$EOF" >> $GITHUB_OUTPUT
+          echo "$(git tag -l --format='%(contents:body)' ${{ github.ref_name }})" >> $GITHUB_OUTPUT
+          echo "$EOF" >> $GITHUB_OUTPUT      
         id: get_tag_message
 
       - name: Stamp version
@@ -60,26 +66,31 @@ jobs:
           npm ci
           npm run vscode:prepublish
 
-      - name: Package extension
+      - name: Package release extension
+        if: env.EXT_ISPREVIEW != 1
         run: npx vsce package -o "./vscode-xp-${{ env.EXT_VERSION }}.vsix"
+
+      - name: Package pre-release extension
+        if: env.EXT_ISPREVIEW == 1
+        run: npx vsce package --pre-release -o "./vscode-xp-${{ env.EXT_VERSION }}.vsix"
 
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.VSCODE_XP_GH_RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
           release_name: v${{ env.EXT_VERSION }}
           draft: false
           prerelease: ${{env.EXT_ISPREVIEW == 1}}
           body: |
-            ${{join(steps.get_tag_message.outputs.*, '\n')}}
+            ${{ steps.get_tag_message.outputs.msg }}
 
       - name: Upload release asset
         uses: actions/upload-release-asset@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.VSCODE_XP_GH_RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./vscode-xp-${{ env.EXT_VERSION }}.vsix
@@ -89,9 +100,15 @@ jobs:
       - name: Publish at VSCode marketplace
         if: env.EXT_ISPREVIEW != 1
         run: npx vsce publish -i "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VS_MARKETPLACE_TOKEN }}"
-      
+
+      - name: Publish pre-release at VSCode marketplace
+        if: env.EXT_ISPREVIEW == 1
+        run: npx vsce publish --pre-release -i "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VS_MARKETPLACE_TOKEN }}"
+
       - name: Publish at Open VSIX
         if: env.EXT_ISPREVIEW != 1
         run: npx ovsx publish "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.OPEN_VSIX_TOKEN }}"
 
-      
+      - name: Publish pre-release at Open VSIX
+        if: env.EXT_ISPREVIEW == 1
+        run: npx ovsx publish --pre-release "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.OPEN_VSIX_TOKEN }}"

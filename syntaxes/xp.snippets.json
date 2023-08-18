@@ -514,6 +514,17 @@
 			""
 		]
 	},
+	"base64 decode": {
+		"prefix": ["decode", "base64"],
+		"body": [
+			"\\$raw_base64 = $1",
+			"\\$datafield11 = decode(buffer_from_base64(\\$raw_base64), \"UTF-8\")",
+			"if find_substr(\\$datafield11, \"\\u0000\") != null then",
+			"    \\$datafield11 = decode(buffer_from_base64(\\$raw_base64), \"UCS2-LE\")",
+			"endif",
+			""
+		]
+	},
 	"Алерт": {
 		"prefix": [
 			"$alert.*"
@@ -695,10 +706,109 @@
 			"\\$dst.mac = dst.mac"
 		]
 	},
-	"subject action object status": {
-		"prefix": [
-			"$subject, $action, $object, $status"
-		],
+	"Datafields": {
+		"prefix": ["$datafield*"],
+		"body": [
+			"\\$datafield1 = datafield1",
+			"\\$datafield2 = datafield2",
+			"\\$datafield3 = datafield3",
+			"\\$datafield4 = datafield4",
+			"\\$datafield5 = datafield5",
+			"\\$datafield6 = datafield6",
+			"\\$datafield7 = datafield7",
+			"\\$datafield8 = datafield8",
+			"\\$datafield9 = datafield9",
+			"\\$datafield10 = datafield10"
+		]
+	},
+	"datafield1": {
+		"prefix": ["$datafield1"],
+		"body": [
+			"\\$datafield1 = datafield1"
+		]
+	},
+	"datafield2": {
+		"prefix": ["$datafield2"],
+		"body": [
+			"\\$datafield2 = datafield2"
+		]
+	},
+	"datafield3": {
+		"prefix": ["$datafield3"],
+		"body": [
+			"\\$datafield3 = datafield3"
+		]
+	},
+	"datafield4": {
+		"prefix": ["$datafield4"],
+		"body": [
+			"\\$datafield4 = datafield4"
+		]
+	},
+	"datafield5": {
+		"prefix": ["$datafield5"],
+		"body": [
+			"\\$datafield5 = datafield5"
+		]
+	},
+	"datafield6": {
+		"prefix": ["$datafield6"],
+		"body": [
+			"\\$datafield6 = datafield6"
+		]
+	},
+	"datafield7": {
+		"prefix": ["$datafield7"],
+		"body": [
+			"\\$datafield7 = datafield7"
+		]
+	},
+	"datafield8": {
+		"prefix": ["$datafield8"],
+		"body": [
+			"\\$datafield8 = datafield8"
+		]
+	},
+	"datafield9": {
+		"prefix": ["$datafield9"],
+		"body": [
+			"\\$datafield9 = datafield9"
+		]
+	},
+	"datafield10": {
+		"prefix": ["$datafield10"],
+		"body": [
+			"\\$datafield10 = datafield10"
+		]
+	},
+	"Внешний адрес источника": {
+		"prefix": ["$external_src.*"],
+		"body": [
+			"\\$external_src.fqdn = external_src.fqdn",
+			"\\$external_src.geo.asn = external_src.geo.asn",
+			"\\$external_src.geo.city = external_src.geo.city",
+			"\\$external_src.geo.country = external_src.geo.country",
+			"\\$external_src.geo.org = external_src.geo.org",
+			"\\$external_src.host = external_src.host",
+			"\\$external_src.hostname = external_src.hostname",
+			"\\$external_src.ip = external_src.ip"
+		]
+	},
+	"Внешний адрес приемника": {
+		"prefix": ["$external_dst.*"],
+		"body": [
+			"\\$external_dst.fqdn = external_dst.fqdn",
+			"\\$external_dst.geo.asn = external_dst.geo.asn",
+			"\\$external_dst.geo.city = external_dst.geo.city",
+			"\\$external_dst.geo.country = external_dst.geo.country",
+			"\\$external_dst.geo.org = external_dst.geo.org",
+			"\\$external_dst.host = external_dst.host",
+			"\\$external_dst.hostname = external_dst.hostname",
+			"\\$external_dst.ip = external_dst.ip"
+		]
+	},
+    "subject action object status": {
+		"prefix": ["$subject, $action, $object, $status"],
 		"body": [
 			"\\$subject = \"${1|account,application,process,system,host,rule,service|}\"",
 			"\\$action = \"${2|access,alert,allow,apply,assign,backup,bind,call,check,clean,close,configure,connect,copy,create,decrypt,deelevate,deescalate,deliver,deny,detect,disable,disconnect,down,download,elevate,enable,encrypt,escalate,exclude,execute,extract,grant,info,initiate,inject,install,leak,lock,login,logout,modify,move,open,print,protect,quarantine,read,receive,reject,remove,rename,request,reset,restart,restore,revoke,rollback,scan,search,send,start,state,stop,sync,terminate,truncate,unassign,unbind,uninstall,unlock,up,update,upgrade,upload,validate,view|}\"",

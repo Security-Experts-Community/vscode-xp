@@ -8,6 +8,9 @@ import { NormalizationUnitTest } from '../models/tests/normalizationUnitTest';
 // import { RuleFileDiagnostics } from '../views/integrationTests/ruleFileDiagnostics';
 import { ProcessHelper } from '../helpers/processHelper';
 import { ExtensionHelper } from '../helpers/extensionHelper';
+import { ExceptionHelper } from '../helpers/exceptionHelper';
+import { FileSystemHelper } from '../helpers/fileSystemHelper';
+import { FileSystemException } from '../models/fileSystemException';
 // import { RuleBaseItem } from '../models/content/ruleBaseItem';
 // import { BuildLocsOutputParser, FillFPTAOutputParser } from './outputParsers/fillFptaOutputParser';
 // import { RCCOutputParser } from './outputParsers/rccOutputParser';
@@ -61,14 +64,19 @@ export class SDKUtilitiesWrappers {
 				const tempPath = this.config.getTmpDirectoryPath(rootFolder);				
 				const taxonomyPath = this.config.getTaxonomyFullPath();
 				const appendixPath = this.config.getAppendixFullPath();
+
 				const formulaPath = rule.getFilePath();
+				if(!FileSystemHelper.isValidPath(formulaPath)) {
+					throw new FileSystemException(`В пути ${formulaPath} к правилу нормализации содержаться недопустимые символы. Допустима только латинский буквы, цифры и знак подчёркивания.`);
+				}
+
 				const rawEventPath = unitTest.getTestInputDataPath();
 
 				process.env.PTSIEM_SDK_ROOT = this.config.getSiemSdkDirectoryPath();
 
 				// Запускаем утилиту с параметрами
 				// TODO: Возможно есть смысл отслеживать неуспешные запуски по кодам ошибки от дочернего процесса
-				const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+				const output = await ProcessHelper.execute(
 					normalizeExePath,
 					[
 						"--sdk", sdkPath,
@@ -76,31 +84,24 @@ export class SDKUtilitiesWrappers {
 						"-t", taxonomyPath,
 						"-s", formulaPath,
 						"-r", rawEventPath,
-						"-x", appendixPath,
+						// Параметр опциональный. 
+						// Отключили для совместимости с системными тестами
+						// "-x", appendixPath,
 						"-e"
 					],
-					outputChannel);
+					{	
+						encoding: 'utf-8',
+						outputChannel: outputChannel
+					}
+				);
 
 				outputChannel.appendLine("XP :: Нормализация тестового события завершена");
 				outputChannel.appendLine("");
 
-				return output;
-
-				// Анализируем вывод утилиты на наличие ошибок и предупреждений
-				// TODO: Возможно паттернов вывода больше. Нужно описать разные ситуации.
-				// const outputParser = new RCCOutputParser();
-				//const ruleFileDiagnostics = outputParser.parse(output);
-
-				// Выводим ошибки и замечания для тестируемого правила.
-				//for (const rfd of ruleFileDiagnostics) {
-				//	this.config.getDiagnosticCollection().set(rfd.Uri, rfd.Diagnostics);
-				//}
-
-				// Если есть ошибки, то прерываем цепочку выполнения
-				//return this.not_contains_errors(ruleFileDiagnostics);
+				return output.output;
 			}
 			catch(error) {
-				ExtensionHelper.showUserError(`Произошла неожиданная ошибка: ${error.message}`);
+				ExceptionHelper.show(error, `Произошла неожиданная ошибка при нормализации события через нормализатор.`);
 				return "";
 			}
 		});

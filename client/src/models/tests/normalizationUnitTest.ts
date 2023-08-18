@@ -9,11 +9,11 @@ import { XpException } from '../xpException';
 
 export class NormalizationUnitTest extends BaseUnitTest {
 	public getDefaultExpectation(): string {
-		return `# Запиши сюда ожидаемое нормализованное событие\n`;
+		return `{}`;
 	}
 
 	public getDefaultInputData(): string {
-		return `# Здесь укажи какие сырые события ты подаёшь на вход нормализации\n`;
+		return `# Здесь укажи какое сырое событие (одно) ты подаёшь на вход правилу нормализации.\n`;
 	}
 
 	public static parseFromRuleDirectory(rule: Normalization) : NormalizationUnitTest [] {

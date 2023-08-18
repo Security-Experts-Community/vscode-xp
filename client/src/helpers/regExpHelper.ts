@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 export class RegExpHelper {
 	public static getExpectSection() : RegExp {
-		return /expect\s*(\d+|not)\s*{(.*)}/g;
+		return /expect\s*(\d+|not)\s*{(.*)}/gm;
 	}
 
 	public static getJsons() : RegExp {

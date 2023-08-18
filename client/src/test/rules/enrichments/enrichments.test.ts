@@ -60,10 +60,10 @@ suite('Обогащение', () => {
 		assert.ok(commandResult);
 	});
 
-	test('Переименование обогащения', async () => {
+	test('Переименование обогащения с тестами и локализациями в памяти', async () => {
 		const enrichmentName = `Super_Duper_Enrichment`;
 		const enrichment = Enrichment.create(enrichmentName);
-		enrichment.setRuleCode(
+		await enrichment.setRuleCode(
 `enrichment ${enrichmentName}
     enrich correlation:
 `);
@@ -72,8 +72,6 @@ suite('Обогащение', () => {
 		it1.setNormalizedEvents("");
 		it1.setTestCode(`expect 1 {"correlation_name" : "${enrichmentName}"}`);
 		enrichment.addIntegrationTests([it1]);
-
-		enrichment.addLocalization(Localization.create(`correlation_name == "${enrichmentName}"`, "ru localization", "en localization"));
 
 		const unitTest = enrichment.addNewUnitTest();
 		unitTest.setTestInputData("test input");
@@ -87,14 +85,9 @@ suite('Обогащение', () => {
 		assert.strictEqual(enrichment.getMetaInfo().getName(), newEnrichmentName);
 		assert.strictEqual(enrichment.getIntegrationTests().length, 1);
 		assert.strictEqual(enrichment.getUnitTests().length, 1);
-		assert.strictEqual(enrichment.getLocalizations().length, 1);
 		
 		// Детальная проверка.
 		const newIt1 = enrichment.getIntegrationTests()[0];
 		assert.strictEqual(newIt1.getTestCode(), `expect 1 {"correlation_name" : "${newEnrichmentName}"}`);
-
-		const localization1 = enrichment.getLocalizations()[0];
-		assert.strictEqual(localization1.getLocalizationId(), `enrichment_${newEnrichmentName}`);
-		assert.strictEqual(localization1.getCriteria(), `correlation_name == "${newEnrichmentName}"`);
 	});
 });

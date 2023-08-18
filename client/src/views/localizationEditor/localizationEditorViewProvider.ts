@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
-import { Localization, LocalizationExample, LocalizationLanguage } from '../../models/content/localization';
+import { Localization, LocalizationExample } from '../../models/content/localization';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Correlation } from '../../models/content/correlation';
 import { Configuration } from '../../models/configuration';
@@ -12,6 +12,7 @@ import { StringHelper } from '../../helpers/stringHelper';
 import { XpException } from '../../models/xpException';
 import { SiemjManager } from '../../models/siemj/siemjManager';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
+import { IntegrationTest } from '../../models/tests/integrationTest';
 
 export class LocalizationEditorViewProvider  {
 
@@ -136,10 +137,18 @@ export class LocalizationEditorViewProvider  {
 	async receiveMessageFromWebView(message: any) {
 		switch (message.command) {
 			case 'buildLocalizations': {
-				const locExamples = await this.getLocalizationExamples();
+				
+				// Отбираем тесты, подходящие для генерации примеров локализаций.
+				const integrationTestsForTestLocalizations = this.getIntegrationTestsForTestLocalizations(this._rule);
+				if(integrationTestsForTestLocalizations.length === 0) {
+					return ExtensionHelper.showUserInfo(
+						"Среди всех интеграционных тестов не были найдены подходящие. Проверьте, что интеграционные тесты проходят, что среди них есть без заполнения табличных списков (только заполнение по умолчанию).");
+				}
+
+				const locExamples = await this.getLocalizationExamples(integrationTestsForTestLocalizations);
 				if(locExamples.length === 0) {
 					return ExtensionHelper.showUserInfo(
-						"Не найдены тесты, позволяющие сгенерировать примеры локализаций. Например, в них не должны использоваться табличные списки и должно ожидаться одно событие. Либо критерий локализации задан неверно.");
+						"По имеющимся событиям не отработала ни одна локализация. Проверьте, что интеграционные тесты проходят, корректны критерии локализации. После исправлений повторите.");
 				}
 
 				this._rule.setLocalizationExamples(locExamples);
@@ -190,7 +199,7 @@ export class LocalizationEditorViewProvider  {
 
 					// Обновляем локализации и сохраняем их.
 					this._rule.setLocalizationTemplates(localizations);
-					this._rule.saveLocalizations();
+					await this._rule.saveLocalizations();
 
 					ExtensionHelper.showUserInfo(`Правила локализации для правила ${this._rule.getName()} сохранены.`);
 				}
@@ -201,7 +210,7 @@ export class LocalizationEditorViewProvider  {
 		}
 	}
 
-	private async getLocalizationExamples() : Promise<LocalizationExample[]> {
+	private async getLocalizationExamples(integrationTests : IntegrationTest[]) : Promise<LocalizationExample[]> {
 		return await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
@@ -209,7 +218,7 @@ export class LocalizationEditorViewProvider  {
 		}, async (progress) => {
 			try {
 				const siemjManager = new SiemjManager(this._config);
-				const locExamples = await siemjManager.correlateAndGetLocalizationExamples(this._rule);
+				const locExamples = await siemjManager.correlateAndGetLocalizationExamples(this._rule, integrationTests);
 				return locExamples;
 			}
 			catch (error) {
@@ -226,5 +235,26 @@ export class LocalizationEditorViewProvider  {
 			}
 		}
 		return null;
+	}
+
+	private getIntegrationTestsForTestLocalizations(rule : RuleBaseItem) {
+		// Проверяем фильтруем тесты и проверяем, что есть тесты ожидающие события и без табличных списков.
+		const filtredTest = rule.getIntegrationTests().filter( it => {
+			// Исключаем тесты, которые не порождают события (вайтлистинг и тесты на фолзы).
+			const expectOneRegex = /expect\s+1\s+{/gm;
+			const tableListRegex = /\btable_list\s+{/gm;
+
+			const testCode = it.getTestCode();
+			if(!expectOneRegex.test(testCode) || tableListRegex.test(testCode)) {
+				return false;
+			}
+
+			return true;
+		});
+
+		if(filtredTest.length === 0) {
+			return [];
+		}
+		return filtredTest;
 	}
 }

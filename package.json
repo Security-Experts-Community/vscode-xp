@@ -5,7 +5,7 @@
 	"author": "Dmitry Fedosov (@DmitryOffsec)",
 	"icon": "resources/xp.png",
 	"license": "MIT",
-	"version": "3.3.19",
+	"version": "3.7.1",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -63,6 +63,15 @@
 				],
 				"extensions": [
 					".tl"
+				]
+			},
+			{
+				"id": "yaml",
+				"aliases": [
+					"Wld"
+				],
+				"extensions": [
+					".wld"
 				]
 			},
 			{
@@ -185,18 +194,18 @@
 		"viewsWelcome": [
 			{
 				"view": "KnowledgebaseTree",
-				"contents": "Привет! Это я - расширение для разработки контента для языка eXtraction and Processing (XP). Чтобы начать работу со мной, открой базу знаний.\n[Открыть базу знаний](command:SiemContentEditor.openKnowledgebaseCommand)\nДа пребудет с тобой сила и достойный контент!"
+				"contents": "Добро пожаловать! Это расширение поможет в разработке правил на языке eXtraction and Processing (XP). Чтобы начать, откройте базу знаний.\n[Открыть базу знаний](command:SiemContentEditor.openKnowledgebaseCommand)\nПриятной работы!"
 			},
 			{
 				"view": "ModularTestsListView",
-				"contents": "Тут будут твои классные юнит-тесты, не забывай про них!"
+				"contents": "Модульные тесты отсутствуют."
 			}
 		],
 		"viewsContainers": {
 			"activitybar": [
 				{
 					"id": "Content",
-					"title": "Редактор контента",
+					"title": "eXtraction and Processing",
 					"icon": "resources/xp.svg"
 				}
 			]
@@ -278,33 +287,18 @@
 				},
 				{
 					"command": "KnowledgebaseTree.showCreateCorrelationView",
-					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
+					"when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
 					"group": "create@1"
 				},
 				{
 					"command": "KnowledgebaseTree.showCreateEnrichmentView",
-					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
+					"when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
 					"group": "create@2"
 				},
 				{
 					"command": "KnowledgebaseTree.showCreateNormalizationView",
-					"when": "view == KnowledgebaseTree && viewItem != Correlation && viewItem != Aggregation && viewItem != Normalization && viewItem != Enrichment && viewItem != Macros",
+					"when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
 					"group": "create@3"
-				},
-				{
-					"command": "SiemContentEditor.createSubFolderCommand",
-					"when": "view == KnowledgebaseTree && viewItem == AnotherFolder",
-					"group": "folder@1"
-				},
-				{
-					"command": "SiemContentEditor.createSubFolderCommand",
-					"when": "viewItem == PackageFolder || viewItem == ContentRoot",
-					"group": "folder@1"
-				},
-				{
-					"command": "SiemContentEditor.deleteContentItemCommand",
-					"when": "view == KnowledgebaseTree",
-					"group": "folder@2"
 				},
 				{
 					"command": "IntegrationTestEditorView.showEditor",
@@ -315,11 +309,6 @@
 					"command": "MetaInfoView.showMetaInfoEditor",
 					"when": "view == KnowledgebaseTree && viewItem == Correlation",
 					"group": "Correlation@2"
-				},
-				{
-					"command": "SiemContentEditor.renameTreeItemCommand",
-					"when": "view == KnowledgebaseTree && viewItem == Correlation",
-					"group": "Correlation@3"
 				},
 				{
 					"command": "LocalizationView.showLocalizationEditor",
@@ -357,11 +346,6 @@
 					"group": "Enrichment@2"
 				},
 				{
-					"command": "SiemContentEditor.renameTreeItemCommand",
-					"when": "view == KnowledgebaseTree && viewItem == Enrichment",
-					"group": "Enrichment@3"
-				},
-				{
 					"command": "LocalizationView.showLocalizationEditor",
 					"when": "view == KnowledgebaseTree && viewItem == Enrichment",
 					"group": "Enrichment@4"
@@ -370,6 +354,21 @@
 					"command": "ModularTestsListView.removeTest",
 					"when": "view == ModularTestsListView",
 					"group": "ModularTest@4"
+				},
+				{
+					"command": "SiemContentEditor.createSubFolderCommand",
+					"when": "view == KnowledgebaseTree && (viewItem == AnotherFolder ||viewItem == PackageFolder || viewItem == ContentRoot)",
+					"group": "ZCommonItems@1"
+				},
+				{
+					"command": "SiemContentEditor.renameTreeItemCommand",
+					"when": "view == KnowledgebaseTree && (viewItem == Correlation || viewItem == Normalization || viewItem == Enrichment)",
+					"group": "ZCommonItems@2"
+				},
+				{
+					"command": "SiemContentEditor.deleteContentItemCommand",
+					"when": "view == KnowledgebaseTree",
+					"group": "ZCommonItems@4"
 				}
 			]
 		},
@@ -377,12 +376,12 @@
 			{
 				"command": "xpContentEditor.setContentType",
 				"title": "Выбрать целевой продукт: SIEM или XDR",
-				"category": "Редактор контента"
+				"category": "Редактор XP"
 			},
 			{
 				"command": "SiemContentEditor.openKnowledgebaseCommand",
 				"title": "Открыть базу знаний",
-				"category": "Редактор контента",
+				"category": "Редактор XP",
 				"icon": "$(folder-opened)"
 			},
 			{
@@ -392,57 +391,57 @@
 			},
 			{
 				"command": "SiemContentEditor.сreatePackageCommand",
-				"title": "Создать пустой пакет",
-				"category": "Редактор контента"
+				"title": "Создать новый пакет",
+				"category": "Редактор XP"
 			},
 			{
 				"command": "KnowledgebaseTree.showCreateCorrelationView",
-				"title": "Создать корреляцию",
-				"category": "Редактор контента",
+				"title": "Создать правило корреляции",
+				"category": "Редактор XP",
 				"icon": "$(file-add)"
 			},
 			{
 				"command": "KnowledgebaseTree.showCreateEnrichmentView",
-				"title": "Создать обогащение",
-				"category": "Редактор контента"
+				"title": "Создать правило обогащения",
+				"category": "Редактор XP"
 			},
 			{
 				"command": "KnowledgebaseTree.showCreateNormalizationView",
-				"title": "Создать нормализацию",
-				"category": "Редактор контента"
+				"title": "Создать правило нормализации",
+				"category": "Редактор XP"
 			},
 			{
 				"command": "TableListsEditorView.showView",
-				"title": "Создать ТС",
-				"shortTitle": "Создать ТС",
-				"category": "Редактор контента"
+				"title": "Создать табличный список",
+				"shortTitle": "Создать табличный список",
+				"category": "Редактор XP"
 			},
 			{
 				"command": "KnowledgebaseTree.runningCorrelationGraph",
 				"title": "Скоррелировать события",
 				"shortTitle": "Скоррелировать события",
-				"category": "Редактор контента",
+				"category": "Редактор XP",
 				"icon": "$(outline-view-icon)"
 			},
 			{
 				"command": "KnowledgebaseTree.buildAll",
-				"title": "Скомпилировать всё (графы, табличные списки, локализации)",
-				"shortTitle": "Скомпилировать всё",
-				"category": "Редактор контента",
+				"title": "Собрать всё (графы, табличные списки, локализации)",
+				"shortTitle": "Собрать всё",
+				"category": "Редактор XP",
 				"icon": "$(debug-start)"
 			},
 			{
 				"command": "KnowledgebaseTree.unpackKbPackage",
-				"title": "Извлечь пакет(ы) из kb-файла",
-				"shortTitle": "Извлечь пакет(ы) из kb-файла",
-				"category": "Редактор контента",
+				"title": "Импортировать пакеты из KB-файла",
+				"shortTitle": "Загрузить пакеты",
+				"category": "Редактор XP",
 				"icon": "$(package)"
 			},
 			{
 				"command": "KnowledgebaseTree.buildKbPackage",
-				"title": "Собрать пакет",
-				"shortTitle": "Собрать пакет в kb-файл",
-				"category": "Редактор контента",
+				"title": "Экспортировать пакет в KB-файл",
+				"shortTitle": "Собрать пакет",
+				"category": "Редактор XP",
 				"icon": "$(debug-start)"
 			},
 			{
@@ -453,73 +452,73 @@
 			{
 				"command": "SiemContentEditor.createSubFolderCommand",
 				"title": "Создать директорию",
-				"category": "Редактор контента",
+				"category": "Редактор XP",
 				"icon": "$(new-folder)"
 			},
 			{
 				"command": "SiemContentEditor.renameTreeItemCommand",
 				"title": "Переименовать",
-				"category": "Редактор контента"
+				"category": "Редактор XP"
 			},
 			{
 				"command": "SiemContentEditor.deleteContentItemCommand",
 				"title": "Удалить",
-				"category": "Редактор контента",
+				"category": "Редактор XP",
 				"icon": "$(notebook-delete-cell)"
 			},
 			{
 				"command": "MetaInfoView.showMetaInfoEditor",
-				"title": "Метаданные",
-				"category": "Редактор контента"
+				"title": "Редактор метаданных",
+				"category": "Редактор XP"
 			},
 			{
 				"command": "LocalizationView.showLocalizationEditor",
-				"title": "Правила локализации",
-				"category": "Редактор контента"
+				"title": "Редактор правил локализации",
+				"category": "Редактор XP"
 			},
 			{
 				"command": "ModularTestContentEditorView.showEditor",
 				"title": "Показать модульный тест",
-				"category": "Редактор контента"
+				"category": "Редактор XP"
 			},
 			{
 				"command": "ModularTestsListView.runTests",
-				"title": "Запустить все",
-				"category": "Редактор контента",
+				"title": "Запустить все модульные тесты",
+				"category": "Редактор XP",
 				"icon": "$(run-all)"
 			},
 			{
 				"command": "ModularTestsListView.addTest",
-				"title": "Добавить",
-				"category": "Редактор контента",
+				"title": "Создать модульный тест",
+				"category": "Редактор XP",
 				"icon": "$(add)"
 			},
 			{
 				"command": "ModularTestsListView.reloadAndRefresh",
-				"title": "Обновить",
-				"category": "Редактор контента",
+				"title": "Обновить список модульных тестов",
+				"category": "Редактор XP",
 				"icon": "$(refresh)"
 			},
 			{
 				"command": "ModularTestsListView.removeTest",
-				"title": "Удалить",
-				"category": "Редактор контента",
+				"title": "Удалить модульный тест",
+				"category": "Редактор XP",
 				"icon": "$(refresh)"
 			},
 			{
 				"command": "IntegrationTestEditorView.showEditor",
-				"title": "Тесты",
-				"category": "Редактор контента"
+				"title": "Интеграционные тесты",
+				"category": "Редактор XP"
 			},
 			{
 				"command": "IntegrationTestEditorView.onTestSelectionChange",
 				"title": "Выбран интеграционный тест",
-				"category": "Редактор контента"
+				"category": "Редактор XP"
 			},
 			{
 				"command": "NativeEditorContextMenu.compressTest",
-				"title": "Compress Document",
-				"category": "Редактор контента"
+				"title": "Сжать документ",
+				"category": "Редактор XP"
 			}
 		],
 		"keybindings": [
@@ -581,6 +580,7 @@
 	},
 	"devDependencies": {
 		"@types/glob": "^8.0.0",
+		"@types/iconv": "^3.0.1",
 		"@types/js-yaml": "^4.0.5",
 		"@types/mocha": "^8.2.2",
 		"@typescript-eslint/eslint-plugin": "^4.21.0",
@@ -599,6 +599,7 @@
 		"diff": "^5.1.0",
 		"fs-extra": "^10.0.0",
 		"guid-typescript": "^1.0.9",
+		"iconv-lite": "^0.6.3",
 		"js-yaml": "^4.1.0",
 		"lru-cache": "^6.0.0",
 		"mustache": "^4.2.0",

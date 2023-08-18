@@ -80,20 +80,29 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 	}
 
 	/**
-	 * TODO:
+	 * Задает имя файла правила (корреляции, нормализации, обогащения, макроса и т.д.)
+	 * @param fileName 
 	 */
-	public setFileName(fielName:string) : void {
-		this._fileName = fielName;
+	public setFileName(fileName : string) : void {
+		this._fileName = fileName;
 	}
 
 	/**
-	 * TODO: 
+	 * Возвращает имя файла правила
+	 * @returns возвращает имя файла правила или undefined для директорий.
 	 */
-	public getFileName() :string {
+	public getFileName() : string {
 		return this._fileName;
 	}
 
-	public getFilePath(): string {
+	/**
+	 * Возвращает путь к файлу правила
+	 * @returns возвращает путь к файлу правила (корреляции, нормализации, обогащения, макроса и т.д.) или undefined для директорий.
+	 */
+	public getFilePath() : string {
+		if(!this._fileName) {
+			return undefined;
+		}
 		return path.join(this._parentPath, this._name, this._fileName);
 	}
 

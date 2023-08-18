@@ -11,6 +11,7 @@ import { MustacheFormatter } from '../mustacheFormatter';
 import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { UnitTestsListViewProvider } from './unitTestsListViewProvider';
+import { XpException } from '../../models/xpException';
 
 export class UnitTestContentEditorViewProvider  {
 
@@ -192,12 +193,12 @@ export class UnitTestContentEditorViewProvider  {
 		try {
 			const rawEvent = testInfo.rawEvent;
 			if(!rawEvent) {
-				throw new Error(`Не задано сырое событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`);
+				throw new XpException(`Не задано сырое событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`);
 			}
 			this._test.setTestInputData(rawEvent);
 			const expectation = testInfo.expectation;
 			if(!expectation) {
-				throw new Error(`Не задано ожидаемое нормализованное событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`);
+				throw new XpException(`Не задано ожидаемое нормализованное событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`);
 			}
 			this._test.setTestExpectation(expectation);
 			this._test.save();
@@ -227,6 +228,7 @@ export class UnitTestContentEditorViewProvider  {
 			}
 			catch(error) {
 				ExceptionHelper.show(error);
+				Configuration.get().getOutputChannel().show();
 			}
 		});
 	}

@@ -57,29 +57,29 @@ export class Enrichment extends RuleBaseItem {
 
 	public async save(parentFullPath?: string): Promise<void> {
 		// Путь либо передан как параметр, либо он уже задан в правиле.
-		let directoryFullPath = "";
+		let corrDirPath = "";
 		if (parentFullPath) {
-			directoryFullPath = path.join(parentFullPath, this._name);
+			corrDirPath = path.join(parentFullPath, this._name);
 			this.setParentPath(parentFullPath);
 		} else {
-			directoryFullPath = this.getDirectoryPath();
+			corrDirPath = this.getDirectoryPath();
 		}
 
-		if (!fs.existsSync(directoryFullPath)) {
-			await fs.promises.mkdir(directoryFullPath, {recursive: true});
+		if (!fs.existsSync(corrDirPath)) {
+			await fs.promises.mkdir(corrDirPath, {recursive: true});
 		}
 
-		const ruleFullPath = path.join(directoryFullPath, this.getFileName());
-		if (this._ruleCode) {
-			await FileSystemHelper.writeContentFile(ruleFullPath, this._ruleCode);
-		} else {
-			await FileSystemHelper.writeContentFile(ruleFullPath, "");
-		}
+		// Сохраняем код правила.
+		const ruleFullPath = this.getRuleFilePath();
+		const ruleCode = await this.getRuleCode();
+		await FileSystemHelper.writeContentFile(ruleFullPath, ruleCode);
 
-		await this.getMetaInfo().save(directoryFullPath);
-		await this.saveLocalizationsImpl(directoryFullPath);
-		await this.saveIntegrationTests(directoryFullPath);
-		await this.saveUnitTests();
+		// Параллельно сохраняем все данные правила.
+		const metainfoPromise = this.getMetaInfo().save(corrDirPath);
+		const localizationPromise = this.saveLocalizationsImpl(corrDirPath);
+		const integrationTestsPromise = this.saveIntegrationTests(corrDirPath);
+		const unitTestsPromise = this.saveUnitTests();
+		await Promise.all([metainfoPromise, localizationPromise, integrationTestsPromise, unitTestsPromise]);
 	}
 
 	public async rename(newRuleName: string): Promise<void> {
@@ -100,24 +100,13 @@ export class Enrichment extends RuleBaseItem {
 			// Модифицируем код, если он есть
 			if (ruleCode) {			
 				const newRuleCode = ContentHelper.replaceAllEnrichmentNameWithinCode(newRuleName, ruleCode);
-				this.setRuleCode(newRuleCode);
+				await this.setRuleCode(newRuleCode);
 			}
 		}
 
 		// В метаинформации.
 		const metainfo = this.getMetaInfo();
 		metainfo.setName(newRuleName);
-
-		// Замена в критериях.
-		this.getMetaInfo().getEventDescriptions().forEach(ed => {
-			const criteria = ed.getCriteria();
-			const newCriteria = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, criteria);
-			ed.setCriteria(newCriteria);
-
-			const localizationId = ed.getLocalizationId();
-			const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, localizationId);
-			ed.setLocalizationId(newLocalizationId);
-		});
 
 		// Замена в тестах.
 		this.getIntegrationTests().forEach( 
@@ -133,18 +122,6 @@ export class Enrichment extends RuleBaseItem {
 				const testCode = unitTest.getTestExpectation();
 				const newTestCode = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, testCode);
 				unitTest.setTestExpectation(newTestCode);
-			}
-		);
-
-		this.getLocalizations().forEach( 
-			loc => {
-				const localizationId = loc.getLocalizationId();
-				const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, localizationId);
-				loc.setLocalizationId(newLocalizationId);
-
-				const creteria = loc.getCriteria();
-				const newCreteria = ContentHelper.replaceAllRuleNamesWithinString(oldRuleName, newRuleName, creteria);
-				loc.setCriteria(newCreteria);
 			}
 		);
 
@@ -177,7 +154,7 @@ export class Enrichment extends RuleBaseItem {
 		const objectId = rule.generateObjectId();
 		metainfo.setObjectId(objectId);
 
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		// Добавляем команду на открытие.
 		rule.setCommand({
 			command: ContentTreeProvider.onRuleClickCommand,
 			title: "Open File",
@@ -220,7 +197,7 @@ export class Enrichment extends RuleBaseItem {
 		const integrationalTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
 		enrichment.addIntegrationTests(integrationalTests);
 
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		// Добавляем команду на открытие.
 		enrichment.setCommand({
 			command: ContentTreeProvider.onRuleClickCommand,
 			title: "Open File",

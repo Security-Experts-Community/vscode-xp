@@ -12,9 +12,9 @@ import { YamlHelper } from '../../helpers/yamlHelper';
 
 export class MetaInfo {
 
-	public static fromFile(ruleDirFullPath: string, metainfoFilename: string = this.METAINFO_FILENAME): MetaInfo {
+	public static fromFile(ruleDirFullPath: string): MetaInfo {
 
-		const metaInfoFullPath = path.join(ruleDirFullPath, metainfoFilename);
+		const metaInfoFullPath = path.join(ruleDirFullPath, this.METAINFO_FILENAME);
 
 		if (!fs.existsSync(metaInfoFullPath)) {
 			// Заполнение по умолчанию.
@@ -41,11 +41,7 @@ export class MetaInfo {
 		
 		// Сохраним текущее состояние файла для дальнейшего использования в процедуре сохранения.
 		// Необходимо, чтобы произвольные и не относящиеся к форме поля остались в metainfo.yaml
-		metaInfo.AsInFile = metaInfoAsInFile;
-
-		// Сохраним текущее состояние файла для дальнейшего использования в процедуре сохранения.
-		// Необходимо, чтобы произвольные и не относящиеся к форме поля остались в metainfo.yaml
-		metaInfo.AsInFile = metaInfoAsInFile;
+		metaInfo.AsInFile = JsHelper.removeEmptyKeys(metaInfoAsInFile);
 
 		if (metaInfoAsInFile.Name) {
 			metaInfo.setName(metaInfoAsInFile.Name);

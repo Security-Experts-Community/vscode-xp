@@ -3,8 +3,8 @@ import * as path from "path";
 
 import { TestStatus } from './testStatus';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
 import { XpException } from '../xpException';
+import { RuleBaseItem } from '../content/ruleBaseItem';
 
 // TODO: вынести общие методы из класс BaseUnitTest.
 export class IntegrationTest {
@@ -14,7 +14,7 @@ export class IntegrationTest {
 	}
 
 	public static parseFromRuleDirectory(ruleDirFullPath: string) : IntegrationTest [] {
-		const testsDirectoryFullPath = path.join(ruleDirFullPath, "tests");
+		const testsDirectoryFullPath = path.join(ruleDirFullPath, RuleBaseItem.TESTS_DIRNAME);
 
 		// Тестов нет.
 		if(!fs.existsSync(testsDirectoryFullPath)) {
@@ -36,9 +36,7 @@ export class IntegrationTest {
 				const testCodeFileName = `test_conds_${testNumber}.tc`;
 				const testCodeFilePath = path.join(testsDirectoryFullPath, testCodeFileName);
 				if(!fs.existsSync(testCodeFilePath)) {
-					ExtensionHelper.showUserError(`Повреждены файлы тестов, не найден файл '${testCodeFilePath}'`);
-					// В этом случае в массив добавляется неопределённый элемент
-					return;
+					throw new XpException(`Повреждены файлы тестов, не найден файл '${testCodeFilePath}'`);
 				}
 				const testCodeContent = fs.readFileSync(testCodeFilePath, "utf8");
 				test.setTestCode(testCodeContent);			
@@ -47,9 +45,7 @@ export class IntegrationTest {
 				const rawEventsFileName = `raw_events_${testNumber}.json`;				
 				const rawEventsFullPath = path.join(testsDirectoryFullPath, rawEventsFileName);
 				if(!fs.existsSync(rawEventsFullPath)) {
-					ExtensionHelper.showUserError(`Повреждены файлы тестов, не найден файл '${rawEventsFullPath}'`);
-					// В этом случае в массив добавляется неопределённый элемент
-					return;
+					throw new XpException(`Повреждены файлы тестов, не найден файл '${rawEventsFullPath}'`);
 				}
 				const rawEvents = fs.readFileSync(rawEventsFullPath, "utf8");
 				test.setRawEvents(rawEvents);
@@ -70,6 +66,8 @@ export class IntegrationTest {
 		const test = new IntegrationTest();
 		test.setNumber(testNumber);
 		test.setRuleDirectoryPath(ruleDirPath);
+
+		// Заполнение тестов пустая строка для возможности сохранения тестов без сырых событий и кода.
 		test.setTestCode("");
 		test.setRawEvents("");
 
@@ -102,11 +100,11 @@ export class IntegrationTest {
 	}
 
 	public getTestCodeFilePath() : string {
-		return path.join(this._ruleDirectoryPath, `tests`, `test_conds_${this.getNumber()}.tc`);
+		return path.join(this._ruleDirectoryPath, RuleBaseItem.TESTS_DIRNAME, `test_conds_${this.getNumber()}.tc`);
 	}
 
 	public getRawEventsFilePath() : string {
-		return path.join(this._ruleDirectoryPath, `tests`, `raw_events_${this.getNumber()}.json`);
+		return path.join(this._ruleDirectoryPath, RuleBaseItem.TESTS_DIRNAME, `raw_events_${this.getNumber()}.json`);
 	}
 
 	public setOutput(output: string) {
@@ -120,7 +118,7 @@ export class IntegrationTest {
 	public async save() : Promise<void> {
 
 		if(!this._number) {
-			throw new Error("Для интеграционного теста не задан порядковый номер");
+			throw new XpException("Для интеграционного теста не задан порядковый номер");
 		}
 
 		if(this._rawEvents == undefined) {
@@ -135,7 +133,7 @@ export class IntegrationTest {
 			await fs.promises.mkdir(this._ruleDirectoryPath, {recursive: true});
 		}
 
-		const testDirectoryPath = path.join(this._ruleDirectoryPath, `tests`);
+		const testDirectoryPath = path.join(this._ruleDirectoryPath, RuleBaseItem.TESTS_DIRNAME);
 		if(!fs.existsSync(testDirectoryPath)) {
 			await fs.promises.mkdir(testDirectoryPath, {recursive: true});
 		}
@@ -202,6 +200,4 @@ export class IntegrationTest {
 	protected _testStatus : TestStatus = TestStatus.Unknown;
 
 	protected _output : string;
-
-	private static MaxTestIndex = 255;
 }

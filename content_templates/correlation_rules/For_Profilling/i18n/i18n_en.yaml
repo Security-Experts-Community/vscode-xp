@@ -1,0 +1,2 @@
+Description: 'Detects abnormal access to SMTH. The anomaly is determined by profile'
+EventDescriptions:

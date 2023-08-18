@@ -91,7 +91,7 @@ export class PackSIEMAllPackagesAction {
 				 * kbtools.exe pack -s "c:\src\path" -o "c:\dst\path\packages.kb
 				 */
 				emitter.fire(`\n\nXP:: Промежуточный статус: Запущена команда архивации файлов, это может занимать длительное время!\n\n`);
-				const output  = await ProcessHelper.ExecuteWithArgsWithRealtimeEmmiterOutput(
+				const output  = await ProcessHelper.executeWithArgsWithRealtimeEmmiterOutput(
 					"dotnet",
 					[
 						knowledgeBasePackagerCli,
@@ -185,7 +185,7 @@ export class PackKbAction {
 
 				// Типовая команда выглядит так:
 				// dotnet kbpack.dll pack -s "c:\tmp\pack" -o "c:\tmp\pack\Esc.kb"
-				const output = await ProcessHelper.ExecuteWithArgsWithRealtimeOutput(
+				const output = await ProcessHelper.execute(
 					"dotnet",
 					[
 						knowledgeBasePackagerCli, 
@@ -193,10 +193,13 @@ export class PackKbAction {
 						"-s", tmpSubDirectoryPath, 
 						"-o", unpackKbFilePath
 					],
-					this._config.getOutputChannel()
+					{	
+						encoding: 'utf-8',
+						outputChannel: this._config.getOutputChannel()
+					}
 				);
 
-				if(output.includes(this.successSubstring)) {
+				if(output.output.includes(this.successSubstring)) {
 					ExtensionHelper.showUserInfo(`Пакет '${packageName}' успешно собран.`);
 					return;
 				} 
@@ -205,7 +208,6 @@ export class PackKbAction {
 				this._config.getOutputChannel().show();
 			}
 			catch(error) {
-				// TODO: Нужно все внутренние ошибки обрабатывть единообразно
 				ExceptionHelper.show(error, "Внутренняя ошибка расширения.");
 			}
 		});

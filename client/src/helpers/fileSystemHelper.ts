@@ -1,10 +1,46 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as os from 'os';
 import * as crypto from 'crypto';
 
 export class FileSystemHelper {
 
-	public static _fileEncoding : BufferEncoding = 'utf8';
+	/**
+	 * Проверяем корректность пути для использования в KBT, без кириллици и пробелов.
+	 * @param path путь к файлу или директории
+	 * @returns 
+	 */
+	public static isValidPath(path : string): boolean {
+		const regExp = /^[A-z0-9./!$%&;:{}=\-_`~()]+$/g;
+		return regExp.test(path);
+	}
+
+	public static checkIfFilesIsExisting(startPath: string, fileNameRegexPattern: RegExp) : boolean {
+		const getFileList = (dirName : string) : string[] => {
+			let files = [];
+			const items = fs.readdirSync(dirName, { withFileTypes: true });
+
+			for (const item of items) {
+				if (item.isDirectory()) {
+					const newPath = path.join(dirName, item.name);
+					files = [
+						...files,
+						...(getFileList(newPath)),
+					];
+				} else {
+					if (fileNameRegexPattern.exec(item.name) != undefined) {
+						const newPath = path.join(dirName, item.name);
+						files.push(newPath);
+					}
+				}
+			}
+
+			return files;
+		};
+
+		const files = getFileList(startPath);
+		return files.length > 0;
+	}
 
 	public static rename(path : string, newPath : string): Promise<void> {
 		return new Promise((resolve) => {
@@ -28,6 +64,36 @@ export class FileSystemHelper {
 	public static isIncludeDirectoryInPath(fullPath : string, directoryName: string) : boolean {
 		const pathEntries = fullPath.split(path.sep);
 		return pathEntries.includes(directoryName);
+	}
+
+	/**
+	 * По пути к файлу из правила или табличного списка возвращает путь к директории правила.
+	 * @param ruleFilePath путь к файлу из директории правила
+	 * @returns 
+	 */
+	public static ruleFilePathToDirectory(ruleFilePath: string) : string {
+		// Код правила или табличного списка.
+		if(ruleFilePath.endsWith(".co") || ruleFilePath.endsWith(".en")	|| ruleFilePath.endsWith(".xp") || ruleFilePath.endsWith(".tl")) {
+			const ruleDirectoryPath = path.dirname(ruleFilePath);
+			return ruleDirectoryPath;
+		}
+
+		// Метаданные.
+		const fileName = path.basename(ruleFilePath);
+		if(fileName === "metainfo.yaml") {
+			const ruleDirectoryPath = path.dirname(ruleFilePath);
+			return ruleDirectoryPath;
+		}
+
+		// Тесты или локализации
+		const parentDirectoryPath = path.dirname(ruleFilePath);
+		const parentDirectoryName = path.basename(parentDirectoryPath);
+		if(parentDirectoryName === "tests" || parentDirectoryName === "i18n") {
+			const ruleDirectoryPath = path.dirname(parentDirectoryPath);
+			return ruleDirectoryPath;
+		}
+		
+		return null;
 	}
 
 	public static readContentFile(filePath:string): Promise<string> {
@@ -73,15 +139,6 @@ export class FileSystemHelper {
 		}
 		
 		return file.toString();
-	}
-
-	public static writeContentFileSync(filePath: string, fileContent: string) {
-		try {
-			fs.writeFileSync(filePath, fileContent, {encoding: this._fileEncoding});
-		}
-		catch (error) {
-			throw new Error(`Не удалось записать в файл '${filePath}'`);
-		}
 	}
 
 	public static readSubDirectories(filePath: string) {
@@ -182,4 +239,6 @@ export class FileSystemHelper {
 
 		return results;
 	}
+
+	public static _fileEncoding : BufferEncoding = 'utf8';
 }

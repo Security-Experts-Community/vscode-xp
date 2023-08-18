@@ -15,6 +15,7 @@ import { NormalizationUnitTestOutputParser } from '../tests/normalizationUnitTes
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { XPObjectType } from './xpObjectType';
 import { ContentHelper } from '../../helpers/contentHelper';
+import { XpException } from '../xpException';
 
 
 export class Normalization extends RuleBaseItem {
@@ -98,7 +99,7 @@ export class Normalization extends RuleBaseItem {
 		} else {
 			const parentPath = this.getParentPath();
 			if (!parentPath) {
-				throw new Error("Не задан путь для сохранения нормализации.");
+				throw new XpException("Не задан путь для сохранения нормализации.");
 			}
 			rulePath = this.getDirectoryPath();
 		}
@@ -108,11 +109,8 @@ export class Normalization extends RuleBaseItem {
 		}
 
 		const ruleFullPath = path.join(rulePath, this.getFileName());
-		if (this._ruleCode) {
-			await FileSystemHelper.writeContentFile(ruleFullPath, this._ruleCode);
-		} else {
-			await FileSystemHelper.writeContentFile(ruleFullPath, "");
-		}
+		const ruleCode = await this.getRuleCode();
+		await FileSystemHelper.writeContentFile(ruleFullPath, ruleCode);
 
 		await this.getMetaInfo().save(rulePath);
 		await this.saveLocalizationsImpl(rulePath);
@@ -145,7 +143,7 @@ export class Normalization extends RuleBaseItem {
 		const objectId = rule.generateObjectId();
 		metainfo.setObjectId(objectId);
 
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		// Добавляем команду на открытие.
 		rule.setCommand({
 			command: ContentTreeProvider.onRuleClickCommand,
 			title: "Open File",
@@ -175,7 +173,7 @@ export class Normalization extends RuleBaseItem {
 
 		const ruleFilePath = normalization.getRuleFilePath();
 		const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
-		normalization.setRuleCode(ruleCode);
+		await normalization.setRuleCode(ruleCode);
 
 		// Парсим описания на разных языках.
 		const ruDescription = await Localization.parseRuDescription(directoryPath);
@@ -185,14 +183,19 @@ export class Normalization extends RuleBaseItem {
 		normalization.setEnDescription(enDescription);
 
 		const localizations = await Localization.parseFromDirectory(directoryPath);
-			localizations.forEach((loc) => {
-				normalization.addLocalization(loc);
-			});
+		if(!normalization.checkLocalizationConsistency(localizations, normalization.getMetaInfo())) {
+			throw new XpException(
+				`В правиле ${name} наборы идентификаторов локализаций (LocalizationId) в файлах метаинформации и локализаций не совпадают. Необходимо их скорректировать вручную и обновить дерево контента.`);
+		}
+
+		localizations.forEach((loc) => {
+			normalization.addLocalization(loc);
+		});
 
 		const unitTests = NormalizationUnitTest.parseFromRuleDirectory(normalization);
 		normalization.addUnitTests(unitTests);
 
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		// Добавляем команду на открытие.
 		normalization.setCommand({
 			command: ContentTreeProvider.onRuleClickCommand,
 			title: "Open File",

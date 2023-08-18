@@ -1,0 +1,146 @@
+filter CheckWL_Universal(string $rule_name, string $specific_value)
+{
+    # Проверяем наличие параметров события в блеклисте по параметрам макроса
+    # $rule_name - имя правила
+    # event_src.host - имя участвующего хоста
+    # subject.account.name - любой идентификатор пользователя как UID, SID, username, username@domain и т.д.
+    # $specific_value - поле alert.key правила, комбинированное значение идентифицирующее конкретную сработку
+    (
+        # Один блок на одно поле subject.account.name
+        # Проверяется на полное совпадание параметры $rule_name, event_src.host, subject.account.name и $specific_value 
+        not filter::CheckWL_BlackListValue_Exc(
+            $rule_name,
+            lower(event_src.host),
+            lower(subject.account.name),
+            lower($specific_value)
+        )
+        # Проверяется на полное совпадание параметры $rule_name, event_src.host, subject.account.name, а
+        # $specific_value проверятся как регулярное выражение.
+        and not filter::CheckWL_BlackListRegex_Exc(
+            $rule_name,
+            lower(event_src.host),
+            lower(subject.account.name),
+            lower($specific_value)
+        )
+
+        # and not filter::CheckWL_BlackListRegex_Exc(
+        # TODO: Повторить блок выше для различных значений третьего параметра
+    )
+    and
+    (
+        (
+            # For Unix with $specific_value in as-is register
+            # subject.account.name
+            filter::CheckWL_BlackListValue(
+                $rule_name,
+                lower(event_src.host),
+                lower(subject.account.name),
+                lower($specific_value)
+            )
+            or filter::CheckWL_BlackListRegex(
+                $rule_name,
+                lower(event_src.host),
+                lower(subject.account.name),
+                lower($specific_value)
+            )
+            # or filter::CheckWL_BlackListValue(
+            # TODO: Повторить блок выше для различных значений третьего параметра
+        )
+        or
+        (
+            # check manual whitelists for the specific value
+            # subject.account.name
+            not filter::CheckWL_WhiteListValue(
+                $rule_name,
+                lower(event_src.host),
+                lower(subject.account.name),
+                lower($specific_value)
+            )
+            and not filter::CheckWL_WhiteListRegex(
+                $rule_name,
+                lower(event_src.host),
+                lower(subject.account.name),
+                lower($specific_value)
+            )
+            # TODO: Повторить блок выше для различных значений третьего параметра
+            # and not filter::CheckWL_WhiteListValue(
+            #     $rule_name,
+            #     lower(event_src.host),
+            #     lower(...),
+            #     lower($specific_value)
+            # )
+            # and not filter::CheckWL_WhiteListRegex(
+            #     $rule_name,
+            #     lower(event_src.host),
+            #     lower(...),
+            #     lower($specific_value)
+            # )
+
+            # Проверка ручного вайтлистинга от добавленных исключения из UI 
+            # Проверка specific_value параметров на равенство с 4го по 8ой параметр.
+            and not filter::CheckWL_WhiteListValue_4(
+                $rule_name,
+                lower(event_src.host),
+                lower(subject.account.id),
+
+                lower(subject.account.domain),
+                lower(event_src.title),
+                src.ip,
+                lower(src.host)
+            )
+            and not filter::CheckWL_WhiteListValue_4(
+                $rule_name,
+                lower(event_src.host),
+                lower(subject.account.name),
+
+                lower(subject.account.domain),
+                lower(event_src.title),
+                src.ip,
+                lower(src.host)
+            )
+
+            # Комбинация значений полей
+            # Проверка specific_value параметров на равенство с 4го и 5ой параметр.
+            and not filter::CheckWL_WhiteListValue_2(
+                $rule_name,
+                lower(event_src.host),
+                lower(subject.account.id),
+
+                lower(subject.account.domain) + "|" + src.ip,
+                lower(subject.account.domain + "|" + src.host)
+            )
+            and not filter::CheckWL_WhiteListValue_2(
+                $rule_name,
+                lower(event_src.host),
+                lower(subject.account.name),
+
+                lower(subject.account.domain) + "|" + src.ip,
+                lower(subject.account.domain + "|" + src.host)
+            )
+            # and not filter::CheckWL_WhiteListValue_2(
+            # TODO: Повторить блок выше для различных значений третьего параметра
+
+            # Комбинация регулярных полей для проверки полей
+            and not filter::CheckWL_WhiteListRegex(
+                $rule_name,
+                lower(event_src.host),
+                lower(subject.account.id),
+
+                lower(join([event_src.host, event_src.title, subject.account.name, subject.account.domain, src.host], "|"))
+            )
+            and not filter::CheckWL_WhiteListRegex(
+                $rule_name,
+                lower(event_src.host),
+                lower(subject.account.id),
+                
+                lower(join([event_src.host, event_src.title, subject.account.name, subject.account.domain, src.ip], "|"))
+            )
+
+            # Проверка автовайтлистинга 
+            and not filter::CheckWL_Auto(
+                $rule_name,
+                lower($specific_value)
+            )
+        )
+    )
+}

@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import { Uri } from 'vscode';
+
 import { API, Branch } from '../../@types/vscode.git';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Configuration } from '../../models/configuration';

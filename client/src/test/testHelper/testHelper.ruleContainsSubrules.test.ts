@@ -5,6 +5,18 @@ import { TestHelper } from '../../helpers/testHelper';
 
 suite('TestHelper.ruleContainsSubrules', async () => {
 
+	test('Проверка сабруля из списка без lower', async () => {
+
+		const ruleCode =
+`	in_list([
+	"Subrule_Windows_Host_Abnormal_Access", 
+	"Subrule_Unix_Server_Abnormal_Access"
+], correlation_name)`;
+
+		const ruleContainsSubrules = TestHelper.isRuleCodeContainsSubrules(ruleCode);
+		assert.ok(ruleContainsSubrules);
+	});
+
 	test('Сравнение имени сабруля c lower', async () => {
 
 		const ruleCode =

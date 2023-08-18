@@ -62,7 +62,7 @@ export class Aggregation extends RuleBaseItem {
 			aggregation.setFileName(fileName);
 		}
 
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		// Добавляем команду на открытие.
 		aggregation.setCommand({ 
 			command: ContentTreeProvider.onRuleClickCommand,  
 			title: "Open File", 
@@ -85,7 +85,7 @@ export class Aggregation extends RuleBaseItem {
 			aggregation.setFileName(fileName);
 		}
 
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		// Добавляем команду на открытие.
 		aggregation.setCommand({ 
 			command: ContentTreeProvider.onRuleClickCommand,  
 			title: "Open File", 

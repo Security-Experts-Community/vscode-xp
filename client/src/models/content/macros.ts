@@ -40,7 +40,7 @@ export class Macros extends KbTreeBaseItem {
 			marcos.setFileName(fileName);			
 		}
 
-		// Добавляем команду, которая пробрасываем параметром саму рубрику.
+		// Добавляем команду на открытие.
 		marcos.setCommand({ 
 			command: ContentTreeProvider.onRuleClickCommand,  
 			title: "Open File", 

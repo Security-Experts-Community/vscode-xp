@@ -107,6 +107,31 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 		token: vscode.CancellationToken,
 		context: any) {
 
-		return this._completionItems;
+		// Извлекаем строку без пробелов до текущего токена.
+		const lineText = document.lineAt(position.line).text;
+		
+		const firstNonWhitespaceCharacterIndex = document.lineAt(position.line).firstNonWhitespaceCharacterIndex;
+		const lastAutocompleteWordIndex = position.character;
+		const prevText = lineText.substring(firstNonWhitespaceCharacterIndex, lastAutocompleteWordIndex);
+
+		// Выделяем токен.
+		const parseResult = /\b([a-z0-9.]+)$/g.exec(prevText);
+		if(!parseResult || parseResult.length != 2) {
+			return this._completionItems;
+		}
+
+		const unendedToken = parseResult[1];
+		const filtredItems = this._completionItems.filter(ci => ci.label.startsWith(unendedToken));
+
+		// Вставлять будем только окончание, вместо полного item-а.
+		// const wordRange = document.getWordRangeAtPosition(position);
+		// const word = document.getText(wordRange);
+		
+		for (const filtredItem of filtredItems) {
+			const unendedTokenWithoutLastChar = unendedToken.slice(0, -1);
+			filtredItem.insertText = filtredItem.label.replace(unendedTokenWithoutLastChar, "");
+		}
+
+		return filtredItems;
 	}
 }

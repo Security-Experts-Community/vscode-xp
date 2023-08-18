@@ -1,0 +1,6 @@
+ContentAutoName: Password_Brute
+EventDescriptions:
+    - Criteria: correlation_name = "Password_Brute" and status != "success"
+      LocalizationId: corrname_Password_Brute
+    - Criteria: correlation_name = "Password_Brute" and status = "success"
+      LocalizationId: corrname_Password_Brute_2

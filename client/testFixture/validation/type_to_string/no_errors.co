@@ -1,0 +1,22 @@
+event Subrule:
+    key:
+        event_src.host
+    filter {
+        filter::NotFromCorrelator()
+    }
+
+rule Rule: Subrule+ timer 1m
+
+    on Subrule {
+        $foo = dst.ip + ":" + string(src.port)
+        $bar = dst.port
+
+		$bar = duration
+		$bar = dst.port
+
+		$bar2 = numfield2
+    }
+
+emit {
+}
+

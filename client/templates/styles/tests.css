@@ -100,7 +100,24 @@ div.failure {
 
 .block_header {
 	display: block;
-	height: 25px;
+	min-height: 25px;
+	width: 40%;
+	float: left;
+}
+
+.manage_buttons {
+	display: block;
+	min-height: 25px;
+	width: 40%;
+	float: right;
+}
+
+.text {
+	display: block;
+	float: left;
+	margin: 10px 0px;
+	width: 100%;
+	overflow-x: auto;
 }
 
 textarea {
@@ -115,21 +132,20 @@ textarea {
 	font-family: var(--vscode-editor-font-family);
 }
 
-#norm_event {
-	white-space: pre;
+/*
+Универсальный стиль для редактора кода.
+*/
+.xp_code {
+	white-space: pre-wrap;
+	min-height: 100px;
 	color: var(--vscode-input-foreground);
 	font-family: var(--vscode-editor-font-family);	
 }
 
 #correlated_events {
-	white-space: pre;
+	white-space: pre-wrap;
 	color: var(--vscode-input-foreground);
 	font-family: var(--vscode-editor-font-family);	
-}
-
-textarea:focus {
-	border-left: 3px solid var(--vscode-input-foreground);
-	outline: none;
 }
 
 .scrolldown {
@@ -170,7 +186,7 @@ textarea:focus {
 }
 
 .dropdown input{
-	width: 100px;
+	min-width: 100px;
 }
 
 .dropdown-content {

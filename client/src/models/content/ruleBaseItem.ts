@@ -75,12 +75,12 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			return packageDirectoryPath;
 		}
 
-		throw new Error(`Путь к правилу '${this.getName()}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
+		throw new XpException(`Путь к правилу '${this.getName()}' не содержит ни одну из корневых директорий: [${roots.join(", ")}].`);
 	}
 
 
 	public getTestsPath():string {
-		return path.join(this.getDirectoryPath(), 'tests');
+		return path.join(this.getDirectoryPath(), RuleBaseItem.TESTS_DIRNAME);
 	}
 
 	public async saveUnitTests(): Promise<void> {	
@@ -250,7 +250,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		const ruEventDescriptions = this._localizations.map( function(loc) {
 			const locId = loc.getLocalizationId();
 			if(!locId) {
-				throw new Error(`Ошибка целостности локализаций правила ${fullPath}, не задан localizationId`);
+				throw new XpException(`Ошибка целостности локализаций правила ${fullPath}, не задан localizationId`);
 			}
 
 			let ruText = loc.getRuLocalizationText();
@@ -264,19 +264,14 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			};
 		});
 
-		const ruLocalizationYamlContent = YamlHelper.localizationsStringify({
-			"Description" : this.getRuDescription(),
-			"EventDescriptions" : ruEventDescriptions
-		});
-
-		await FileSystemHelper.writeContentFile(ruLocFullPath, ruLocalizationYamlContent);
+		await this.writeLocalizationToDisk(ruLocFullPath, ruEventDescriptions, this.getRuDescription());
 
 		// Английские локализации
 		const enLocFullPath = this.getLocalizationPath(LocalizationLanguage.En, fullPath);
 		const enEventDescriptions = this._localizations.map( function(loc) {
 			const locId = loc.getLocalizationId();
 			if(!locId) {
-				throw new Error("Ошибка целостности локализации, не задан localizationId");
+				throw new XpException("Ошибка целостности локализации, не задан localizationId");
 			}
 
 			let enText = loc.getEnLocalizationText();
@@ -290,12 +285,23 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			};
 		});
 
-		const enLocalizationYamlContent = YamlHelper.localizationsStringify({
-			"Description" : this.getEnDescription(),
-			"EventDescriptions" : enEventDescriptions
-		});
+		await this.writeLocalizationToDisk(enLocFullPath, enEventDescriptions, this.getEnDescription());
+	}
 
-		await FileSystemHelper.writeContentFile(enLocFullPath, enLocalizationYamlContent);
+	private async writeLocalizationToDisk(localizationFullPath: string, eventDescriptions : any[], description : string) : Promise<void> {
+		let localizationYamlContent : any;
+		if(eventDescriptions.length != 0) {
+			localizationYamlContent = YamlHelper.localizationsStringify({
+				"Description" : description,
+				"EventDescriptions" : eventDescriptions
+			});
+		} else {
+			localizationYamlContent = YamlHelper.localizationsStringify({
+				"Description" : description
+			});
+		}
+
+		await FileSystemHelper.writeContentFile(localizationFullPath, localizationYamlContent);
 	}
 
 	protected getLocalizationPath(localizationLanguage: LocalizationLanguage, fullPath : string) : string {
@@ -389,8 +395,18 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	}
 	
 
+	/**
+	 * Возвращает путь к файлу правила, либо undefined.
+	 * @returns возвращает путь к файлу правила. 
+	 */
 	public getRuleFilePath(): string {
-		return path.join(this.getDirectoryPath(), this.getFileName());
+		const directoryPath = this.getDirectoryPath();
+		const fileName = this.getFileName();
+		if(!directoryPath || !fileName) {
+			return undefined;
+		}
+
+		return path.join(directoryPath, fileName);
 	}
 
 	/**
@@ -400,7 +416,8 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	public async getRuleCode(): Promise<string> {
 		const rulePath = this.getRuleFilePath();
 		if(fs.existsSync(rulePath)) {
-			return fs.promises.readFile(rulePath, this.getRuleEncoding());
+			this._ruleCode = await fs.promises.readFile(rulePath, this.getRuleEncoding());
+			return this._ruleCode;
 		}
 
 		if(this._ruleCode) {
@@ -410,25 +427,43 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		return "";
 	}
 
+
+	/**
+	 * Изменяет код правила в памяти и на диске, если правило уже сохранено.
+	 * @param code новый код правила
+	 */
+	public setRuleCode(code: string): Promise<void> {
+		if(code === undefined) {
+			throw new XpException("Код правила не задан.");
+		}
+		
+		this._ruleCode = code;
+
+		// Меняем код правила на диске.
+		const ruleFilePath = this.getRuleFilePath();
+		if(fs.existsSync(ruleFilePath)) {
+			return FileSystemHelper.writeContentFileIfChanged(ruleFilePath, code);
+		}
+	}
+
 	public async save(fullPath?: string) : Promise<void> {
 		throw new XpException("Сохранение данного типа контента не реализовано.");
 	}
 
-	public setRuleCode(text: string): void {
-		this._ruleCode = text;
-	}
-
 	iconPath = new vscode.ThemeIcon('file');
 
-	protected _localizations: Localization [] = [];
+	private _localizations: Localization [] = [];
+	private _localizationExamples : LocalizationExample [] = [];
+
 	protected _unitTests: BaseUnitTest [] = [];
 	protected _integrationTests : IntegrationTest [] = [];
 	
 	private _ruDescription : string;
 	private _enDescription : string;
 
-	private _localizationExamples : LocalizationExample [] = [];
+	private _ruleCode = "";
 
-	protected _ruleCode : string;
 	contextValue = "BaseRule";
+
+	public static TESTS_DIRNAME = `tests`;
 }

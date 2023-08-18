@@ -16,13 +16,15 @@ import {
 import {
 	TextDocument
 } from 'vscode-languageserver-textdocument';
-import { LowerFunctionResultValidator } from './lowerFunctionResultValidator';
-import { IValidator } from './IValidator';
-import { WhitelistingAndAlertKeyValidator } from './whitelistingAndAlertkeyValidator';
-import { WhitelistingAndRuleNameValidator } from './whitelistingAndRuleNameValidator';
-import { NestedLowerValidator } from './nestedLowerValidator';
-import { ImportanceAndSeverityValidator } from './importanceAndSeverityValidator';
-import { FilterEqualsValidator } from './filterEqualsValidator';
+import { LowerFunctionResultValidator } from './validator/lowerFunctionResultValidator';
+import { IValidator } from './validator/IValidator';
+import { WhitelistingAndAlertKeyValidator } from './validator/whitelistingAndAlertkeyValidator';
+import { WhitelistingAndRuleNameValidator } from './validator/whitelistingAndRuleNameValidator';
+import { NestedLowerValidator } from './validator/nestedLowerValidator';
+import { ImportanceAndSeverityValidator } from './validator/importanceAndSeverityValidator';
+import { FilterEqualsValidator } from './validator/filterEqualsValidator';
+import { CorrectnessAssignmentOnBlocks } from './validator/correctnessAssignmentOnBlocks';
+import { TypeToStringConversionValidator } from './validator/typeToStringConvertionValidator';
 
 const connection = createConnection(ProposedFeatures.all);
 const documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
@@ -41,7 +43,9 @@ connection.onInitialize((params: InitializeParams) => {
 		new WhitelistingAndRuleNameValidator(),
 		new NestedLowerValidator(),
 		new ImportanceAndSeverityValidator(),
-		new FilterEqualsValidator()
+		new FilterEqualsValidator(),
+		new CorrectnessAssignmentOnBlocks(),
+		new TypeToStringConversionValidator()
 	);
 
 	const capabilities = params.capabilities;

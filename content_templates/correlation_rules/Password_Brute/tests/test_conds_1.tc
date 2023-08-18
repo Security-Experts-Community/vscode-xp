@@ -1,0 +1,2 @@
+# Успешный брут
+expect 1 {"correlation_name": "Password_Brute"}

@@ -2,8 +2,6 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { Configuration } from '../configuration';
-import { SiemjConfBuilder } from './siemjConfigBuilder';
-
 
 export class SiemjConfigHelper {
 	

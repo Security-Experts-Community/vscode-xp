@@ -1,0 +1,9 @@
+rule Rule: First_Event+ timer 1m
+
+    on First_Event {
+        
+    }
+
+emit {
+	dst.fqdn = $event_src.fqdn
+}

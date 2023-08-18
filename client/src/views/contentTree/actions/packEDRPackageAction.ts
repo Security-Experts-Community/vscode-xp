@@ -6,7 +6,10 @@ import { ExtensionHelper } from '../../../helpers/extensionHelper';
 import { ProcessHelper } from '../../../helpers/processHelper';
 import { Configuration } from '../../../models/configuration';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
-import { PackAction } from './action';
+import { PackAction } from './packAction';
+import { XpException } from '../../../models/xpException';
+import { FileSystemException } from '../../../models/fileSystemException';
+import { MetaInfo } from '../../../models/metaInfo/metaInfo';
 
 export class PackEDRPackageAction {
 	constructor(private config: Configuration) {}
@@ -56,7 +59,7 @@ export class PackEDRPackageAction {
 				const pathEntities = graphsDirectory.split(path.sep);
 				const packagesDirectoryIndex = pathEntities.findIndex( pe => pe.toLocaleLowerCase() === expectedFolder);
 				if(packagesDirectoryIndex === -1){
-					throw new Error(`Не найдена директория с модулем коррелятора для файла '${graphsDirectory}'`);
+					throw new FileSystemException(`Не найдена директория с модулем коррелятора для файла '${graphsDirectory}'`);
 				}
 				
 				// Удаляем лишние элементы пути и собираем результирующий путь.
@@ -64,17 +67,17 @@ export class PackEDRPackageAction {
 				pathEntities.splice(packageNameIndex);
 				const correlatorDirectory = pathEntities.join(path.sep);
 
-				if(!graphsDirectory) { throw new Error(`Путь к graphs.zip не выбран.`);	}
+				if(!graphsDirectory) { throw new FileSystemException(`Путь к graphs.zip не выбран.`);	}
 
-				const metainfoPath = path.join(rootFolder, "metainfo.json");
+				const metainfoPath = path.join(rootFolder, MetaInfo.METAINFO_FILENAME);
 				if(!fs.existsSync(metainfoPath)) {
-					throw new Error(`Путь к файлу описания пакета задан не верно: ${metainfoPath}!`);
+					throw new FileSystemException(`Путь к файлу описания пакета задан не верно: ${metainfoPath}!`);
 				}
 
 				// Проверка наличия скрипта сборки архива graphs.zip
 				const edrPackager = path.join(this.config.getBuildToolsDirectoryFullPath(), "soldr-build", "gen_correlator_config.exe");
 				if(!fs.existsSync(edrPackager)) {
-					throw new Error(`Путь к скрипту сборки graphs.zip задан не верно: ${edrPackager}`);
+					throw new FileSystemException(`Путь к скрипту сборки graphs.zip задан не верно: ${edrPackager}`);
 				}
 
 				/** Типовая команда выглядит так:
