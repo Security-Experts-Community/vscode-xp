@@ -13,9 +13,10 @@ export class FileDiagnostics {
 }
 
 export class SiemjExecutionResult {
-	public testStatus : boolean;
+	public testsStatus : boolean;
 	public fileDiagnostics : FileDiagnostics[] = [];
 	public failedTestNumbers : number[] = [];
+	public tmpDirectoryPath: string;
 }
 
 export class SiemJOutputParser {
@@ -101,7 +102,7 @@ export class SiemJOutputParser {
 
 			// Все тесты прошли.
 			if(siemjOutput.includes(this.TESTS_SUCCESS_SUBSTRING)) {
-				result.testStatus = true;
+				result.testsStatus = true;
 			}
 
 			// Не все прошли, значит есть ошибки.
@@ -122,21 +123,21 @@ export class SiemJOutputParser {
 			// Тесты даже не запустились.
 			// Например, сырое событие без конверта.
 			if(siemjOutput.includes(this.ERRORS_FOUND_SUBSTRING)) {
-				result.testStatus = false;
+				result.testsStatus = false;
 				return;
 			}
 
 			// Если хоть одна ошибка, тогда выполнение Siemj завершилось неуспешно.
 			if(result.failedTestNumbers.length > 0) {
-				result.testStatus = false;
+				result.testsStatus = false;
 			} else {
-				result.testStatus = true;
+				result.testsStatus = true;
 			}
 
 			return;
 		}
 
-		result.testStatus = false;
+		result.testsStatus = false;
 	}
 
 	/**

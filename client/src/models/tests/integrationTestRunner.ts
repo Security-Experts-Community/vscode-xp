@@ -2,12 +2,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { ProcessHelper } from '../../helpers/processHelper';
 import { SiemjConfigHelper } from '../siemj/siemjConfigHelper';
-import { SiemJOutputParser } from '../siemj/siemJOutputParser';
+import { SiemJOutputParser, SiemjExecutionResult } from '../siemj/siemJOutputParser';
 import { Configuration } from '../configuration';
 import { RuleBaseItem } from '../content/ruleBaseItem';
-import { IntegrationTest } from './integrationTest';
 import { TestStatus } from './testStatus';
 import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
 import { XpException } from '../xpException';
@@ -25,7 +23,7 @@ export class IntegrationTestRunner {
 		private _token?: vscode.CancellationToken) {
 	}
 
-	public async run(rule : RuleBaseItem) : Promise<IntegrationTest[]> {
+	public async run(rule : RuleBaseItem, keepTmpFiles = false) : Promise<SiemjExecutionResult> {
 
 		// Проверяем наличие нужных утилит.
 		this._config.getSiemkbTestsPath();
@@ -85,7 +83,8 @@ export class IntegrationTestRunner {
 			configBuilder.addCorrelationsGraphBuilding();
 		}
 		
-		configBuilder.addTestsRun(rule.getDirectoryPath());
+		// Получаем путь к директории с результатами теста.
+		const tmpDirectoryPath = configBuilder.addTestsRun(rule.getDirectoryPath(), keepTmpFiles);
 
 		const siemjConfContent = configBuilder.build();
 		if(!siemjConfContent) {
@@ -94,68 +93,44 @@ export class IntegrationTestRunner {
 
 		const siemjManager = new SiemjManager(this._config, this._token);
 		const siemjExecutionResult = await siemjManager.executeSiemjConfig(rule, siemjConfContent);
+		const executedTests = rule.getIntegrationTests();
 
 		if(siemjExecutionResult.isInterrupted) {
 			throw new OperationCanceledException(`Запуск интеграционных тестов правила ${rule.getName()} был отменён.`);
 		}
 
 		const siemjResult = await this._outputParser.parse(siemjExecutionResult.output);
+		// Сохраняем результаты тестов.
+		siemjResult.tmpDirectoryPath = tmpDirectoryPath;
+		
 		// Все тесты прошли, статусы не проверяем, все тесты зеленые.
-		if(siemjResult.testStatus) {
-			integrationTests.forEach(it => it.setStatus(TestStatus.Success));
+		if(siemjResult.testsStatus) {
+			executedTests.forEach(it => it.setStatus(TestStatus.Success));
 
 			// Убираем ошибки по текущему правилу.
 			const ruleFileUri = vscode.Uri.file(rule.getRuleFilePath());
 			this._config.getDiagnosticCollection().set(ruleFileUri, []);
-
-			this.clearTmpFiles(this._config, rootFolder);
-			return integrationTests;
 		} else {
 			// Есть ошибки, все неуспешные тесты не прошли.
-			integrationTests.filter(it => it.getStatus() === TestStatus.Success).forEach(it => it.setStatus(TestStatus.Failed));
-		}
-
-		// Либо тесты не прошли, либо мы до них не дошли.
-		this._config.getOutputChannel().show();
-		this._config.getDiagnosticCollection().clear();
-
-		// Фильтруем диагностики по текущему правилу и показываем их в нативном окне.
-		const diagnostics = siemjResult.fileDiagnostics.filter(rfd => {
-			const path = rfd.uri.path;
-			return path.includes(rule.getName());
-		});
-
-		for (const diagnostic of diagnostics) {
-			this._config.getDiagnosticCollection().set(diagnostic.uri, diagnostic.diagnostics);
+			executedTests
+				.filter(it => it.getStatus() === TestStatus.Success)
+				.forEach(it => it.setStatus(TestStatus.Failed));
 		}
 
 		// Если были не прошедшие тесты, выводим статус.
 		// Непрошедшие тесты могу отсутствовать, если до тестов дело не дошло.
 		if(siemjResult.failedTestNumbers.length > 0) {
 			for(const failedTestNumber of siemjResult.failedTestNumbers) {
-				integrationTests[failedTestNumber - 1].setStatus(TestStatus.Failed);
+				executedTests[failedTestNumber - 1].setStatus(TestStatus.Failed);
 			}
 	
-			integrationTests.forEach( (it) => {
+			executedTests.forEach( (it) => {
 				if(it.getStatus() == TestStatus.Unknown) {
 					it.setStatus(TestStatus.Success);
 				}
 			});
 		}
 
-		return integrationTests;
+		return siemjResult;
 	}
-
-	private async clearTmpFiles(config : Configuration, rootFolder: string) : Promise<void> {
-		
-		try {
-			const siemjConfigPath = config.getTmpDirectoryPath(rootFolder);
-			return fs.promises.unlink(siemjConfigPath); 
-		}
-		catch (error) {
-			// TODO:
-		}
-	}
-
-	private readonly TESTS_SUCCESS_SUBSTRING = "All tests OK";
 }

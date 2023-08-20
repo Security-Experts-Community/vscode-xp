@@ -560,31 +560,37 @@ export class IntegrationTestEditorViewProvider  {
 				return false;
 			}
 
-			// Уточняем информацию для пользователей если в правиле обнаружено использование сабрулей.
-			const ruleCode = await this._rule.getRuleCode();
-			if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
-				progress.report({
-					message : `Интеграционные тесты для правила с сабрулями '${this._rule.getName()}'`
-				});
-			} else {
-				progress.report({
-					message : `Интеграционные тесты для правила '${this._rule.getName()}'`
-				});
-			}
-
 			try {
+				// Уточняем информацию для пользователей если в правиле обнаружено использование сабрулей.
+				const ruleCode = await this._rule.getRuleCode();
+				if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
+					progress.report({
+						message : `Интеграционные тесты для правила с сабрулями '${this._rule.getName()}'`
+					});
+				} else {
+					progress.report({
+						message : `Интеграционные тесты для правила '${this._rule.getName()}'`
+					});
+				}
+
 				const outputParser = new SiemJOutputParser();
 				const testRunner = new IntegrationTestRunner(this._config, outputParser, token);
-				const executedTests = await testRunner.run(this._rule);
+				const siemjResult = await testRunner.run(this._rule);
 
-				if(executedTests.every(it => it.getStatus() === TestStatus.Success)) {
+				this._config.getDiagnosticCollection().clear();
+				for (const diagnostic of siemjResult.fileDiagnostics) {
+					this._config.getDiagnosticCollection().set(diagnostic.uri, diagnostic.diagnostics);
+				}
+
+				const executedIntegrationTests = this._rule.getIntegrationTests();
+				if(executedIntegrationTests.every(it => it.getStatus() === TestStatus.Success)) {
 					ExtensionHelper.showUserInfo(`Интеграционные тесты прошли успешно.`);
-					return true;
-				} 
+				} else {
+					ExtensionHelper.showUserInfo(`Не все тесты были пройдены.`);
+				}
 			}
 			catch(error) {
 				ExceptionHelper.show(error, `Ошибка запуска тестов`);
-				return false;
 			}
 		});
 	}

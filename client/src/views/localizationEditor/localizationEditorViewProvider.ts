@@ -13,6 +13,8 @@ import { XpException } from '../../models/xpException';
 import { SiemjManager } from '../../models/siemj/siemjManager';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
+import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
+import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
 
 export class LocalizationEditorViewProvider  {
 
@@ -145,7 +147,7 @@ export class LocalizationEditorViewProvider  {
 						"Среди всех интеграционных тестов не были найдены подходящие. Проверьте, что интеграционные тесты проходят, что среди них есть без заполнения табличных списков (только заполнение по умолчанию).");
 				}
 
-				const locExamples = await this.getLocalizationExamples(integrationTestsForTestLocalizations);
+				const locExamples = await this.getLocalizationExamples();
 				if(locExamples.length === 0) {
 					return ExtensionHelper.showUserInfo(
 						"По имеющимся событиям не отработала ни одна локализация. Проверьте, что интеграционные тесты проходят, корректны критерии локализации. После исправлений повторите.");
@@ -210,15 +212,24 @@ export class LocalizationEditorViewProvider  {
 		}
 	}
 
-	private async getLocalizationExamples(integrationTests : IntegrationTest[]) : Promise<LocalizationExample[]> {
+	private async getLocalizationExamples() : Promise<LocalizationExample[]> {
 		return await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
-			title: `Генерация локализаций из тестовых событий`
-		}, async (progress) => {
+			cancellable: true,
+		}, async (progress, token) => {
 			try {
-				const siemjManager = new SiemjManager(this._config);
-				const locExamples = await siemjManager.correlateAndGetLocalizationExamples(this._rule, integrationTests);
+				progress.report({message : `Получение корреляционных событий на основе интеграционных тестов правила.`});
+				const outputParser = new SiemJOutputParser();
+				const testRunner = new IntegrationTestRunner(this._config, outputParser, token);
+				const siemjResult = await testRunner.run(this._rule, true);
+
+				if(!siemjResult.testsStatus) {
+					throw new XpException("Не все интеграционные тесты прошли. Исправьте тесты и повторите.");
+				}
+
+				progress.report({message : `Генерация локализаций на основе корреляционных событий.`});
+				const siemjManager = new SiemjManager(this._config); 
+				const locExamples = await siemjManager.buildLocalizationExamples(this._rule, siemjResult.tmpDirectoryPath);
 				return locExamples;
 			}
 			catch (error) {
