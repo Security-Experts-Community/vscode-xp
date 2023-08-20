@@ -318,7 +318,7 @@
 				{
 					"command": "MetaInfoView.showMetaInfoEditor",
 					"when": "view == KnowledgebaseTree && viewItem == Aggregation",
-					"group": "Aggregation@1"
+					"group": "Aggregation@2"
 				},
 				{
 					"command": "LocalizationView.showLocalizationEditor",
@@ -328,7 +328,7 @@
 				{
 					"command": "MetaInfoView.showMetaInfoEditor",
 					"when": "view == KnowledgebaseTree && viewItem == Normalization",
-					"group": "Normalization@1"
+					"group": "Normalization@2"
 				},
 				{
 					"command": "LocalizationView.showLocalizationEditor",
@@ -336,19 +336,19 @@
 					"group": "Normalization@2"
 				},
 				{
-					"command": "MetaInfoView.showMetaInfoEditor",
+					"command": "IntegrationTestEditorView.showEditor",
 					"when": "view == KnowledgebaseTree && viewItem == Enrichment",
 					"group": "Enrichment@1"
 				},
 				{
-					"command": "IntegrationTestEditorView.showEditor",
+					"command": "MetaInfoView.showMetaInfoEditor",
 					"when": "view == KnowledgebaseTree && viewItem == Enrichment",
 					"group": "Enrichment@2"
 				},
 				{
 					"command": "LocalizationView.showLocalizationEditor",
 					"when": "view == KnowledgebaseTree && viewItem == Enrichment",
-					"group": "Enrichment@4"
+					"group": "Enrichment@3"
 				},
 				{
 					"command": "ModularTestsListView.removeTest",
@@ -468,12 +468,12 @@
 			},
 			{
 				"command": "MetaInfoView.showMetaInfoEditor",
-				"title": "Редактор метаданных",
+				"title": "Метаданные",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "LocalizationView.showLocalizationEditor",
-				"title": "Редактор правил локализации",
+				"title": "Локализации",
 				"category": "Редактор XP"
 			},
 			{

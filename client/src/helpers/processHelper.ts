@@ -51,7 +51,7 @@ export class ProcessHelper {
 			let child : child_process.ChildProcessWithoutNullStreams;
 			// Вывод пополныемой команды для локализациии ошибки.
 			if(options.outputChannel) {
-				options.outputChannel.append(`${command} ${params.join(' ')} `);
+				options.outputChannel.appendLine(`${command} ${params.join(' ')} `);
 			}
 			
 			try {
