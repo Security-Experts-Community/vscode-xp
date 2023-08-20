@@ -67,7 +67,7 @@ rule Unix_Execve: Event
                
         $alert.key =           
         $alert.context = 
-        $lert.regex_match = 
+        $alert.regex_match = 
     }
 
 emit {  
