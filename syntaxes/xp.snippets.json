@@ -655,9 +655,6 @@
 			"\\$object.process.parent.path = object.process.parent.path",
 			"\\$object.process.parent.fullpath = object.process.parent.fullpath",
 			"\\$object.process.parent.cmdline = object.process.parent.cmdline",
-			"\\$object.process.parent.cmdline = object.process.parent.cmdline",
-			"",
-			"\\$object.process.parent.cmdline = object.process.parent.cmdline",
 			"",
 			"\\$datafield18 = datafield18  # Цепочка процесса-субъекта с идентификаторами",
 			"\\$datafield19 = datafield19  # Цепочка процесса-объекта с идентификаторами"
