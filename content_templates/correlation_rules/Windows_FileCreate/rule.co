@@ -5,13 +5,13 @@ event File_Create:
         filter::NotFromCorrelator()
         and filter::FileCreate_Windows()
         
-        and filter::CheckWL_File_Operations("Windows_FileCreate", )
+        and filter::CheckWL_File_Creation("Windows_FileCreate", )
     }
 
 rule Windows_FileCreate: File_Create
 
     init {
-        $labels = "w_auto|CheckWL_File_Operations"
+        $labels = "w_auto|CheckWL_File_Creation"
     }
        
     on File_Create {
@@ -46,6 +46,7 @@ rule Windows_FileCreate: File_Create
                
         $alert.key =           
         $alert.context = 
+        $alert.regex_match =
     }
 
 emit {  

@@ -16,6 +16,8 @@ rule Unix_Connect: Event
     }
        
     on Event {
+        $status = status
+
         $subject.account.name = subject.account.name
         $subject.account.domain = subject.account.domain
         $subject.account.id = subject.account.id
@@ -29,7 +31,8 @@ rule Unix_Connect: Event
         $subject.process.fullpath = subject.process.fullpath
         $subject.process.meta = subject.process.meta
         $subject.process.parent.id = subject.process.parent.id
-                
+        $subject.process.chain = subject.process.chain
+                      
         $object.account.name = object.account.name
         $object.account.domain = object.account.domain
         $object.account.id = object.account.id
@@ -39,6 +42,7 @@ rule Unix_Connect: Event
         $object.type = object.type
         $object.property = object.property
         $object.value = object.value
+        $object.process.chain = object.process.chain
 
         $src.host = src.host
         $src.ip = src.ip
@@ -60,6 +64,9 @@ rule Unix_Connect: Event
         $protocol = protocol
         
         $direction = direction
+
+        $datafield18 = datafield18 # chain with PID for subject
+        $datafield19 = datafield19 # chain with PID for object
                 
         $event_src.ip = event_src.ip
         $event_src.hostname = event_src.hostname
@@ -74,6 +81,7 @@ rule Unix_Connect: Event
                
         $alert.key =           
         $alert.context = 
+        $lert.regex_match = 
     }
 
 emit {  
@@ -82,7 +90,6 @@ emit {
     $subject = ""
     $action = ""
     $object = ""
-    $status = "success"
 
     $importance = ""
 

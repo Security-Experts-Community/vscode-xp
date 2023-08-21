@@ -16,12 +16,15 @@ rule Unix_Execve: Event
     }
        
     on Event {
+        $status = status
+
         $subject.account.name = subject.account.name
         $subject.account.domain = subject.account.domain
         $subject.account.id = subject.account.id
         $subject.account.session_id = subject.account.session_id
         $subject.account.privileges = subject.account.privileges
         $subject.type = subject.type
+        $subject.process.chain = subject.process.chain
         
         $object.account.name = object.account.name
         $object.account.domain = object.account.domain
@@ -36,7 +39,8 @@ rule Unix_Execve: Event
         $object.process.meta = object.process.meta
         $object.process.cwd = object.process.cwd
         $object.process.parent.id = object.process.parent.id
-        
+        $object.process.chain = object.process.chain
+       
         $logon_service = logon_service
         
         $datafield1 = datafield1
@@ -44,6 +48,9 @@ rule Unix_Execve: Event
         $datafield3 = datafield3
         $datafield4 = datafield4
         $datafield5 = datafield5
+
+        $datafield18 = datafield18 # chain with PID for subject
+        $datafield19 = datafield19 # chain with PID for object
         
         $numfield2 = numfield2
                 
@@ -60,6 +67,7 @@ rule Unix_Execve: Event
                
         $alert.key =           
         $alert.context = 
+        $alert.regex_match = 
     }
 
 emit {  
@@ -68,7 +76,6 @@ emit {
     $subject = ""
     $action = ""
     $object = ""
-    $status = "success"
 
     $importance = ""
 
