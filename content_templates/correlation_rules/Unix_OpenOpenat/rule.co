@@ -16,6 +16,8 @@ rule Unix_OpenOpenat: Event
     }
        
     on Event {
+        $status = status
+
         $subject.account.name = subject.account.name
         $subject.account.domain = subject.account.domain
         $subject.account.id = subject.account.id
@@ -31,7 +33,8 @@ rule Unix_OpenOpenat: Event
         $subject.process.cwd = subject.process.cwd
         $subject.process.meta = subject.process.meta
         $subject.process.parent.id = subject.process.parent.id
-                
+        $subject.process.chain = subject.process.chain
+           
         $object.account.name = object.account.name
         $object.account.domain = object.account.domain
         $object.account.id = object.account.id
@@ -43,10 +46,14 @@ rule Unix_OpenOpenat: Event
         $object.id = object.id
         $object.type = object.type
         $object.state = object.state
+        $object.process.chain = object.process.chai
 
         $datafield1 = datafield1  # Executable Name
         $datafield2 = datafield2  # Owner User Name
         $datafield3 = datafield3  # File Access Mode
+
+        $datafield18 = datafield18 # chain with PID for subject
+        $datafield19 = datafield19 # chain with PID for object
 
         $numfield2 = numfield2  # Owner User ID
                 
@@ -63,6 +70,7 @@ rule Unix_OpenOpenat: Event
                
         $alert.key =           
         $alert.context = 
+        $alert.regex_match = 
     }
 
 emit {  
@@ -71,7 +79,6 @@ emit {
     $subject = ""
     $action = ""
     $object = "file_object"
-    $status = "success"
 
     $importance = ""
 

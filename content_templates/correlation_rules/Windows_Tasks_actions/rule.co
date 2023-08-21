@@ -65,6 +65,7 @@ rule Windows_Tasks_actions : Task_Action
 
         $alert.key = 
         $alert.context = 
+        $alert.regex_match =
     }
 
 emit {
@@ -81,7 +82,7 @@ emit {
     $category.low = ""
 
     $incident.aggregation.key = join([$correlation_name, $event_src.host], "|")
-    $incident.severity = "high"
+    $incident.severity = $importance
     $incident.category = "Undefined"
     $incident.aggregation.timeout = 2h
 }

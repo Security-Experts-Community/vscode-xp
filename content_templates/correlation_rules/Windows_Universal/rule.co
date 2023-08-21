@@ -44,6 +44,7 @@ rule Windows_Universal: EventName
         $object.process.meta = object.process.meta
         $object.process.original_name = object.process.original_name
         $object.process.cwd = object.process.cwd
+        $object.process.chain = object.process.chain
         
         $object.process.parent.id = object.process.parent.id
         $object.process.parent.name = object.process.parent.name
@@ -51,8 +52,9 @@ rule Windows_Universal: EventName
         $object.process.parent.fullpath = object.process.parent.fullpath
         $object.process.parent.guid = object.process.parent.guid
         $object.process.parent.cmdline = object.process.parent.cmdline
-        
-        $datafield10 = datafield10  # цепочка имен процессов
+
+        $datafield18 = datafield18 # Цепочка процесса-субъекта с идентификаторами
+        $datafield19 = datafield19 # Цепочка процесса-объекта с идентификаторами
 
         # src
         $src.host = src.host
@@ -82,24 +84,27 @@ rule Windows_Universal: EventName
         # other
         $alert.key = 
         $alert.context = 
+        $alert.regex_match = 
+
         $reason = reason
     }
 
 emit {
     $correlation_type = ""
-    $importance = ""
 
     $subject = ""
     $action = ""
     $object = ""
     $status = ""
 
+    $importance = ""
+
     $category.generic = ""
     $category.high = ""
     $category.low = ""
 
     $incident.aggregation.key = join([$correlation_name, lower($event_src.host), lower($subject.account.id)], "|")
-    $incident.severity = "high"
+    $incident.severity = $importance
     $incident.category = "Undefined"
     $incident.aggregation.timeout = 2h
 }

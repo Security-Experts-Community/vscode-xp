@@ -75,6 +75,16 @@ rule For_Profilling: Anomaly_Logon_Application
         $datafield8 = datafield8
         $datafield9 = datafield9
         $datafield10 = datafield10
+        $datafield11 = datafield11
+        $datafield12 = datafield12
+        $datafield13 = datafield13
+        $datafield14 = datafield14
+        $datafield15 = datafield15
+        $datafield16 = datafield16
+        $datafield17 = datafield17
+        $datafield18 = datafield18
+        $datafield19 = datafield19
+        $datafield20 = datafield20
 
         $src.fqdn = src.fqdn
         $src.port = src.port
@@ -151,8 +161,8 @@ emit {
     $category.high = "Lateral Movement"
     $category.low = "Remote Services"
 
-    $incident.aggregation.key = join([$correlation_name, $src.host, $subject.account.name], "|")
-    $incident.severity = $importance
+    $incident.aggregation.key = join([$correlation_name, $src.ip, $subject.account.name], "|")
+    $incident.severity = if $importance == "info" then "low" else $importance endif
     $incident.category = "Undefined"
     $incident.aggregation.timeout = 2h
 }

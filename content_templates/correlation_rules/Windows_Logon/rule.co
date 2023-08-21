@@ -84,7 +84,7 @@ emit {
     $category.low = ""
 
     $incident.aggregation.key = join([$correlation_name, $subject.account.name], "|")
-    $incident.severity = "high"
+    $incident.severity = $importance
     $incident.category = "Undefined"
     $incident.aggregation.timeout = 1h
 }

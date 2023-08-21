@@ -57,6 +57,7 @@ rule Windows_Powershell_Execute: Powershell_Pipeline_Execute or Powershell_Comma
         $object.value = object.value
 
         $datafield8 = datafield8  # версия модуля
+        $datafield9 = datafield9 # Командлайн без приведения к нижнему регистру
 
         $chain_id = chain_id
 
@@ -74,6 +75,7 @@ rule Windows_Powershell_Execute: Powershell_Pipeline_Execute or Powershell_Comma
         $alert.key = 
 		
         $alert.context = # join([$alert.context, "regex_match: " + regex(lower(object.process.cmdline), "regex_from_filter", 0)], "|")
+        $alert.regex_match =
     }
 
     on Powershell_Command_Execute {
@@ -109,6 +111,7 @@ rule Windows_Powershell_Execute: Powershell_Pipeline_Execute or Powershell_Comma
 
         $alert.key = 
         $alert.context = # join([$alert.context, "regex_match: " + regex(lower(object.process.cmdline), "regex_from_filter", 0)], "|")
+        $alert.regex_match =
     }
 
 emit {

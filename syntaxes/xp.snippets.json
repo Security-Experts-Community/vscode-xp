@@ -1,6 +1,8 @@
 {
 	"Запрос в табличный список": {
-		"prefix": ["query"],
+		"prefix": [
+			"query"
+		],
 		"body": [
 			"query ${1:GetData}(\\$$2, \\$$3) from $4 {",
 			"    $2 == \\$$2",
@@ -9,7 +11,9 @@
 		]
 	},
 	"Пустое событие": {
-		"prefix": ["event"],
+		"prefix": [
+			"event"
+		],
 		"body": [
 			"event $1:",
 			"    key:",
@@ -21,7 +25,10 @@
 		]
 	},
 	"event Windows_Process_Creation": {
-		"prefix": ["event Process_Creation", "msgid == \"1\""],
+		"prefix": [
+			"event Process_Creation",
+			"msgid == \"1\""
+		],
 		"body": [
 			"event ${1:eventName}:",
 			"    key:",
@@ -31,6 +38,7 @@
 			"        and event_src.title == \"sysmon\"",
 			"        and msgid == \"1\"",
 			"        and status == \"success\"",
+			"",
 			"        and filter::CheckWL_Process_Creation(\"${2}\", lower(object.process.cmdline))",
 			"    }",
 			"",
@@ -77,6 +85,9 @@
 			"",
 			"        \\$datafield6 = datafield6  # LogonGuid",
 			"",
+			"        \\$datafield18 = datafield18  # Цепочка процесса-субъекта с идентификаторами",
+			"        \\$datafield19 = datafield19  # Цепочка процесса-объекта с идентификаторами",
+			"",
 			"        \\$event_src.host = event_src.host",
 			"        \\$event_src.fqdn = event_src.fqdn",
 			"        \\$event_src.hostname = event_src.hostname",
@@ -89,6 +100,7 @@
 			"",
 			"        \\$alert.key = lower(object.process.fullpath)",
 			"        \\$alert.context = ",
+			"        \\$alert.regex_match = ",
 			"",
 			"        \\$labels = \\$labels + \"|CheckWL_Process_Creation\"",
 			"    }",
@@ -96,7 +108,10 @@
 		]
 	},
 	"event Windos_Registry_Actions": {
-		"prefix": ["event Registry_Actions", "msgid == \"13\""],
+		"prefix": [
+			"event Registry_Actions",
+			"msgid == \"13\""
+		],
 		"body": [
 			"event ${1:eventName}:",
 			"    key:",
@@ -106,6 +121,7 @@
 			"        and event_src.title == \"sysmon\"",
 			"        and msgid == \"13\"",
 			"        and status == \"success\"",
+			"",
 			"        and filter::CheckWL_Registry_Actions(\"${1:eventName}\", lower(join([object.fullpath, object.new_value], \"|\")))",
 			"    }",
 			"",
@@ -125,6 +141,7 @@
 			"        \\$object.path = object.path",
 			"        \\$object.fullpath = object.fullpath",
 			"        \\$object.new_value = object.new_value",
+			"        \\$object.value = object.value",
 			"",
 			"        \\$event_src.host = event_src.host",
 			"        \\$event_src.fqdn = event_src.fqdn",
@@ -137,7 +154,8 @@
 			"        \\$event_src.category = event_src.category",
 			"",
 			"        \\$alert.key = lower(join([object.fullpath, object.new_value], \"|\"))",
-			"        \\$alert.content = ",
+			"        \\$alert.context = ",
+			"        \\$alert.regex_match = ",
 			"",
 			"        \\$labels = \\$labels + \"|CheckWL_Registry_Actions\"",
 			"    }",
@@ -145,7 +163,11 @@
 		]
 	},
 	"ProcessStart_Windows_any": {
-		"prefix": ["event ProcessStart_Windows_any", "msgid == \"1\"", "msgid == \"4688\""],
+		"prefix": [
+			"event ProcessStart_Windows_any",
+			"msgid == \"1\"",
+			"msgid == \"4688\""
+		],
 		"body": [
 			"event ${1:eventName}:",
 			"    key:",
@@ -153,6 +175,7 @@
 			"    filter {",
 			"        filter::NotFromCorrelator()",
 			"        and filter::ProcessStart_Windows_any()",
+			"",
 			"        and filter::CheckWL_Process_Creation(\"${2:ruleName}\", lower(object.process.cmdline))",
 			"    }",
 			"",
@@ -198,6 +221,9 @@
 			"",
 			"        \\$datafield6 = datafield6  # LogonGuid",
 			"",
+			"        \\$datafield18 = datafield18  # Цепочка процесса-субъекта с идентификаторами",
+			"        \\$datafield19 = datafield19  # Цепочка процесса-объекта с идентификаторами",
+			"",
 			"        \\$event_src.host = event_src.host",
 			"        \\$event_src.fqdn = event_src.fqdn",
 			"        \\$event_src.hostname = event_src.hostname",
@@ -209,14 +235,17 @@
 			"        \\$event_src.category = event_src.category",
 			"",
 			"        \\$alert.key = lower(object.process.cmdline)",
+			"        \\$alert.context = ",
+			"        \\$alert.regex_match = ",
 			"",
 			"        \\$labels = \\$labels + \"|CheckWL_Process_Creation\"",
 			"    }"
 		]
 	},
-
 	"event Unix_OpenOpenat": {
-		"prefix": ["event Unix_OpenOpenat"],
+		"prefix": [
+			"event Unix_OpenOpenat"
+		],
 		"body": [
 			"event ${1:eventName}:",
 			"    key:",
@@ -245,11 +274,14 @@
 			"        \\$subject.process.cwd = subject.process.cwd",
 			"        \\$subject.process.meta = subject.process.meta",
 			"        \\$subject.process.parent.id = subject.process.parent.id",
+			"        \\$subject.process.chain = subject.process.chain",
 			"",
 			"        \\$object.account.name = object.account.name",
 			"        \\$object.account.domain = object.account.domain",
 			"        \\$object.account.id = object.account.id",
 			"        \\$object.account.group = object.account.group",
+			"",
+			"        \\$object.process.chain = object.process.chain",
 			"",
 			"        \\$object.name = object.name",
 			"        \\$object.path = object.path",
@@ -261,6 +293,9 @@
 			"        \\$datafield1 = datafield1  # Executable Name",
 			"        \\$datafield2 = datafield2  # Owner User Name",
 			"        \\$datafield3 = datafield3  # File Access Mode",
+			"",
+			"        \\$datafield18 = datafield18 # chain with PID for subject",
+			"        \\$datafield19 = datafield19 # chain with PID for object",
 			"",
 			"        \\$numfield2 = numfield2  # Owner User ID",
 			"",
@@ -277,11 +312,14 @@
 			"",
 			"        \\$alert.key =",
 			"        \\$alert.context = ",
+			"        \\$alert.regex_match = ",
 			"    }"
 		]
 	},
 	"event Unix_Connect": {
-		"prefix": ["event Unix_Connect"],
+		"prefix": [
+			"event Unix_Connect"
+		],
 		"body": [
 			"event ${1:eventName}:",
 			"    key:",
@@ -308,6 +346,7 @@
 			"        \\$subject.process.fullpath = subject.process.fullpath",
 			"        \\$subject.process.meta = subject.process.meta",
 			"        \\$subject.process.parent.id = subject.process.parent.id",
+			"        \\$subject.process.chain = subject.process.chain",
 			"",
 			"        \\$object.account.name = object.account.name",
 			"        \\$object.account.domain = object.account.domain",
@@ -318,6 +357,10 @@
 			"        \\$object.type = object.type",
 			"        \\$object.property = object.property",
 			"        \\$object.value = object.value",
+			"        \\$object.process.chain = object.process.chain",
+			"",
+			"        \\$datafield18 = datafield18 # chain with PID for subject",
+			"        \\$datafield19 = datafield19 # chain with PID for object",
 			"",
 			"        \\$logon_service = logon_service",
 			"",
@@ -338,22 +381,23 @@
 			"",
 			"        \\$alert.key = ",
 			"        \\$alert.context = ",
+			"        \\$alert.regex_match = ",
 			"    }",
 			""
 		]
 	},
-	
 	"event Unix_Execve": {
-		"prefix": ["event Unix_Execve"],
+		"prefix": [
+			"event Unix_Execve"
+		],
 		"body": [
 			"event ${1:eventName}:",
 			"    key:",
 			"        event_src.host",
 			"    filter {",
 			"        filter::NotFromCorrelator()",
-			"        and filter::OperatingSystem_UNIXLike()",
-			"        and event_src.subsys == \"auditd\"",
-			"        ",
+			"        and filter::ProcessStart_Linux()",
+			"",
 			"        and filter::CheckWL_Linux_Process_Creation(\"${2:ruleName}\", )",
 			"    }",
 			"",
@@ -364,6 +408,7 @@
 			"        \\$subject.account.session_id = subject.account.session_id",
 			"        \\$subject.account.privileges = subject.account.privileges",
 			"        \\$subject.type = subject.type",
+			"        \\$subject.process.chain = subject.process.chain",
 			"",
 			"        \\$object.account.name = object.account.name",
 			"        \\$object.account.domain = object.account.domain",
@@ -388,6 +433,9 @@
 			"        \\$datafield4 = datafield4",
 			"        \\$datafield5 = datafield5",
 			"",
+			"        \\$datafield18 = datafield18 # chain with PID for subject",
+			"        \\$datafield19 = datafield19 # chain with PID for object",
+			"",
 			"        \\$numfield2 = numfield2",
 			"",
 			"        \\$event_src.ip = event_src.ip",
@@ -403,27 +451,32 @@
 			"",
 			"        \\$alert.key = ",
 			"        \\$alert.context = ",
+			"        \\$alert.regex_match = ",
 			"    }",
 			""
 		]
 	},
-
-	"_comment" : "TODO: подгружать макросы автоматически из файлов .flt",
+	"_comment": "TODO: подгружать макросы автоматически из файлов .flt",
 	"Макросы вайтлистинга": {
-		"prefix":  ["filter::CheckWL"],
+		"prefix": [
+			"filter::CheckWL"
+		],
 		"body": [
-			"filter::CheckWL_${1|Process_Creation,Powershell,Specific_Only,Windows_Login,Registry_Actions,Networking,File_Creation,LDAP_Request,Linux_Specific_Only,Linux_File_Operations,Windows_Shares,Web_Access,Tasks,Process_Access,Database_Actions|}(\"$2\", $3)"
-		]
-	},	
-	"Макросы": {
-		"prefix":  ["filter::"],
-		"body": [
-			"filter::${1|NotFromCorrelator,FileCreate_Windows,LoginSuccessful_Windows,LoginSuccessful_Unix,LoginFailed_Windows,LoginFailed_Unix,OperatingSystem_UNIXLike,ProcessStart,ProcessStart_Linux,ProcessStart_Windows,ProcessStart_Windows_any,ProcessStart_Windows_cmd_meta,ProcessStart_Windows_commandline,SystemAccount_Windows,UserAccount_Windows|}()"
+			"filter::CheckWL_${1|BlackListRegex,Auto,BlackListRegex_Exc,BlackListValue,BlackListValue_Exc,WhiteListRegex,WhiteListValue,WhiteListValue_2,WhiteListValue_3,WhiteListValue_4,Database_Actions,External_Connection,File_Creation,Gitlab_Repositories,LDAP_Request,Linux_File_Operations,Linux_Login,Linux_Networking,Linux_Process_Creation,Linux_Specific_Only,NAD_Alert,Networking,Password_Guessing,Process_Access,Process_Creation,Profiling,Registry_Actions,Specific_Only,Tasks,Web_Access,Windows_Login,Windows_Shares|}(\"${TM_DIRECTORY/.*?(ESC.*?)/$1/}\",$2)"
 		]
 	},
-
+	"Макросы": {
+		"prefix": [
+			"filter::"
+		],
+		"body": [
+			"filter::${1|Vendors_Without_SID,LoginAttempt_Windows_Endpoint,Check_Profile,Bruteforce_Supported_Vendors,Bruteforce_Attempted_Vendors,AuthVPN,ProcessStart_Linux_Shell,ProcessStart_Linux_Service_Restart,ProcessStart_Linux_Service_Disable,Explicit_FileRead_Linux,FileCreate_Linux,FileModify_Linux,Start_VPN_session,Loopback_Address,External_Address,AD_LDAP_Query,MSSQL_Query,RegexWithoutSpecialChars,AnonymousAccount_Windows,ComputerAccount_Windows,NotFromCorrelator,FileCreate_Windows,LoginSuccessful_Windows,LoginSuccessful_Unix,LoginFailed_Windows,LoginFailed_Unix,OperatingSystem_UNIXLike,ProcessStart,ProcessStart_Linux,ProcessStart_Windows,ProcessStart_Windows_any,ProcessStart_Windows_cmd_meta,ProcessStart_Windows_commandline,SystemAccount_Windows,UserAccount_Windows,Check_Network_Whitelist,|}()"
+		]
+	},
 	"Пустое правило": {
-		"prefix": ["rule"],
+		"prefix": [
+			"rule"
+		],
 		"body": [
 			"rule ${1:ruleName}: ${2:eventName}",
 			"",
@@ -434,11 +487,13 @@
 			"    on ${2:eventName} {",
 			"        ",
 			"    }",
-			""	
+			""
 		]
 	},
 	"if else endif": {
-		"prefix": ["if else"],
+		"prefix": [
+			"if else"
+		],
 		"body": [
 			"if $1 then",
 			"    $2",
@@ -449,7 +504,9 @@
 		]
 	},
 	"if endif": {
-		"prefix": ["if endif"],
+		"prefix": [
+			"if endif"
+		],
 		"body": [
 			"if $1 then",
 			"    $2",
@@ -468,28 +525,44 @@
 			""
 		]
 	},
-	"Алерт" : {
-		"prefix": ["$alert.*"],
+	"Алерт": {
+		"prefix": [
+			"$alert.*"
+		],
 		"body": [
 			"\\$alert.key = $1",
-			"\\$alert.regex_match = $2",
-			"\\$alert.context = $3"
+			"\\$alert.context = $2",
+			"\\$alert.regex_match = $3"
 		]
 	},
-	"Ключ алерта" : {
-		"prefix": ["$alert.key"],
+	"Ключ алерта": {
+		"prefix": [
+			"$alert.key"
+		],
 		"body": [
 			"\\$alert.key = $1"
 		]
 	},
-	"Контекст алерта" : {
-		"prefix": ["$alert.context"],
+	"Контекст алерта": {
+		"prefix": [
+			"$alert.context"
+		],
 		"body": [
 			"\\$alert.context = $1"
 		]
 	},
+	"Контекст совпадения по регулярке": {
+		"prefix": [
+			"$alert.regex_match"
+		],
+		"body": [
+			"\\$alert.regex_match = $1"
+		]
+	},
 	"Поля хоста источника события": {
-		"prefix": ["$event_src.*"],
+		"prefix": [
+			"$event_src.*"
+		],
 		"body": [
 			"\\$event_src.ip = event_src.ip",
 			"\\$event_src.hostname = event_src.hostname",
@@ -503,7 +576,9 @@
 		]
 	},
 	"Поля аккаунта субъекта": {
-		"prefix": ["$subject.account.*"],
+		"prefix": [
+			"$subject.account.*"
+		],
 		"body": [
 			"\\$subject.account.name = subject.account.name",
 			"\\$subject.account.fullname = subject.account.fullname",
@@ -514,7 +589,9 @@
 		]
 	},
 	"Поля аккаунта объекта": {
-		"prefix": ["$object.account.*"],
+		"prefix": [
+			"$object.account.*"
+		],
 		"body": [
 			"\\$object.account.name = object.account.name",
 			"\\$object.account.fullname = object.account.fullname",
@@ -525,7 +602,9 @@
 		]
 	},
 	"Поля субьекта-процесса": {
-		"prefix": ["$subject.process.*"],
+		"prefix": [
+			"$subject.process.*"
+		],
 		"body": [
 			"\\$subject.process.id = subject.process.id",
 			"\\$subject.process.name = subject.process.name",
@@ -538,16 +617,22 @@
 			"\\$subject.process.meta = subject.process.meta",
 			"\\$subject.process.original_name = subject.process.original_name",
 			"\\$subject.process.cwd = subject.process.cwd",
+			"\\$subject.process.chain = subject.process.chain",
 			"",
 			"\\$subject.process.parent.id = subject.process.parent.id",
 			"\\$subject.process.parent.name = subject.process.parent.name",
 			"\\$subject.process.parent.path = subject.process.parent.path",
 			"\\$subject.process.parent.fullpath = subject.process.parent.fullpath",
-			"\\$subject.process.parent.cmdline = subject.process.parent.cmdline"
+			"\\$subject.process.parent.cmdline = subject.process.parent.cmdline",
+			"",
+			"\\$datafield18 = datafield18 # chain with PID for subject",
+			"\\$datafield19 = datafield19 # chain with PID for object"
 		]
 	},
 	"Поля объекта-процесса": {
-		"prefix": ["$object.process.*"],
+		"prefix": [
+			"$object.process.*"
+		],
 		"body": [
 			"\\$object.process.id = object.process.id",
 			"\\$object.process.name = object.process.name",
@@ -569,11 +654,16 @@
 			"\\$object.process.parent.name = object.process.parent.name",
 			"\\$object.process.parent.path = object.process.parent.path",
 			"\\$object.process.parent.fullpath = object.process.parent.fullpath",
-			"\\$object.process.parent.cmdline = object.process.parent.cmdline"
+			"\\$object.process.parent.cmdline = object.process.parent.cmdline",
+			"",
+			"\\$datafield18 = datafield18  # Цепочка процесса-субъекта с идентификаторами",
+			"\\$datafield19 = datafield19  # Цепочка процесса-объекта с идентификаторами"
 		]
 	},
 	"Поля объекта": {
-		"prefix": ["$object.*"],
+		"prefix": [
+			"$object.*"
+		],
 		"body": [
 			"\\$object.name = object.name",
 			"\\$object.path = object.path",
@@ -586,9 +676,11 @@
 		]
 	},
 	"Поля источника": {
-		"prefix": ["$src.*"],
+		"prefix": [
+			"$src.*"
+		],
 		"body": [
-		    "\\$src.asset = src.asset",
+			"\\$src.asset = src.asset",
 			"\\$src.host = src.host",
 			"\\$src.ip = src.ip",
 			"\\$src.hostname = src.hostname",
@@ -598,7 +690,9 @@
 		]
 	},
 	"Поля приемника": {
-		"prefix": ["$dst.*"],
+		"prefix": [
+			"$dst.*"
+		],
 		"body": [
 			"\\$dst.asset = dst.asset",
 			"\\$dst.host = dst.host",
@@ -720,63 +814,77 @@
 		]
 	},
 	"on subject": {
-		"prefix": ["$subject"],
+		"prefix": [
+			"$subject"
+		],
 		"body": [
 			"\\$subject = \"${1|account,application,process,system,host,rule,service|}\""
 		]
 	},
 	"filter subject": {
-		"prefix": ["subject"],
+		"prefix": [
+			"subject"
+		],
 		"body": [
 			"subject == \"${1|account,application,process,system,host,rule,service|}\"",
 			"${2|and,or|} "
 		]
 	},
-
-    "on action": {
-		"prefix": ["$action"],
+	"on action": {
+		"prefix": [
+			"$action"
+		],
 		"body": [
 			"\\$action = \"${1|access,alert,allow,apply,assign,backup,bind,call,check,clean,close,configure,connect,copy,create,decrypt,deelevate,deescalate,deliver,deny,detect,disable,disconnect,down,download,elevate,enable,encrypt,escalate,exclude,execute,extract,grant,info,initiate,inject,install,leak,lock,login,logout,modify,move,open,print,protect,quarantine,read,receive,reject,remove,rename,request,reset,restart,restore,revoke,rollback,scan,search,send,start,state,stop,sync,terminate,truncate,unassign,unbind,uninstall,unlock,up,update,upgrade,upload,validate,view|}\""
 		]
 	},
 	"filter action": {
-		"prefix": ["action"],
+		"prefix": [
+			"action"
+		],
 		"body": [
 			"action == \"${1|access,alert,allow,apply,assign,backup,bind,call,check,clean,close,configure,connect,copy,create,decrypt,deelevate,deescalate,deliver,deny,detect,disable,disconnect,down,download,elevate,enable,encrypt,escalate,exclude,execute,extract,grant,info,initiate,inject,install,leak,lock,login,logout,modify,move,open,print,protect,quarantine,read,receive,reject,remove,rename,request,reset,restart,restore,revoke,rollback,scan,search,send,start,state,stop,sync,terminate,truncate,unassign,unbind,uninstall,unlock,up,update,upgrade,upload,validate,view|}\"",
 			"${2|and,or|} "
 		]
 	},
-
-    "on object": {
-		"prefix": ["$object"],
+	"on object": {
+		"prefix": [
+			"$object"
+		],
 		"body": [
 			"\\$object = \"${1|account,alert,application,arp_table,attack,certificate,check,client,cmdlet,command,compliance,computer,configuration,connection,conntrack,database,db_object,device,ds_object,file,file_object,flow,handle,host,infected_object,interface,ip_address,link,log,logging,mailbox,malware,message,mode,module,network,node,package,packet,policy,port,process,profile,reg_object,report,request,resource,rule,scan,service,session,socket,system,table,task,thread,transaction,translation,trust,tunnel,update,user_group,virtual_key,virtual_machine,volume,vulnerability|}\""
 		]
 	},
 	"filter object": {
-		"prefix": ["object"],
+		"prefix": [
+			"object"
+		],
 		"body": [
 			"object == \"${1|account,alert,application,arp_table,attack,certificate,check,client,cmdlet,command,compliance,computer,configuration,connection,conntrack,database,db_object,device,ds_object,file,file_object,flow,handle,host,infected_object,interface,ip_address,link,log,logging,mailbox,malware,message,mode,module,network,node,package,packet,policy,port,process,profile,reg_object,report,request,resource,rule,scan,service,session,socket,system,table,task,thread,transaction,translation,trust,tunnel,update,user_group,virtual_key,virtual_machine,volume,vulnerability|}\"",
 			"${2|and,or|} "
 		]
 	},
-
-    "on status": {
-		"prefix": ["$status"],
+	"on status": {
+		"prefix": [
+			"$status"
+		],
 		"body": [
 			"\\$status = \"${1|success,failure,ongoing|}\""
 		]
 	},
 	"filter status": {
-		"prefix": ["status"],
+		"prefix": [
+			"status"
+		],
 		"body": [
 			"status == \"${1|success,failure,ongoing|}\"",
 			"${2|and,or|} "
 		]
 	},
-	
 	"Cекция emit": {
-		"prefix": ["emit {"],
+		"prefix": [
+			"emit {"
+		],
 		"body": [
 			"emit {",
 			"    \\$correlation_type = \"${1|event,incident,subrule,draft|}\"",
@@ -785,29 +893,35 @@
 			""
 		]
 	},
-
 	"correlation_name": {
-		"prefix": ["correlation_name"],
+		"prefix": [
+			"correlation_name"
+		],
 		"body": [
 			"correlation_name == \"${1:ruleName}\"",
 			"and "
 		]
 	},
-
 	"correlation_type": {
-		"prefix": ["$correlation_type"],
+		"prefix": [
+			"$correlation_type"
+		],
 		"body": [
 			"\\$correlation_type = \"${1|event,incident,subrule,draft|}\""
 		]
 	},
 	"importance": {
-		"prefix": ["$importance"],
+		"prefix": [
+			"$importance"
+		],
 		"body": [
 			"\\$importance = \"${1|high,medium,low,info|}\""
 		]
 	},
 	"Поля инцидента": {
-		"prefix": ["$incident.*"],
+		"prefix": [
+			"$incident.*"
+		],
 		"body": [
 			"\\$incident.aggregation.key = join([\\$correlation_name, \\$event_src.host, \\$subject.account.id], \"|\")",
 			"\\$incident.severity = \\$importance",
@@ -816,23 +930,29 @@
 		]
 	},
 	"Поля категорий": {
-		"prefix": ["$category.*"],
+		"prefix": [
+			"$category.*"
+		],
 		"body": [
 			"\\$category.generic = \"Attack\"",
-			"\\$category.high = \"${1|Persistence,Lateral Movement,Defense Evasion,Credential Access,Discovery,Privilege Escalation,Execution,Initial Access,Impact|}\"",
+			"\\$category.high = \"${1|Resource Development,Command And Control,Collection,Reconnaissance,Persistence,Lateral Movement,Defense Evasion,Credential Access,Discovery,Privilege Escalation,Execution,Initial Access,Impact|}\"",
 			"\\$category.low = \"$2\""
 		]
 	},
 	"Тактика": {
-		"prefix": ["$category.high"],
+		"prefix": [
+			"$category.high"
+		],
 		"body": [
-			"\\$category.high = \"${1|Persistence,Lateral Movement,Defense Evasion,Credential Access,Discovery,Privilege Escalation,Execution,Initial Access,Impact|}\""
+			"\\$category.high = \"${1|Resource Development,Command And Control,Collection,Reconnaissance,Persistence,Lateral Movement,Defense Evasion,Credential Access,Discovery,Privilege Escalation,Execution,Initial Access,Impact|}\""
 		]
 	},
 	"Метки автовайтлистинга": {
-		"prefix": ["$labels"],
+		"prefix": [
+			"$labels"
+		],
 		"body": [
-			"\\$labels = \"w_auto|${1|CheckWL_Specific_Only,CheckWL_Tasks,CheckWL_Web_Access,CheckWL_File_Creation,CheckWL_LDAP_Request,CheckWL_Windows_Shares,CheckWL_Process_Creation,CheckWL_Powershell,CheckWL_Networking,CheckWL_Registry_Actions,CheckWL_Linux_Specific_Only,CheckWL_Process_Access,CheckWL_Windows_Login,CheckWL_Linux_File_Operations,CheckWL_Linux_Process_Creation,CheckWL_Linux_Login,CheckWL_Linux_Networking,CheckWL_Database_Actions|}\"",
+			"\\$labels = \"w_auto|${1|CheckWL_Database_Actions,CheckWL_External_Connection,CheckWL_File_Creation,CheckWL_Gitlab_Repositories,CheckWL_LDAP_Request,CheckWL_Linux_File_Operations,CheckWL_Linux_Login,CheckWL_Linux_Networking,CheckWL_Linux_Process_Creation,CheckWL_Linux_Specific_Only,CheckWL_NAD_Alert,CheckWL_Networking,CheckWL_Password_Guessing,CheckWL_Powershell,CheckWL_Process_Access,CheckWL_Process_Creation,CheckWL_Profiling,CheckWL_Registry_Actions,CheckWL_Specific_Only,CheckWL_Tasks,CheckWL_Web_Access,CheckWL_Windows_Login,CheckWL_Windows_Shares|}\"",
 			""
 		]
 	}
