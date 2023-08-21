@@ -14,7 +14,7 @@ import { SiemjManager } from '../../models/siemj/siemjManager';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
-import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
+import { IntegrationTestRunner, IntegrationTestRunnerOptions } from '../../models/tests/integrationTestRunner';
 
 export class LocalizationEditorViewProvider  {
 
@@ -221,7 +221,10 @@ export class LocalizationEditorViewProvider  {
 				progress.report({message : `Получение корреляционных событий на основе интеграционных тестов правила.`});
 				const outputParser = new SiemJOutputParser();
 				const testRunner = new IntegrationTestRunner(this._config, outputParser, token);
-				const siemjResult = await testRunner.run(this._rule, true);
+
+				const testRunnerOptions = new IntegrationTestRunnerOptions();
+				testRunnerOptions.keepTmpFiles = true;
+				const siemjResult = await testRunner.run(this._rule, testRunnerOptions);
 
 				if(!siemjResult.testsStatus) {
 					throw new XpException("Не все интеграционные тесты прошли. Исправьте тесты и повторите.");

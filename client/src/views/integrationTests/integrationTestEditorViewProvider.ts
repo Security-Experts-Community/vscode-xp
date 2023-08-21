@@ -13,7 +13,7 @@ import { Configuration } from '../../models/configuration';
 import { SiemjManager } from '../../models/siemj/siemjManager';
 import { CorrelationUnitTestsRunner } from '../../models/tests/correlationUnitTestsRunner';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
+import { CompilationType, IntegrationTestRunner, IntegrationTestRunnerOptions } from '../../models/tests/integrationTestRunner';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { FastTest } from '../../models/tests/fastTest';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
@@ -561,8 +561,61 @@ export class IntegrationTestEditorViewProvider  {
 			}
 
 			try {
-				// Уточняем информацию для пользователей если в правиле обнаружено использование сабрулей.
+				// Уточняем у пользователя, что необходимо скомпилировать для тестов корреляции.
 				const ruleCode = await this._rule.getRuleCode();
+				const testRunnerOptions = new IntegrationTestRunnerOptions();
+				if(this._rule instanceof Correlation) {
+					if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
+						const result = await vscode.window.showInformationMessage(
+							"В текущем правиле корреляции обнаружено использование сабрулей. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",
+							this.CURRENT_PACKAGE,
+							this.ALL_PACKAGES);
+
+						if(!result) {
+							return;
+						}
+						
+						switch(result) {
+							case this.CURRENT_PACKAGE: {
+								testRunnerOptions.correlationCompilation = CompilationType.CurrentPackage;
+								break;
+							}
+
+							case this.ALL_PACKAGES: {
+								testRunnerOptions.correlationCompilation = CompilationType.AllPackages;
+								break;
+							}
+						}
+					} else {
+						testRunnerOptions.correlationCompilation = CompilationType.CurrentRule;
+					}
+				}
+
+				// Уточняем у пользователя, что необходимо скомпилировать для тестов обогащения.
+				if(this._rule instanceof Enrichment) {
+					const result = await vscode.window.showInformationMessage(
+						"Тестируемое правило обогащения может обогащать как нормализованные события, так и корреляционные. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",
+						this.CURRENT_PACKAGE,
+						this.ALL_PACKAGES);
+
+					if(!result) {
+						return;
+					}
+					
+					switch(result) {
+						case this.CURRENT_PACKAGE: {
+							testRunnerOptions.correlationCompilation = CompilationType.CurrentPackage;
+							break;
+						}
+
+						case this.ALL_PACKAGES: {
+							testRunnerOptions.correlationCompilation = CompilationType.AllPackages;
+							break;
+						}
+					}
+				}
+
+				// Уточняем информацию для пользователей если в правиле обнаружено использование сабрулей.
 				if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
 					progress.report({
 						message : `Интеграционные тесты для правила с сабрулями '${this._rule.getName()}'`
@@ -575,7 +628,7 @@ export class IntegrationTestEditorViewProvider  {
 
 				const outputParser = new SiemJOutputParser();
 				const testRunner = new IntegrationTestRunner(this._config, outputParser, token);
-				const siemjResult = await testRunner.run(this._rule);
+				const siemjResult = await testRunner.run(this._rule, testRunnerOptions);
 
 				this._config.getDiagnosticCollection().clear();
 				for (const diagnostic of siemjResult.fileDiagnostics) {
@@ -622,4 +675,7 @@ export class IntegrationTestEditorViewProvider  {
 	}
 
 	public static TEXTAREA_END_OF_LINE = "\n";
+
+	public ALL_PACKAGES = "Все пакеты";
+	public CURRENT_PACKAGE = "Текущий пакет"
 }

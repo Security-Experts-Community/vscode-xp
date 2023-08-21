@@ -15,6 +15,18 @@ import { Enrichment } from '../content/enrichment';
 import { SiemjManager } from '../siemj/siemjManager';
 import { OperationCanceledException } from '../operationCanceledException';
 
+export enum CompilationType {
+	DontCompile = 0,
+	CurrentRule,
+	CurrentPackage,
+	AllPackages
+}
+
+export class IntegrationTestRunnerOptions {
+	keepTmpFiles = false;
+	correlationCompilation : CompilationType;
+}
+
 export class IntegrationTestRunner {
 
 	constructor(
@@ -23,7 +35,7 @@ export class IntegrationTestRunner {
 		private _token?: vscode.CancellationToken) {
 	}
 
-	public async run(rule : RuleBaseItem, keepTmpFiles = false) : Promise<SiemjExecutionResult> {
+	public async run(rule : RuleBaseItem, options : IntegrationTestRunnerOptions) : Promise<SiemjExecutionResult> {
 
 		// Проверяем наличие нужных утилит.
 		this._config.getSiemkbTestsPath();
@@ -67,25 +79,27 @@ export class IntegrationTestRunner {
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();
 
+
+		// Пользователь выбирает что необходимо компилировать из корреляций.
 		// Если корреляция с сабрулями, то собираем полный граф корреляций для отработок сабрулей из других пакетов.
 		// В противном случае только корреляции из текущего пакета с правилами. Позволяет ускорить тесты.
-		const ruleCode = await rule.getRuleCode();
-		if(rule instanceof Correlation) {
-			if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
-				configBuilder.addCorrelationsGraphBuilding();
-			} else {
+		switch (options.correlationCompilation) {
+			case CompilationType.CurrentRule: {
 				configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this._config));
+				break;
 			}
-		}
-
-		// Для обогащений собираем всегда полный граф корреляций, так как непонятно какая корреляция отработает на сырое событие.
-		if(rule instanceof Enrichment) {
-			configBuilder.addCorrelationsGraphBuilding();
+			case CompilationType.AllPackages: {
+				configBuilder.addCorrelationsGraphBuilding();
+				break;
+			}
+			case CompilationType.CurrentPackage: {
+				configBuilder.addCorrelationsGraphBuilding(true, rule.getDirectoryPath());
+				break;
+			}
 		}
 		
 		// Получаем путь к директории с результатами теста.
-		const tmpDirectoryPath = configBuilder.addTestsRun(rule.getDirectoryPath(), keepTmpFiles);
-
+		const tmpDirectoryPath = configBuilder.addTestsRun(rule.getDirectoryPath(), options.keepTmpFiles);
 		const siemjConfContent = configBuilder.build();
 		if(!siemjConfContent) {
 			throw new XpException("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
