@@ -58,6 +58,7 @@ rule Windows_Remote_Thread: CreateRemoteThread
         
         $alert.key = 
         $alert.context = 
+        $alert.regex_match =
     }
 
 emit {
