@@ -445,6 +445,12 @@ export class IntegrationTestEditorViewProvider  {
 
 		await VsCodeApiHelper.saveRuleCodeFile(this._rule);
 
+		// Если правило содержит сабрули, то мы сейчас не сможем просто получить ожидаемое событие.
+		const ruleCode = await this._rule.getRuleCode();
+		if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
+			throw new XpException("Получение ожидаемого события для правил с использованием сабрулей (например, correlation_name = \"subrule_...\") еще не реализовано. Детали можно посмотреть [тут](https://github.com/Security-Experts-Community/vscode-xp/issues/133)");
+		}
+
 		const currTest = IntegrationTest.convertFromObject(message.test);
 		let integrationalTestSimplifiedContent = "";
 		let normalizedEvents = "";

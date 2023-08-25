@@ -15,6 +15,7 @@ import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { IntegrationTestRunner, IntegrationTestRunnerOptions } from '../../models/tests/integrationTestRunner';
+import { TestHelper } from '../../helpers/testHelper';
 
 export class LocalizationEditorViewProvider  {
 
@@ -139,13 +140,6 @@ export class LocalizationEditorViewProvider  {
 	async receiveMessageFromWebView(message: any) {
 		switch (message.command) {
 			case 'buildLocalizations': {
-				
-				// Отбираем тесты, подходящие для генерации примеров локализаций.
-				const integrationTestsForTestLocalizations = this.getIntegrationTestsForTestLocalizations(this._rule);
-				if(integrationTestsForTestLocalizations.length === 0) {
-					return ExtensionHelper.showUserInfo(
-						"Среди всех интеграционных тестов не были найдены подходящие. Проверьте, что интеграционные тесты проходят, что среди них есть без заполнения табличных списков (только заполнение по умолчанию).");
-				}
 
 				const locExamples = await this.getLocalizationExamples();
 				if(locExamples.length === 0) {
@@ -249,26 +243,5 @@ export class LocalizationEditorViewProvider  {
 			}
 		}
 		return null;
-	}
-
-	private getIntegrationTestsForTestLocalizations(rule : RuleBaseItem) {
-		// Проверяем фильтруем тесты и проверяем, что есть тесты ожидающие события и без табличных списков.
-		const filtredTest = rule.getIntegrationTests().filter( it => {
-			// Исключаем тесты, которые не порождают события (вайтлистинг и тесты на фолзы).
-			const expectOneRegex = /expect\s+1\s+{/gm;
-			const tableListRegex = /\btable_list\s+{/gm;
-
-			const testCode = it.getTestCode();
-			if(!expectOneRegex.test(testCode) || tableListRegex.test(testCode)) {
-				return false;
-			}
-
-			return true;
-		});
-
-		if(filtredTest.length === 0) {
-			return [];
-		}
-		return filtredTest;
 	}
 }
