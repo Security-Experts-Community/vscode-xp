@@ -13,6 +13,9 @@ import { XpException } from '../../models/xpException';
 import { SiemjManager } from '../../models/siemj/siemjManager';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
+import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
+import { IntegrationTestRunner, IntegrationTestRunnerOptions } from '../../models/tests/integrationTestRunner';
+import { TestHelper } from '../../helpers/testHelper';
 
 export class LocalizationEditorViewProvider  {
 
@@ -137,15 +140,8 @@ export class LocalizationEditorViewProvider  {
 	async receiveMessageFromWebView(message: any) {
 		switch (message.command) {
 			case 'buildLocalizations': {
-				
-				// Отбираем тесты, подходящие для генерации примеров локализаций.
-				const integrationTestsForTestLocalizations = this.getIntegrationTestsForTestLocalizations(this._rule);
-				if(integrationTestsForTestLocalizations.length === 0) {
-					return ExtensionHelper.showUserInfo(
-						"Среди всех интеграционных тестов не были найдены подходящие. Проверьте, что интеграционные тесты проходят, что среди них есть без заполнения табличных списков (только заполнение по умолчанию).");
-				}
 
-				const locExamples = await this.getLocalizationExamples(integrationTestsForTestLocalizations);
+				const locExamples = await this.getLocalizationExamples();
 				if(locExamples.length === 0) {
 					return ExtensionHelper.showUserInfo(
 						"По имеющимся событиям не отработала ни одна локализация. Проверьте, что интеграционные тесты проходят, корректны критерии локализации. После исправлений повторите.");
@@ -210,15 +206,27 @@ export class LocalizationEditorViewProvider  {
 		}
 	}
 
-	private async getLocalizationExamples(integrationTests : IntegrationTest[]) : Promise<LocalizationExample[]> {
+	private async getLocalizationExamples() : Promise<LocalizationExample[]> {
 		return await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
-			title: `Генерация локализаций из тестовых событий`
-		}, async (progress) => {
+			cancellable: true,
+		}, async (progress, token) => {
 			try {
-				const siemjManager = new SiemjManager(this._config);
-				const locExamples = await siemjManager.correlateAndGetLocalizationExamples(this._rule, integrationTests);
+				progress.report({message : `Получение корреляционных событий на основе интеграционных тестов правила.`});
+				const outputParser = new SiemJOutputParser();
+				const testRunner = new IntegrationTestRunner(this._config, outputParser, token);
+
+				const testRunnerOptions = new IntegrationTestRunnerOptions();
+				testRunnerOptions.keepTmpFiles = true;
+				const siemjResult = await testRunner.run(this._rule, testRunnerOptions);
+
+				if(!siemjResult.testsStatus) {
+					throw new XpException("Не все интеграционные тесты прошли. Исправьте тесты и повторите.");
+				}
+
+				progress.report({message : `Генерация локализаций на основе корреляционных событий.`});
+				const siemjManager = new SiemjManager(this._config); 
+				const locExamples = await siemjManager.buildLocalizationExamples(this._rule, siemjResult.tmpDirectoryPath);
 				return locExamples;
 			}
 			catch (error) {
@@ -235,26 +243,5 @@ export class LocalizationEditorViewProvider  {
 			}
 		}
 		return null;
-	}
-
-	private getIntegrationTestsForTestLocalizations(rule : RuleBaseItem) {
-		// Проверяем фильтруем тесты и проверяем, что есть тесты ожидающие события и без табличных списков.
-		const filtredTest = rule.getIntegrationTests().filter( it => {
-			// Исключаем тесты, которые не порождают события (вайтлистинг и тесты на фолзы).
-			const expectOneRegex = /expect\s+1\s+{/gm;
-			const tableListRegex = /\btable_list\s+{/gm;
-
-			const testCode = it.getTestCode();
-			if(!expectOneRegex.test(testCode) || tableListRegex.test(testCode)) {
-				return false;
-			}
-
-			return true;
-		});
-
-		if(filtredTest.length === 0) {
-			return [];
-		}
-		return filtredTest;
 	}
 }

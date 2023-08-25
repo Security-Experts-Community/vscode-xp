@@ -225,13 +225,20 @@ out=${output}`;
 		this._scenarios.push("run-enrich");
 	}
 
-	public addTestsRun(testsRuleFullPath: string) : void {
+	/**
+	 * Добавляет выполнение всех тестов из заданной директории.
+	 * @param testsRuleFullPath директория из которой запускаются тесты.
+	 * @param keepTmpFiles флаг сохранения временных файлов
+	 * @returns путь к директории с временными файлами.
+	 */
+	public addTestsRun(testsRuleFullPath: string, keepTmpFiles?: boolean) : string {
 
 		const formulas = path.join('${output_folder}', this._config.getNormalizationsGraphFileName());
 		const enrules = path.join('${output_folder}', this._config.getEnrichmentsGraphFileName());
 		const corrules = path.join('${output_folder}', this._config.getCorrelationsGraphFileName());
 		const table_list_defaults = path.join('${output_folder}', this._config.getCorrelationDefaultsFileName());
-		const rulesTestsSection = 
+
+		let rulesTestsSection = 
 `
 [rules-tests]
 type=TEST_RULES
@@ -242,9 +249,18 @@ corrules=${corrules}
 table_list_defaults=${table_list_defaults}
 rules_src=${testsRuleFullPath}`;
 
+		// Добавляем директорию для получения временных файлов, после тестов.
+		const testTmpFiles = path.join(this._config.getRandTmpSubDirectoryPath());
+		if(keepTmpFiles) {
+			rulesTestsSection += `
+temp=${testTmpFiles}
+keep_temp_files=yes`;
+		}
+
 		this._siemjConfigSection += rulesTestsSection;
 		this._scenarios.push("rules-tests");
-	}
+		return testTmpFiles;
+	}	
 
 	public addCorrelateEnrichedEvents() : void {
 
@@ -287,9 +303,15 @@ out=${output}`;
 	/**
 	 * Добавить генерацию локализаций по скоррелированным событиям.
 	 */
-	public addLocalization() : void {
+	public addLocalizationForCorrelatedEvents(correlatedEventsFilePath? : string) : void {
 
-		const correlatedEvents = path.join('${output_folder}', this._config.getCorrelatedEventsFileName());
+		let resultCorrelatedEventsFilePath : string;
+		if(!correlatedEventsFilePath) {
+			resultCorrelatedEventsFilePath = path.join('${output_folder}', this._config.getCorrelatedEventsFileName());
+		} else {
+			resultCorrelatedEventsFilePath = correlatedEventsFilePath;
+		}
+
 		const locaRulesDir = path.join('${output_folder}', this._config.getLangsDirName());
 
 		const ruLocalization = 
@@ -298,14 +320,14 @@ out=${output}`;
 type=FRONTEND
 lang=ru
 locarules=${locaRulesDir}
-in=${correlatedEvents}
+in=${resultCorrelatedEventsFilePath}
 out=\${output_folder}\\ru_events.json
 
 [run-loca-en]
 type=FRONTEND
 lang=en
 locarules=${locaRulesDir}
-in=${correlatedEvents}
+in=${resultCorrelatedEventsFilePath}
 out=\${output_folder}\\en_events.json`;
 
 		this._siemjConfigSection += ruLocalization;

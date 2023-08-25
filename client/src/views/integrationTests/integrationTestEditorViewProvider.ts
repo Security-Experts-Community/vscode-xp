@@ -13,7 +13,7 @@ import { Configuration } from '../../models/configuration';
 import { SiemjManager } from '../../models/siemj/siemjManager';
 import { CorrelationUnitTestsRunner } from '../../models/tests/correlationUnitTestsRunner';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
+import { CompilationType, IntegrationTestRunner, IntegrationTestRunnerOptions } from '../../models/tests/integrationTestRunner';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { FastTest } from '../../models/tests/fastTest';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
@@ -445,6 +445,12 @@ export class IntegrationTestEditorViewProvider  {
 
 		await VsCodeApiHelper.saveRuleCodeFile(this._rule);
 
+		// Если правило содержит сабрули, то мы сейчас не сможем просто получить ожидаемое событие.
+		const ruleCode = await this._rule.getRuleCode();
+		if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
+			throw new XpException("Получение ожидаемого события для правил с использованием сабрулей (например, correlation_name = \"subrule_...\") еще не реализовано. Детали можно посмотреть [тут](https://github.com/Security-Experts-Community/vscode-xp/issues/133)");
+		}
+
 		const currTest = IntegrationTest.convertFromObject(message.test);
 		let integrationalTestSimplifiedContent = "";
 		let normalizedEvents = "";
@@ -560,31 +566,90 @@ export class IntegrationTestEditorViewProvider  {
 				return false;
 			}
 
-			// Уточняем информацию для пользователей если в правиле обнаружено использование сабрулей.
-			const ruleCode = await this._rule.getRuleCode();
-			if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
-				progress.report({
-					message : `Интеграционные тесты для правила с сабрулями '${this._rule.getName()}'`
-				});
-			} else {
-				progress.report({
-					message : `Интеграционные тесты для правила '${this._rule.getName()}'`
-				});
-			}
-
 			try {
+				// Уточняем у пользователя, что необходимо скомпилировать для тестов корреляции.
+				const ruleCode = await this._rule.getRuleCode();
+				const testRunnerOptions = new IntegrationTestRunnerOptions();
+				if(this._rule instanceof Correlation) {
+					if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
+						const result = await vscode.window.showInformationMessage(
+							"В текущем правиле корреляции обнаружено использование сабрулей. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",
+							this.CURRENT_PACKAGE,
+							this.ALL_PACKAGES);
+
+						if(!result) {
+							return;
+						}
+						
+						switch(result) {
+							case this.CURRENT_PACKAGE: {
+								testRunnerOptions.correlationCompilation = CompilationType.CurrentPackage;
+								break;
+							}
+
+							case this.ALL_PACKAGES: {
+								testRunnerOptions.correlationCompilation = CompilationType.AllPackages;
+								break;
+							}
+						}
+					} else {
+						testRunnerOptions.correlationCompilation = CompilationType.CurrentRule;
+					}
+				}
+
+				// Уточняем у пользователя, что необходимо скомпилировать для тестов обогащения.
+				if(this._rule instanceof Enrichment) {
+					const result = await vscode.window.showInformationMessage(
+						"Тестируемое правило обогащения может обогащать как нормализованные события, так и корреляционные. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",
+						this.CURRENT_PACKAGE,
+						this.ALL_PACKAGES);
+
+					if(!result) {
+						return;
+					}
+					
+					switch(result) {
+						case this.CURRENT_PACKAGE: {
+							testRunnerOptions.correlationCompilation = CompilationType.CurrentPackage;
+							break;
+						}
+
+						case this.ALL_PACKAGES: {
+							testRunnerOptions.correlationCompilation = CompilationType.AllPackages;
+							break;
+						}
+					}
+				}
+
+				// Уточняем информацию для пользователей если в правиле обнаружено использование сабрулей.
+				if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
+					progress.report({
+						message : `Интеграционные тесты для правила с сабрулями '${this._rule.getName()}'`
+					});
+				} else {
+					progress.report({
+						message : `Интеграционные тесты для правила '${this._rule.getName()}'`
+					});
+				}
+
 				const outputParser = new SiemJOutputParser();
 				const testRunner = new IntegrationTestRunner(this._config, outputParser, token);
-				const executedTests = await testRunner.run(this._rule);
+				const siemjResult = await testRunner.run(this._rule, testRunnerOptions);
 
-				if(executedTests.every(it => it.getStatus() === TestStatus.Success)) {
+				this._config.getDiagnosticCollection().clear();
+				for (const diagnostic of siemjResult.fileDiagnostics) {
+					this._config.getDiagnosticCollection().set(diagnostic.uri, diagnostic.diagnostics);
+				}
+
+				const executedIntegrationTests = this._rule.getIntegrationTests();
+				if(executedIntegrationTests.every(it => it.getStatus() === TestStatus.Success)) {
 					ExtensionHelper.showUserInfo(`Интеграционные тесты прошли успешно.`);
-					return true;
-				} 
+				} else {
+					ExtensionHelper.showUserInfo(`Не все тесты были пройдены.`);
+				}
 			}
 			catch(error) {
 				ExceptionHelper.show(error, `Ошибка запуска тестов`);
-				return false;
 			}
 		});
 	}
@@ -616,4 +681,7 @@ export class IntegrationTestEditorViewProvider  {
 	}
 
 	public static TEXTAREA_END_OF_LINE = "\n";
+
+	public ALL_PACKAGES = "Все пакеты";
+	public CURRENT_PACKAGE = "Текущий пакет"
 }

@@ -180,18 +180,57 @@ export class SiemjManager {
 		return result;
 	}
 
-	public async correlateAndGetLocalizationExamples(rule: RuleBaseItem, filtredTest : IntegrationTest[]) : Promise<LocalizationExample[]> {
+	/**
+	 * TODO: возможно уже не потребуется
+	 * @param rule 
+	 * @param filtredTest 
+	 * @returns 
+	 */
+	public async buildLocalizationExamples(rule: RuleBaseItem, integrationTestsTmpDirPath : string) : Promise<LocalizationExample[]> {
 		const contentFullPath = rule.getPackagePath(this._config);
 		if(!fs.existsSync(contentFullPath)) {
 			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует.`);
 		}
 
-		await SiemjConfigHelper.clearArtifacts(this._config);
+		if(!fs.existsSync(integrationTestsTmpDirPath)) {
+			throw new FileSystemException(`Файлы интеграционных тестов по пути '${integrationTestsTmpDirPath}' не были получены.`);
+		}
+
+		// Нужно собрать все скоррелированные события в один файл, который и передать на генерацию локализаций.
+		// raw_events_1_norm_enr_cor_enr.json
+		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
+		const correlatedEventFilePaths = files.filter(fp => {
+			return /raw_events_\d+_norm_enr_cor_enr\.json/gm.test(path.basename(fp));
+		});
+
+		if(correlatedEventFilePaths.length === 0) {
+			throw new XpException("Корреляционные события не найдены.");
+		}
 
 		const contentRootPath = rule.getContentRootPath(this._config);
 		const contentRootFolder = path.basename(contentRootPath);
-		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
 
+		const correlateEvents = [];
+		for(const correlatedEventFilePath of correlatedEventFilePaths) {
+			let correlateEventsFileContent = await FileSystemHelper.readContentFile(correlatedEventFilePath);
+			correlateEventsFileContent = correlateEventsFileContent.trimEnd();
+			if(correlateEventsFileContent) {
+				correlateEvents.push(correlateEventsFileContent);
+			}
+		}
+
+		// Собираем все скоррелированые события вместе.
+		const correlateEventsContent = correlateEvents.join(os.EOL);
+		const localizationTmpPath = this._config.getRandTmpSubDirectoryPath(contentRootFolder);
+		await fs.promises.mkdir(localizationTmpPath);
+		
+		// Записываем их в файл.
+		const allCorrelateEventsFilePath = path.join(localizationTmpPath, this.ALL_CORR_EVENTS_FILENAME);
+		await FileSystemHelper.writeContentFile(allCorrelateEventsFilePath, correlateEventsContent);
+
+		await SiemjConfigHelper.clearArtifacts(this._config);
+
+		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
 		if(!fs.existsSync(outputFolder)) {
 			fs.mkdirSync(outputFolder, {recursive: true});
 		}
@@ -207,29 +246,11 @@ export class SiemjManager {
 			await fs.promises.unlink(enLocalizationFilePath);
 		}
 
-		// Объединяем все сырые события для тестов в один файл.
-		// Это нужно для ускорения процесса получения скоррелированных событий.
-		const rawEventsOfAllTest = filtredTest.map(ft => ft.getRawEvents()).join(os.EOL);
-		const tmpDir = this._config.getRandTmpSubDirectoryPath();
-		await fs.promises.mkdir(tmpDir);
-
-		const rawEventsOfAllTestsFilePath = path.join(tmpDir, this.LOCALIZATION_TEST_FILENAME);
-		await FileSystemHelper.writeContentFile(rawEventsOfAllTestsFilePath, rawEventsOfAllTest);
-
-		// Собираем общую часть для всех тестов правила.
 		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
-		configBuilder.addNormalizationsGraphBuilding(false);
-		configBuilder.addTablesSchemaBuilding();
-		configBuilder.addTablesDbBuilding();
-		configBuilder.addCorrelationsGraphBuilding();
-		configBuilder.addEnrichmentsGraphBuilding();
 		configBuilder.addLocalizationsBuilding(rule.getDirectoryPath());
-
-		configBuilder.addEventsNormalization(rawEventsOfAllTestsFilePath);
-		configBuilder.addCorrelateNormalizedEvents();
-		configBuilder.addLocalization();
-
+		configBuilder.addLocalizationForCorrelatedEvents(allCorrelateEventsFilePath);
 		const siemjConfContent = configBuilder.build();
+		
 		const siemjOutput = await this.executeSiemjConfig(rule, siemjConfContent);
 		this.processOutput(siemjOutput.output);
 
@@ -313,7 +334,7 @@ export class SiemjManager {
 		}
 	}
 
-	public LOCALIZATION_TEST_FILENAME = "alltestevents.json";
+	public ALL_CORR_EVENTS_FILENAME = "all_corr_events.json";
 
 	public ERROR_SUBSTRING = "SUBPROCESS EXIT CODE: 1";
 }

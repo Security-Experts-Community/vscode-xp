@@ -13,9 +13,10 @@ export class FileDiagnostics {
 }
 
 export class SiemjExecutionResult {
-	public testStatus : boolean;
+	public testsStatus : boolean;
 	public fileDiagnostics : FileDiagnostics[] = [];
 	public failedTestNumbers : number[] = [];
+	public tmpDirectoryPath: string;
 }
 
 export class SiemJOutputParser {
@@ -94,49 +95,60 @@ export class SiemJOutputParser {
 	}
 
 	private processTestRules(siemjOutput: string, result: SiemjExecutionResult) {
-		// Определяем статус тестов.
-		// Дошли до блока тестов.
-		const runningTestRegExp = /TEST_RULES \[Err\] :: Collected \d+ tests./gm;
-		if(siemjOutput.match(runningTestRegExp)) {
 
-			// Все тесты прошли.
-			if(siemjOutput.includes(this.TESTS_SUCCESS_SUBSTRING)) {
-				result.testStatus = true;
-			}
-
-			// Не все прошли, значит есть ошибки.
-			// TEST_RULES :: Test Started: tests\\raw_events_1.json
-			// TEST_RULES :: Expected results are not obtained.
-			const failedTestRegExp = /TEST_RULES :: Test Started: tests\\raw_events_(\d+).json\s+TEST_RULES :: Expected results are not obtained./gm;
-			let t: RegExpExecArray | null;
-			while ((t = failedTestRegExp.exec(siemjOutput))) {
-
-				if(t.length != 2) {
-					continue;
-				}
-
-				const failedTestNumber = parseInt(t[1]);
-				result.failedTestNumbers.push(failedTestNumber);
-			}
-
-			// Тесты даже не запустились.
-			// Например, сырое событие без конверта.
-			if(siemjOutput.includes(this.ERRORS_FOUND_SUBSTRING)) {
-				result.testStatus = false;
-				return;
-			}
-
-			// Если хоть одна ошибка, тогда выполнение Siemj завершилось неуспешно.
-			if(result.failedTestNumbers.length > 0) {
-				result.testStatus = false;
-			} else {
-				result.testStatus = true;
-			}
-
+		// Количество тестов не собрали.
+		// TEST_RULES [Err] :: Collected 5 tests.
+		const runningTestRegExp = /TEST_RULES \[Err\] :: Collected (\d+) tests./gm;
+		if(!siemjOutput.match(runningTestRegExp)) {
+			result.testsStatus = false;
 			return;
 		}
 
-		result.testStatus = false;
+		// Количество тестов есть, парсим.
+		let testCount : number;
+		const collectedTestsResult = runningTestRegExp.exec(siemjOutput);
+		if(collectedTestsResult && collectedTestsResult.length == 2) {
+			const testCountString = collectedTestsResult[1];
+			testCount = parseInt(testCountString);
+		}
+
+		// Все тесты прошли.
+		if(siemjOutput.includes(this.TESTS_SUCCESS_SUBSTRING)) {
+			result.testsStatus = true;
+			return;
+		} 
+
+		// Тесты не прошли, разбираем ошибки.
+		result.testsStatus = false;
+
+		// Не все прошли, значит есть ошибки.
+		// TEST_RULES :: Test Started: tests\\raw_events_1.json
+		// TEST_RULES :: Expected results are not obtained.
+		const failedTestRegExp = /TEST_RULES :: Test Started: tests\\raw_events_(\d+).json\s+TEST_RULES :: Expected results are not obtained./gm;
+		let t: RegExpExecArray | null;
+		while ((t = failedTestRegExp.exec(siemjOutput))) {
+
+			if(t.length != 2) {
+				continue;
+			}
+
+			const failedTestNumber = parseInt(t[1]);
+			result.failedTestNumbers.push(failedTestNumber);
+		}
+
+		// Тесты не прошли, ошибок не нашлось, значит они все ошибочные.
+		if(result.failedTestNumbers.length === 0) {
+			const failedTestNumbers = [...Array(testCount + 1).keys()];
+			failedTestNumbers.shift();
+			result.failedTestNumbers = failedTestNumbers;
+		}
+
+		// Тесты даже не запустились.
+		// Например, сырое событие без конверта.
+		// if(siemjOutput.includes(this.ERRORS_FOUND_SUBSTRING)) {
+		// 	result.testsStatus = false;
+		// 	return;
+		// }
 	}
 
 	/**

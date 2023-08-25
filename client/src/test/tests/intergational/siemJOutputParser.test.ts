@@ -52,7 +52,7 @@ TEST_RULES [Err] :: All tests OK`;
 
 		const status = await parser.parse(output);
 
-		assert.ok(status.testStatus);
+		assert.ok(status.testsStatus);
 		assert.strictEqual(status.failedTestNumbers.length, 0);
 	});
 
@@ -68,7 +68,7 @@ TEST_RULES [Err] :: Errors found.`;
 
 		const status = await parser.parse(output);
 
-		assert.ok(!status.testStatus);
+		assert.ok(!status.testsStatus);
 	});
 
 	test('Один тест не прошёл', async () => {
@@ -83,7 +83,7 @@ TEST_RULES :: Expected results are not obtained.`;
 
 		const status = await parser.parse(output);
 
-		assert.ok(!status.testStatus);
+		assert.ok(!status.testsStatus);
 		assert.strictEqual(status.failedTestNumbers.length, 1);
 	});
 
