@@ -238,7 +238,7 @@ export async function activate(context: ExtensionContext) {
 			await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
 		}
 	}
-	catch(error){
+	catch(error) {
 		ExceptionHelper.show(error, "Не удалось активировать расширение 'eXtraction and Processing'");
 	}
 }
