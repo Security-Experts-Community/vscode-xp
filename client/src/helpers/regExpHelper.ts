@@ -39,6 +39,13 @@ export class RegExpHelper {
 		return inputText;
 	}
 
+	/**
+	 * Парсит элементы по регулярному выражение и собирает их в единый список.
+	 * Регулярное выражение собирает значение первой группы и только они попадают в массив.
+	 * @param text 
+	 * @param regExp 
+	 * @returns 
+	 */
 	public static parseValuesFromText(text : string, regExp : RegExp) : string[] {
 		const values : string [] = [];
 		let parseResult: RegExpExecArray | null;
@@ -50,6 +57,29 @@ export class RegExpHelper {
 			const value : string = parseResult[1];
 			values.push(value);
 		}
+		return values;
+	}
+
+	/**
+	 * Парсить js-массивы ([1, 2, 3]) из строки по регулярному выражению и объединяет их в единый список.
+	 * Регулярное выражение собирает значение первой группы и только они попадают в массив.
+	 * @param text строка 
+	 * @param regExp регулярное выражения 
+	 * @returns совокупный список всех элементов
+	 */
+	public static parseJsArraysFromText(text : string, regExp : RegExp) : string[] {
+		const arrays : string [] = [];
+		let parseResult: RegExpExecArray | null;
+		while ((parseResult = regExp.exec(text))) {
+			if(parseResult.length != 2) {
+				continue;
+			}
+			
+			const array : string = parseResult[1];
+			arrays.push(array);
+		}
+
+		const values = arrays.flatMap(array => JSON.parse(array));
 		return values;
 	}
 

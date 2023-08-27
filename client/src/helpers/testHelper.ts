@@ -370,52 +370,37 @@ export class TestHelper {
 	 * @param ruleCode код правила
 	 */
 	public static isRuleCodeContainsSubrules(ruleCode : string) : boolean {
-		const correlationNameCompareRegex = /correlation_name\s*==\s*"\w+"/gm;
-		const correlationNameWithLowerCompareRegex = /lower\(\s*correlation_name\s*\)\s*==\s*"\w+"/gm;
-		const lowerCorrelationNameInListRegex = /in_list\(\s*\[[\w\W]+\]\s*,\s*lower\s*\(\s*correlation_name\s*\)/gm;
 
+		if(
+			this.CORRELATION_NAME_COMPARE_REGEX.test(ruleCode) ||
+			this.LOWER_CORRELATION_NAME_COMPARE_REGEX.test(ruleCode) ||
+			this.INLIST_LOWER_CORRELATION_NAME_REGEX.test(ruleCode) ||
 
-		const correlationNameCompareResult = correlationNameCompareRegex.test(ruleCode);
-		if(correlationNameCompareResult) {
+			// in_list([
+			// 	"Subrule_Windows_Host_Abnormal_Access", 
+			// 	"Subrule_Unix_Server_Abnormal_Access"
+			// ], correlation_name)
+			this.INLIST_CORRELATION_NAME_REGEX.test(ruleCode)
+		) {
 			return true;
 		}
-
-		const correlationNameWithLowerCompareResult = correlationNameWithLowerCompareRegex.test(ruleCode);
-		if(correlationNameWithLowerCompareResult) {
-			return true;
-		}
-
-		const lowerCorrelationNameInListResult = lowerCorrelationNameInListRegex.test(ruleCode);
-		if(lowerCorrelationNameInListResult) {
-			return true;
-		}
-
-		// in_list([
-		// 	"Subrule_Windows_Host_Abnormal_Access", 
-		// 	"Subrule_Unix_Server_Abnormal_Access"
-		// ], correlation_name)
-		const correlationNameInListRegex = /in_list\(\s*\[[\w\W]+\]\s*,\s*correlation_name\s*\)/gm;
-		const correlationNameInListResult = correlationNameInListRegex.test(ruleCode);
-		if(correlationNameInListResult) {
-			return true;
-		}
-		
 		return false;
 	}
 
 	public static parseSubRuleNames(ruleCode : string) : string[] {
-		const correlationNameCompareRegex = /correlation_name\s*==\s*"(\w+)"/gm;
-		const correlationNameWithLowerCompareRegex = /lower\(\s*correlation_name\s*\)\s*==\s*"(\w+)"/gm;
-		const correlationNameInListRegex = /in_list\(\s*(\[[\w\W]+\])\s*,\s*lower\(correlation_name\)/gm;
+		// const correlationNameCompareRegex = /correlation_name\s*==\s*"(\w+)"/gm;
+		// const correlationNameWithLowerCompareRegex = /lower\(\s*correlation_name\s*\)\s*==\s*"(\w+)"/gm;
+		// const correlationNameWihtLowerInListRegex = /in_list\(\s*(\[[\w\W]+\])\s*,\s*lower\(correlation_name\)/gm;
 
-		const correlationNameCompareRegexResult = RegExpHelper.parseValuesFromText(ruleCode, correlationNameCompareRegex);
-		const correlationNameWithLowerCompareRegexResult = RegExpHelper.parseValuesFromText(ruleCode, correlationNameWithLowerCompareRegex);
+		const correlationNameCompareRegexResult = RegExpHelper.parseValuesFromText(ruleCode, this.CORRELATION_NAME_COMPARE_REGEX);
+		const correlationNameWithLowerCompareRegexResult = RegExpHelper.parseValuesFromText(ruleCode, this.LOWER_CORRELATION_NAME_COMPARE_REGEX);
 
-		let correlationNameInListRegexResult = RegExpHelper.parseValuesFromText(ruleCode, correlationNameInListRegex);
-		correlationNameInListRegexResult = correlationNameInListRegexResult.flatMap(correlationList => JSON.parse(correlationList));
+		const correlationNameWithLowerInListRegexResult = RegExpHelper.parseJsArraysFromText(ruleCode, this.INLIST_LOWER_CORRELATION_NAME_REGEX);
+		const correlationNameInListRegexResult = RegExpHelper.parseJsArraysFromText(ruleCode, this.INLIST_CORRELATION_NAME_REGEX);
 
 		return correlationNameCompareRegexResult
 			.concat(correlationNameWithLowerCompareRegexResult)
+			.concat(correlationNameWithLowerInListRegexResult)
 			.concat(correlationNameInListRegexResult);
 	}
 
@@ -482,4 +467,10 @@ export class TestHelper {
 	public static escapeRawEvent(normalizedEvent: string) {
 		return normalizedEvent;
 	}
+
+	private static CORRELATION_NAME_COMPARE_REGEX = /correlation_name\s*==\s*"(\w+)"/gm;
+	private static LOWER_CORRELATION_NAME_COMPARE_REGEX = /lower\s*\(\s*correlation_name\s*\)\s*==\s*"(\w+)"/gm;
+
+	private static INLIST_LOWER_CORRELATION_NAME_REGEX = /in_list\s*\(\s*(\[[\w\W]+\])\s*,\s*lower\s*\(\s*correlation_name\s*\)/gm;
+	private static INLIST_CORRELATION_NAME_REGEX = /in_list\s*\(\s*(\[[\w\W]+\])\s*,\s*correlation_name\s*\)/gm;
 }
