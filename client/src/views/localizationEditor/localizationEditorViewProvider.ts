@@ -214,11 +214,13 @@ export class LocalizationEditorViewProvider  {
 			try {
 				progress.report({message : `Получение корреляционных событий на основе интеграционных тестов правила.`});
 				const outputParser = new SiemJOutputParser();
-				const testRunner = new IntegrationTestRunner(this._config, outputParser, token);
 
 				const testRunnerOptions = new IntegrationTestRunnerOptions();
 				testRunnerOptions.keepTmpFiles = true;
-				const siemjResult = await testRunner.run(this._rule, testRunnerOptions);
+				testRunnerOptions.cancellationToken = token;
+				const testRunner = new IntegrationTestRunner(this._config, outputParser);
+				
+				const siemjResult = await testRunner.run(this._rule);
 
 				if(!siemjResult.testsStatus) {
 					throw new XpException("Не все интеграционные тесты прошли. Исправьте тесты и повторите.");

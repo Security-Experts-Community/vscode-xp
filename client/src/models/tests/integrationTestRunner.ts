@@ -25,6 +25,7 @@ export enum CompilationType {
 export class IntegrationTestRunnerOptions {
 	keepTmpFiles = false;
 	correlationCompilation : CompilationType;
+	cancellationToken?: vscode.CancellationToken;
 }
 
 export class IntegrationTestRunner {
@@ -32,10 +33,10 @@ export class IntegrationTestRunner {
 	constructor(
 		private _config: Configuration,
 		private _outputParser: SiemJOutputParser,
-		private _token?: vscode.CancellationToken) {
+		private _options?: IntegrationTestRunnerOptions) {
 	}
 
-	public async run(rule : RuleBaseItem, options : IntegrationTestRunnerOptions) : Promise<SiemjExecutionResult> {
+	public async run(rule : RuleBaseItem, ) : Promise<SiemjExecutionResult> {
 
 		// Проверяем наличие нужных утилит.
 		this._config.getSiemkbTestsPath();
@@ -79,11 +80,10 @@ export class IntegrationTestRunner {
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();
 
-
 		// Пользователь выбирает что необходимо компилировать из корреляций.
 		// Если корреляция с сабрулями, то собираем полный граф корреляций для отработок сабрулей из других пакетов.
 		// В противном случае только корреляции из текущего пакета с правилами. Позволяет ускорить тесты.
-		switch (options.correlationCompilation) {
+		switch (this._options.correlationCompilation) {
 			case CompilationType.CurrentRule: {
 				configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this._config));
 				break;
@@ -92,20 +92,22 @@ export class IntegrationTestRunner {
 				configBuilder.addCorrelationsGraphBuilding();
 				break;
 			}
-			case CompilationType.CurrentPackage: {
+			case CompilationType.CurrentPackage:
+			default: {
+				// По умолчанию собирается текущий пакет.
 				configBuilder.addCorrelationsGraphBuilding(true, rule.getDirectoryPath());
 				break;
 			}
 		}
 		
 		// Получаем путь к директории с результатами теста.
-		const tmpDirectoryPath = configBuilder.addTestsRun(rule.getDirectoryPath(), options.keepTmpFiles);
+		const tmpDirectoryPath = configBuilder.addTestsRun(rule.getDirectoryPath(), this._options.keepTmpFiles);
 		const siemjConfContent = configBuilder.build();
 		if(!siemjConfContent) {
 			throw new XpException("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
 		}
 
-		const siemjManager = new SiemjManager(this._config, this._token);
+		const siemjManager = new SiemjManager(this._config, this._options.cancellationToken);
 		const siemjExecutionResult = await siemjManager.executeSiemjConfig(rule, siemjConfContent);
 		const executedTests = rule.getIntegrationTests();
 

@@ -569,7 +569,10 @@ export class IntegrationTestEditorViewProvider  {
 			try {
 				// Уточняем у пользователя, что необходимо скомпилировать для тестов корреляции.
 				const ruleCode = await this._rule.getRuleCode();
+
 				const testRunnerOptions = new IntegrationTestRunnerOptions();
+				testRunnerOptions.cancellationToken = token;
+
 				if(this._rule instanceof Correlation) {
 					if(TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
 						const result = await vscode.window.showInformationMessage(
@@ -633,8 +636,8 @@ export class IntegrationTestEditorViewProvider  {
 				}
 
 				const outputParser = new SiemJOutputParser();
-				const testRunner = new IntegrationTestRunner(this._config, outputParser, token);
-				const siemjResult = await testRunner.run(this._rule, testRunnerOptions);
+				const testRunner = new IntegrationTestRunner(this._config, outputParser, testRunnerOptions);
+				const siemjResult = await testRunner.run(this._rule);
 
 				this._config.getDiagnosticCollection().clear();
 				for (const diagnostic of siemjResult.fileDiagnostics) {
