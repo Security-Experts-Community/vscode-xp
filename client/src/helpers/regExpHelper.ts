@@ -42,11 +42,11 @@ export class RegExpHelper {
 	/**
 	 * Парсит элементы по регулярному выражение и собирает их в единый список.
 	 * Регулярное выражение собирает значение первой группы и только они попадают в массив.
-	 * @param text 
-	 * @param regExp 
+	 * @param text строка
+	 * @param regExp регулярное выражение с заполненой второй группой
 	 * @returns 
 	 */
-	public static parseValuesFromText(text : string, regExp : RegExp) : string[] {
+	public static parseValues(text : string, regExp : RegExp) : string[] {
 		const values : string [] = [];
 		let parseResult: RegExpExecArray | null;
 		while ((parseResult = regExp.exec(text))) {
@@ -64,10 +64,10 @@ export class RegExpHelper {
 	 * Парсить js-массивы ([1, 2, 3]) из строки по регулярному выражению и объединяет их в единый список.
 	 * Регулярное выражение собирает значение первой группы и только они попадают в массив.
 	 * @param text строка 
-	 * @param regExp регулярное выражения 
+	 * @param regExp регулярное выражение с заполненой второй группой
 	 * @returns совокупный список всех элементов
 	 */
-	public static parseJsArraysFromText(text : string, regExp : RegExp) : string[] {
+	public static parseJsArrays(text : string, regExp : RegExp) : string[] {
 		const arrays : string [] = [];
 		let parseResult: RegExpExecArray | null;
 		while ((parseResult = regExp.exec(text))) {

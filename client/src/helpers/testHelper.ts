@@ -392,11 +392,11 @@ export class TestHelper {
 		// const correlationNameWithLowerCompareRegex = /lower\(\s*correlation_name\s*\)\s*==\s*"(\w+)"/gm;
 		// const correlationNameWihtLowerInListRegex = /in_list\(\s*(\[[\w\W]+\])\s*,\s*lower\(correlation_name\)/gm;
 
-		const correlationNameCompareRegexResult = RegExpHelper.parseValuesFromText(ruleCode, this.CORRELATION_NAME_COMPARE_REGEX);
-		const correlationNameWithLowerCompareRegexResult = RegExpHelper.parseValuesFromText(ruleCode, this.LOWER_CORRELATION_NAME_COMPARE_REGEX);
+		const correlationNameCompareRegexResult = RegExpHelper.parseValues(ruleCode, this.CORRELATION_NAME_COMPARE_REGEX);
+		const correlationNameWithLowerCompareRegexResult = RegExpHelper.parseValues(ruleCode, this.LOWER_CORRELATION_NAME_COMPARE_REGEX);
 
-		const correlationNameWithLowerInListRegexResult = RegExpHelper.parseJsArraysFromText(ruleCode, this.INLIST_LOWER_CORRELATION_NAME_REGEX);
-		const correlationNameInListRegexResult = RegExpHelper.parseJsArraysFromText(ruleCode, this.INLIST_CORRELATION_NAME_REGEX);
+		const correlationNameWithLowerInListRegexResult = RegExpHelper.parseJsArrays(ruleCode, this.INLIST_LOWER_CORRELATION_NAME_REGEX);
+		const correlationNameInListRegexResult = RegExpHelper.parseJsArrays(ruleCode, this.INLIST_CORRELATION_NAME_REGEX);
 
 		return correlationNameCompareRegexResult
 			.concat(correlationNameWithLowerCompareRegexResult)
