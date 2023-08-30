@@ -9,9 +9,6 @@ import { RuleBaseItem } from '../content/ruleBaseItem';
 import { TestStatus } from './testStatus';
 import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
 import { XpException } from '../xpException';
-import { TestHelper } from '../../helpers/testHelper';
-import { Correlation } from '../content/correlation';
-import { Enrichment } from '../content/enrichment';
 import { SiemjManager } from '../siemj/siemjManager';
 import { OperationCanceledException } from '../operationCanceledException';
 
@@ -19,12 +16,14 @@ export enum CompilationType {
 	DontCompile = 0,
 	CurrentRule,
 	CurrentPackage,
-	AllPackages
+	AllPackages,
+	Auto
 }
 
 export class IntegrationTestRunnerOptions {
 	keepTmpFiles = false;
-	correlationCompilation : CompilationType;
+	dependentCorrelation : string[] = [];
+	correlationCompilation : CompilationType = CompilationType.Auto;
 	cancellationToken?: vscode.CancellationToken;
 }
 
@@ -36,7 +35,7 @@ export class IntegrationTestRunner {
 		private _options?: IntegrationTestRunnerOptions) {
 	}
 
-	public async run(rule : RuleBaseItem, ) : Promise<SiemjExecutionResult> {
+	public async run(rule : RuleBaseItem) : Promise<SiemjExecutionResult> {
 
 		// Проверяем наличие нужных утилит.
 		this._config.getSiemkbTestsPath();
@@ -83,20 +82,18 @@ export class IntegrationTestRunner {
 		// Пользователь выбирает что необходимо компилировать из корреляций.
 		// Если корреляция с сабрулями, то собираем полный граф корреляций для отработок сабрулей из других пакетов.
 		// В противном случае только корреляции из текущего пакета с правилами. Позволяет ускорить тесты.
-		switch (this._options.correlationCompilation) {
-			case CompilationType.CurrentRule: {
-				configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this._config));
-				break;
-			}
-			case CompilationType.AllPackages: {
-				configBuilder.addCorrelationsGraphBuilding();
-				break;
-			}
-			case CompilationType.CurrentPackage:
-			default: {
-				// По умолчанию собирается текущий пакет.
-				configBuilder.addCorrelationsGraphBuilding(true, rule.getDirectoryPath());
-				break;
+		if(this._options.dependentCorrelation?.length != 0) {
+			configBuilder.addCorrelationsGraphBuilding(true, this._options.dependentCorrelation);
+		} else {
+			switch (this._options.correlationCompilation) {
+				case CompilationType.CurrentPackage: {
+					configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this._config));
+					break;
+				}
+				case CompilationType.AllPackages: {
+					configBuilder.addCorrelationsGraphBuilding(true);
+					break;
+				}
 			}
 		}
 		

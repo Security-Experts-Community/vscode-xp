@@ -181,10 +181,10 @@ export class SiemjManager {
 	}
 
 	/**
-	 * TODO: возможно уже не потребуется
-	 * @param rule 
-	 * @param filtredTest 
-	 * @returns 
+	 * Генерирует тестовые локализации для правила на основе временных файлов интеграционных тестов.
+	 * @param rule правило для генерации тестов
+	 * @param integrationTestsTmpDirPath директория с файлами интеграционного теста. 
+	 * @returns список примеров локализаций
 	 */
 	public async buildLocalizationExamples(rule: RuleBaseItem, integrationTestsTmpDirPath : string) : Promise<LocalizationExample[]> {
 		const contentFullPath = rule.getPackagePath(this._config);

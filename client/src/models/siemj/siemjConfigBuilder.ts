@@ -106,7 +106,7 @@ out=${output}`;
 	 * @param contentSubdirPath собирать определенную часть контента
 	 * @returns 
 	 */
-	public addCorrelationsGraphBuilding(force = true, contentSubdirPath? : string) : void {
+	public addCorrelationsGraphBuilding(force = true, contentSubdirPath? : string|string[]) : void {
 		
 		// Не собираем граф, если он уже есть.
 		if(!force) {
@@ -115,10 +115,14 @@ out=${output}`;
 				return;
 			}
 		}
-		
+
 		let rulesSrcPath : string;
 		if(contentSubdirPath) {
-			rulesSrcPath = contentSubdirPath;
+			if(Array.isArray(contentSubdirPath)) {
+				rulesSrcPath = contentSubdirPath.join(",");
+			} else {
+				rulesSrcPath = contentSubdirPath;
+			}
 		}
 		else {
 			rulesSrcPath = this._contentRootPath;

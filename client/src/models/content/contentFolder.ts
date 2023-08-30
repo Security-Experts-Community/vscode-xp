@@ -77,7 +77,7 @@ export class ContentFolder extends KbTreeBaseItem {
 			throw new XpException(`Директория '${directoryPath}' не существует.`);
 		}
 
-		const subDirectories = FileSystemHelper.readSubDirectories(directoryPath);
+		const subDirectories = FileSystemHelper.readSubDirectoryNames(directoryPath);
 		const name = path.basename(directoryPath);
 
 		let contentFolder: ContentFolder;

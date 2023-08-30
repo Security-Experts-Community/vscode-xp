@@ -322,7 +322,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 				return Promise.resolve([]);
 			}
 
-			const subDirectories = FileSystemHelper.readSubDirectories(this._knowledgebaseDirectoryPath);
+			const subDirectories = FileSystemHelper.readSubDirectoryNames(this._knowledgebaseDirectoryPath);
 			this.initializeRootIfNeeded(subDirectories);
 
 			// В случане штатной директории пакетов будет возможности создавать и собирать пакеты.
@@ -340,7 +340,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		const subFolderPath = element.getDirectoryPath();
 		const kbItems : (KbTreeBaseItem)[]= [];
 
-		const subDirectories = FileSystemHelper.readSubDirectories(subFolderPath);
+		const subDirectories = FileSystemHelper.readSubDirectoryNames(subFolderPath);
 		this.notifyIfContentTypeIsSelectedIncorrectly(subDirectories);
 
 		for(const dirName of subDirectories)

@@ -141,13 +141,49 @@ export class FileSystemHelper {
 		return file.toString();
 	}
 
-	public static readSubDirectories(filePath: string) {
+	public static readSubDirectoryNames(filePath: string) {
 
 		const directories = fs.readdirSync(filePath, { withFileTypes: true })
 			.filter(entity => entity.isDirectory())
 			.map(entity => entity.name);
 
 		return directories;
+	}
+
+	public static readDirectoryPathByName(filePath: string, dirNames: string []) {
+
+		const directories = fs.readdirSync(filePath, { withFileTypes: true })
+			.filter(entity => entity.isDirectory())
+			.filter((e) => {
+				return dirNames.includes(e.name.toLocaleLowerCase());
+			})
+			.map(entity => entity.name);
+
+		return directories;
+	}
+
+	public static getRecursiveDirPathByName(dirPath : string, dirNames: string []) : string[] {
+		const results : string [] = [];
+		const list = fs.readdirSync(dirPath);
+
+		list.forEach(function(file : string) {
+			file = path.join(dirPath, file);
+			const stat = fs.statSync(file);
+
+			if (stat && stat.isDirectory()) { 
+				const dirName = path.basename(file);
+				if(dirNames.includes(dirName.toLocaleLowerCase())) {
+					results.push(file);
+				}
+
+				const nestedResult = FileSystemHelper.getRecursiveDirPathByName(file, dirNames);
+				if(nestedResult.length != 0) {
+					results.push(...nestedResult);
+				}
+			}
+		});
+
+		return results;
 	}
 
 	/**

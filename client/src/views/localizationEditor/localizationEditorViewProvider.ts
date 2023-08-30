@@ -15,7 +15,7 @@ import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { IntegrationTestRunner, IntegrationTestRunnerOptions } from '../../models/tests/integrationTestRunner';
-import { TestHelper } from '../../helpers/testHelper';
+import { RunIntegrationTestDialog } from '../runIntegrationDialog';
 
 export class LocalizationEditorViewProvider  {
 
@@ -133,7 +133,7 @@ export class LocalizationEditorViewProvider  {
 			this._view.webview.html = htmlContent;
 		}
 		catch(error) {
-			ExtensionHelper.showUserError(`Не удалось открыть правила локализации. ${error.message}`);
+			ExceptionHelper.show(error, `Не удалось открыть правила локализации.`);
 		}
 	}
 
@@ -213,13 +213,13 @@ export class LocalizationEditorViewProvider  {
 		}, async (progress, token) => {
 			try {
 				progress.report({message : `Получение корреляционных событий на основе интеграционных тестов правила.`});
-				const outputParser = new SiemJOutputParser();
 
-				const testRunnerOptions = new IntegrationTestRunnerOptions();
-				testRunnerOptions.keepTmpFiles = true;
-				testRunnerOptions.cancellationToken = token;
-				const testRunner = new IntegrationTestRunner(this._config, outputParser);
-				
+				const ritd = new RunIntegrationTestDialog(this._config);
+				const options = await ritd.getIntegrationTestRunOptions(this._rule);
+				options.cancellationToken = token;
+
+				const outputParser = new SiemJOutputParser();
+				const testRunner = new IntegrationTestRunner(this._config, outputParser, options);
 				const siemjResult = await testRunner.run(this._rule);
 
 				if(!siemjResult.testsStatus) {
