@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.7.4 (Pre-Release)
+
+- максимально увеличена скорость проведения интеграционных тестов и тестов локализаций для баз знаний произвольного размера.
+
 ## 3.7.3 (Pre-Release)
 
 - фича [#132](https://github.com/Security-Experts-Community/vscode-xp/issues/132) - увеличение количества получаемых тестовых локализаций (special thanks @mmaximov);

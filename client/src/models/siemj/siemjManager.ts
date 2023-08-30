@@ -164,8 +164,6 @@ export class SiemjManager {
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 		const siemjExePath = this._config.getSiemjPath();
 
-		this._config.getOutputChannel().clear();
-		
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
 		const result = await ProcessHelper.execute(
@@ -232,7 +230,7 @@ export class SiemjManager {
 
 		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
 		if(!fs.existsSync(outputFolder)) {
-			fs.mkdirSync(outputFolder, {recursive: true});
+			await fs.promises.mkdir(outputFolder, {recursive: true});
 		}
 
 		// Удаляем файлы предыдущих локализаций.

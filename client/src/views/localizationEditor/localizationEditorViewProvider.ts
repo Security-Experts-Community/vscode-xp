@@ -212,21 +212,21 @@ export class LocalizationEditorViewProvider  {
 			cancellable: true,
 		}, async (progress, token) => {
 			try {
-				progress.report({message : `Получение корреляционных событий на основе интеграционных тестов правила.`});
-
+				progress.report({message : `Получение зависимостей правила для корректной сборки графа корреляций.`});
 				const ritd = new RunIntegrationTestDialog(this._config);
 				const options = await ritd.getIntegrationTestRunOptions(this._rule);
 				options.cancellationToken = token;
 
+				progress.report({message : `Получение корреляционных событий на основе интеграционных тестов правила.`});
 				const outputParser = new SiemJOutputParser();
-				const testRunner = new IntegrationTestRunner(this._config, outputParser, options);
-				const siemjResult = await testRunner.run(this._rule);
+				const testRunner = new IntegrationTestRunner(this._config, outputParser);
+				const siemjResult = await testRunner.run(this._rule, options);
 
 				if(!siemjResult.testsStatus) {
-					throw new XpException("Не все интеграционные тесты прошли. Исправьте тесты и повторите.");
+					throw new XpException("Не все интеграционные тесты прошли.");
 				}
 
-				progress.report({message : `Генерация локализаций на основе корреляционных событий.`});
+				progress.report({message : `Генерация локализаций на основе корреляционных событий из интеграционных тестов.`});
 				const siemjManager = new SiemjManager(this._config); 
 				const locExamples = await siemjManager.buildLocalizationExamples(this._rule, siemjResult.tmpDirectoryPath);
 				return locExamples;

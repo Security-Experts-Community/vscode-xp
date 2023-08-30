@@ -636,8 +636,8 @@ export class IntegrationTestEditorViewProvider  {
 				}
 
 				const outputParser = new SiemJOutputParser();
-				const testRunner = new IntegrationTestRunner(this._config, outputParser, testRunnerOptions);
-				const siemjResult = await testRunner.run(this._rule);
+				const testRunner = new IntegrationTestRunner(this._config, outputParser);
+				const siemjResult = await testRunner.run(this._rule, testRunnerOptions);
 
 				this._config.getDiagnosticCollection().clear();
 				for (const diagnostic of siemjResult.fileDiagnostics) {

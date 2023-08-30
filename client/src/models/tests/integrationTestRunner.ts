@@ -22,7 +22,7 @@ export enum CompilationType {
 
 export class IntegrationTestRunnerOptions {
 	keepTmpFiles = false;
-	dependentCorrelation : string[] = [];
+	dependentCorrelations : string[] = [];
 	correlationCompilation : CompilationType = CompilationType.Auto;
 	cancellationToken?: vscode.CancellationToken;
 }
@@ -31,11 +31,10 @@ export class IntegrationTestRunner {
 
 	constructor(
 		private _config: Configuration,
-		private _outputParser: SiemJOutputParser,
-		private _options?: IntegrationTestRunnerOptions) {
+		private _outputParser: SiemJOutputParser) {
 	}
 
-	public async run(rule : RuleBaseItem) : Promise<SiemjExecutionResult> {
+	public async run(rule : RuleBaseItem, options?: IntegrationTestRunnerOptions) : Promise<SiemjExecutionResult> {
 
 		// Проверяем наличие нужных утилит.
 		this._config.getSiemkbTestsPath();
@@ -44,11 +43,11 @@ export class IntegrationTestRunner {
 		integrationTests.forEach(it => it.setStatus(TestStatus.Unknown));
 
 		if(integrationTests.length == 0) {
-			throw new XpException(`У правила *${rule.getName}* не найдено интеграционных тестов`);
+			throw new XpException(`У правила ${rule.getName} не найдено интеграционных тестов`);
 		}
 
 		// Хотя бы у одного теста есть сырые события и код теста.
-		const atLeastOneTestIsValid = integrationTests.some( it => {
+		const atLeastOneTestIsValid = integrationTests.some(it => {
 			if(!it.getRawEvents()) {
 				return false;
 			}
@@ -79,32 +78,43 @@ export class IntegrationTestRunner {
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();
 
-		// Пользователь выбирает что необходимо компилировать из корреляций.
-		// Если корреляция с сабрулями, то собираем полный граф корреляций для отработок сабрулей из других пакетов.
-		// В противном случае только корреляции из текущего пакета с правилами. Позволяет ускорить тесты.
-		if(this._options.dependentCorrelation?.length != 0) {
-			configBuilder.addCorrelationsGraphBuilding(true, this._options.dependentCorrelation);
-		} else {
-			switch (this._options.correlationCompilation) {
-				case CompilationType.CurrentPackage: {
-					configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this._config));
-					break;
-				}
-				case CompilationType.AllPackages: {
-					configBuilder.addCorrelationsGraphBuilding(true);
-					break;
-				}
+		// Параметры сборки графа корреляций взависимости от опций.
+		switch (options.correlationCompilation) {
+			case CompilationType.CurrentRule: {
+				configBuilder.addCorrelationsGraphBuilding(true, rule.getDirectoryPath());
+				break;
 			}
+			case CompilationType.CurrentPackage: {
+				configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this._config));
+				break;
+			}
+			case CompilationType.AllPackages: {
+				configBuilder.addCorrelationsGraphBuilding(true);
+				break;
+			}
+			case CompilationType.Auto: {
+				const dependentCorrelations = options.dependentCorrelations;
+				if(dependentCorrelations.length === 0) {
+					throw new XpException("Опции запуска интеграционных тестов неконсистентны.");
+				}
+
+				configBuilder.addCorrelationsGraphBuilding(true, options.dependentCorrelations);
+				break;
+			}
+			default: {
+				throw new XpException("Опции запуска интеграционных тестов неконсистентны.");
+			}
+
 		}
 		
 		// Получаем путь к директории с результатами теста.
-		const tmpDirectoryPath = configBuilder.addTestsRun(rule.getDirectoryPath(), this._options.keepTmpFiles);
+		const tmpDirectoryPath = configBuilder.addTestsRun(rule.getDirectoryPath(), options.keepTmpFiles);
 		const siemjConfContent = configBuilder.build();
 		if(!siemjConfContent) {
 			throw new XpException("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
 		}
 
-		const siemjManager = new SiemjManager(this._config, this._options.cancellationToken);
+		const siemjManager = new SiemjManager(this._config, options.cancellationToken);
 		const siemjExecutionResult = await siemjManager.executeSiemjConfig(rule, siemjConfContent);
 		const executedTests = rule.getIntegrationTests();
 

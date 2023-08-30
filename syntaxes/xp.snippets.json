@@ -462,7 +462,7 @@
 			"filter::CheckWL"
 		],
 		"body": [
-			"filter::CheckWL_${1|BlackListRegex,Auto,BlackListRegex_Exc,BlackListValue,BlackListValue_Exc,WhiteListRegex,WhiteListValue,WhiteListValue_2,WhiteListValue_3,WhiteListValue_4,Database_Actions,External_Connection,File_Creation,Gitlab_Repositories,LDAP_Request,Linux_File_Operations,Linux_Login,Linux_Networking,Linux_Process_Creation,Linux_Specific_Only,NAD_Alert,Networking,Password_Guessing,Process_Access,Process_Creation,Profiling,Registry_Actions,Specific_Only,Tasks,Web_Access,Windows_Login,Windows_Shares|}(\"${TM_DIRECTORY/.*?(ESC.*?)/$1/}\",$2)"
+			"filter::CheckWL_${1|BlackListRegex,Auto,BlackListRegex_Exc,BlackListValue,BlackListValue_Exc,WhiteListRegex,WhiteListValue,WhiteListValue_2,WhiteListValue_3,WhiteListValue_4,Database_Actions,External_Connection,File_Creation,Gitlab_Repositories,LDAP_Request,Linux_File_Operations,Linux_Login,Linux_Networking,Linux_Process_Creation,Linux_Specific_Only,NAD_Alert,Networking,Password_Guessing,Process_Access,Process_Creation,Profiling,Registry_Actions,Specific_Only,Tasks,Web_Access,Windows_Login,Windows_Shares|}(\"$2\", $3)"
 		]
 	},
 	"Макросы": {
@@ -470,7 +470,7 @@
 			"filter::"
 		],
 		"body": [
-			"filter::${1|Vendors_Without_SID,LoginAttempt_Windows_Endpoint,Check_Profile,Bruteforce_Supported_Vendors,Bruteforce_Attempted_Vendors,AuthVPN,ProcessStart_Linux_Shell,ProcessStart_Linux_Service_Restart,ProcessStart_Linux_Service_Disable,Explicit_FileRead_Linux,FileCreate_Linux,FileModify_Linux,Start_VPN_session,Loopback_Address,External_Address,AD_LDAP_Query,MSSQL_Query,RegexWithoutSpecialChars,AnonymousAccount_Windows,ComputerAccount_Windows,NotFromCorrelator,FileCreate_Windows,LoginSuccessful_Windows,LoginSuccessful_Unix,LoginFailed_Windows,LoginFailed_Unix,OperatingSystem_UNIXLike,ProcessStart,ProcessStart_Linux,ProcessStart_Windows,ProcessStart_Windows_any,ProcessStart_Windows_cmd_meta,ProcessStart_Windows_commandline,SystemAccount_Windows,UserAccount_Windows,Check_Network_Whitelist,|}()"
+			"filter::${1|Vendors_Without_SID,LoginAttempt_Windows_Endpoint,Check_Profile,Bruteforce_Supported_Vendors,Bruteforce_Attempted_Vendors,AuthVPN,ProcessStart_Linux_Shell,ProcessStart_Linux_Service_Restart,ProcessStart_Linux_Service_Disable,Explicit_FileRead_Linux,FileCreate_Linux,FileModify_Linux,Start_VPN_session,Loopback_Address,External_Address,AD_LDAP_Query,MSSQL_Query,RegexWithoutSpecialChars,AnonymousAccount_Windows,ComputerAccount_Windows,NotFromCorrelator,FileCreate_Windows,LoginSuccessful_Windows,LoginSuccessful_Unix,LoginFailed_Windows,LoginFailed_Unix,OperatingSystem_UNIXLike,ProcessStart,ProcessStart_Linux,ProcessStart_Windows,ProcessStart_Windows_any,ProcessStart_Windows_cmd_meta,ProcessStart_Windows_commandline,SystemAccount_Windows,UserAccount_Windows,Check_Network_Whitelist|}()"
 		]
 	},
 	"Пустое правило": {
@@ -947,7 +947,7 @@
 			"\\$category.high = \"${1|Resource Development,Command And Control,Collection,Reconnaissance,Persistence,Lateral Movement,Defense Evasion,Credential Access,Discovery,Privilege Escalation,Execution,Initial Access,Impact|}\""
 		]
 	},
-	"Метки автовайтлистинга": {
+	"Метки вайтлистинга": {
 		"prefix": [
 			"$labels"
 		],
