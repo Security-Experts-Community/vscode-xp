@@ -49,6 +49,7 @@ export class RegExpHelper {
 	public static parseValues(text : string, regExp : RegExp) : string[] {
 		const values : string [] = [];
 		let parseResult: RegExpExecArray | null;
+
 		while ((parseResult = regExp.exec(text))) {
 			if(parseResult.length != 2) {
 				continue;
