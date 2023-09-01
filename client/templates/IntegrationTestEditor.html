@@ -233,9 +233,9 @@
 						}
 					});
 
-					// Обработка вставки символа.
+					// Обработка вставки символа с поддержкой выделения на Ctrl+A.
 					el.addEventListener('keyup', e => {
-						if (e.keyCode >= 0x30 || e.keyCode == 0x20) {
+						if ((e.keyCode >= 0x30 || e.keyCode == 0x20) && !(e.ctrlKey && e.code == 'KeyA')) {
 							const pos = caret();
 							highlight(el);
 							setCaret(pos);
