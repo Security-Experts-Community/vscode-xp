@@ -46,10 +46,11 @@ export class RegExpHelper {
 	 * @param regExp регулярное выражение с заполненой второй группой
 	 * @returns 
 	 */
-	public static parseValues(text : string, regExp : RegExp) : string[] {
+	public static parseValues(text : string, reg : string|RegExp, flags : string) : string[] {
 		const values : string [] = [];
 		let parseResult: RegExpExecArray | null;
 
+		const regExp = new RegExp(reg, flags);
 		while ((parseResult = regExp.exec(text))) {
 			if(parseResult.length != 2) {
 				continue;
@@ -68,9 +69,10 @@ export class RegExpHelper {
 	 * @param regExp регулярное выражение с заполненой второй группой
 	 * @returns совокупный список всех элементов
 	 */
-	public static parseJsArrays(text : string, regExp : RegExp) : string[] {
+	public static parseJsArrays(text : string, reg : string|RegExp, flags : string) : string[] {
 		const arrays : string [] = [];
 		let parseResult: RegExpExecArray | null;
+		const regExp = new RegExp(reg, flags);
 		while ((parseResult = regExp.exec(text))) {
 			if(parseResult.length != 2) {
 				continue;

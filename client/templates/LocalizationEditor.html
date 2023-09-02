@@ -18,16 +18,19 @@
 
 </head>
 	<body>
-
+		
 		<div id="header">
+			{{#IsLocalizableRule}}
 			<div class="common" id="navigation">
 				<input id="build_loc"  class="run" type="button" value="&#9654;   Проверить локализации  ">
 			</div>
+			{{/IsLocalizableRule}}
 			<input id="save_loc" class="save" type="button" value="Сохранить">
 		</div>
 
 		<div id="main-body">
-			<h2>Тестовые локализации:</h2>
+			{{#IsLocalizableRule}}
+			<h2>Примеры локализации:</h2>
 			<hr />
 			<div id="loc-results" class="common">
 				{{#LocalizationExamples}}
@@ -41,31 +44,9 @@
 					<p>{{enText}}</p>
 				</div>
 				{{/LocalizationExamples}}
-
-				<!-- <div class="language">
-					<br />
-					<p>Пользователь anonymous успешно запустил тест правил корреляции для случайного события с узла random10.testlab.esc</p>
-					<p><b>alert.key:</b> anonymous|random10.testlab.esc</p>
-					<p><b>alert.context:</b> anonymous|random10.testlab.esc</p>
-
-					<br />
-					<p>Пользователь anonymous успешно запустил тест правил корреляции для случайного события с узла random10.testlab.esc</p>
-					<p><b>alert.key:</b> anonymous|random10.testlab.esc</p>
-					<p><b>alert.context:</b> anonymous|random10.testlab.esc</p>
-				</div>
-				
-				<div class="language">
-					<br />
-					<p>User anonymous has successfully run tests for random event from random10.testlab.esc</p>
-					<p><b>alert.key:</b> anonymous|random10.testlab.esc</p>
-					<p><b>alert.context:</b> anonymous|random10.testlab.esc</p>
-
-					<br />
-					<p>User anonymous has successfully run tests for random event from random10.testlab.esc</p>
-					<p><b>alert.key:</b> anonymous|random10.testlab.esc</p>
-					<p><b>alert.context:</b> anonymous|random10.testlab.esc</p>
-				</div> -->
 	 
+			{{/IsLocalizableRule}}
+			
 			</div>
 			<h2>Описание:</h2>
 			<hr />
@@ -80,60 +61,63 @@
 				<label for="enDescription">Description:</label>
 				<textarea id="enDescription" rows="3">{{EnDescription}}</textarea>
 			</div>
-			<h2>Правила локализации:</h2>
-			<hr />
-			
-			<div id="localizations">
-			{{#Localizations}}
-			<div class="common">	
-				<div class="common">
-					<input class="delete_value" type="button" value="-" onclick="deleteLoc(this)">
-					<label for="criteria">Критерий:</label>
-					<textarea rows="1" name="criteria" class="criteria">{{Criteria}}</textarea>
-					<input type="hidden" name="localizationId" value="{{LocalizationId}}">
-				</div>	
-	
-				<div class="language">
-					<label for="ruLocalization">Шаблон локализации:</label>
-					<br />
-					<textarea rows="5" name="ruLocalization">{{RuLocalization}}</textarea>
-				</div>
-	
-				<div class="language">
-					<label for="enLocalization">Localization template:</label>
-					<br />
-					<textarea rows="5" name="enLocalization">{{EnLocalization}}</textarea>
-				</div>
-			</div>
-			{{/Localizations}}
-			</div>
-	
-			<div class="common">
-				<input id="add" class="add_value" type="button" value="+" onclick="addLoc(this)">
-			</div>	
 
-			<div id="loc-template" hidden>
+			{{#IsLocalizableRule}}
+				<h2>Правила локализации:</h2>
+				<hr />
+				<div id="localizations">
+				
+				{{#Localizations}}
 				<div class="common">	
 					<div class="common">
 						<input class="delete_value" type="button" value="-" onclick="deleteLoc(this)">
 						<label for="criteria">Критерий:</label>
-						<textarea rows="1" class="criteria">correlation_name = "{{RuleName}}"</textarea>
-						<input type="hidden" value="{{LocalizationId}}">
+						<textarea rows="1" name="criteria" class="criteria">{{Criteria}}</textarea>
+						<input type="hidden" name="localizationId" value="{{LocalizationId}}">
 					</div>	
 		
 					<div class="language">
 						<label for="ruLocalization">Шаблон локализации:</label>
 						<br />
-						<textarea rows="5"></textarea>
+						<textarea rows="5" name="ruLocalization">{{RuLocalization}}</textarea>
 					</div>
 		
 					<div class="language">
 						<label for="enLocalization">Localization template:</label>
 						<br />
-						<textarea rows="5"></textarea>
+						<textarea rows="5" name="enLocalization">{{EnLocalization}}</textarea>
 					</div>
 				</div>
-			</div>
+				{{/Localizations}}
+				</div>
+
+				<div class="common">
+					<input id="add" class="add_value" type="button" value="+" onclick="addLoc(this)">
+				</div>	
+
+				<div id="loc-template" hidden>
+					<div class="common">	
+						<div class="common">
+							<input class="delete_value" type="button" value="-" onclick="deleteLoc(this)">
+							<label for="criteria">Критерий:</label>
+							<textarea rows="1" class="criteria">correlation_name = "{{RuleName}}"</textarea>
+							<input type="hidden" value="{{LocalizationId}}">
+						</div>	
+			
+						<div class="language">
+							<label for="ruLocalization">Шаблон локализации:</label>
+							<br />
+							<textarea rows="5"></textarea>
+						</div>
+			
+						<div class="language">
+							<label for="enLocalization">Localization template:</label>
+							<br />
+							<textarea rows="5"></textarea>
+						</div>
+					</div>
+				</div>
+			{{/IsLocalizableRule}}
 		</div>	
 
 		<script>
@@ -141,11 +125,13 @@
 
 			// Нажатие на кнопку проверки локализаций.
 			const buildLocalizationsButton = document.getElementById("build_loc");
-			buildLocalizationsButton.addEventListener("click", function () {
-				vscode.postMessage({
-					command: 'buildLocalizations'
+			if(buildLocalizationsButton) {
+					buildLocalizationsButton.addEventListener("click", function () {
+					vscode.postMessage({
+						command: 'buildLocalizations'
+					});
 				});
-			});
+			}
 
 			// Нажатие на кнопку сохранить.
 			const saveLocalizationsButton = document.getElementById("save_loc");
@@ -186,7 +172,7 @@
 
 			function nameToValuesArray(name) {
 				const elements = [...document.getElementsByName(name)];
-				return elements.map( u => u.value);
+				return elements.map(u => u.value);
 			}
 			
 			function addLoc(button) {

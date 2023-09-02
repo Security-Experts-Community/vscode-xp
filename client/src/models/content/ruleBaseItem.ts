@@ -224,7 +224,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		return this._localizationExamples;
 	}
 
-	public async saveLocalizations() : Promise<void> {
+	public async saveMetaInfoAndLocalizations() : Promise<void> {
 
 		const fullPath = this.getDirectoryPath();
 		// Обновление метаинформации.

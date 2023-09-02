@@ -16,6 +16,7 @@ import { IntegrationTest } from '../../models/tests/integrationTest';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { IntegrationTestRunner, IntegrationTestRunnerOptions } from '../../models/tests/integrationTestRunner';
 import { RunIntegrationTestDialog } from '../runIntegrationDialog';
+import { Enrichment } from '../../models/content/enrichment';
 
 export class LocalizationEditorViewProvider  {
 
@@ -45,7 +46,7 @@ export class LocalizationEditorViewProvider  {
 	}
 
 	public static showLocalizationEditorCommand = "LocalizationView.showLocalizationEditor";
-	public showLocalizationEditor(rule: RuleBaseItem)  {
+	public async showLocalizationEditor(rule: RuleBaseItem)  {
 
 		// Если открыта еще одна локализация, то закрываем её перед открытием новой.
 		if(this._view) {
@@ -122,11 +123,12 @@ export class LocalizationEditorViewProvider  {
 				"EnDescription" : rule.getEnDescription(),
 				"Localizations" : plainLocalizations,
 				"ExtensionBaseUri" : extensionBaseUri,
-				"LocalizationExamples" : locExamples
+				"LocalizationExamples" : locExamples,
+				"IsLocalizableRule" : this.isLocalizableRule(rule),
 			};
 
 			// Подгружаем шаблон и шаблонизируем данные.
-			const template = fs.readFileSync(this._templatePath).toString();
+			const template = (await fs.promises.readFile(this._templatePath)).toString();
 			const formatter = new MustacheFormatter(template);
 			const htmlContent = formatter.format(templatePlainObject);
 
@@ -135,6 +137,14 @@ export class LocalizationEditorViewProvider  {
 		catch(error) {
 			ExceptionHelper.show(error, `Не удалось открыть правила локализации.`);
 		}
+	}
+
+	private isLocalizableRule(rule : RuleBaseItem) : boolean {
+		if(rule instanceof Enrichment) {
+			return false;
+		}
+
+		return true;
 	}
 
 	async receiveMessageFromWebView(message: any) {
@@ -194,10 +204,12 @@ export class LocalizationEditorViewProvider  {
 					});
 
 					// Обновляем локализации и сохраняем их.
-					this._rule.setLocalizationTemplates(localizations);
-					await this._rule.saveLocalizations();
+					if(localizations.length !== 0) {
+						this._rule.setLocalizationTemplates(localizations);
+					}
 
-					ExtensionHelper.showUserInfo(`Правила локализации для правила ${this._rule.getName()} сохранены.`);
+					await this._rule.saveMetaInfoAndLocalizations();
+					ExtensionHelper.showUserInfo(`Правила локализации для ${this._rule.getName()} сохранены`);
 				}
 				catch (error) {
 					ExtensionHelper.showError("Не удалось сохранить правила локализации.", error);
