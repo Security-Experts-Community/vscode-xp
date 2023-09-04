@@ -21,7 +21,7 @@
 		
 		<div id="header">
 			{{#IsLocalizableRule}}
-			<div class="common" id="navigation">
+			<div id="navigation">
 				<input id="build_loc"  class="run" type="button" value="&#9654;   Проверить локализации  ">
 			</div>
 			{{/IsLocalizableRule}}
@@ -32,22 +32,25 @@
 			{{#IsLocalizableRule}}
 			<h2>Примеры локализации:</h2>
 			<hr />
-			<div id="loc-results" class="common">
-				{{#LocalizationExamples}}
-				<div class="language">
-					<br />
-					<p>{{ruText}}</p>
+			<div id="loc-results" class="loc-example">
+				<div class="loc-example__row">
+					<h3 class="loc-example__row__h3">RU:</h3>
+					<h3 class="loc-example__row__h3">EN:</h3>
 				</div>
-				
-				<div class="language">
-					<br />
-					<p>{{enText}}</p>
+				{{#LocalizationExamples}}
+				<div class="loc-example__row">
+					<p class="loc-example__row__p">
+						{{ruText}}
+					</p>
+					<p class="loc-example__row__p">
+						{{enText}}
+					</p>
 				</div>
 				{{/LocalizationExamples}}
-	 
-			{{/IsLocalizableRule}}
 			
 			</div>
+			{{/IsLocalizableRule}}
+
 			<h2>Описание:</h2>
 			<hr />
 	

@@ -7,6 +7,13 @@
 	--green: #06BA63;
 }
 
+html {
+  box-sizing: border-box;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
 body {
 	padding: 10px;
 	color: var(--vscode-editor-foreground);
@@ -14,13 +21,9 @@ body {
 
 /* ------ NAVIGATION ------ */
 #header {
-	width: calc(100% - 10px);
+	width: 100%;
 	padding: 10px 15px 0 15px;
-	/* position: fixed; */
-	top:0; left:0;
 	z-index: 1;
-	display: block;
-	float: left;
 }
 
 .save[type=button]{
@@ -59,14 +62,6 @@ body {
 	margin-top: 56px;
 	display: block;
 	width: 100%;
-}
-
-#loc-results {
-	padding-left: 10px;
-	float: left;
-	width: 100%;
-	display: block;
-	margin-bottom: 20px;
 }
 
 p {

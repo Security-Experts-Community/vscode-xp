@@ -8,10 +8,12 @@
 }
 
 hr {
-	width:50%;
-	background-color:var(--gray);
-	height:1px;
-	border:none;
+	width: 99%;
+	background-color: var(--gray);
+	opacity: 50%;
+	height: 1px;
+	border: none;
+	margin: 0;
 }
 
 .language {
@@ -25,6 +27,29 @@ hr {
 	width: 100%;
 	margin-top: 6px;
 	display: block;
+}
+
+.loc-example {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.loc-example__row {
+	width: 100%;
+	display: flex;
+}
+
+.loc-example__row__p {
+	width: 50%;
+	word-break: break-all;
+	border-left: 1px solid var(--gray);
+	padding: 0 10px;
+}
+
+.loc-example__row__h3 {
+	width: 50%;
+	margin-bottom: 0 !important;
 }
 
 label {
@@ -42,7 +67,7 @@ textarea {
 	background-color: transparent;
 	color: var(--white);
 	border: none;
-	border-left: 1px solid var(--white);
+	border-left: 1px solid var(--gray);
 	padding: 6px 10px;
 	font-family: sans-serif;
 }
