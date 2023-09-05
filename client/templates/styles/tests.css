@@ -29,6 +29,7 @@
 	background-color: var(--vscode-tab-inactiveBackground);
 	border: none;
 	margin-left: 1px;
+	display: block;
 }
 .tablinks.active {
 	background-color: var(--vscode-tab-activeBackground);

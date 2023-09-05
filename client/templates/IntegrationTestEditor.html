@@ -27,7 +27,13 @@
 			<div class="tab">
 				<div class = 'tablinks-wrap'>
 					{{#IntegrationalTests}}
-					<button class="tablinks {{TestStatus}}" onclick="openTest('{{TestNumber}}')">Тест №{{TestNumber}}</button>
+					<button 
+						class="tablinks {{TestStatus}}"
+						onclick="openTest('{{TestNumber}}')" 
+						id="test{{TestNumber}}"
+					>
+					Тест №{{TestNumber}}
+					</button>
 					<button class="delete-tablink" onclick="deleteTest('{{TestNumber}}')" hidden>&#128465;</button>
 					{{/IntegrationalTests}}
 					<button id="add-test" onclick="createTest()">+</button>
@@ -279,6 +285,41 @@
 				$('[name="expect"]')[TestID-1].focus();
 			}
 
+			function extractNumberFromId(stringId) {
+				return Number(stringId.replace(/[^0-9]/g,"")) ?? null
+			}
+
+			function deleteTestNew(testId) {
+				const currentId = `test${testId}`
+				const jQueryIdSelector = `#${currentId}`
+				// получаем список всех нескрытых вкладок
+				const nonHiddenTabs = $('.tablinks:visible').toArray()
+				console.log($('.tablinks'))
+				console.log(nonHiddenTabs)
+
+				if (nonHiddenTabs.length > 0 && !!(nonHiddenTabs.find((elem) => elem.id === currentId))) {
+					// если тест остался один
+					if (nonHiddenTabs.length === 1) {
+						$(jQueryIdSelector).hide()
+						return
+					} 
+					// если тест в начале 
+					else if (!!nonHiddenTabs[0] && nonHiddenTabs[0].id === currentId) {
+						$(jQueryIdSelector).hide()
+						if (!!nonHiddenTabs[1]) openTest(extractNumberFromId(nonHiddenTabs[1].id)) // TODO: опен текст по прежнему завязан на айдишниках, выстроенных по порядку. Нажо переписывать
+					}
+					// если тест в конце
+					else if (nonHiddenTabs[nonHiddenTabs.length - 1] && nonHiddenTabs[nonHiddenTabs.length - 1].id === currentId) {
+
+					}
+					// если тест в середине
+					else if (nonHiddenTabs.length > 2) {
+
+					}
+				}
+
+			}
+
 
 			function deleteTest(TestID) {
 				// Не удаляем первый тест, а то нечего будет копировать
@@ -401,6 +442,7 @@
 			$(document).ready(function() {
 
 				console.log("document.ready");
+				deleteTestNew()
 
 				const activeTestNumber = $("#active_test_number").val();
 				// Открытие теста по номеру.
