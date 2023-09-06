@@ -22,14 +22,22 @@
 .tablinks-wrap {
 	width: 100%;
 	float: left;
+	display: flex;
+	align-items: center;
+	height: 32px;
 }
 
 .tablinks {
+	min-width: 89px;
 	width: 8%;
+	height: 100%;
 	background-color: var(--vscode-tab-inactiveBackground);
 	border: none;
-	margin-left: 1px;
-	display: block;
+	margin-left: 2px;
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	padding: 0 4px;
 }
 .tablinks.active {
 	background-color: var(--vscode-tab-activeBackground);
@@ -62,6 +70,7 @@ button.failure.active {
 	width: 30px;
 	border: none;
 	background-color: var(--vscode-tab-activeBackground);
+	margin: 0;
 }
 .delete-tablink:hover {
 	background-color: var(--vscode-button-secondaryHoverBackground);
@@ -71,7 +80,8 @@ button.failure.active {
 	width: 30px;
 	background-color: var(--vscode-tab-inactiveBackground);
 	border: none;
-	margin-left: 3px;
+	margin-top: 0;
+	margin-left: 4px;
 }
 #add-test:hover {
 	background-color: var(--vscode-tab-secondaryHoverBackground);
