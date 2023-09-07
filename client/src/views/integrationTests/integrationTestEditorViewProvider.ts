@@ -458,7 +458,7 @@ export class IntegrationTestEditorViewProvider  {
 		try {
 			normalizedEvents = currTest.getNormalizedEvents();
 			if(!normalizedEvents) {
-				ExtensionHelper.showUserError("Для запуска быстрого теста нужно хотя бы одно нормализованное событие. Нормализуйте сырые события, и повторите действие.");
+				ExtensionHelper.showUserError("Для запуска быстрого теста нужно хотя бы одно нормализованное событие. Нормализуйте сырые события и повторите действие.");
 				return;
 			}
 
@@ -466,6 +466,12 @@ export class IntegrationTestEditorViewProvider  {
 			// Убираем фильтр по полям в тесте, так как в модульном тесте нет обогащения, поэтому проверяем только сработку теста.
 			const integrationalTestPath = currTest.getTestCodeFilePath();
 			const integrationalTestContent = await FileSystemHelper.readContentFile(integrationalTestPath);
+
+			// Проверку на наличие expect not {} в тесте, в этом случае невозможно получить ожидаемое событие.
+			if(/expect\s+not\s+/gm.test(integrationalTestContent)) {
+				ExtensionHelper.showUserError("Невозможно получить ожидаемого события для теста с кодом expect not {}. Скорреректируйте код теста если это необходимо, сохраните его и повторите.");
+				return;
+			}
 			integrationalTestSimplifiedContent = integrationalTestContent.replace(
 				RegExpHelper.getExpectSection(), 
 				"expect $1 {}");
@@ -502,7 +508,7 @@ export class IntegrationTestEditorViewProvider  {
 				const resultTest = await testRunner.run(fastTest);
 
 				if (resultTest.getStatus() === TestStatus.Failed) {
-					throw new XpException(`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено неуспешно.`);
+					throw new XpException(`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено неуспешно. Возможно интеграционный тест не проходит с условием expect 1 {"correlation_name": "${this._rule.getName()}"}. Добейтесь того чтобы данный тест проходил и повторите.`);
 				}
 
 				// Проверка, что не было ошибки и нам вернулся json.
@@ -538,6 +544,9 @@ export class IntegrationTestEditorViewProvider  {
 			} 
 			catch(error) {
 				ExceptionHelper.show(error, 'Не удалось получить ожидаемое событие');
+			}
+			finally {
+				vscode.window.showInformationMessage("Ожидаемое событие в коде теста успешно обновлено. Сохраните тест если результат вас устраивает.");
 			}
 		});
 	}

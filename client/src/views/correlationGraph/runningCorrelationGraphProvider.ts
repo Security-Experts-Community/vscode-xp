@@ -50,7 +50,7 @@ export class RunningCorrelationGraphProvider {
         // Создать и показать панель.
         this._view = vscode.window.createWebviewPanel(
             RunningCorrelationGraphProvider.viewId,
-            'Скоррелировать события',
+            'Коррелировать события',
             vscode.ViewColumn.One,
             {
                 retainContextWhenHidden : true,
