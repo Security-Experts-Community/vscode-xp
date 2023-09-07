@@ -29,7 +29,7 @@
 					{{#IntegrationalTests}}
 					<div 
 						class="tablinks {{TestStatus}}"
-						onclick="openTestNew('{{TestNumber}}')" 
+						onclick="openTest('{{TestNumber}}')" 
 						id="tab{{TestNumber}}"
 					>
 						<span>Тест №{{TestNumber}}</span>
@@ -154,6 +154,7 @@
 					const testObject = $(this).data("test");
 
 					const id = $(this).attr('id');
+
 					if(id == "0") {
 						return;
 					}
@@ -173,7 +174,6 @@
 				// Передаем номер активного теста, чтобы после сохранения он таким и остался.
 				const activeTestNumber = $("#active_test_number").val();
 
-				console.log(tests)
 				vscode.postMessage({
 					command: 'saveAllTests',
 					activeTestNumber : activeTestNumber,
@@ -272,7 +272,7 @@
 				}
 			}
 
-			function openTestNew(testId) {
+			function openTest(testId) {
 				const currentId = `tab${testId}`
 				const jQueryTab = $(`#${currentId}`)
 				const jQueryExpect = $(`#expect${testId}`)
@@ -310,33 +310,11 @@
 				}
 			}
 		
-			function openTest(TestID) {
-				$.each($('.tabcontent'), function(i,tab) {
-					tab.style.display = "none";
-				})
-
-				$.each($('.tablinks'), function(i,tab) {
-					tab.classList.remove('active');
-				})
-				$.each($('.delete-tablink'), function(i,tab) {
-					tab.classList.remove('active');
-					tab.hidden = true;
-				})
-				
-				$('#'+TestID).show();
-				$('.tablinks')[TestID-1].className += " active";
-				$('.delete-tablink')[TestID-1].className += " active";
-				$('.delete-tablink')[TestID-1].hidden = false;
-				$('#active_test_number').val(TestID);	
-				
-				$('[name="expect"]')[TestID-1].focus();
-			}
-
 			function extractNumberFromString(stringId) {
 				return Number(stringId.replace(/[^0-9]/g,"")) ?? null
 			}
 
-			function deleteTestNew(testId) {
+			function deleteTest(testId) {
 				const currentId = `tab${testId}`
 				const jQueryTab = $(`#${currentId}`)
 				const jQueryTest = $("#" + testId)
@@ -345,26 +323,34 @@
 				const nonHiddenTabs = $('.tablinks:visible').toArray()
 				const currentTab = nonHiddenTabs.find((elem) => elem.id === currentId)
 
-				if (nonHiddenTabs.length > 0 && !!currentTab) {
+				// если вкладка одна, скрываем её, чтобы всегда оставался один тест для создания новых
+				if (nonHiddenTabs.length === 1 && !!currentTab) {
+					vscode.postMessage({
+						command: 'lastTest'
+					});
+					// jQueryTab.hide();
+					// jQueryTest.hide();
+					return
+				}
+
+				if (nonHiddenTabs.length > 1 && !!currentTab) {
 					// если вкладка в начале, переключаемся на вкладку справа (минимум 2 вкладки)
-					if (!!nonHiddenTabs[0] && nonHiddenTabs[0].id === currentId && nonHiddenTabs.length > 1 && !!nonHiddenTabs[1]) {
-						console.log('если вкладка в начале, переключаемся на вкладку справа (минимум 2 вкладки)')
-						openTestNew(extractNumberFromString(nonHiddenTabs[1].id))
+					if (!!nonHiddenTabs[0] && nonHiddenTabs[0].id === currentId && !!nonHiddenTabs[1]) {
+						openTest(extractNumberFromString(nonHiddenTabs[1].id))
 					}
 					// иначе если вкладка в конце, переключаемся на вкладку слева (минимум 2 вкладки)
-					else if (!!nonHiddenTabs[nonHiddenTabs.length - 1] && nonHiddenTabs[nonHiddenTabs.length - 1].id === currentId && nonHiddenTabs.length > 1 && !!nonHiddenTabs[nonHiddenTabs.length - 2]) {
-						console.log('иначе если вкладка в конце, переключаемся на вкладку слева (минимум 2 вкладки)')
-						openTestNew(extractNumberFromString(nonHiddenTabs[nonHiddenTabs.length - 2].id))
+					else if (!!nonHiddenTabs[nonHiddenTabs.length - 1] && nonHiddenTabs[nonHiddenTabs.length - 1].id === currentId && !!nonHiddenTabs[nonHiddenTabs.length - 2]) {
+						openTest(extractNumberFromString(nonHiddenTabs[nonHiddenTabs.length - 2].id))
 					}
 					// иначе если вкладка в середине, переключаемся на вкладку справа (минимум 3 вкладки)
 					else if (nonHiddenTabs.length > 2 && !!nonHiddenTabs[nonHiddenTabs.indexOf(currentTab) + 1]) {
-						console.log('иначе если вкладка в середине, переключаемся на вкладку справа (минимум 3 вкладки)')
-					 	openTestNew(extractNumberFromString(nonHiddenTabs[nonHiddenTabs.indexOf(currentTab) + 1].id))
+					 	openTest(extractNumberFromString(nonHiddenTabs[nonHiddenTabs.indexOf(currentTab) + 1].id))
 					}
 					
 					// удаляем из dom вкладку и содержимое вкладки
 					jQueryTab.remove()
 					jQueryTest.remove();
+					return
 				}
 			}
 
@@ -373,43 +359,9 @@
 					const testNumber = extractNumberFromString($(this)[0].id)
 					$(this)[0].addEventListener("click", (e) => {
 						e.stopPropagation()
-  						deleteTestNew(testNumber)
+  						deleteTest(testNumber)
 					})
 				})
-			}
-
-			function deleteTest(TestID) {
-				// Не удаляем первый тест, а то нечего будет копировать
-				if (TestID == '1') {
-					$('#1 textarea').val('');
-					$('.tablinks')[TestID-1].hidden = true;
-					$('#1').attr("id", "0");
-					$('.tabcontent')[0].style.display = "none";
-					$('.delete-tablink')[0].hidden = true;
-					for (let i = 1; i <= $('.tablinks').length; i++) {
-						if ( $('.tablinks')[i].hidden == false ) {
-							openTest(i+1);
-							break;
-						}
-					}
-				} else { 
-					if (TestID == $('.tablinks').length) {
-						// Последнюю вкладку удаляем с концами
-						$('.tablinks')[TestID-1].remove()
-						$('.delete-tablink')[TestID-1].remove()
-					} else {
-						// Вкладки из середины скрываем, чтобы индексы в дальнейшем правильно считались
-						$('.tablinks')[TestID-1].hidden = true;
-						$('.delete-tablink')[TestID-1].hidden = true;
-					}
-					$("#" + TestID).remove();
-					for (let i = 2; i <= TestID; i++) {
-						if ( $('.tablinks')[TestID-i].hidden == false ) {
-							openTest(TestID-1);
-							break;
-						}
-					}
-				}
 			}
 
 			// word wrap/unwrap with button
@@ -503,7 +455,7 @@
 
 				const activeTestNumber = $("#active_test_number").val();
 				// Открытие теста по номеру.
-			  	openTestNew(activeTestNumber);
+			  	openTest(activeTestNumber);
 
 				// Выводим восклицательный узнак у неуспешно прошедших тестов
 				tablinks = $(".tablinks");
@@ -682,20 +634,12 @@
 			function createTest() {	
 				new_id = extractNumberFromString($('.tablinks').last()[0].id) + 1;
 
-				if ( $("#1").length ) {
-					tab_contect = $("#1")
-						.clone()
-						.attr('id', new_id )
-						.removeAttr('data-test')
-						.appendTo('.tabs')
-						.chi
-				} else {
-					tab_contect = $("#0")
-						.clone()
-						.attr('id', new_id)
-						.removeAttr('data-test')
-						.appendTo('.tabs')
-				}
+				// клонируем тест слева от нового (последний тест до создания нового теста)
+				tab_contect = $("#" + (new_id - 1))
+					.clone()
+					.attr('id', new_id )
+					.removeAttr('data-test')
+					.appendTo('.tabs')
 
 				// Очищаем нужные поля и добавляем подсветку.
 				const rawEvent = $(`#${new_id} [name=raw_events]`);
@@ -708,10 +652,10 @@
 				expect.text("expect 1 {\"correlation_name\" : \"{{RuleName}}\"}");
 				expect.attr('id', 'expect' + new_id)
 
-				// create new TAB
+				// Клонируем вкладку
 				$('.tablinks').slice(0,1)
 					.clone()
-					.attr("onclick","openTestNew('" + new_id + "')")
+					.attr("onclick","openTest('" + new_id + "')")
 					.attr("class", "tablinks")
 					.attr('id', 'tab' + new_id )
 					.appendTo('.tablinks-wrap')
@@ -719,12 +663,15 @@
 					.attr('id', 'test' + new_id )
 
 				$('.tablinks').last().children('span').text("Тест №" + new_id)
-				$('.tablinks-wrap').append($('#add-test'));
+				$('.tablinks-wrap').append($('#add-test')).scrollLeft(9999);
 
+				// Добавляем обработчик для удаления вкладки и подсвечиваем содержимое 
 				addEventListenerOnClickForStopPropaginationAndDeleteTest()
 				addEditorEvents();
-				// Activate new tab
-				openTestNew(new_id);
+
+				// Переходим на созданную вкладку
+				openTest(new_id);
+				// $('tablinks-wrap')[0].scrollLeft = $('tablinks-wrap')[0].offsetWidth
 			}
 		</script>
 	</body>

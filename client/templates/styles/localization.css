@@ -7,6 +7,13 @@
 	--blue: #034f84;
 }
 
+.header__localization {
+	display: flex;
+	flex-direction: row !important;
+	justify-content: space-between;
+	height: fit-content;
+}
+
 hr {
 	width: 99%;
 	background-color: var(--gray);

@@ -22,15 +22,19 @@ body {
 /* ------ NAVIGATION ------ */
 #header {
 	width: 100%;
-	padding: 10px 15px 0 15px;
-	z-index: 1;
+	padding: 16px;
+	height: fit-content;
+	display: flex;
+	flex-direction: column;
+	background: var(--vscode-editorGroupHeader-tabsBackground);
+	gap: 8px;
+	/* z-index: 1; */
 }
 
 .save[type=button]{
 	width: 15%;
 	min-width: 100px;
 	height: 27px;
-	margin: 5px 5px;
 	float: right;
 	background-color: var(--vscode-button-background);
 	color: var(--vscode-button-foreground);
@@ -47,7 +51,6 @@ body {
 	color: var(--vscode-button-secondaryForeground);
 	min-width: 100px;
 	height: 27px;
-	margin: 5px 5px;
 	border: none;
 	cursor: pointer;
 }
@@ -59,7 +62,6 @@ body {
 
 /* ------ COMMON ELEMENTS ------ */
 #main-body {
-	margin-top: 56px;
 	display: block;
 	width: 100%;
 }

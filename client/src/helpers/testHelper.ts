@@ -428,13 +428,13 @@ export class TestHelper {
 		const tests = plainTests.map((plainTest, index) => {
 			const test = rule.createIntegrationTest();
 
-			const number = test.getNumber();
+			const number = index + 1;
 			test.setNumber(number);
 
 			// Сырые события.
 			let rawEvents = plainTest?.rawEvents;
 			if (!rawEvents || rawEvents == "") {
-				throw new XpException(`Попытка сохранения теста №${number} без сырых событий.`);
+				throw new XpException(`Попытка сохранения теста №${plainTest.number ?? 0} без сырых событий.`);
 			}
 
 			// Из textarea новые строки только \n, поэтому надо их поправить под систему.

@@ -1,5 +1,10 @@
+body {
+	display: flex;
+	flex-direction: column;
+}
+
 #header {
-	background: var(--vscode-editorGroupHeader-tabsBackground);
+	margin-bottom: 12px !important;
 }
 
 #settings {
@@ -21,24 +26,36 @@
 
 .tablinks-wrap {
 	width: 100%;
-	float: left;
 	display: flex;
-	align-items: center;
-	height: 32px;
+	align-items: flex-start;
+	gap: 4px;
+	/* max-height: 46px; */
+	padding-bottom: 4px;
+	overflow-x: auto;
+	scroll-margin: 4px;
 }
 
 .tablinks {
-	min-width: 89px;
+	min-width: fit-content;
 	width: 8%;
-	height: 100%;
-	background-color: var(--vscode-tab-inactiveBackground);
+	height: 32px;
+	background-color: var(--vscode-button-secondaryBackground);
 	border: none;
-	margin-left: 2px;
 	display: flex;
+	justify-content: space-between;
 	align-items: center;
 	cursor: pointer;
-	padding: 0 4px;
+	transition: 0.3s;
 }
+
+.tablinks span {
+	padding: 0 10px;
+}
+
+.tablinks:hover {
+	background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
 .tablinks.active {
 	background-color: var(--vscode-tab-activeBackground);
 	border: none;
@@ -71,25 +88,27 @@ button.failure.active {
 	border: none;
 	background-color: var(--vscode-tab-activeBackground);
 	margin: 0;
+	transition: 0.3s;
 }
 .delete-tablink:hover {
 	background-color: var(--vscode-button-secondaryHoverBackground);
+	transition: 0.3s;
 }
 
 #add-test {
 	width: 30px;
-	background-color: var(--vscode-tab-inactiveBackground);
+	min-width: 30px;
+	background-color: var(--vscode-button-secondaryBackground);
 	border: none;
-	margin-top: 0;
-	margin-left: 4px;
+	margin: 0;
 }
 #add-test:hover {
-	background-color: var(--vscode-tab-secondaryHoverBackground);
+	background-color: var(--vscode-button-secondaryHoverBackground);
 }
 
 /* ------  ------ */
 .tabcontent {
-	margin-top: 77px;
+	margin-top: 10px;
 	display: block;
 }
 
