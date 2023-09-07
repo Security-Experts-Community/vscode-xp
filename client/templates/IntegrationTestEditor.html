@@ -308,6 +308,12 @@
 					jQueryActiveTest.val(testId);
 					jQueryExpect[0].focus();
 				}
+
+				// После выполнения тестов у теста может поменяться id - id активного теста не будет соответствовать новому id теста
+				// В этой ситуации по умолчанию открываем первую вкладку
+				if (nonHiddenTabs.length > 0 && !currentTab) {
+					openTest(1)
+				}
 			}
 		
 			function extractNumberFromString(stringId) {
@@ -454,6 +460,7 @@
 				addEventListenerOnClickForStopPropaginationAndDeleteTest()
 
 				const activeTestNumber = $("#active_test_number").val();
+
 				// Открытие теста по номеру.
 			  	openTest(activeTestNumber);
 

@@ -112,10 +112,6 @@ button.failure.active {
 	display: block;
 }
 
-div.success {
-	display: none;
-}
-
 div.failure {
 	/* Заменить на block, когда мы будем готовы выводить сообщения об ошибке*/
 	display: none;
