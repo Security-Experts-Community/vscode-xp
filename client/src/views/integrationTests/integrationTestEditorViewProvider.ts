@@ -517,7 +517,7 @@ export class IntegrationTestEditorViewProvider  {
 					JSON.parse(testOutput);
 				}
 				catch(error) {
-					throw new XpException("Полученный данные не являются событием формата json", error);
+					throw new XpException("Полученные данные не являются событием формата json", error);
 				}
 
 				// Получаем имеющийся код теста и заменяем секцию expect {}
@@ -532,8 +532,8 @@ export class IntegrationTestEditorViewProvider  {
 
 				// Меняем код теста на новый
 				const generatedExpectSection = `expect 1 ${testOutput}`;
-				const currectTestCode = currentIngTest.getTestCode();
-				const newTestCode = currectTestCode.replace(
+				const currentTestCode = currentIngTest.getTestCode();
+				const newTestCode = currentTestCode.replace(
 					RegExpHelper.getExpectSection(),
 					generatedExpectSection);
 
