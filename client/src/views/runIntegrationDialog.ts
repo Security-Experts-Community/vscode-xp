@@ -36,20 +36,21 @@ export class RunIntegrationTestDialog {
 
 		const ruleCode = await rule.getRuleCode();
 		const subRuleNames = TestHelper.parseSubRuleNames(ruleCode).map(srn => srn.toLocaleLowerCase());
+		const uniqueSubRuleNames = [...new Set(subRuleNames)];
 
 		// У правила нет зависимых корреляций, собираем только его.
-		if(subRuleNames.length == 0) {
+		if(uniqueSubRuleNames.length == 0) {
 			testRunnerOptions.correlationCompilation = CompilationType.CurrentRule;
 			return testRunnerOptions;
 		}
 
 		const currentPackagePath = rule.getPackagePath(this._config);
-		const currPackgeSubRulePaths = FileSystemHelper.getRecursiveDirPathByName(currentPackagePath, subRuleNames);
+		const currPackageSubRulePaths = FileSystemHelper.getRecursiveDirPathByName(currentPackagePath, uniqueSubRuleNames);
 
 		// Все сабрули нашли в текущем пакете.
-		if(currPackgeSubRulePaths.length === subRuleNames.length) {
+		if(currPackageSubRulePaths.length === uniqueSubRuleNames.length) {
 			testRunnerOptions.correlationCompilation = CompilationType.Auto;
-			testRunnerOptions.dependentCorrelations.push(...currPackgeSubRulePaths);
+			testRunnerOptions.dependentCorrelations.push(...currPackageSubRulePaths);
 
 			// Не забываем путь к самой корреляции.
 			testRunnerOptions.dependentCorrelations.push(rule.getDirectoryPath());
@@ -58,10 +59,10 @@ export class RunIntegrationTestDialog {
 		
 		// Ищем сабрули во всех пакетах.
 		const contentRootPath = this._config.getRootByPath(rule.getDirectoryPath());
-		const rootDirectorySubRulePaths = FileSystemHelper.getRecursiveDirPathByName(contentRootPath, subRuleNames);
+		const rootDirectorySubRulePaths = FileSystemHelper.getRecursiveDirPathByName(contentRootPath, uniqueSubRuleNames);
 
 		// Нашли пути ко всем сабрулям в других пакетах.
-		if(rootDirectorySubRulePaths.length === subRuleNames.length) {
+		if(rootDirectorySubRulePaths.length === uniqueSubRuleNames.length) {
 			testRunnerOptions.correlationCompilation = CompilationType.Auto;
 			testRunnerOptions.dependentCorrelations.push(...rootDirectorySubRulePaths);
 
@@ -71,7 +72,7 @@ export class RunIntegrationTestDialog {
 		}
 
 		// Те сабрули, которые не смогли найти.
-		const subRulesNotFound = subRuleNames.filter(x => !rootDirectorySubRulePaths.includes(x));
+		const subRulesNotFound = uniqueSubRuleNames.filter(x => !rootDirectorySubRulePaths.includes(x));
 
 		// Если сабрули, для которых пути не найдены.
 		const result = await vscode.window.showInformationMessage(
