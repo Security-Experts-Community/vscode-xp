@@ -17,8 +17,6 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 
 	public async run(unitTest: BaseUnitTest): Promise<BaseUnitTest> {
 
-		// TODO: добавить сбор графа нормализации для данного правила.
-		
 		const rule = unitTest.getRule();
 
 		// Парсим ошибки из вывода.

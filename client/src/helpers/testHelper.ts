@@ -55,6 +55,40 @@ export class TestHelper {
 		return testCode;
 	}
 
+	public static cleanModularTestResult(testCode: string) : string {
+        if (!testCode) { return ""; }
+		const regexPatterns = [
+			/\s*"generator.version"(\s*):(\s*)"(.*?",)/g,
+			
+			/\s*"uuid"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"uuid"(\s*):(\s*)".*?"/g,	// в конце json-а
+
+			/\s*"siem_id"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"siem_id"(\s*):(\s*)".*?"/g,	// в конце json-а
+
+			/\s*"labels"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"labels"(\s*):(\s*)".*?"/g,	// в конце json-а
+
+			/\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\]/g,
+
+			/\s*"_objects"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"_objects"(\s*):(\s*)\[[\s\S]*?\]/g,
+			
+			/\s*"subevents"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"subevents"(\s*):(\s*)\[[\s\S]*?\]/g,
+
+			/\s*"subevents.time"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"subevents.time"(\s*):(\s*)\[[\s\S]*?\]/g
+		];
+		
+		for (const regexPattern of regexPatterns) {
+			testCode = testCode.replace(regexPattern, "");
+		}
+
+		return testCode;
+	}
+
 	/**
 	 * Убираем пробельные символы из ошибки.
 	 * @param ruleContent код правила.
