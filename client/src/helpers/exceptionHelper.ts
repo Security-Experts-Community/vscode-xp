@@ -25,7 +25,13 @@ export class ExceptionHelper {
 			}
 			default: {
 				if(defaultMessage) {
-					vscode.window.showErrorMessage(defaultMessage);
+					if(defaultMessage.endsWith(".")) {
+						vscode.window.showErrorMessage(`${defaultMessage} ${ExceptionHelper.FEEDBACK_WAY_INFO}`);
+					}
+					else {
+						vscode.window.showErrorMessage(`${defaultMessage}. ${ExceptionHelper.FEEDBACK_WAY_INFO}`);
+					}
+					
 				} else {
 					vscode.window.showErrorMessage(`Обнаружена неожиданная ошибка. ${ExceptionHelper.FEEDBACK_WAY_INFO}`);
 				}
@@ -38,19 +44,20 @@ export class ExceptionHelper {
 	}
 
 	private static recursiveWriteXpExceptionToOutput(error: XpException|Error, outputChannel: vscode.OutputChannel) {
-		outputChannel.appendLine(error.stack);
+
+		// Есть вложенные исключения.
 		if(error instanceof XpException && error.getInnerException()) {
-			// Пишем в Output.
+			// Пишем текущие исключение.
+			outputChannel.appendLine(error.stack);
+			console.log(error.stack);
+			// Пишем вложенное.
 			ExceptionHelper.recursiveWriteXpExceptionToOutput(error.getInnerException(), outputChannel);
 		} else {
 			outputChannel.appendLine(error.stack);
+			console.log(error.stack);
 		}
-
-		// Пишем в браузерный лог.
-		console.log(error.message);
-		console.log(error.stack);
 	}
 
 	public static FEEDBACK_WAY_INFO = 
-		"В случае её повторения уточните в [Telegram-канале](https://t.me/s3curity_experts_community/75) или посмотрите в [issues](https://github.com/Security-Experts-Community/vscode-xp/issues/). Если подобная ошибка раньше не встречалась, заведите [баг](https://github.com/Security-Experts-Community/vscode-xp/issues/new?assignees=&labels=bug&template=form_for_bugs.yml&title=%5BBUG%5D)";
+		"В случае её повторения проверьте наличие соответствующего [issue](https://github.com/Security-Experts-Community/vscode-xp/issues/). Если подобная ошибка раньше не встречалась, заведите [баг](https://github.com/Security-Experts-Community/vscode-xp/issues/new?assignees=&labels=bug&template=form_for_bugs.yml&title=%5BBUG%5D) и приложите логи из окна Output. Любые вопросы также можно обсудить [Telegram-канале](https://t.me/s3curity_experts_community/75)";
 }

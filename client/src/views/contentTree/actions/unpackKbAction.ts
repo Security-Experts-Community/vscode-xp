@@ -11,6 +11,7 @@ import { ContentTreeProvider } from '../contentTreeProvider';
 import { KbTreeBaseItem } from '../../../models/content/kbTreeBaseItem';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 import { ContentHelper } from '../../../helpers/contentHelper';
+import { XpException } from '../../../models/xpException';
 
 export class UnpackKbAction {
 	constructor(private _config: Configuration) {
@@ -43,7 +44,6 @@ export class UnpackKbAction {
 			return;
 		}
 
-
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
@@ -63,89 +63,83 @@ export class UnpackKbAction {
 			// Очищаем и показываем окно Output.
 			this._config.getOutputChannel().clear();
 
-			try {
-				const unpackPackagePath = this._config.getRandTmpSubDirectoryPath();
-				await fs.promises.mkdir(unpackPackagePath, {recursive: true});
+			const unpackPackagePath = this._config.getRandTmpSubDirectoryPath();
+			await fs.promises.mkdir(unpackPackagePath, {recursive: true});
 
-				const kbFileName = path.parse(kbFilePath).name;
-				const outputDirPath = path.join(unpackPackagePath, kbFileName);
+			const kbFileName = path.parse(kbFilePath).name;
+			const outputDirPath = path.join(unpackPackagePath, kbFileName);
 
-				// Типовая команда выглядит так:
-				// dotnet kbpack.dll unpack -s c:\tmp\pack\esc.kb -o c:\tmp\pack\unpack\doesn_t_exist_folder
-				// doesn_t_exist_folder создается самим kbtools				
+			// Типовая команда выглядит так:
+			// dotnet kbpack.dll unpack -s c:\tmp\pack\esc.kb -o c:\tmp\pack\unpack\doesn_t_exist_folder
+			// doesn_t_exist_folder создается самим kbtools				
 
-				const params =  [
-					knowledgeBasePackagerCli,
-					"unpack",
-					"-s", kbFilePath,
-					"-o", outputDirPath
-				];
+			const params =  [
+				knowledgeBasePackagerCli,
+				"unpack",
+				"-s", kbFilePath,
+				"-o", outputDirPath
+			];
 
-				const output = await ProcessHelper.execute(
-					"dotnet",
-					params,
-					{	
-						encoding: 'utf-8',
-						outputChannel: this._config.getOutputChannel()
-					}
-				);
-
-				if(!output.output.includes(this.SUCCESS_SUBSTRING)) {
-					// TODO: тут хорошо бы сделать ссылку или кнопку для перехода в нужный канал Output.
-					ExtensionHelper.showUserError(`Не удалось распаковать пакет. Подробности приведены в панели Output.`);
-					this._config.getOutputChannel().appendLine(knowledgeBasePackagerCli + " " + params.join(" "));
-					this._config.getOutputChannel().show();
-					return;
-				} 
-
-				// TODO: Убрать этот фикс, когда починят экспорт из PTKB
-				ContentHelper.fixTables(outputDirPath);
-
-				// Если внутри несколько пакетов.
-				const packagesPackagePath = path.join(outputDirPath, "packages");
-				if(fs.existsSync(packagesPackagePath)) {
-					await fse.copy(packagesPackagePath, exportDirPath, { overwrite: true });
+			const cmd = "dotnet";
+			const executeResult = await ProcessHelper.execute(
+				cmd,
+				params,
+				{	
+					encoding: 'utf-8',
+					outputChannel: this._config.getOutputChannel()
 				}
-				
-				// Если внутри один пакет.
-				const objectsPackagePath = path.join(outputDirPath, "objects");
-				if(!fs.existsSync(packagesPackagePath) && fs.existsSync(objectsPackagePath)) {
-					const onePackagePath = path.join(exportDirPath, kbFileName);
-					await fse.copy(objectsPackagePath, onePackagePath, { overwrite: true });
-				}
+			);
 
-				// Копируем макросы
-				const macroPackagePath = path.join(outputDirPath, "common");
-				if(fs.existsSync(macroPackagePath)) {
-					const rootPath =
-					(vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
-						? vscode.workspace.workspaceFolders[0].uri.fsPath
-						: undefined;
-					if(rootPath){
-						const outPath = path.join(rootPath, "common");
-						await fse.copy(macroPackagePath, outPath);
+			if(executeResult.exitCode !== 0) {
+				throw new XpException(`Ошибка выполнения команды ${cmd}. Возможно, не был установлены [.NET Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) или не добавлен путь к нему в переменную PATH.`);
+			}
 
-						// Убираем BOM-метки из файлов
-						const files = ContentHelper.getFilesByPattern(outPath, /metainfo\.yaml/);
-						files.forEach(file => {
-							let content = fs.readFileSync(file, 'utf8');
-							if (typeof content === 'string') {
-								if (content.charCodeAt(0) === 0xFEFF) {
-									content = content.slice(1);
-								}
-								fs.writeFileSync(file, content, 'utf8');
+			if(!executeResult.output.includes(this.SUCCESS_SUBSTRING)) {
+				throw new XpException(`Не удалось распаковать пакет. Подробности приведены в панели Output.`);
+			} 
+
+			// TODO: Убрать этот фикс, когда починят экспорт из PTKB
+			ContentHelper.fixTables(outputDirPath);
+
+			// Если внутри несколько пакетов.
+			const packagesPackagePath = path.join(outputDirPath, "packages");
+			if(fs.existsSync(packagesPackagePath)) {
+				await fse.copy(packagesPackagePath, exportDirPath, { overwrite: true });
+			}
+			
+			// Если внутри один пакет.
+			const objectsPackagePath = path.join(outputDirPath, "objects");
+			if(!fs.existsSync(packagesPackagePath) && fs.existsSync(objectsPackagePath)) {
+				const onePackagePath = path.join(exportDirPath, kbFileName);
+				await fse.copy(objectsPackagePath, onePackagePath, { overwrite: true });
+			}
+
+			// Копируем макросы
+			const macroPackagePath = path.join(outputDirPath, "common");
+			if(fs.existsSync(macroPackagePath)) {
+				const rootPath =
+				(vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
+					? vscode.workspace.workspaceFolders[0].uri.fsPath
+					: undefined;
+				if(rootPath){
+					const outPath = path.join(rootPath, "common");
+					await fse.copy(macroPackagePath, outPath);
+
+					// Убираем BOM-метки из файлов
+					const files = ContentHelper.getFilesByPattern(outPath, /metainfo\.yaml/);
+					files.forEach(file => {
+						let content = fs.readFileSync(file, 'utf8');
+						if (typeof content === 'string') {
+							if (content.charCodeAt(0) === 0xFEFF) {
+								content = content.slice(1);
 							}
-						});
-					}
+							fs.writeFileSync(file, content, 'utf8');
+						}
+					});
 				}
+			}
 
-				ExtensionHelper.showUserInfo(`Пакет успешно распакован.`);
-				await ContentTreeProvider.refresh();
-			}
-			catch(error) {
-				// TODO: Нужно все внутренние ошибки обрабатывать единообразно
-				ExceptionHelper.show(error, `Внутренняя ошибка расширения: ${error.message}`);
-			}
+			await ContentTreeProvider.refresh();
 		});
 	}
 

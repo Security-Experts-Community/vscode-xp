@@ -8,7 +8,7 @@ import { EncodingType } from '../models/configuration';
 export interface ExecutionProcessOptions {
 	encoding: EncodingType;
 	outputChannel : vscode.OutputChannel;
-	token?: vscode.CancellationToken
+	token?: vscode.CancellationToken;
 }
 
 export class ExecutionResult {
@@ -45,11 +45,18 @@ export class ProcessHelper {
 		return childProcess.stdout;
 	}
 
+	/**
+	 * Выполняет команду с параметрами асинхронно
+	 * @param command команда/путь к исполняемому файлу для выполнения
+	 * @param params параметры команды
+	 * @param options дополнительные настройки
+	 * @returns возвращает результат выполнения команды по её окончанию
+	 */
 	public static execute(command : string, params : string[], options: ExecutionProcessOptions ) : Promise<ExecutionResult> {
 
 		return new Promise(function(resolve, reject) {
 			let child : child_process.ChildProcessWithoutNullStreams;
-			// Вывод пополныемой команды для локализациии ошибки.
+			// Вывод выполняемой команды для локализации ошибки.
 			if(options.outputChannel) {
 				options.outputChannel.appendLine(`${command} ${params.join(' ')} `);
 			}

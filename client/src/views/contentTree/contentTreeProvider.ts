@@ -173,12 +173,18 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 	
 					const config = Configuration.get();
 					if(!config.isKbOpened()) {
-						ExtensionHelper.showUserInfo("Для сбора графов нужно открыть базу знаний.");
+						vscode.window.showInformationMessage("Для распаковки KB-пакета нужно открыть базу знаний");
 						return;
 					}
 					
 					const action = new UnpackKbAction(config);
-					await action.run(selectedItem);
+					try {
+						await action.run(selectedItem);
+						return vscode.window.showInformationMessage(`Пакет успешно распакован`);
+					}
+					catch(error) {
+						ExceptionHelper.show(error, `Неожиданная ошибка распаковки KB-пакета`);
+					}
 				}
 			)
 		);

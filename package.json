@@ -418,8 +418,8 @@
 			},
 			{
 				"command": "KnowledgebaseTree.runningCorrelationGraph",
-				"title": "Скоррелировать события",
-				"shortTitle": "Скоррелировать события",
+				"title": "Коррелировать события",
+				"shortTitle": "Коррелировать события",
 				"category": "Редактор XP",
 				"icon": "$(outline-view-icon)"
 			},

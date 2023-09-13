@@ -125,6 +125,7 @@ export class LocalizationEditorViewProvider {
 				"ExtensionBaseUri": extensionBaseUri,
 				"LocalizationExamples": locExamples,
 				"IsLocalizableRule": this.isLocalizableRule(rule),
+				"IsTestedLocalizationsRule" : this.isTestedLocalizationsRule(rule)
 			};
 
 			// Подгружаем шаблон и шаблонизируем данные.
@@ -147,10 +148,19 @@ export class LocalizationEditorViewProvider {
 		return true;
 	}
 
+	private isTestedLocalizationsRule(rule: RuleBaseItem): boolean {
+		return rule instanceof Correlation;
+	}
+
 	async receiveMessageFromWebView(message: any) {
 		switch (message.command) {
 			case 'buildLocalizations': {
 
+				if( !(this._rule instanceof Correlation) ) {
+					return ExtensionHelper.showUserInfo(
+						"В настоящий момент поддерживается проверка локализаций только для корреляций. Если вам требуется поддержка других правил, можете добавить или проверить наличие подобного [Issue](https://github.com/Security-Experts-Community/vscode-xp/issues).");					
+				}
+				
 				const locExamples = await this.getLocalizationExamples();
 				if (locExamples.length === 0) {
 					return ExtensionHelper.showUserInfo(
@@ -167,7 +177,7 @@ export class LocalizationEditorViewProvider {
 				try {
 					const localization = message.localization;
 
-					// Получаем описание на руссском
+					// Получаем описание на русском
 					let ruDescription = localization.RuDescription as string;
 					ruDescription = StringHelper.textToOneLineAndTrim(ruDescription);
 					this._rule.setRuDescription(ruDescription);
@@ -244,7 +254,7 @@ export class LocalizationEditorViewProvider {
 				return locExamples;
 			}
 			catch (error) {
-				ExceptionHelper.show(error);
+				ExceptionHelper.show(error, "Неожиданная ошибка получения примеров локализаций.");
 			}
 		});
 	}

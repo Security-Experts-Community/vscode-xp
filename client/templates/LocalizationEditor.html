@@ -20,16 +20,16 @@
 	<body>
 		
 		<div id="header">
-			{{#IsLocalizableRule}}
+			{{#IsTestedLocalizationsRule}}
 			<div id="navigation">
 				<input id="build_loc"  class="run" type="button" value="&#9654;   Проверить локализации  ">
 			</div>
-			{{/IsLocalizableRule}}
+			{{/IsTestedLocalizationsRule}}
 			<input id="save_loc" class="save" type="button" value="Сохранить">
 		</div>
 
 		<div id="main-body">
-			{{#IsLocalizableRule}}
+			{{#LocalizationExamples.0}}
 			<h2>Примеры локализации:</h2>
 			<hr />
 			<div id="loc-results" class="loc-example">
@@ -49,7 +49,7 @@
 				{{/LocalizationExamples}}
 			
 			</div>
-			{{/IsLocalizableRule}}
+			{{/LocalizationExamples.0}}
 
 			<h2>Описание:</h2>
 			<hr />

@@ -605,10 +605,16 @@ export class IntegrationTestEditorViewProvider  {
 
 				const executedIntegrationTests = this._rule.getIntegrationTests();
 				if(executedIntegrationTests.every(it => it.getStatus() === TestStatus.Success)) {
-					ExtensionHelper.showUserInfo(`Интеграционные тесты прошли успешно.`);
-				} else {
-					ExtensionHelper.showUserInfo(`Не все тесты были пройдены.`);
-				}
+					vscode.window.showInformationMessage(`Интеграционные тесты прошли успешно`);
+					return;
+				} 
+
+				if(executedIntegrationTests.some(it => it.getStatus() === TestStatus.Success)) {
+					vscode.window.showInformationMessage(`Не все тесты прошли успешно`);
+					return;
+				} 
+
+				vscode.window.showErrorMessage(`Все тесты не были пройдены. Проверьте наличие синтаксических ошибок в коде правила или его зависимостях`);
 			}
 			catch(error) {
 				ExceptionHelper.show(error, `Ошибка запуска тестов`);
