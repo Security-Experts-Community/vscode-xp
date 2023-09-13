@@ -12,7 +12,6 @@ body {
 	margin-left: 22%;
 }
 
-/* ------ TAB BAR ------ */
 .tab button {
 	color: var(--vscode-tab-activeForeground);
 	float: left;
@@ -29,7 +28,6 @@ body {
 	display: flex;
 	align-items: flex-start;
 	gap: 4px;
-	/* max-height: 46px; */
 	padding-bottom: 4px;
 	overflow-x: auto;
 	scroll-margin: 4px;
@@ -52,6 +50,10 @@ body {
 	padding: 0 10px;
 }
 
+.tablinks div {
+	padding-left: 10px;
+}
+
 .tablinks:hover {
 	background-color: var(--vscode-button-secondaryHoverBackground);
 }
@@ -72,14 +74,14 @@ body {
 	color: var(--vscode-charts-red);
 }
 
-button.success {
+.success span {
 	color: var(--vscode-charts-green);
 }
-button.failure {
+.failure {
 	background: var(--vscode-inputValidation-errorBackground);
 	color: var(--vscode-inputValidation-errorForeground);
 }
-button.failure.active {
+.failure.active {
 	color: var(--vscode-charts-red);
 }
 
@@ -106,22 +108,9 @@ button.failure.active {
 	background-color: var(--vscode-button-secondaryHoverBackground);
 }
 
-/* ------  ------ */
 .tabcontent {
 	margin-top: 10px;
 	display: block;
-}
-
-div.failure {
-	/* Заменить на block, когда мы будем готовы выводить сообщения об ошибке*/
-	display: none;
-	border: solid 2px var(--vscode-inputValidation-errorBorder);
-	background: var(--vscode-inputValidation-errorBackground);
-	color: var(--vscode-inputValidation-errorForeground);
-	margin-bottom: 15px;
-	width: 60%;
-	margin-left: 20%;
-	padding: 0 40px;
 }
 
 .block_header {
@@ -158,9 +147,6 @@ textarea {
 	font-family: var(--vscode-editor-font-family);
 }
 
-/*
-Универсальный стиль для редактора кода.
-*/
 .xp_code {
 	white-space: pre-wrap;
 	min-height: 100px;

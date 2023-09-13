@@ -334,8 +334,6 @@
 					vscode.postMessage({
 						command: 'lastTest'
 					});
-					// jQueryTab.hide();
-					// jQueryTest.hide();
 					return
 				}
 
@@ -360,6 +358,7 @@
 				}
 			}
 
+			// предотвращает ситуацию, когда при нажатии на иконку удаления активируется нажатие с переходом на вкладку
 			function addEventListenerOnClickForStopPropaginationAndDeleteTest() {
 				$.each($('.delete-tablink'), function(i) {
 					const testNumber = extractNumberFromString($(this)[0].id)
@@ -465,12 +464,11 @@
 			  	openTest(activeTestNumber);
 
 				// Выводим восклицательный узнак у неуспешно прошедших тестов
-				tablinks = $(".tablinks");
-				for (i = 0; i < tablinks.length; i++) {
-					if (tablinks[i].classList.contains("failure") == true) {
-						tablinks[i].innerHTML = "&#9888 " + tablinks[i].innerHTML
-					}
-				}
+				$(".failure").each(function(index, elem) {
+					const div = document.createElement("div");
+					div.prepend("\u26A0")
+					elem.prepend(div)
+				})
 
 				raws = $('[name=word-wrap]');
 				for (i = 0; i < raws.length; i++) {
@@ -678,7 +676,6 @@
 
 				// Переходим на созданную вкладку
 				openTest(new_id);
-				// $('tablinks-wrap')[0].scrollLeft = $('tablinks-wrap')[0].offsetWidth
 			}
 		</script>
 	</body>
