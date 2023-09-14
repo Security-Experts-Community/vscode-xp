@@ -3,11 +3,6 @@
 <head>
 	<meta charset="UTF-8">
 
-	<!--
-		Use a content security policy to only allow loading images from https or from our extension directory,
-		and only allow scripts that have a specific nonce.
-	-->
-	
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Тесты</title>
 
@@ -51,9 +46,11 @@
 		<div id="main-body" class="tabs">
 		{{#IntegrationalTests}}
 		<div id="{{TestNumber}}" name="test" data-test="{{JsonedTestObject}}" class="tabcontent">
-			<div class="alert {{TestStatus}}">
+			
+			<!-- Верните две строки ниже, когда будете готовы выводить сообщение об ошибке -->
+			<!-- <div class="alert {{TestStatus}}">
 				<p>{{alertMessage}}</p>
-			</div>
+			</div> -->
 
 			<!-- Raw Events -->
 			<div class="test_block">
@@ -389,6 +386,7 @@
 			window.addEventListener(
 				'message', 
 				(event) => {
+					console.log('команда от расширения')
 					const message = event.data; 
 					switch (message.command) {
 						case 'updateRawEvents': {

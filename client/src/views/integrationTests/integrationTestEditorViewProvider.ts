@@ -136,6 +136,8 @@ export class IntegrationTestEditorViewProvider {
 		try {
 			const intergrationalTest = this._rule.getIntegrationTests();
 
+			//ERROR: после сохранения тестов нет тестов в this._rule
+
 			// Если тестов нет, то создаём пустую форму для первого теста
 			if (intergrationalTest.length === 0) {
 				plain["IntegrationalTests"].push({
@@ -329,10 +331,10 @@ export class IntegrationTestEditorViewProvider {
 				}
 
 				case 'fullTest': {
-					await this.runFullTests(message);
-
-					const activeTestNumber = this.getActiveTestNumber(message);
-					await this.updateView(activeTestNumber);
+					// webView надо обновлять только если промис runFullTests вернет true
+					// В противной ситуации - вьюшка ведет себя непредсказуемо из-за eventLoop
+					const shouldUpdateViewAfterTestsRuned = await this.runFullTests(message);
+					if (shouldUpdateViewAfterTestsRuned) await this.updateView(this.getActiveTestNumber(message));
 					break;
 				}
 			}
@@ -613,6 +615,8 @@ export class IntegrationTestEditorViewProvider {
 			catch (error) {
 				ExceptionHelper.show(error, `Ошибка запуска тестов`);
 			}
+
+			return true;
 		});
 	}
 

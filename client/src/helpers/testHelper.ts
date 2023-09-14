@@ -422,46 +422,60 @@ export class TestHelper {
 			await Promise.all(promises);
 		}
 
-		// Очищаем интеграционные тесты.
-		rule.clearIntegrationTests();
-
-		const tests = plainTests.map((plainTest, index) => {
-			const test = rule.createIntegrationTest();
-
-			const number = index + 1;
-			test.setNumber(number);
-
+		// Проверяем, что все тесты - нормальные
+		const checkedTestsArray = plainTests.map((plainTest, index) => {
 			// Сырые события.
-			let rawEvents = plainTest?.rawEvents;
+			const rawEvents = plainTest.rawEvents;
 			if (!rawEvents || rawEvents == "") {
 				throw new XpException(`Попытка сохранения теста №${plainTest.number ?? 0} без сырых событий.`);
 			}
 
-			// Из textarea новые строки только \n, поэтому надо их поправить под систему.
-			rawEvents = rawEvents.replace(/(?<!\\)\n/gm, EOL);
-			test.setRawEvents(TestHelper.compressTestCode(rawEvents));
-
 			// Код теста.
-			let testCode = plainTest?.testCode;
+			const testCode = plainTest.testCode;
 			if (!testCode || testCode == "") {
 				throw new XpException("Попытка сохранения теста без тестового кода событий.");
 			}
 
-			// Из textarea новые строки только \n, поэтому надо их поправить под систему.
-			testCode = testCode.replace(/(?<!\\)\n/gm, EOL);
-			test.setTestCode(TestHelper.compressTestCode(testCode));
-
-			// Нормализованные события.
-			const normEvents = plainTest?.normEvents;
-			if (normEvents) {
-				test.setNormalizedEvents(TestHelper.compressTestCode(normEvents));
-			}
-
-			return test;
+			return plainTest;
 		});
 
-		rule.setIntegrationTests(tests);
-		await rule.saveIntegrationTests();
+		if (checkedTestsArray.length) {
+			// Очищаем интеграционные тесты.
+			rule.clearIntegrationTests();
+
+			const tests = checkedTestsArray.map((plainTest, index) => {
+				const test = rule.createIntegrationTest();
+
+				const number = index + 1;
+				test.setNumber(number);
+
+				// Сырые события.
+				let rawEvents = plainTest?.rawEvents;
+
+				// Из textarea новые строки только \n, поэтому надо их поправить под систему.
+				rawEvents = rawEvents.replace(/(?<!\\)\n/gm, EOL);
+				test.setRawEvents(TestHelper.compressTestCode(rawEvents));
+
+				// Код теста.
+				let testCode = plainTest?.testCode;
+
+				// Из textarea новые строки только \n, поэтому надо их поправить под систему.
+				testCode = testCode.replace(/(?<!\\)\n/gm, EOL);
+				test.setTestCode(TestHelper.compressTestCode(testCode));
+
+				// Нормализованные события.
+				const normEvents = plainTest?.normEvents;
+				if (normEvents) {
+					test.setNormalizedEvents(TestHelper.compressTestCode(normEvents));
+				}
+
+				return test;
+			});
+
+			rule.setIntegrationTests(tests);
+			await rule.saveIntegrationTests();
+		}
+
 		return rule;
 	}
 
