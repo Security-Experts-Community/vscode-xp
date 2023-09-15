@@ -12,6 +12,14 @@ body {
 	color: var(--white);
 }
 
+#header {
+	display: flex !important;
+	flex-direction: row !important;
+	justify-content: space-between;
+	height: fit-content;
+	align-items: center;
+}
+
 #name {
 	border: none;
 	padding: 6px 10px;

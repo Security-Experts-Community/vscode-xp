@@ -13,7 +13,7 @@ import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { UnitTestsListViewProvider } from './unitTestsListViewProvider';
 import { XpException } from '../../models/xpException';
 
-export class UnitTestContentEditorViewProvider  {
+export class UnitTestContentEditorViewProvider {
 
 	public static readonly viewId = 'ModularTestContentEditorView';
 
@@ -33,7 +33,7 @@ export class UnitTestContentEditorViewProvider  {
 
 		// Форма создания визуалиации интеграционных тестов.
 		const templatePath = path.join(
-			config.getExtensionPath(), 
+			config.getExtensionPath(),
 			path.join("client", "templates", "UnitTestEditor.html")
 		);
 
@@ -42,7 +42,7 @@ export class UnitTestContentEditorViewProvider  {
 		// Открытие кода теста по нажатию на его номер.
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
-				UnitTestContentEditorViewProvider.showEditorCommand, 
+				UnitTestContentEditorViewProvider.showEditorCommand,
 				async (test: BaseUnitTest) => {
 					const testPath = test.getTestExpectationPath();
 					if (!fs.existsSync(testPath)) {
@@ -53,18 +53,18 @@ export class UnitTestContentEditorViewProvider  {
 					provider.showEditor(test);
 				}
 			)
-		);	
+		);
 
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
-				UnitTestContentEditorViewProvider.onTestSelectionChangeCommand, 
+				UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,
 				async (test: BaseUnitTest) => {
 					// Открываем код теста.
 					vscode.commands.executeCommand(UnitTestContentEditorViewProvider.showEditorCommand, test);
 
 					// Показываем вывод теста, если он есть.
 					const testOutput = test.getOutput();
-					if(!testOutput) {
+					if (!testOutput) {
 						return;
 					}
 
@@ -76,14 +76,14 @@ export class UnitTestContentEditorViewProvider  {
 		);
 	}
 
-	public async showEditor(unitTest: BaseUnitTest)  {
+	public async showEditor(unitTest: BaseUnitTest) {
 
-		if(this._view) {
+		if (this._view) {
 			this._test = null;
 			this._view.dispose();
 		}
 
-		if(!(unitTest instanceof BaseUnitTest)) {
+		if (!(unitTest instanceof BaseUnitTest)) {
 			return;
 		}
 
@@ -95,10 +95,10 @@ export class UnitTestContentEditorViewProvider  {
 		this._view = vscode.window.createWebviewPanel(
 			UnitTestContentEditorViewProvider.viewId,
 			viewTitle,
-			vscode.ViewColumn.One, 
+			vscode.ViewColumn.One,
 			{
-				retainContextWhenHidden : true,
-				enableFindWidget : true
+				retainContextWhenHidden: true,
+				enableFindWidget: true
 			});
 
 		this._view.webview.options = {
@@ -113,7 +113,7 @@ export class UnitTestContentEditorViewProvider  {
 		await this.updateView();
 	}
 
-	private async updateView() : Promise<void> {
+	private async updateView(): Promise<void> {
 
 		const rule = this._test.getRule();
 
@@ -121,9 +121,9 @@ export class UnitTestContentEditorViewProvider  {
 		const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
 
 		const plain = {
-			"UnitTest" : null,
-			"ExtensionBaseUri" : extensionBaseUri, 
-			"RuleName" : rule.getName()
+			"UnitTest": null,
+			"ExtensionBaseUri": extensionBaseUri,
+			"RuleName": rule.getName()
 		};
 
 		try {
@@ -131,10 +131,10 @@ export class UnitTestContentEditorViewProvider  {
 			const formattedTestInput = TestHelper.formatTestCodeAndEvents(this._test.getTestInputData());
 			const formattedTestExpectation = TestHelper.formatTestCodeAndEvents(this._test.getTestExpectation());
 
-			let testStatusStyle : string;
+			let testStatusStyle: string;
 			const testStatus = this._test.getStatus();
 			vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
-			switch(testStatus) {
+			switch (testStatus) {
 				case TestStatus.Unknown: {
 					testStatusStyle = "";
 					break;
@@ -150,27 +150,27 @@ export class UnitTestContentEditorViewProvider  {
 			}
 
 			plain["UnitTest"] = {
-				"TestNumber" : this._test.getNumber(),
-				"TestInput" : formattedTestInput,
-				"TestExpectation" :  formattedTestExpectation,
-				"TestOutput" : this._test.getOutput(),
-				"TestStatus" : testStatusStyle,
+				"TestNumber": this._test.getNumber(),
+				"TestInput": formattedTestInput,
+				"TestExpectation": formattedTestExpectation,
+				"TestOutput": this._test.getOutput(),
+				"TestStatus": testStatusStyle,
 			};
-			
+
 			const template = await FileSystemHelper.readContentFile(this._templatePath);
 			const formatter = new MustacheFormatter(template);
 			const htmlContent = formatter.format(plain);
 
 			this._view.webview.html = htmlContent;
 		}
-		catch(error) {
+		catch (error) {
 			ExtensionHelper.showError("Не удалось открыть интеграционные тесты.", error);
 		}
 	}
 
 	private async receiveMessageFromWebView(message: any) {
 		switch (message.command) {
-			case 'saveTest': {				
+			case 'saveTest': {
 				this.saveTest(message);
 				this.updateView();
 				return;
@@ -188,29 +188,29 @@ export class UnitTestContentEditorViewProvider  {
 		}
 	}
 
-	private saveTest(message: any){
+	private saveTest(message: any) {
 		const testInfo = message.test;
 		try {
 			const rawEvent = testInfo.rawEvent;
-			if(!rawEvent) {
+			if (!rawEvent) {
 				throw new XpException(`Не задано сырое событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`);
 			}
 			this._test.setTestInputData(rawEvent);
 			const expectation = testInfo.expectation;
-			if(!expectation) {
+			if (!expectation) {
 				throw new XpException(`Не задано ожидаемое нормализованное событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`);
 			}
 			this._test.setTestExpectation(expectation);
 			this._test.save();
 		}
-		catch(error) {
+		catch (error) {
 			ExceptionHelper.show(error, `Не удалось сохранить модульный тест №${this._test.label} правила ${this._test.getRule().getName()}`);
 			return;
 		}
 	}
 
 	private async runUnitTest(message: any) {
-		if(!message.test) {
+		if (!message.test) {
 			ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
 			return;
 		}
@@ -220,13 +220,13 @@ export class UnitTestContentEditorViewProvider  {
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false
 		}, async (progress) => {
-			try {				
-				progress.report( {message : `Выполнение теста №${this._test.getNumber()}`});
+			try {
+				progress.report({ message: `Выполнение теста №${this._test.getNumber()}` });
 				const runner = rule.getUnitTestRunner();
-				this._test = await runner.run(this._test);			
+				this._test = await runner.run(this._test);
 				this.updateView();
 			}
-			catch(error) {
+			catch (error) {
 				ExceptionHelper.show(error);
 				Configuration.get().getOutputChannel().show();
 			}
