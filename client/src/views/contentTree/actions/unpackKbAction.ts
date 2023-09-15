@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { ExtensionHelper } from '../../../helpers/extensionHelper';
-import { ProcessHelper } from '../../../helpers/processHelper';
+import { ExecutionResult, ProcessHelper } from '../../../helpers/processHelper';
 import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
 import { Configuration } from '../../../models/configuration';
 import { ContentTreeProvider } from '../contentTreeProvider';
@@ -81,18 +81,22 @@ export class UnpackKbAction {
 			];
 
 			const cmd = "dotnet";
-			const executeResult = await ProcessHelper.execute(
-				cmd,
-				params,
-				{	
-					encoding: 'utf-8',
-					outputChannel: this._config.getOutputChannel()
-				}
-			);
-
-			if(executeResult.exitCode !== 0) {
-				throw new XpException(`Ошибка выполнения команды ${cmd}. Возможно, не был установлены [.NET Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) или не добавлен путь к нему в переменную PATH.`);
+			let executeResult : ExecutionResult;
+			try {
+				executeResult = await ProcessHelper.execute(
+					cmd,
+					params,
+					{	
+						encoding: 'utf-8',
+						outputChannel: this._config.getOutputChannel(),
+						checkCommandBeforeExecution: true
+					}
+				);
+			} 
+			catch(error) {
+				throw new XpException(`Ошибка выполнения команды ${cmd}. Возможно, не был установлены [.NET Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) или не добавлен путь к нему в переменную PATH.`, error);
 			}
+				
 
 			if(!executeResult.output.includes(this.SUCCESS_SUBSTRING)) {
 				throw new XpException(`Не удалось распаковать пакет. Подробности приведены в панели Output.`);

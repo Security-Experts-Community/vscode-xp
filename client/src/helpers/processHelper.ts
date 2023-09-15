@@ -4,11 +4,17 @@ import * as child_process from 'child_process';
 import * as iconv from 'iconv-lite';
 
 import { EncodingType } from '../models/configuration';
+import { XpException } from '../models/xpException';
 
 export interface ExecutionProcessOptions {
 	encoding: EncodingType;
 	outputChannel : vscode.OutputChannel;
 	token?: vscode.CancellationToken;
+	/**
+	 * Проверяет выполнимость команды (например, отсутствия нужного модуля в директориях PATH).
+	 * Если команда не выполнима, будет прошено исключение.
+	 */
+	checkCommandBeforeExecution?: boolean;
 }
 
 export class ExecutionResult {
@@ -62,6 +68,12 @@ export class ProcessHelper {
 			}
 			
 			try {
+				if(options.checkCommandBeforeExecution) {
+					const result = child_process.spawnSync(command);	
+					if(result.error !== undefined) {
+						throw result.error;
+					}
+				}
 				child = child_process.spawn(command, params);
 			} 
 			catch(error) {

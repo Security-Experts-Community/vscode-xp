@@ -1,5 +1,10 @@
+body {
+	display: flex;
+	flex-direction: column;
+}
+
 #header {
-	background: var(--vscode-editorGroupHeader-tabsBackground);
+	margin-bottom: 12px !important;
 }
 
 #settings {
@@ -7,7 +12,6 @@
 	margin-left: 22%;
 }
 
-/* ------ TAB BAR ------ */
 .tab button {
 	color: var(--vscode-tab-activeForeground);
 	float: left;
@@ -21,15 +25,39 @@
 
 .tablinks-wrap {
 	width: 100%;
-	float: left;
+	display: flex;
+	align-items: flex-start;
+	gap: 4px;
+	padding-bottom: 4px;
+	overflow-x: auto;
+	scroll-margin: 4px;
 }
 
 .tablinks {
+	min-width: fit-content;
 	width: 8%;
-	background-color: var(--vscode-tab-inactiveBackground);
+	height: 32px;
+	background-color: var(--vscode-button-secondaryBackground);
 	border: none;
-	margin-left: 1px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	cursor: pointer;
+	transition: 0.3s;
 }
+
+.tablinks span {
+	padding: 0 10px;
+}
+
+.tablinks div {
+	padding-left: 10px;
+}
+
+.tablinks:hover {
+	background-color: var(--vscode-button-secondaryHoverBackground);
+}
+
 .tablinks.active {
 	background-color: var(--vscode-tab-activeBackground);
 	border: none;
@@ -46,14 +74,14 @@
 	color: var(--vscode-charts-red);
 }
 
-button.success {
+.success span {
 	color: var(--vscode-charts-green);
 }
-button.failure {
+.failure {
 	background: var(--vscode-inputValidation-errorBackground);
 	color: var(--vscode-inputValidation-errorForeground);
 }
-button.failure.active {
+.failure.active {
 	color: var(--vscode-charts-red);
 }
 
@@ -61,41 +89,28 @@ button.failure.active {
 	width: 30px;
 	border: none;
 	background-color: var(--vscode-tab-activeBackground);
+	margin: 0;
+	transition: 0.3s;
 }
 .delete-tablink:hover {
 	background-color: var(--vscode-button-secondaryHoverBackground);
+	transition: 0.3s;
 }
 
 #add-test {
 	width: 30px;
-	background-color: var(--vscode-tab-inactiveBackground);
+	min-width: 30px;
+	background-color: var(--vscode-button-secondaryBackground);
 	border: none;
-	margin-left: 3px;
+	margin: 0;
 }
 #add-test:hover {
-	background-color: var(--vscode-tab-secondaryHoverBackground);
+	background-color: var(--vscode-button-secondaryHoverBackground);
 }
 
-/* ------  ------ */
 .tabcontent {
-	margin-top: 77px;
+	margin-top: 10px;
 	display: block;
-}
-
-div.success {
-	display: none;
-}
-
-div.failure {
-	/* Заменить на block, когда мы будем готовы выводить сообщения об ошибке*/
-	display: none;
-	border: solid 2px var(--vscode-inputValidation-errorBorder);
-	background: var(--vscode-inputValidation-errorBackground);
-	color: var(--vscode-inputValidation-errorForeground);
-	margin-bottom: 15px;
-	width: 60%;
-	margin-left: 20%;
-	padding: 0 40px;
 }
 
 .block_header {
@@ -132,9 +147,6 @@ textarea {
 	font-family: var(--vscode-editor-font-family);
 }
 
-/*
-Универсальный стиль для редактора кода.
-*/
 .xp_code {
 	white-space: pre-wrap;
 	min-height: 100px;
