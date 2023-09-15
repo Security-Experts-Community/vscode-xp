@@ -233,9 +233,16 @@ export async function activate(context: ExtensionContext) {
 		);
 
 		// Очистка директории временных файлов.
+		
 		const tmpDirectory = config.getTmpDirectoryPath();
 		if(fs.existsSync(tmpDirectory)) {
-			await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
+			try {
+				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
+			}
+			catch (error) {
+				Configuration.get().getOutputChannel().appendLine(error.stack);
+			}
+			
 		}
 	}
 	catch(error) {

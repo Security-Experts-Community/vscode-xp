@@ -452,7 +452,6 @@
 			}
 
 			$(document).ready(function() {
-				console.log("document.ready");
 
 				addEventListenerOnClickForStopPropaginationAndDeleteTest()
 
@@ -461,7 +460,7 @@
 				// Открытие теста по номеру.
 			  	openTest(activeTestNumber);
 
-				// Выводим восклицательный узнак у неуспешно прошедших тестов
+				// Выводим восклицательный знак у неуспешно прошедших тестов
 				$(".failure").each(function(index, elem) {
 					const div = document.createElement("div");
 					div.prepend("\u26A0")

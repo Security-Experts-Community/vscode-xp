@@ -19,7 +19,7 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 	/**
 	 * Считывает в память список автодополнения функций и полей таксономии.
 	 * @param context контекст расширения
-	 * @returns возвращает настроеннный провайдер.
+	 * @returns возвращает настроенный провайдер.
 	 */
 	public static async init(configuration: Configuration): Promise<XpCompletionItemProvider> {
 
