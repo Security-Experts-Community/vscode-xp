@@ -24,6 +24,8 @@ import { XpException } from '../../models/xpException';
 import { Enveloper } from '../../models/enveloper';
 import { ExtensionState } from '../../models/applicationState';
 import { RunIntegrationTestDialog } from '../runIntegrationDialog';
+import { CorrelationFastTestsRunner } from '../../models/tests/correlationFastTestsRunner';
+import { CorrelationUnitTestOutputParser } from '../../models/tests/correlationUnitTestOutputParser';
 
 export class IntegrationTestEditorViewProvider {
 
@@ -521,7 +523,11 @@ export class IntegrationTestEditorViewProvider {
 				fastTest.setTestExpectationPath(fastTestFilePath);
 				fastTest.setRule(this._rule);
 
-				const testRunner = this._rule.getUnitTestRunner();
+				// Специальный тест быстрого теста.
+				const testRunner = new CorrelationFastTestsRunner(
+					this._config, 
+					new CorrelationUnitTestOutputParser());
+					
 				const resultTest = await testRunner.run(fastTest);
 
 				if (resultTest.getStatus() === TestStatus.Failed) {
@@ -559,13 +565,12 @@ export class IntegrationTestEditorViewProvider {
 
 				// Обновляем код теста.
 				currTest.setTestCode(newTestCode);
+				
+				vscode.window.showInformationMessage("Ожидаемое событие в коде теста успешно обновлено. Сохраните тест если результат вас устраивает.");
 				return currTest;
 			}
 			catch (error) {
 				ExceptionHelper.show(error, 'Не удалось получить ожидаемое событие');
-			}
-			finally {
-				vscode.window.showInformationMessage("Ожидаемое событие в коде теста успешно обновлено. Сохраните тест если результат вас устраивает.");
 			}
 		});
 	}

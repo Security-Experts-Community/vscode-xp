@@ -133,7 +133,8 @@
 					<option>Microsoft-Windows-Security-Auditing</option>
 					<option>Microsoft-Windows-Sysmon</option>
 					<option>Microsoft-Windows-PowerShell</option>
-					<option>auditd</option>
+					<option>Unix</option>
+					<option>MacOS</option>
 				</datalist>
 
 				<td class="labels">Источники данных</td>
@@ -190,24 +191,6 @@
 
 	<script>
 		const vscode = acquireVsCodeApi();
-
-		/*$(document).on("change", 'input[name=tactic]', function () {
-			self = $(this);
-			siblings = $('input[name=tactic]');
-			siblings.splice($.inArray($(this), siblings), 1);
-			invalid = false;
-			$.each(siblings, function (i, key) {
-				if ($(key).val() == self.val()) {
-					invalid = true;
-				}
-			});
-
-			if (invalid == true) {
-				self[0].setCustomValidity("Тактика уже опередена. Для указания нескольких техник, необходимо перечислить их через запятую");
-			} else {
-				self[0].setCustomValidity("");
-			}
-		});*/
 
 		document.querySelector("body").addEventListener("keyup", event => {
 			if (event.key !== "Enter") return;
@@ -319,6 +302,15 @@
 				}
 			});
 		}
+
+		// Сохраняем все тесты по хот кею Ctrl+S
+		$(document).on("keydown", e => {
+			if (e.ctrlKey && e.code == 'KeyS') {
+				console.log(e.keyCode);
+				e.preventDefault();
+				saveMetaInfo();
+			}
+		});
 
 		function inputsNameToArray(name) {
 			const elements = [...document.getElementsByName(name)];

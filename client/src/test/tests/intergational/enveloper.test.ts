@@ -1,9 +1,26 @@
 import assert = require('assert');
 import { Enveloper } from '../../../models/enveloper';
-import { XpException } from '../../../models/xpException';
-import { StringHelper } from '../../../helpers/stringHelper';
 
 suite('Enveloper', () => {
+
+	test('Eventid первое поле в json', async () => {
+		const events =
+`{
+	"eventid": "286684907",
+	"timestampfractional": "676",
+	"timestamp": "1694764854",
+	"node": "127.0.0.1",
+	"items": {
+		"ADD_USER": [
+			"pid=3077358 uid=0 auid=4294967295 ses=4294967295 subj=docker (enforce) msg='op=add-user id=89 exe=\\"/usr/sbin/useradd\\" hostname=? addr=? terminal=? res=success' UID=\\"root\\" AUID=\\"unset\\" ID=\\"unknown(89)\\""
+		]
+	}
+}
+`;
+
+		const envelopedEvents = await Enveloper.addEnvelope(events, "application/json");
+		assert.strictEqual(envelopedEvents.length, 1);
+	});
 	
 	test('Json-событие из syslog', async () => {
 		const events =

@@ -108,7 +108,7 @@ export class IntegrationTestRunner {
 		}
 		
 		// Получаем путь к директории с результатами теста.
-		const tmpDirectoryPath = configBuilder.addTestsRun(rule.getDirectoryPath(), options.tmpFilesPath);
+		configBuilder.addTestsRun(rule.getDirectoryPath(), options.tmpFilesPath);
 		const siemjConfContent = configBuilder.build();
 		if(!siemjConfContent) {
 			throw new XpException("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");

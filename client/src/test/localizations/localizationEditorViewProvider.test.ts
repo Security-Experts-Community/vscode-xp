@@ -97,7 +97,7 @@ function getLocalizationEditorViewProvider() : LocalizationEditorViewProvider {
 	const localizationTemplatePath = TestFixture.getExtensionFilePath("client", "templates", "IntegrationTestEditor.html");
 	const localizationEditor = new LocalizationEditorViewProvider(
 		config,
-		localizationTemplatePath,
-		config.getRandTmpSubDirectoryPath());
+		localizationTemplatePath);
+		
 	return localizationEditor;
 }

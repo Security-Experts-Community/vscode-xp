@@ -126,12 +126,38 @@
 		<script>
 			const vscode = acquireVsCodeApi();
 
+
+			function getCurrentLocalizationsData() {
+				
+				const ruDescription = document.getElementById("ruDescription").value;
+				const enDescription = document.getElementById("enDescription").value;
+
+				const criteria = nameToValuesArray("criteria");
+				const rulocalizations = nameToValuesArray("ruLocalization");
+				const enlocalizations = nameToValuesArray("enLocalization");
+				const localizationIds = nameToValuesArray("localizationId");
+
+				return {
+					'RuDescription' : ruDescription,
+					'EnDescription' : enDescription,
+
+					'Criteria' : criteria,
+					'RuLocalizations' : rulocalizations,
+					'EnLocalizations' : enlocalizations,
+					'LocalizationIds' : localizationIds
+				}
+			}
+
 			// Нажатие на кнопку проверки локализаций.
 			const buildLocalizationsButton = document.getElementById("build_loc");
 			if(buildLocalizationsButton) {
 					buildLocalizationsButton.addEventListener("click", function () {
+
+					const localizationsData = getCurrentLocalizationsData()
+
 					vscode.postMessage({
-						command: 'buildLocalizations'
+						command: 'buildLocalizations',
+						localizations : localizationsData
 					});
 				});
 			}
@@ -150,19 +176,13 @@
 				const enlocalizations = nameToValuesArray("enLocalization");
 				const localizationIds = nameToValuesArray("localizationId");
 
+				const localizationsData = getCurrentLocalizationsData()
 				vscode.postMessage({
 					command: 'saveLocalizations',
-					localization: {
-						'RuDescription' : ruDescription,
-						'EnDescription' : enDescription,
-
-						'Criteria' : criteria,
-						'RuLocalizations' : rulocalizations,
-						'EnLocalizations' : enlocalizations,
-						'LocalizationIds' : localizationIds
-					}
+					localizations : localizationsData
 				});
 			}
+
 
 			// Сохраняем все тесты по хот кею Ctrl+S
 			$(document).on("keydown", e => {

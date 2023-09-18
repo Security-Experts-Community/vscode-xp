@@ -135,7 +135,7 @@ export class TestHelper {
 		}
 
 		// TODO: надо поддержать упаковку любых json-ов
-		const compressedNormalizedEventReg = /^{\s+"(?:Event|node)"\s*[\s\S]*?\n}/gm;
+		const compressedNormalizedEventReg = /^{$[\s\S]+?^}$/gm;
 
 		let comNormEventResult: RegExpExecArray | null;
 		let compressedRawEvents = rawEvents;

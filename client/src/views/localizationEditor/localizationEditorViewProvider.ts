@@ -27,8 +27,7 @@ export class LocalizationEditorViewProvider {
 
 	constructor(
 		private readonly _config: Configuration,
-		private readonly _templatePath: string,
-		private readonly _integrationTestTmpFilesPath: string
+		private readonly _templatePath: string
 	) { }
 
 	public static init(config: Configuration) {
@@ -38,8 +37,7 @@ export class LocalizationEditorViewProvider {
 
 		const provider = new LocalizationEditorViewProvider(
 			config,
-			templateFilePath,
-			config.getRandTmpSubDirectoryPath());
+			templateFilePath);
 
 		config.getContext().subscriptions.push(
 			vscode.commands.registerCommand(
@@ -50,7 +48,7 @@ export class LocalizationEditorViewProvider {
 	}
 
 	public static showLocalizationEditorCommand = "LocalizationView.showLocalizationEditor";
-	public async showLocalizationEditor(rule: RuleBaseItem) {
+	public async showLocalizationEditor(rule: RuleBaseItem, keepTmpFiles = false) {
 
 		// Если открыта еще одна локализация, то закрываем её перед открытием новой.
 		if (this._view) {
@@ -59,7 +57,11 @@ export class LocalizationEditorViewProvider {
 		}
 
 		this._rule = rule;
+
 		// Сохраняем директорию для временных файлов, которая будет единая для вьюшки.
+		if(!keepTmpFiles) {
+			this._integrationTestTmpFilesPath = this._config.getRandTmpSubDirectoryPath();
+		}
 
 		try {
 			const localizations = rule.getLocalizations();
@@ -165,6 +167,9 @@ export class LocalizationEditorViewProvider {
 					return ExtensionHelper.showUserInfo(
 						"В настоящий момент поддерживается проверка локализаций только для корреляций. Если вам требуется поддержка других правил, можете добавить или проверить наличие подобного [Issue](https://github.com/Security-Experts-Community/vscode-xp/issues).");					
 				}
+
+				const localizations = message.localizations;
+				await this.saveLocalization(localizations);
 				
 				const locExamples = await this.getLocalizationExamples();
 				if (locExamples.length === 0) {
@@ -173,57 +178,16 @@ export class LocalizationEditorViewProvider {
 				}
 
 				this._rule.setLocalizationExamples(locExamples);
-				this.showLocalizationEditor(this._rule);
+				this.showLocalizationEditor(this._rule, true);
 				break;
 			}
 
 			case 'saveLocalizations': {
 
 				try {
-					const localization = message.localization;
+					const localizations = message.localizations;
+					await this.saveLocalization(localizations);
 
-					// Получаем описание на русском
-					let ruDescription = localization.RuDescription as string;
-					ruDescription = StringHelper.textToOneLineAndTrim(ruDescription);
-					this._rule.setRuDescription(ruDescription);
-
-					// Получаем описание на английском
-					let enDescription = localization.EnDescription as string;
-					enDescription = StringHelper.textToOneLineAndTrim(enDescription);
-					this._rule.setEnDescription(enDescription);
-
-					// Получаем нужные данные из вебвью и тримим их.
-					const criteria = (localization.Criteria as string[]).map(c => c.trim());
-					const ruLocalizations = (localization.RuLocalizations as string[]).map(c => StringHelper.textToOneLineAndTrim(c));
-					const enLocalizations = (localization.EnLocalizations as string[]).map(c => StringHelper.textToOneLineAndTrim(c));
-					const localizationIds = (localization.LocalizationIds as string[]).map(c => c.trim());
-
-					const firstDuplicate = this.findDuplicates(criteria);
-					if (firstDuplicate != null) {
-						ExtensionHelper.showUserError(`Критерий '${firstDuplicate}' дублируется в нескольких правилах локализации`);
-						return;
-					}
-
-					// Преобразуем полученные данные в нужный формат.
-					const localizations = criteria.map((cr, index) => {
-						const ruLoc = ruLocalizations[index];
-						const enLoc = enLocalizations[index];
-						const loc = Localization.create(cr, ruLoc, enLoc);
-
-						const locId = localizationIds[index];
-						if (locId) {
-							loc.setLocalizationId(locId);
-						}
-
-						return loc;
-					});
-
-					// Обновляем локализации и сохраняем их.
-					if (localizations.length !== 0) {
-						this._rule.setLocalizationTemplates(localizations);
-					}
-
-					await this._rule.saveMetaInfoAndLocalizations();
 					ExtensionHelper.showUserInfo(`Правила локализации для ${this._rule.getName()} сохранены`);
 				}
 				catch (error) {
@@ -231,6 +195,51 @@ export class LocalizationEditorViewProvider {
 				}
 			}
 		}
+	}
+
+	private async saveLocalization(localization : any) {
+		// Получаем описание на русском
+		let ruDescription = localization.RuDescription as string;
+		ruDescription = StringHelper.textToOneLineAndTrim(ruDescription);
+		this._rule.setRuDescription(ruDescription);
+
+		// Получаем описание на английском
+		let enDescription = localization.EnDescription as string;
+		enDescription = StringHelper.textToOneLineAndTrim(enDescription);
+		this._rule.setEnDescription(enDescription);
+
+		// Получаем нужные данные из вебвью и тримим их.
+		const criteria = (localization.Criteria as string[]).map(c => c.trim());
+		const ruLocalizations = (localization.RuLocalizations as string[]).map(c => StringHelper.textToOneLineAndTrim(c));
+		const enLocalizations = (localization.EnLocalizations as string[]).map(c => StringHelper.textToOneLineAndTrim(c));
+		const localizationIds = (localization.LocalizationIds as string[]).map(c => c.trim());
+
+		const firstDuplicate = this.findDuplicates(criteria);
+		if (firstDuplicate != null) {
+			ExtensionHelper.showUserError(`Критерий '${firstDuplicate}' дублируется в нескольких правилах локализации`);
+			return;
+		}
+
+		// Преобразуем полученные данные в нужный формат.
+		const localizations = criteria.map((cr, index) => {
+			const ruLoc = ruLocalizations[index];
+			const enLoc = enLocalizations[index];
+			const loc = Localization.create(cr, ruLoc, enLoc);
+
+			const locId = localizationIds[index];
+			if (locId) {
+				loc.setLocalizationId(locId);
+			}
+
+			return loc;
+		});
+
+		// Обновляем локализации и сохраняем их.
+		if (localizations.length !== 0) {
+			this._rule.setLocalizationTemplates(localizations);
+		}
+
+		await this._rule.saveMetaInfoAndLocalizations();
 	}
 
 	private async getLocalizationExamples(): Promise<LocalizationExample[]> {
@@ -243,7 +252,7 @@ export class LocalizationEditorViewProvider {
 				let result: string;
 				if(fs.existsSync(this._integrationTestTmpFilesPath)) {
 					result = await vscode.window.showInformationMessage(
-						"Обнаружены результаты предыдущего запуска интеграционных тестов. Использовать их или запустить заново?", 
+						"Обнаружены результаты предыдущего запуска интеграционных тестов. Если вы модифицировали только правила локализации, то можно использовать предыдущие результаты. В противном случае необходимо запустить интеграционные тесты еще раз.", 
 						LocalizationEditorViewProvider.USE_OLD_TESTS_RESULT,
 						LocalizationEditorViewProvider.RESTART_TESTS);
 
@@ -291,6 +300,8 @@ export class LocalizationEditorViewProvider {
 		return null;
 	}
 
-	private static USE_OLD_TESTS_RESULT = "Использовать";
-	private static RESTART_TESTS = "Повторить";
+	private _integrationTestTmpFilesPath: string
+
+	private static readonly USE_OLD_TESTS_RESULT = "Использовать";
+	private static readonly RESTART_TESTS = "Повторить";
 }
