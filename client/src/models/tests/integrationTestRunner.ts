@@ -21,7 +21,7 @@ export enum CompilationType {
 }
 
 export class IntegrationTestRunnerOptions {
-	keepTmpFiles = false;
+	tmpFilesPath?: string;
 	dependentCorrelations : string[] = [];
 	correlationCompilation : CompilationType = CompilationType.Auto;
 	cancellationToken?: vscode.CancellationToken;
@@ -78,7 +78,7 @@ export class IntegrationTestRunner {
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();
 
-		// Параметры сборки графа корреляций взависимости от опций.
+		// Параметры сборки графа корреляций в зависимости от опций.
 		switch (options.correlationCompilation) {
 			case CompilationType.CurrentRule: {
 				configBuilder.addCorrelationsGraphBuilding(true, rule.getDirectoryPath());
@@ -108,7 +108,7 @@ export class IntegrationTestRunner {
 		}
 		
 		// Получаем путь к директории с результатами теста.
-		const tmpDirectoryPath = configBuilder.addTestsRun(rule.getDirectoryPath(), options.keepTmpFiles);
+		const tmpDirectoryPath = configBuilder.addTestsRun(rule.getDirectoryPath(), options.tmpFilesPath);
 		const siemjConfContent = configBuilder.build();
 		if(!siemjConfContent) {
 			throw new XpException("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
@@ -123,8 +123,6 @@ export class IntegrationTestRunner {
 		}
 
 		const siemjResult = await this._outputParser.parse(siemjExecutionResult.output);
-		// Сохраняем результаты тестов.
-		siemjResult.tmpDirectoryPath = tmpDirectoryPath;
 		
 		// Все тесты прошли, статусы не проверяем, все тесты зеленые.
 		if(siemjResult.testsStatus) {

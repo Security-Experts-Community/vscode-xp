@@ -11,7 +11,7 @@ import { OperationCanceledException } from '../models/operationCanceledException
 import { XpException } from '../models/xpException';
 
 export class RunIntegrationTestDialog {
-	constructor(private _config : Configuration) {}
+	constructor(private _config : Configuration, private _tmpFilesPath?: string) {}
 
 	public async getIntegrationTestRunOptions(rule: RuleBaseItem) : Promise<IntegrationTestRunnerOptions> {
 		try {
@@ -34,7 +34,7 @@ export class RunIntegrationTestDialog {
 
 	private async getCorrelationOptions(rule : Correlation) : Promise<IntegrationTestRunnerOptions> {
 		const testRunnerOptions = new IntegrationTestRunnerOptions();
-		testRunnerOptions.keepTmpFiles = true;
+		testRunnerOptions.tmpFilesPath = this._tmpFilesPath;
 
 		const ruleCode = await rule.getRuleCode();
 		const subRuleNames = TestHelper.parseSubRuleNames(ruleCode).map(srn => srn.toLocaleLowerCase());
@@ -110,7 +110,7 @@ export class RunIntegrationTestDialog {
 	 */
 	private async getEnrichmentOptions(rule : Enrichment) : Promise<IntegrationTestRunnerOptions> {
 		const testRunnerOptions = new IntegrationTestRunnerOptions();
-		testRunnerOptions.keepTmpFiles = true;
+		testRunnerOptions.tmpFilesPath = this._tmpFilesPath;
 
 		const result = await vscode.window.showInformationMessage(
 			"Тестируемое правило обогащения может обогащать как нормализованные события, так и корреляционные. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",

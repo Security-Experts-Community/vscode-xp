@@ -235,7 +235,7 @@ out=${output}`;
 	 * @param keepTmpFiles флаг сохранения временных файлов
 	 * @returns путь к директории с временными файлами.
 	 */
-	public addTestsRun(testsRuleFullPath: string, keepTmpFiles?: boolean) : string {
+	public addTestsRun(testsRuleFullPath: string, tmpFilesPath?: string) : void {
 
 		const formulas = path.join('${output_folder}', this._config.getNormalizationsGraphFileName());
 		const enrules = path.join('${output_folder}', this._config.getEnrichmentsGraphFileName());
@@ -254,16 +254,14 @@ table_list_defaults=${table_list_defaults}
 rules_src=${testsRuleFullPath}`;
 
 		// Добавляем директорию для получения временных файлов, после тестов.
-		const testTmpFiles = path.join(this._config.getRandTmpSubDirectoryPath());
-		if(keepTmpFiles) {
+		if(tmpFilesPath) {
 			rulesTestsSection += `
-temp=${testTmpFiles}
+temp=${tmpFilesPath}
 keep_temp_files=yes`;
 		}
 
 		this._siemjConfigSection += rulesTestsSection;
 		this._scenarios.push("rules-tests");
-		return testTmpFiles;
 	}	
 
 	public addCorrelateEnrichedEvents() : void {

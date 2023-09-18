@@ -13,7 +13,7 @@ import { XpException } from '../../models/xpException';
 import { SiemjManager } from '../../models/siemj/siemjManager';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
-import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
+import { SiemJOutputParser, SiemjExecutionResult } from '../../models/siemj/siemJOutputParser';
 import { IntegrationTestRunner, IntegrationTestRunnerOptions } from '../../models/tests/integrationTestRunner';
 import { RunIntegrationTestDialog } from '../runIntegrationDialog';
 import { Enrichment } from '../../models/content/enrichment';
@@ -27,15 +27,19 @@ export class LocalizationEditorViewProvider {
 
 	constructor(
 		private readonly _config: Configuration,
-		private readonly _templatePath: string
+		private readonly _templatePath: string,
+		private readonly _integrationTestTmpFilesPath: string
 	) { }
 
 	public static init(config: Configuration) {
 
 		const templateFilePath = path.join(
-			Configuration.get().getExtensionPath(), "client", "templates", "LocalizationEditor.html");
+			config.getExtensionPath(), "client", "templates", "LocalizationEditor.html");
 
-		const provider = new LocalizationEditorViewProvider(config, templateFilePath);
+		const provider = new LocalizationEditorViewProvider(
+			config,
+			templateFilePath,
+			config.getRandTmpSubDirectoryPath());
 
 		config.getContext().subscriptions.push(
 			vscode.commands.registerCommand(
@@ -55,6 +59,7 @@ export class LocalizationEditorViewProvider {
 		}
 
 		this._rule = rule;
+		// Сохраняем директорию для временных файлов, которая будет единая для вьюшки.
 
 		try {
 			const localizations = rule.getLocalizations();
@@ -234,23 +239,40 @@ export class LocalizationEditorViewProvider {
 			cancellable: true,
 		}, async (progress, token) => {
 			try {
-				progress.report({ message: `Получение зависимостей правила для корректной сборки графа корреляций.` });
-				const ritd = new RunIntegrationTestDialog(this._config);
-				const options = await ritd.getIntegrationTestRunOptions(this._rule);
-				options.cancellationToken = token;
+				
+				let result: string;
+				if(fs.existsSync(this._integrationTestTmpFilesPath)) {
+					result = await vscode.window.showInformationMessage(
+						"Обнаружены результаты предыдущего запуска интеграционных тестов. Использовать их или запустить заново?", 
+						LocalizationEditorViewProvider.USE_OLD_TESTS_RESULT,
+						LocalizationEditorViewProvider.RESTART_TESTS);
 
-				progress.report({ message: `Получение корреляционных событий на основе интеграционных тестов правила.` });
-				const outputParser = new SiemJOutputParser();
-				const testRunner = new IntegrationTestRunner(this._config, outputParser);
-				const siemjResult = await testRunner.run(this._rule, options);
+					// Если пользователь закрыл диалог, завершаем работу.
+					if(!result) {
+						return;
+					}
+				}
 
-				if (!siemjResult.testsStatus) {
-					throw new XpException("Не все интеграционные тесты прошли.");
+				if(!result || result === LocalizationEditorViewProvider.RESTART_TESTS) {
+					progress.report({ message: `Получение зависимостей правила для корректной сборки графа корреляций.` });
+					const ritd = new RunIntegrationTestDialog(this._config, this._integrationTestTmpFilesPath);
+					const options = await ritd.getIntegrationTestRunOptions(this._rule);
+					options.cancellationToken = token;
+	
+					progress.report({ message: `Получение корреляционных событий на основе интеграционных тестов правила.` });
+					const outputParser = new SiemJOutputParser();
+					const testRunner = new IntegrationTestRunner(this._config, outputParser);
+					const siemjResult = await testRunner.run(this._rule, options);
+	
+					if (!siemjResult.testsStatus) {
+						throw new XpException("Не все интеграционные тесты прошли.");
+					}
 				}
 
 				progress.report({ message: `Генерация локализаций на основе корреляционных событий из интеграционных тестов.` });
 				const siemjManager = new SiemjManager(this._config);
-				const locExamples = await siemjManager.buildLocalizationExamples(this._rule, siemjResult.tmpDirectoryPath);
+				const locExamples = await siemjManager.buildLocalizationExamples(this._rule, this._integrationTestTmpFilesPath);
+
 				return locExamples;
 			}
 			catch (error) {
@@ -268,4 +290,7 @@ export class LocalizationEditorViewProvider {
 		}
 		return null;
 	}
+
+	private static USE_OLD_TESTS_RESULT = "Использовать";
+	private static RESTART_TESTS = "Повторить";
 }

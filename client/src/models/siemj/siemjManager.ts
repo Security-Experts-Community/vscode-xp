@@ -194,7 +194,7 @@ export class SiemjManager {
 			throw new FileSystemException(`Файлы интеграционных тестов по пути '${integrationTestsTmpDirPath}' не были получены.`);
 		}
 
-		// Нужно собрать все скоррелированные события в один файл, который и передать на генерацию локализаций.
+		// Нужно собрать все корреляционные события в один файл, который и передать на генерацию локализаций.
 		// raw_events_1_norm_enr_cor_enr.json
 		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
 		const correlatedEventFilePaths = files.filter(fp => {
@@ -331,6 +331,13 @@ export class SiemjManager {
 			throw new XpException("Ошибка выполнения siemj. Смотри Output.");
 		}
 	}
+
+	get siemjTmpFilesPath() {
+		return this._siemjTmpFilesPath;
+	}
+
+	private _siemjTmpFilesPath: string;
+
 
 	public ALL_CORR_EVENTS_FILENAME = "all_corr_events.json";
 

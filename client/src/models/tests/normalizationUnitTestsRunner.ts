@@ -57,7 +57,7 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 		for (const part of difference) {
 			const sign = part.added ? '+' :	(part.removed ? '-' : ' ');
 			const lines = part.value.split(/\r?\n/).filter((line)=>{return line != '';});
-			for (const line of lines){
+			for (const line of lines) {
 				result_diff += sign + line + '\n';
 			}
 		}
@@ -65,6 +65,8 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 
 		if (difference.length == 1) {
 			unitTest.setStatus(TestStatus.Success);
+		} else {
+			unitTest.setStatus(TestStatus.Failed);
 		}
 
 		return unitTest;

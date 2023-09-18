@@ -31,7 +31,7 @@ export class UnitTestContentEditorViewProvider {
 	public static init(config: Configuration) {
 		const context = config.getContext();
 
-		// Форма создания визуалиации интеграционных тестов.
+		// Форма создания визуализации интеграционных тестов.
 		const templatePath = path.join(
 			config.getExtensionPath(),
 			path.join("client", "templates", "UnitTestEditor.html")

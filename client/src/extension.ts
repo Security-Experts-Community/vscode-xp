@@ -240,6 +240,7 @@ export async function activate(context: ExtensionContext) {
 				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
 			}
 			catch (error) {
+				// TODO: 
 				Configuration.get().getOutputChannel().appendLine(error.stack);
 			}
 			
