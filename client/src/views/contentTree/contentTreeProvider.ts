@@ -206,7 +206,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 				ContentTreeProvider.buildKbPackageCommand,
 				async (selectedPackage: RuleBaseItem) => {
 					if(!config.isKbOpened()) {
-						ExtensionHelper.showUserInfo("Для сбора графов нужно открыть базу знаний.");
+						ExtensionHelper.showInfo("Для сбора графов нужно открыть базу знаний.");
 						return;
 					}
 					
@@ -220,7 +220,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 					});
 
 					if(!fileInfos) {
-						ExtensionHelper.showUserError(`Путь не выбран.`);
+						ExtensionHelper.showError(`Путь не выбран.`);
 						return;
 					}
 

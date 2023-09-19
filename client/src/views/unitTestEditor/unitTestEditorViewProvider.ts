@@ -183,7 +183,7 @@ export class UnitTestContentEditorViewProvider {
 			}
 
 			default: {
-				ExtensionHelper.showUserInfo("Такой команды нет в этой версии расширения.");
+				ExtensionHelper.showInfo("Такой команды нет в этой версии расширения.");
 			}
 		}
 	}
@@ -211,7 +211,7 @@ export class UnitTestContentEditorViewProvider {
 
 	private async runUnitTest(message: any) {
 		if (!message.test) {
-			ExtensionHelper.showUserError("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
+			ExtensionHelper.showError("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
 			return;
 		}
 
@@ -227,8 +227,7 @@ export class UnitTestContentEditorViewProvider {
 				this.updateView();
 			}
 			catch (error) {
-				ExceptionHelper.show(error);
-				Configuration.get().getOutputChannel().show();
+				ExceptionHelper.show(error, "Неожиданная ошибка выполнения модульного теста");
 			}
 		});
 	}

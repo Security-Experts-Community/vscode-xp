@@ -87,7 +87,7 @@ export class RunningCorrelationGraphProvider {
                 const rawEvents = message.rawEvents;
 
                 if(!rawEvents) {
-                    ExtensionHelper.showUserError("Добавьте сырые события и повторите действие.");
+                    ExtensionHelper.showError("Добавьте сырые события и повторите действие.");
                     return;
                 }             
 				await this.corrGraphRun(rawEvents);
@@ -140,18 +140,18 @@ export class RunningCorrelationGraphProvider {
                     const correlatedEventsString = await runner.run(rootPath, rawEventsFilePath);
 
                     if(!correlatedEventsString) {
-                        ExtensionHelper.showUserInfo(`По этим событиям не произошло ни одной сработки корреляции из папки ${rootFolder}.`);
+                        ExtensionHelper.showInfo(`По этим событиям не произошло ни одной сработки корреляции из папки ${rootFolder}.`);
                         return;
                     }
                     
                     // Извлекаем имена сработавших корреляций.
                     const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /("correlation_name"\s*:\s*"(.*?)")/g);
                     if(!correlationNames) {
-                        ExtensionHelper.showUserError(`Не удалось скоррелировать нормализованные события с использованием графа для директории ${path.basename(rootPath)}.`);
+                        ExtensionHelper.showError(`Не удалось скоррелировать нормализованные события с использованием графа для директории ${path.basename(rootPath)}.`);
                         return;
                     }
 
-                    ExtensionHelper.showUserInfo(`Количество сработавших корреляций из папки ${rootFolder}: ${correlationNames.length}`);
+                    ExtensionHelper.showInfo(`Количество сработавших корреляций из папки ${rootFolder}: ${correlationNames.length}`);
 
                     // Отдаем события во front-end.
                     const formatedEvents = TestHelper.formatTestCodeAndEvents(correlatedEventsString);

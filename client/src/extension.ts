@@ -33,7 +33,9 @@ import { XPPackingTaskProvider } from './providers/xpCustomTaskProvider';
 import { ExceptionHelper } from './helpers/exceptionHelper';
 import { FileSystemHelper } from './helpers/fileSystemHelper';
 import { XpEnumValuesCompletionItemProvider } from './providers/xpEnumValuesCompletionItemProvider';
+import { LogLevel, Logger } from './logger';
 
+export let Log : Logger;
 let client: LanguageClient;
 let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
 
@@ -42,6 +44,8 @@ export async function activate(context: ExtensionContext) {
 	try{
 		// Инициализация реестр глобальных параметров.
 		const config = await Configuration.init(context);
+		Log = new Logger(config);
+		Log.setLogLevel(LogLevel.Debug);
 
 		// Конфигурирование LSP.
 		const serverModule = context.asAbsolutePath(

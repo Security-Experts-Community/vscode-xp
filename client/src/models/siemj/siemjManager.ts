@@ -318,7 +318,7 @@ export class SiemjManager {
 			}
 		}
 		catch (error) {
-			ExtensionHelper.showUserError(`Ошибка разбора локализации из теста`);
+			ExtensionHelper.showError(`Ошибка разбора локализации из теста`, error);
 			return null;
 		}
 

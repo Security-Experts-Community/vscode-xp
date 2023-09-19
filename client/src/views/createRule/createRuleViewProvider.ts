@@ -169,17 +169,17 @@ export class CreateRuleViewProvider {
         const [ruleName, templateName, ruleParentPath] = this.parseMessageFromFrontEnd(message);
 
         if(!ruleName) {
-            ExtensionHelper.showUserError("Не задано название правила корреляции.");
+            ExtensionHelper.showError("Не задано название правила корреляции.");
             return;
         }
 
         if(!templateName) {
-            ExtensionHelper.showUserError("Не задана информация о типе шаблона. Выберите шаблон и повторите действие.");
+            ExtensionHelper.showError("Не задана информация о типе шаблона. Выберите шаблон и повторите действие.");
             return;
         }
 
         if(!fs.existsSync(ruleParentPath)) {
-            ExtensionHelper.showUserError("Путь для создания правила корреляции не найден. Возможно репозиторий поврежден.");
+            ExtensionHelper.showError("Путь для создания правила корреляции не найден. Возможно репозиторий поврежден.");
             return;
         }
 
@@ -231,7 +231,7 @@ export class CreateRuleViewProvider {
         await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
         await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, rule);
         
-        ExtensionHelper.showUserInfo(`Правило ${ruleName} создано.`);
+        ExtensionHelper.showInfo(`Правило ${ruleName} создано.`);
         this._view.dispose();
     }
 
@@ -244,7 +244,7 @@ export class CreateRuleViewProvider {
         ruleName = ruleName.trim();
 
         if(ruleName.includes(" ")) {
-            ExtensionHelper.showUserError("Название правила не должно содержать пробел.");
+            ExtensionHelper.showError("Название правила не должно содержать пробел.");
             return;
         }
 

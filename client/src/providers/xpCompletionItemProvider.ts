@@ -50,13 +50,9 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 			// Добавляем поля таксономии.
 			const taxonomySignatures = await TaxonomyHelper.getTaxonomyCompletions(configuration);
 			autocompleteSignatures = autocompleteSignatures.concat(taxonomySignatures);
-
-			if (taxonomySignatures.length == 0) {
-				console.warn("Не было считано ни одного описания функций.");
-			}
 		}
 		catch (error) {
-			ExtensionHelper.showError(`Не удалось считать описания полей таксономии. Их автодополнение работать не будет. Возможно поврежден файл '${signaturesFilePath}'.`, error);
+			ExtensionHelper.showError(`Не удалось считать описания полей таксономии. Их автодополнение работать не будет.`, error);
 		}
 
 		try {

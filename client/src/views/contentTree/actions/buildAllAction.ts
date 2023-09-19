@@ -74,10 +74,10 @@ export class BuildAllAction {
 					}
 
 					if(!siemJOutput.output.includes(this.SUCCESS_EXIT_CODE_SUBSTRING)) {
-						ExtensionHelper.showUserInfo(`Компиляция пакетов в папке ${rootFolder} успешно завершена.`);
+						ExtensionHelper.showInfo(`Компиляция пакетов успешно завершена`);
 					}
 					else {
-						ExtensionHelper.showUserError(this.COMPILATION_ERROR);
+						ExtensionHelper.showError(this.COMPILATION_ERROR);
 					}
 				}
 				finally {

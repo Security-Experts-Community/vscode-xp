@@ -23,7 +23,7 @@ export class RenameTreeItemCommand {
 			if(td.isDirty && openFilePath.includes(ruleDirPath)) {
 				const fileName = path.basename(openFilePath);
 				stopExecution = true;
-				ExtensionHelper.showUserInfo(`Файл '${fileName}' не сохранен. Сохраните его и повторите действие.`);
+				ExtensionHelper.showInfo(`Файл '${fileName}' не сохранен. Сохраните его и повторите действие.`);
 			}
 		});
 
@@ -86,7 +86,7 @@ export class RenameTreeItemCommand {
 			await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, selectedItem);
 		}
 		catch(error) {
-			ExtensionHelper.showUserInfo("Не удалось переименовать объект.");
+			ExtensionHelper.showInfo("Не удалось переименовать объект.");
 			return;
 		}
 	}

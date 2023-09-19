@@ -166,7 +166,7 @@ export class SiemJOutputParser {
 			const ruleContent = await FileSystemHelper.readContentFile(ruleFilePath);
 			
 			const lines = ruleContent.split(EOL);
-			lines.forEach(line => {if(line.includes("\n")){ExtensionHelper.showUserInfo(`File ${ruleFilePath} contains mixed ends of lines`);}});
+			lines.forEach(line => {if(line.includes("\n")){ExtensionHelper.showInfo(`File ${ruleFilePath} contains mixed ends of lines`);}});
 
 			rfd.diagnostics = TestHelper.correctWhitespaceCharacterFromErrorLines(ruleContent, rfd.diagnostics);
 		}

@@ -1,36 +1,31 @@
 import * as vscode from 'vscode';
+import { Log } from '../extension';
 
 export class ExtensionHelper {
-	/**
-	 * Получить путь к открытому файлу
-	 * @returns путь к открытому файлу или undefined
-	 */
-	public static getOpenedFilePath() : string {
-		const openedFilePath = vscode.window.activeTextEditor?.document?.fileName;
-		return openedFilePath;
+	static showInfo(message: string) : Thenable<string> {
+		const showInfoMessage = `vscode.window.showInformationMessage("${message}")`;
+
+		Log.info(showInfoMessage);
+		return vscode.window.showInformationMessage(message);
 	}
 
-	static showErrorAndThrowError(errorMessage:string) {
-		vscode.window.showErrorMessage(errorMessage);
-		throw new Error(errorMessage);
+	static showWarning(message: string): Thenable<string> {
+		const showWarningMessage = `vscode.window.showWarningMessage("${message}")`;
+
+		Log.warn(showWarningMessage);
+		return vscode.window.showWarningMessage(message);
 	}
 
-	static showUserInfo(infoMessage:string) : Thenable<string> {
-		return vscode.window.showInformationMessage(infoMessage);
-	}
+	static showError(message: string, error?: Error) : Thenable<string> {
+		const showErrorMessage = `vscode.window.showErrorMessage("${message}")`;
 
-	static showWarning(message:string) {
-		vscode.window.showWarningMessage(message);
-	}
+		if(error) {
+			Log.error(error, showErrorMessage);
+		} else {
+			Log.error(null, showErrorMessage);
+		}
 
-	static showUserError(infoMessage:string) : Thenable<string> {
-		return vscode.window.showErrorMessage(infoMessage);
-	}
-
-	static showError(userMessage: string, error: Error) {
-		vscode.window.showErrorMessage(userMessage);
 		
-		console.log(error.message);
-		console.log(error.stack);
+		return vscode.window.showErrorMessage(message);
 	}
 }

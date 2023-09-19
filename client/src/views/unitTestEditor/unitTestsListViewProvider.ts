@@ -138,7 +138,7 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 						const tests = selectedRule.getUnitTests();
 						const index = test.getNumber() - 1;
 						if (!tests?.[index]) { 
-							ExtensionHelper.showUserError(`Не удалось найти тест ${test.getNumber()}`);
+							ExtensionHelper.showError(`Не удалось найти тест ${test.getNumber()}`);
 							return;
 						}
 						tests.splice(index, 1);

@@ -11,9 +11,8 @@ import { Enrichment } from '../../models/content/enrichment';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
 import { SiemjManager } from '../../models/siemj/siemjManager';
-import { CorrelationUnitTestsRunner } from '../../models/tests/correlationUnitTestsRunner';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { CompilationType, IntegrationTestRunner, IntegrationTestRunnerOptions } from '../../models/tests/integrationTestRunner';
+import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { FastTest } from '../../models/tests/fastTest';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
@@ -24,8 +23,7 @@ import { XpException } from '../../models/xpException';
 import { Enveloper } from '../../models/enveloper';
 import { ExtensionState } from '../../models/applicationState';
 import { RunIntegrationTestDialog } from '../runIntegrationDialog';
-import { CorrelationFastTestsRunner } from '../../models/tests/correlationFastTestsRunner';
-import { CorrelationUnitTestOutputParser } from '../../models/tests/correlationUnitTestOutputParser';
+import { Log } from '../../extension';
 
 export class IntegrationTestEditorViewProvider {
 
@@ -42,7 +40,7 @@ export class IntegrationTestEditorViewProvider {
 
 	public static init(config: Configuration) {
 
-		// Форма создания визуалиации интеграционных тестов.
+		// Форма создания визуализации интеграционных тестов.
 		const templatePath = path.join(
 			config.getExtensionPath(),
 			path.join("client", "templates", "IntegrationTestEditor.html")
@@ -57,10 +55,10 @@ export class IntegrationTestEditorViewProvider {
 				async (rule: Correlation | Enrichment) => {
 					// Обновляем интеграционные тесты для того, чтобы можно было увидеть актуальные тесты при их модификации на ЖД.
 					if (!rule) {
-						ExtensionHelper.showUserError("Правило еще не успело подгрузиться. Повторите еще раз.");
+						ExtensionHelper.showError("Правило еще не успело подгрузиться. Повторите еще раз.");
 						return;
 					}
-					rule.reloadIntegrationalTests();
+					rule.reloadIntegrationTests();
 					return provider.showEditor(rule);
 				}
 			)
@@ -82,10 +80,13 @@ export class IntegrationTestEditorViewProvider {
 		if (this._view) {
 			this._rule = null;
 			this._view.dispose();
+
+			Log.info(`Command ${IntegrationTestEditorViewProvider.showEditorCommand} started to be executed`);
 		}
 
 		if (!(rule instanceof Correlation || rule instanceof Enrichment)) {
-			return;
+			Log.warn(`An attempt was detected to open an integration test view for content without integration tests`);
+			return vscode.window.showInformationMessage(`Редактор интеграционных тестов не поддерживает правил кроме корреляций и обогащений`);
 		}
 
 		this._rule = rule;
@@ -125,8 +126,10 @@ export class IntegrationTestEditorViewProvider {
 			return;
 		}
 
-		const resoucesUri = this._config.getExtensionUri();
-		const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
+		Log.info(`WebView ${IntegrationTestEditorViewProvider.name} updated`, focusTestNumber);
+
+		const resourcesUri = this._config.getExtensionUri();
+		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
 
 		const plain = {
 			"IntegrationalTests": [],
@@ -136,12 +139,10 @@ export class IntegrationTestEditorViewProvider {
 		};
 
 		try {
-			const intergrationTest = this._rule.getIntegrationTests();
-
-			//ERROR: после сохранения тестов нет тестов в this._rule
+			const integrationTest = this._rule.getIntegrationTests();
 
 			// Если тестов нет, то создаём пустую форму для первого теста
-			if (intergrationTest.length === 0) {
+			if (integrationTest.length === 0) {
 				plain["IntegrationalTests"].push({
 					"TestNumber": 1,
 					"RawEvents": '',
@@ -153,7 +154,7 @@ export class IntegrationTestEditorViewProvider {
 				});
 			}
 			else {
-				intergrationTest.forEach(it => {
+				integrationTest.forEach(it => {
 					const jsonedTestObject = JSON.stringify(it);
 
 					const rawEvents = it.getRawEvents();
@@ -225,7 +226,7 @@ export class IntegrationTestEditorViewProvider {
 				try {
 					// В данном руле сохраняются в памяти нормализованные события.
 					this._rule = await this.saveAllTests(message);
-					ExtensionHelper.showUserInfo(`Все тесты сохранены`);
+					ExtensionHelper.showInfo(`Все тесты сохранены`);
 
 					// Добавляем в DOM новый тест.
 					const activeTestNumber = this.getActiveTestNumber(message);
@@ -278,7 +279,7 @@ export class IntegrationTestEditorViewProvider {
 		}
 
 		if (ExtensionState.get().isToolingExecution()) {
-			return ExtensionHelper.showUserError("Дождитесь окончания выполняющихся процессов и повторите.");
+			return ExtensionHelper.showError("Дождитесь окончания выполняющихся процессов и повторите.");
 		}
 
 		ExtensionState.get().runToolingExecution();
@@ -287,14 +288,14 @@ export class IntegrationTestEditorViewProvider {
 			switch (message.command) {
 				case 'normalize': {
 					if (!message.test) {
-						ExtensionHelper.showUserInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
+						ExtensionHelper.showInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
 						return;
 					}
 
 					// Актуализируем сырые события в тесте из вьюшки.
 					let rawEvents = message.rawEvents;
 					if (!rawEvents) {
-						ExtensionHelper.showUserInfo("Не заданы сырые события для нормализации. Задайте события и повторите.");
+						ExtensionHelper.showInfo("Не заданы сырые события для нормализации. Задайте события и повторите");
 						return;
 					}
 
@@ -308,14 +309,14 @@ export class IntegrationTestEditorViewProvider {
 				}
 				case 'normalizeAndEnrich': {
 					if (!message.test) {
-						ExtensionHelper.showUserInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
+						ExtensionHelper.showInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
 						return;
 					}
 
 					// Актуализируем сырые события в тесте из вьюшки.
 					const rawEvents = message.rawEvents;
 					if (!rawEvents) {
-						ExtensionHelper.showUserInfo("Не заданы сырые события для нормализации. Задайте события и повторите.");
+						ExtensionHelper.showInfo("Не заданы сырые события для нормализации. Задайте события и повторите");
 						return;
 					}
 
@@ -329,18 +330,21 @@ export class IntegrationTestEditorViewProvider {
 
 				case 'fastTest': {
 					const testWithNewTestCode = await this.generateTestCode(message);
-					return this.updateTestCode(
-						testWithNewTestCode.getTestCode(),
-						// TODO: добавить конкретный тест для обновления, иначе может быть обновлён не тот тест.
-						// testWithNewTestCode.getNumber()
-					);
+					if(testWithNewTestCode) {
+						return this.updateTestCode(
+							testWithNewTestCode.getTestCode(),
+							// TODO: добавить конкретный тест для обновления, иначе может быть обновлён не тот тест.
+							// testWithNewTestCode.getNumber()
+						);
+					}
+					return;
 				}
 
 				case 'fullTest': {
 					// webView надо обновлять только если промис runFullTests вернет true
 					// В противной ситуации - вьюшка ведет себя непредсказуемо из-за eventLoop
-					const shouldUpdateViewAfterTestsRuned = await this.runFullTests(message);
-					if (shouldUpdateViewAfterTestsRuned) {
+					const shouldUpdateViewAfterTestsRunned = await this.runFullTests(message);
+					if (shouldUpdateViewAfterTestsRunned) {
 						await this.updateView(this.getActiveTestNumber(message));
 					}
 					break;
@@ -358,7 +362,7 @@ export class IntegrationTestEditorViewProvider {
 	private getActiveTestNumber(message: any): number {
 		const activeTestNumberString = message?.activeTestNumber;
 		if (!activeTestNumberString) {
-			ExtensionHelper.showUserError(`Не задан номер активного теста.`);
+			ExtensionHelper.showError(`Не задан номер активного теста.`);
 			return;
 		}
 
@@ -368,7 +372,7 @@ export class IntegrationTestEditorViewProvider {
 
 	private async cleanTestCode(message: any) {
 		if (!message.test) {
-			ExtensionHelper.showUserInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
+			ExtensionHelper.showInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
 			return;
 		}
 
@@ -444,15 +448,15 @@ export class IntegrationTestEditorViewProvider {
 			const tests = this._rule.getIntegrationTests();
 			const ruleTestIndex = tests.findIndex(it => it.getNumber() == test.getNumber());
 			if (ruleTestIndex == -1) {
-				ExtensionHelper.showUserError("Не удалось обновить интеграционный тест");
+				ExtensionHelper.showError("Не удалось обновить интеграционный тест");
 				return;
 			}
 
 			// Выводим статус.
 			if (enrich) {
-				ExtensionHelper.showUserInfo("Нормализация и обогащение сырых событий завершено успешно");
+				ExtensionHelper.showInfo("Нормализация и обогащение сырых событий завершено успешно");
 			} else {
-				ExtensionHelper.showUserInfo("Нормализация сырых событий завершена успешно");
+				ExtensionHelper.showInfo("Нормализация сырых событий завершена успешно");
 			}
 
 			// Обновляем правило.
@@ -477,7 +481,7 @@ export class IntegrationTestEditorViewProvider {
 		try {
 			normalizedEvents = currTest.getNormalizedEvents();
 			if(!normalizedEvents) {
-				ExtensionHelper.showUserError("Для запуска быстрого теста нужно хотя бы одно нормализованное событие. Нормализуйте сырые события и повторите действие.");
+				ExtensionHelper.showError("Для запуска быстрого теста нужно хотя бы одно нормализованное событие. Нормализуйте сырые события и повторите действие.");
 				return;
 			}
 
@@ -488,7 +492,7 @@ export class IntegrationTestEditorViewProvider {
 
 			// Проверку на наличие expect not {} в тесте, в этом случае невозможно получить ожидаемое событие.
 			if(/expect\s+not\s+/gm.test(integrationTestContent)) {
-				ExtensionHelper.showUserError("Невозможно получить ожидаемого события для теста с кодом expect not {}. Скорреректируйте код теста если это необходимо, сохраните его и повторите.");
+				ExtensionHelper.showWarning("Невозможно получить ожидаемого события для теста с кодом expect not {}. Скорректируйте код теста если это необходимо, сохраните его и повторите.");
 				return;
 			}
 			integrationTestSimplifiedContent = integrationTestContent.replace(
@@ -524,10 +528,7 @@ export class IntegrationTestEditorViewProvider {
 				fastTest.setRule(this._rule);
 
 				// Специальный тест быстрого теста.
-				const testRunner = new CorrelationFastTestsRunner(
-					this._config, 
-					new CorrelationUnitTestOutputParser());
-					
+				const testRunner = this._rule.getUnitTestRunner();
 				const resultTest = await testRunner.run(fastTest);
 
 				if (resultTest.getStatus() === TestStatus.Failed) {
@@ -651,7 +652,7 @@ export class IntegrationTestEditorViewProvider {
 	async saveTest(message: any): Promise<IntegrationTest> {
 		// Обновляем и сохраняем тест.
 		const test = await TestHelper.saveIntegrationTest(this._rule, message);
-		ExtensionHelper.showUserInfo(`Тест №${test.getNumber()} сохранен.`);
+		ExtensionHelper.showInfo(`Тест №${test.getNumber()} сохранен.`);
 		return test;
 	}
 

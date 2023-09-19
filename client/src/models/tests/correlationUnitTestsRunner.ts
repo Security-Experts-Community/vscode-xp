@@ -13,6 +13,7 @@ import { BaseUnitTest } from './baseUnitTest';
 import { UnitTestRunner } from './unitTestsRunner';
 import { UnitTestOutputParser } from './unitTestOutputParser';
 import { SiemjManager } from '../siemj/siemjManager';
+import { Log } from '../../extension';
 
 export class CorrelationUnitTestsRunner implements UnitTestRunner {
 
@@ -34,7 +35,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 		}
 
 		if(!this._config.isKbOpened()) {
-			ExtensionHelper.showUserError("Не выбрана база знаний.");
+			ExtensionHelper.showError("Не выбрана база знаний.");
 			return;
 		}
 
@@ -47,7 +48,10 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 				location: vscode.ProgressLocation.Notification,
 				cancellable: false
 			}, async (progress) => {
-				progress.report( {message : "Сборка схемы БД, которая необходима для запуска тестов."});
+				const message = "Сборка схемы БД, которая необходима для запуска тестов";
+				progress.report( {message : message});
+				Log.info(message);
+				
 				const siemjManager = new SiemjManager(this._config);
 				await siemjManager.buildSchema(rule);
 			});
@@ -65,8 +69,6 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			// 	--rules-filters "C:\Work\-=SIEM=-\Content\knowledgebase\common\rules_filters"
 
 			// Очищаем и показываем окно Output
-			this._config.getOutputChannel().clear();
-			this._config.getOutputChannel().show();
 			const ruleFilePath = test.getRuleFullPath();
 
 			// const ecaTestParam = `C:\\Tools\\0.22.774\\any\\any\\win\\ecatest.exe`;
@@ -96,7 +98,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			);
 
 			if(!output.output) {
-				ExtensionHelper.showUserError('Не удалось запустить модульные тесты, команда запуска не вернула ожидаемые данные. Проверьте путь до утилит KBT [в настройках расширения](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]).');
+				ExtensionHelper.showError('Не удалось запустить модульные тесты, команда запуска не вернула ожидаемые данные. Проверьте путь до утилит KBT [в настройках расширения](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]).');
 				test.setStatus(TestStatus.Unknown);
 				return test;
 			}
@@ -133,7 +135,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			// Коррекция вывода.
 			const ruleContent = await FileSystemHelper.readContentFile(ruleFilePath);
 			const lines = ruleContent.split(EOL);
-			lines.forEach(line => {if(line.includes("\n")){ExtensionHelper.showUserInfo(`File ${ruleFilePath} contains mixed ends of lines`);}});
+			lines.forEach(line => {if(line.includes("\n")){ExtensionHelper.showInfo(`File ${ruleFilePath} contains mixed ends of lines`);}});
 
 			diagnostics = TestHelper.correctWhitespaceCharacterFromErrorLines(ruleContent, diagnostics);
 
@@ -144,7 +146,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 		}
 		catch (error) {
 			test.setStatus(TestStatus.Unknown);
-			ExtensionHelper.showError("Тест завернился неожиданной ошибкой.", error);
+			ExtensionHelper.showError("Тест завершился неожиданной ошибкой", error);
 			return test;
 		}
 	}

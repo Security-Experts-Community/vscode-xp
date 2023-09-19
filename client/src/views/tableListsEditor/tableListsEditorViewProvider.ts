@@ -75,7 +75,7 @@ export class TableListsEditorViewProvider  {
 			this._view.webview.html = htmlContent;
 		}
 		catch(error) {
-			ExtensionHelper.showUserError(`Не удалось открыть правила локализации. ${error.message}`);
+			ExtensionHelper.showError(`Не удалось открыть правила локализации.`, error);
 		}
 	}
 

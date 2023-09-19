@@ -164,7 +164,7 @@ export class LocalizationEditorViewProvider {
 			case 'buildLocalizations': {
 
 				if( !(this._rule instanceof Correlation) ) {
-					return ExtensionHelper.showUserInfo(
+					return ExtensionHelper.showInfo(
 						"В настоящий момент поддерживается проверка локализаций только для корреляций. Если вам требуется поддержка других правил, можете добавить или проверить наличие подобного [Issue](https://github.com/Security-Experts-Community/vscode-xp/issues).");					
 				}
 
@@ -173,7 +173,7 @@ export class LocalizationEditorViewProvider {
 				
 				const locExamples = await this.getLocalizationExamples();
 				if (locExamples.length === 0) {
-					return ExtensionHelper.showUserInfo(
+					return ExtensionHelper.showInfo(
 						"По имеющимся событиям не отработала ни одна локализация. Проверьте, что интеграционные тесты проходят, корректны критерии локализации. После исправлений повторите.");
 				}
 
@@ -188,7 +188,7 @@ export class LocalizationEditorViewProvider {
 					const localizations = message.localizations;
 					await this.saveLocalization(localizations);
 
-					ExtensionHelper.showUserInfo(`Правила локализации для ${this._rule.getName()} сохранены`);
+					ExtensionHelper.showInfo(`Правила локализации для ${this._rule.getName()} сохранены`);
 				}
 				catch (error) {
 					ExtensionHelper.showError("Не удалось сохранить правила локализации.", error);
@@ -216,7 +216,7 @@ export class LocalizationEditorViewProvider {
 
 		const firstDuplicate = this.findDuplicates(criteria);
 		if (firstDuplicate != null) {
-			ExtensionHelper.showUserError(`Критерий '${firstDuplicate}' дублируется в нескольких правилах локализации`);
+			ExtensionHelper.showError(`Критерий '${firstDuplicate}' дублируется в нескольких правилах локализации`);
 			return;
 		}
 

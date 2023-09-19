@@ -170,7 +170,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		return this._integrationTests;
 	}
 
-	public reloadIntegrationalTests() : void {
+	public reloadIntegrationTests() : void {
 		this._integrationTests = [];
 
 		const integrationTests = IntegrationTest.parseFromRuleDirectory(this.getDirectoryPath());

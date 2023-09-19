@@ -22,14 +22,14 @@ export class UnpackKbAction {
 		// Проверка наличия утилиты сборки kb-файлов.
 		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();
 		if(!fs.existsSync(knowledgeBasePackagerCli)) {
-			ExtensionHelper.showUserError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку.");
+			ExtensionHelper.showError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку.");
 			await VsCodeApiHelper.openSettings(this._config.getExtensionSettingsPrefix());
 			return;
 		}
 
 		const config = Configuration.get();
 		if(!config.isKbOpened()) {
-			ExtensionHelper.showUserInfo("Для распаковки пакетов нужно открыть базу знаний.");
+			ExtensionHelper.showInfo("Для распаковки пакетов нужно открыть базу знаний.");
 			return;
 		}
 
@@ -56,7 +56,7 @@ export class UnpackKbAction {
 			const exportDirPath = selectedPackage.getContentRootPath(Configuration.get());
 
 			if(!fs.existsSync(exportDirPath)) {
-				ExtensionHelper.showUserError(`Не существует такой папки для пакетов.`);
+				ExtensionHelper.showError(`Не существует такой папки для пакетов.`);
 				return;
 			}
 

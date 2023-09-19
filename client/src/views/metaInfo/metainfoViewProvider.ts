@@ -112,7 +112,7 @@ export class MetainfoViewProvider {
 					return ExceptionHelper.show(error, "Не удалось сохранить метаданные.");
 				}
 
-				return ExtensionHelper.showUserInfo("Метаданные правила сохранены.");
+				return ExtensionHelper.showInfo("Метаданные правила сохранены.");
 			}
 		}
 	}

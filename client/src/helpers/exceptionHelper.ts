@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { FileSystemException } from '../models/fileSystemException';
 import { XpException } from '../models/xpException';
 import { IncorrectFieldFillingException } from '../views/incorrectFieldFillingException';
-import { ExtensionHelper } from './extensionHelper';
+import { Log } from '../extension';
 import { Configuration } from '../models/configuration';
 import { OperationCanceledException } from 'typescript';
 
@@ -19,6 +19,7 @@ export class ExceptionHelper {
 			case OperationCanceledException.name: {
 				const typedError = error as XpException;
 
+				Log.error(typedError);
 				vscode.window.showErrorMessage(typedError.message);
 				ExceptionHelper.recursiveWriteXpExceptionToOutput(typedError, outputChannel);
 				break;
@@ -37,7 +38,7 @@ export class ExceptionHelper {
 				}
 
 				// Пишем stack в output.
-				outputChannel.appendLine(error.stack);
+				Log.error(error);
 				outputChannel.show();
 			}
 		}
@@ -48,13 +49,12 @@ export class ExceptionHelper {
 		// Есть вложенные исключения.
 		if(error instanceof XpException && error.getInnerException()) {
 			// Пишем текущие исключение.
-			outputChannel.appendLine(error.stack);
-			console.log(error.stack);
+			Log.error(error);
+
 			// Пишем вложенное.
 			ExceptionHelper.recursiveWriteXpExceptionToOutput(error.getInnerException(), outputChannel);
 		} else {
-			outputChannel.appendLine(error.stack);
-			console.log(error.stack);
+			Log.error(error);
 		}
 	}
 

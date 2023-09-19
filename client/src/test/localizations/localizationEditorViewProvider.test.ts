@@ -58,7 +58,7 @@ suite('LocalizationEditorViewProvider', () => {
 		// Сохранения корреляции.
 		const message = {
 			command : "saveLocalizations",
-			localization : {
+			localizations : {
 				RuDescription : "Описание на русском языке",
 				EnDescription : "The author forgot to set the description of the correlation",
 				Criteria : [`correlation_name = "ESC_Super_Duper"`, `correlation_name = "ESC_Super_Duper" and status='failed'"`],

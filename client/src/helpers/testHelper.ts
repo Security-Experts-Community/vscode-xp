@@ -8,6 +8,7 @@ import { XpException } from '../models/xpException';
 import { ParseException } from '../models/parseException';
 import { BaseUnitTest } from '../models/tests/baseUnitTest';
 import { StringHelper } from './stringHelper';
+import { Log } from '../extension';
 
 export type EventMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
@@ -187,7 +188,7 @@ export class TestHelper {
 	}
 
 	public static compressTestCode(testCode: string) {
-		const compressedNormalizedEventReg = /{\s+"[\s\S]*\s+}$/gm;
+		const compressedNormalizedEventReg = /{\s*[\s\S]*\s*}$/gm;
 
 		let formattedTestCode = testCode;
 		let comNormEventResult: RegExpExecArray | null;
@@ -196,27 +197,26 @@ export class TestHelper {
 				continue;
 			}
 
-			const formatedEvent = comNormEventResult[0];
-			let compressedEvent = formatedEvent
+			const formattedEvent = comNormEventResult[0];
+			let compressedEvent = formattedEvent
 				.replace(/^[ \t]+/gm, "")
 				.replace(/":\s+/gm, "\": ")
-				.replace(/,\r\n/gm, ", ")
-				.replace(/,\n/gm, ", ");
+				.replace(/,\s*\r\n/gm, ", ")
+				.replace(/,\s*\n/gm, ", ");
 
 			compressedEvent = compressedEvent
-				.replace(/{\r\n/gm, "{")
-				.replace(/\r\n}/gm, "}")
-				.replace(/{\n/gm, "{")
-				.replace(/\n}/gm, "}");
+				.replace(/{\s*\r\n/gm, "{")
+				.replace(/\r\n\s*}/gm, "}")
+				.replace(/{\s*\n/gm, "{")
+				.replace(/\n\s*}/gm, "}");
 
 			compressedEvent = compressedEvent
-				.replace(/\[\r\n/gm, "[")
-				.replace(/\r\n\]/gm, "]")
-				.replace(/\[\n/gm, "[")
-				.replace(/\n\]/gm, "]");
+				.replace(/\[\s*\r\n/gm, "[")
+				.replace(/\r\n\s*\]/gm, "]")
+				.replace(/\[\s*\n/gm, "[")
+				.replace(/\n\s*\]/gm, "]");
 
-
-			formattedTestCode = formattedTestCode.replace(formatedEvent, compressedEvent);
+			formattedTestCode = formattedTestCode.replace(formattedEvent, compressedEvent);
 		}
 
 		return formattedTestCode;
@@ -232,12 +232,12 @@ export class TestHelper {
 				continue;
 			}
 
-			const compessedEvent = comNormEventResult[0];
-			const escapedCompessedEvent = TestHelper.escapeRawEvent(compessedEvent);
+			const compressedEvent = comNormEventResult[0];
+			const escapedCompressedEvent = TestHelper.escapeRawEvent(compressedEvent);
 
 			// Форматируем событие и сортируем поля объекта, чтобы поля групп типа subject.* были рядом.
 			try {
-				const compressEventJson = JSON.parse(escapedCompessedEvent);
+				const compressEventJson = JSON.parse(escapedCompressedEvent);
 				const orderedCompressEventJson = Object.keys(compressEventJson).sort().reduce(
 					(obj, key) => {
 						obj[key] = compressEventJson[key];
@@ -245,12 +245,12 @@ export class TestHelper {
 					},
 					{}
 				);
-				const formatedEvent = JSON.stringify(orderedCompressEventJson, null, 4);
-				formattedTestCode = formattedTestCode.replace(compessedEvent, formatedEvent);
+				const formattedEvent = JSON.stringify(orderedCompressEventJson, null, 4);
+				formattedTestCode = formattedTestCode.replace(compressedEvent, formattedEvent);
 			}
 			catch (error) {
 				// Если не удалось отформатировать, пропускаем и пишем в лог.
-				console.warn(`Не удалось отформатировать событие ${compessedEvent}.`);
+				Log.error(error, `Не удалось отформатировать событие ${compressedEvent}.`, );
 				continue;
 			}
 		}
