@@ -64,7 +64,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 		// Ручное или автоматическое обновление дерева контента
 		vscode.commands.registerCommand(
-			ContentTreeProvider.refreshTreeCommmand,
+			ContentTreeProvider.refreshTreeCommand,
 			async () => {
 				kbTreeProvider.refresh();
 			}
@@ -529,7 +529,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 	}
 
 	public static async refresh() : Promise<void> {
-		return vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
+		return vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
 	}
 
 	public static async selectItem(item: KbTreeBaseItem) : Promise<boolean> {
@@ -549,7 +549,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 	private static _selectedItem : RuleBaseItem | Table | Macros;
 
-	public static readonly refreshTreeCommmand = 'SiemContentEditor.refreshKbTree';
+	public static readonly refreshTreeCommand = 'SiemContentEditor.refreshKbTree';
 
 	private _onDidChangeTreeData: vscode.EventEmitter<ContentFolder|RuleBaseItem|undefined|void> = new vscode.EventEmitter<ContentFolder|RuleBaseItem|undefined|void>();
 	readonly onDidChangeTreeData: vscode.Event<ContentFolder|RuleBaseItem|undefined|void> = this._onDidChangeTreeData.event;

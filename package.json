@@ -529,7 +529,7 @@
 		],
 		"configuration": {
 			"type": "object",
-			"title": "SiemContentEditor",
+			"title": "xp",
 			"properties": {
 				"xpConfig.kbtBaseDirectory": {
 					"scope": "window",
@@ -541,16 +541,17 @@
 					"type": "string",
 					"markdownDescription": "Путь к выходной директории"
 				},
+				"xpConfig.correlatorTimeoutPerSecond": {
+					"scope": "window",
+					"type": "integer",
+					"description": "Таймаут работы коррелятора",
+					"default": 180
+				},
 				"xpConfig.contentPrefix": {
 					"scope": "window",
 					"type": "string",
-					"enum": [
-						"LOC",
-						"ESC",
-						"PT"
-					],
 					"default": "LOC",
-					"description": "Префикс ObjectId для определения типа создаваемого контента."
+					"description": "Префикс ObjectId для определения типа создаваемого контента. Если префикс не задан, ObjectId не генерируется для создаваемых правил."
 				},
 				"languageServer.maxNumberOfProblems": {
 					"scope": "resource",

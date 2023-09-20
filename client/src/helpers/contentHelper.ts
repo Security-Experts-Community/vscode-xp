@@ -119,7 +119,9 @@ export class ContentHelper {
 
         // Задаем ObjectID только при создании корреляции.
 		const objectId = ruleFromTemplate.generateObjectId();
-		ruleFromTemplate.getMetaInfo().setObjectId(objectId);
+		if(objectId) {
+			ruleFromTemplate.getMetaInfo().setObjectId(objectId);
+		}
 
         return ruleFromTemplate;
     }
@@ -140,7 +142,10 @@ export class ContentHelper {
 
         // Задаем ObjectID только при создании обогащения.
         const objectId = ruleFromTemplate.generateObjectId();
-        ruleFromTemplate.getMetaInfo().setObjectId(objectId);
+		if(objectId) {
+			ruleFromTemplate.getMetaInfo().setObjectId(objectId);
+		}
+
         return ruleFromTemplate;
     }
 
@@ -159,8 +164,11 @@ export class ContentHelper {
         await ruleFromTemplate.rename(ruleName);
 
         // Задаем ObjectID только при создании нормализации.
-        const objectId = ruleFromTemplate.generateObjectId();
-        ruleFromTemplate.getMetaInfo().setObjectId(objectId);
+		const objectId = ruleFromTemplate.generateObjectId();
+		if(objectId) {
+			ruleFromTemplate.getMetaInfo().setObjectId(objectId);
+		}
+        
         return ruleFromTemplate;
     }
 
@@ -171,7 +179,7 @@ export class ContentHelper {
             .find(p => path.basename(p).toLocaleLowerCase() === templateName.toLocaleLowerCase());
 
         if(!templateDirPath) {
-            throw new XpException("Такое название шаблона не найдено.");
+            throw new XpException("Такое название шаблона не найдено");
         }
         
         // Копируем во временную директорию и переименовываем.

@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.7.8 (Pre-Release)
+
+- фича [#142](https://github.com/Security-Experts-Community/vscode-xp/issues/142) - добавлен настраиваемый параметр расширения `correlatorTimeoutPerSecond`, позволяющий регулировать таймаут работы коррелятора;
+- фича [#45](https://github.com/Security-Experts-Community/vscode-xp/issues/45) - теперь параметр `contentPrefix` можно очистить и для создаваемых правил не будет генерироваться значение ObjectID.
+
 ## 3.7.7 (Pre-Release)
 
 - примеры локализаций теперь можно получить гораздо быстрее без дополнительных запусков интеграционных тестов (special thanks @mmaximov за идею);

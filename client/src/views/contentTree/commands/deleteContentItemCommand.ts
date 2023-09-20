@@ -18,6 +18,6 @@ export class DeleteContentItemCommand {
 			ExtensionHelper.showError("Ошибка удаления файла", error);
 		}
 
-		await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
+		await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
 	}
 }

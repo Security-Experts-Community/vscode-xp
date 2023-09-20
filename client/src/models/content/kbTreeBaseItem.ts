@@ -17,12 +17,15 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 		this.label = _name;
 	}
 
-
 	public abstract getObjectType() : string;
 
 	public generateObjectId() : string {
 		const ruleName = this.getName();
 		const contentPrefix = Configuration.get().getContentPrefix();
+		if(contentPrefix === "") {
+			return undefined;
+		}
+
 		const objectType = this.getObjectType();
 		return KbHelper.generateObjectId(ruleName, contentPrefix, objectType);
 	}

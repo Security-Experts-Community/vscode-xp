@@ -83,14 +83,22 @@ export class CreatePackageCommand {
 		const metainfoPath = path.join(metaPath, MetaInfo.METAINFO_FILENAME);
 
 		const contentPrefix = Configuration.get().getContentPrefix();
-		const objectId = KbHelper.generateObjectId(packageName, contentPrefix, 'PKG');
-		const defaultMetainfoObject = {
-			ObjectId: objectId,
-			Version: "1.0.0"
-		};
+		let defaultMetainfoObject: any;
+		if(contentPrefix !== "") {
+			const objectId = KbHelper.generateObjectId(packageName, contentPrefix, 'PKG');
+			defaultMetainfoObject = {
+				ObjectId: objectId,
+				Version: "1.0.0"
+			};
+		} else {
+			defaultMetainfoObject = {
+				Version: "1.0.0"
+			};
+		}
+
 		const defaultMetainfoContent = YamlHelper.stringify(defaultMetainfoObject);
 		await FileSystemHelper.writeContentFile(metainfoPath, defaultMetainfoContent);
 
-		await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
+		await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
 	}
 }

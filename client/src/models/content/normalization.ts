@@ -141,7 +141,9 @@ export class Normalization extends RuleBaseItem {
 
 		// Берем модуль, потому что crc32 может быть отрицательным.
 		const objectId = rule.generateObjectId();
-		metainfo.setObjectId(objectId);
+		if(objectId) {
+			metainfo.setObjectId(objectId);
+		}
 
 		// Добавляем команду на открытие.
 		rule.setCommand({

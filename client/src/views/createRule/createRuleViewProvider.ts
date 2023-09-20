@@ -228,7 +228,7 @@ export class CreateRuleViewProvider {
         }
 
         // Обновить дерево и открыть в редакторе созданную корреляцию.
-        await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
+        await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
         await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, rule);
         
         ExtensionHelper.showInfo(`Правило ${ruleName} создано.`);

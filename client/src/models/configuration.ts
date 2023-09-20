@@ -302,7 +302,7 @@ export class Configuration {
 			case OsType.Windows: appName = "ecatest.exe"; break;
 			case OsType.Linux: appName = "ecatest"; break;
 
-			default: throw new XpException("Платформа не поддеживается.");
+			default: throw new XpException("Платформа не поддерживается");
 		}
 
 		const fullPath = path.join(this.getKbtBaseDirectory(), "build-tools", appName);
@@ -311,24 +311,6 @@ export class Configuration {
 		return fullPath;
 	}
 
-	public getBaseOutputDirectoryPath() : string {
-		const extensionSettings = vscode.workspace.getConfiguration("xpConfig");
-		const outputDirectoryPath = extensionSettings.get<string>("outputDirectoryPath");
-
-		if (!outputDirectoryPath || outputDirectoryPath === ""){
-			throw new FileSystemException(
-				`Выходная директория не задана. Задайте путь к [ней](command:workbench.action.openSettings?["xpConfig.outputDirectoryPath"])`,
-				outputDirectoryPath);
-		}
-
-		if (!fs.existsSync(outputDirectoryPath)){
-			throw new FileSystemException(
-				`Выходная директория не найдена по пути ${outputDirectoryPath}. Проверьте путь к [ней](command:workbench.action.openSettings?["xpConfig.outputDirectoryPath"])`,
-				outputDirectoryPath);
-		}
-
-		return outputDirectoryPath;
-	}
 
 	public getOutputDirectoryPath(rootFolder?: string) : string {
 		if(rootFolder) {
@@ -544,6 +526,35 @@ export class Configuration {
 		const configuration = vscode.workspace.getConfiguration("xpConfig");
 		const taxonomyFullPath = configuration.get<string>("contentPrefix");
 		return taxonomyFullPath;
+	}
+
+	/**
+	 * Возвращает таймаут работы коррелятора.
+	 * @returns 
+	 */
+	public getСorrelatorTimeoutPerSecond() : number {
+		const configuration = vscode.workspace.getConfiguration("xpConfig");
+		const correlatorTimeout = configuration.get<number>("correlatorTimeoutPerSecond");
+		return correlatorTimeout;
+	}
+
+	public getBaseOutputDirectoryPath() : string {
+		const extensionSettings = vscode.workspace.getConfiguration("xpConfig");
+		const outputDirectoryPath = extensionSettings.get<string>("outputDirectoryPath");
+
+		if (!outputDirectoryPath || outputDirectoryPath === ""){
+			throw new FileSystemException(
+				`Выходная директория не задана. Задайте путь к [ней](command:workbench.action.openSettings?["xpConfig.outputDirectoryPath"])`,
+				outputDirectoryPath);
+		}
+
+		if (!fs.existsSync(outputDirectoryPath)){
+			throw new FileSystemException(
+				`Выходная директория не найдена по пути ${outputDirectoryPath}. Проверьте путь к [ней](command:workbench.action.openSettings?["xpConfig.outputDirectoryPath"])`,
+				outputDirectoryPath);
+		}
+
+		return outputDirectoryPath;
 	}
 
 	/**

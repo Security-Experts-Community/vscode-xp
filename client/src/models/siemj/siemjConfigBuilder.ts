@@ -241,12 +241,13 @@ out=${output}`;
 		const enrules = path.join('${output_folder}', this._config.getEnrichmentsGraphFileName());
 		const corrules = path.join('${output_folder}', this._config.getCorrelationsGraphFileName());
 		const table_list_defaults = path.join('${output_folder}', this._config.getCorrelationDefaultsFileName());
+		const crTimeout = this._config.getСorrelatorTimeoutPerSecond();
 
 		let rulesTestsSection = 
 `
 [rules-tests]
 type=TEST_RULES
-cr_timeout=${this._crTimeout}
+cr_timeout=${crTimeout}
 formulas=${formulas}
 enrules=${enrules}
 corrules=${corrules}
@@ -352,5 +353,4 @@ scenario=${this._scenarios.join(" ")}
 
 	private _siemjConfigSection : string;
 	private _scenarios : string[] = [];
-	private _crTimeout = 180;
 }

@@ -38,41 +38,44 @@ export class MetaInfo {
 
 	public static create(metaInfoAsInFile: any): MetaInfo {
 		const metaInfo = new MetaInfo();
+
+		if(!metaInfoAsInFile) {
+			return metaInfo;
+		}
 		
 		// Сохраним текущее состояние файла для дальнейшего использования в процедуре сохранения.
 		// Необходимо, чтобы произвольные и не относящиеся к форме поля остались в metainfo.yaml
 		metaInfo.AsInFile = JsHelper.removeEmptyKeys(metaInfoAsInFile);
 
-		if (metaInfoAsInFile.Name) {
+		if (metaInfoAsInFile?.Name) {
 			metaInfo.setName(metaInfoAsInFile.Name);
 		}
-		else if (metaInfoAsInFile.ContentAutoName) {
+		else if (metaInfoAsInFile?.ContentAutoName) {
 			metaInfo.setName(metaInfoAsInFile.ContentAutoName);
 		}
 		else {
 			metaInfo.setName("");
 		}
 
-		const useExpertContext = Boolean(metaInfoAsInFile.ExpertContext);
+		const useExpertContext = Boolean(metaInfoAsInFile?.ExpertContext);
+		const metaDict = useExpertContext ? metaInfoAsInFile?.ExpertContext : metaInfoAsInFile;
 
-		const metaDict = useExpertContext ? metaInfoAsInFile.ExpertContext : metaInfoAsInFile;
-
-		if (metaDict.Created && metaDict.Created.length != 0) {
+		if (metaDict?.Created && metaDict?.Created.length != 0) {
 			const created = DateHelper.parseDate(metaDict.Created);
 			metaInfo.setCreatedDate(created);
 		}
 
-		if (metaDict.Updated && metaDict.Updated.length != 0) {
+		if (metaDict?.Updated && metaDict?.Updated.length != 0) {
 			const updated = DateHelper.parseDate(metaDict.Updated);
 			metaInfo.setUpdatedDate(updated);
 		}
 
-		const eventDescriptionsPlain = metaInfoAsInFile.EventDescriptions as any[];
+		const eventDescriptionsPlain = metaInfoAsInFile?.EventDescriptions as any[];
 		if (eventDescriptionsPlain) {
 			const eventDescriptions = eventDescriptionsPlain.map(edp => {
 				const eventDesc = new MetaInfoEventDescription();
 				if (!edp.Criteria) {
-					throw new ParseException("Ошибка консистентности критерия локализации.");
+					throw new ParseException("Ошибка консистентности критерия локализации");
 				}
 
 				eventDesc.setCriteria(edp.Criteria);
@@ -83,37 +86,39 @@ export class MetaInfo {
 			metaInfo.addEventDescriptions(eventDescriptions);
 		}
 
-		metaInfo.setObjectId(metaInfoAsInFile.ObjectId);
+		if(metaInfoAsInFile?.ObjectId) {
+			metaInfo.setObjectId(metaInfoAsInFile.ObjectId);
+		}
 
-		if (metaDict.KnowledgeHolders) {
+		if (metaDict?.KnowledgeHolders) {
 			metaInfo.KnowledgeHolders = metaDict.KnowledgeHolders as string[];
 		}
 
-		if (metaDict.Usecases) {
+		if (metaDict?.Usecases) {
 			metaInfo.Usecases = metaDict.Usecases as string[];
 		}
 
-		if (metaDict.Falsepositives) {
+		if (metaDict?.Falsepositives) {
 			metaInfo.Falsepositives = metaDict.Falsepositives as string[];
 		}
 
-		if (metaDict.References) {
+		if (metaDict?.References) {
 			metaInfo.References = metaDict.References as string[];
 		}
 
-		if (metaDict.Improvements) {
+		if (metaDict?.Improvements) {
 			metaInfo.Improvements = metaDict.Improvements as string[];
 		}
 
-		if (metaDict.DataSources) {
+		if (metaDict?.DataSources) {
 			metaInfo.DataSources = metaDict.DataSources as DataSource[];
 		}
 
-		if (metaDict.ContentLabels) {
+		if (metaDict?.ContentLabels) {
 			metaInfo.ContentLabels = metaDict.ContentLabels as string[];
 		}
 
-		let attackDict = metaInfoAsInFile.ATTACK;
+		let attackDict = metaInfoAsInFile?.ATTACK;
 		if (useExpertContext) {
 			try {
 				attackDict = metaInfoAsInFile.ContentRelations.Implements.ATTACK;

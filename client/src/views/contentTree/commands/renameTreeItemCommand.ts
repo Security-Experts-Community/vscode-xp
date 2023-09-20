@@ -82,7 +82,7 @@ export class RenameTreeItemCommand {
 			}
 	
 			// Обновить дерево и открыть корреляцию.
-			await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
+			await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
 			await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, selectedItem);
 		}
 		catch(error) {

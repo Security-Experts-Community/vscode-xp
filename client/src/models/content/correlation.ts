@@ -107,8 +107,8 @@ export class Correlation extends RuleBaseItem {
 		const modularTests = CorrelationUnitTest.parseFromRuleDirectory(correlation);
 		correlation.addUnitTests(modularTests);
 
-		const integrationalTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
-		correlation.addIntegrationTests(integrationalTests);
+		const integrationTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
+		correlation.addIntegrationTests(integrationTests);
 
 		// Добавляем команду на открытие.
 		correlation.setCommand({
@@ -201,7 +201,9 @@ export class Correlation extends RuleBaseItem {
 		metainfo.setName(name);
 
 		const objectId = rule.generateObjectId();
-		metainfo.setObjectId(objectId);
+		if(objectId) {
+			metainfo.setObjectId(objectId);
+		}
 
 		// Добавляем команду на открытие.
 		rule.setCommand({

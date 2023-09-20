@@ -56,6 +56,6 @@ export class CreateSubFolderCommand {
 		const newFolderPath = path.join(selectedItemDirPath, newFolderName);
 		fs.mkdirSync(newFolderPath, {recursive: true});
 
-		await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommmand);
+		await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
 	}
 }
