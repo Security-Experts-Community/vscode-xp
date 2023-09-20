@@ -120,8 +120,8 @@ export class LocalizationEditorViewProvider {
 			);
 
 			const config = Configuration.get();
-			const resoucesUri = config.getExtensionUri();
-			const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
+			const resourcesUri = config.getExtensionUri();
+			const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
 
 			const locExamples = this._rule.getLocalizationExamples();
 			const templatePlainObject = {
@@ -143,7 +143,7 @@ export class LocalizationEditorViewProvider {
 			this._view.webview.html = htmlContent;
 		}
 		catch (error) {
-			ExceptionHelper.show(error, `Не удалось открыть правила локализации.`);
+			ExceptionHelper.show(error, `Не удалось открыть правила локализации`);
 		}
 	}
 
@@ -263,29 +263,29 @@ export class LocalizationEditorViewProvider {
 				}
 
 				if(!result || result === LocalizationEditorViewProvider.RESTART_TESTS) {
-					progress.report({ message: `Получение зависимостей правила для корректной сборки графа корреляций.` });
+					progress.report({ message: `Получение зависимостей правила для корректной сборки графа корреляций` });
 					const ritd = new RunIntegrationTestDialog(this._config, this._integrationTestTmpFilesPath);
 					const options = await ritd.getIntegrationTestRunOptions(this._rule);
 					options.cancellationToken = token;
 	
-					progress.report({ message: `Получение корреляционных событий на основе интеграционных тестов правила.` });
+					progress.report({ message: `Получение корреляционных событий на основе интеграционных тестов правила` });
 					const outputParser = new SiemJOutputParser();
 					const testRunner = new IntegrationTestRunner(this._config, outputParser);
 					const siemjResult = await testRunner.run(this._rule, options);
 	
 					if (!siemjResult.testsStatus) {
-						throw new XpException("Не все интеграционные тесты прошли.");
+						throw new XpException("Не все интеграционные тесты прошли. Для получения тестовых локализации необходимо чтобы успешно проходили все интеграционные тесты.");
 					}
 				}
 
-				progress.report({ message: `Генерация локализаций на основе корреляционных событий из интеграционных тестов.` });
+				progress.report({ message: `Генерация локализаций на основе корреляционных событий из интеграционных тестов`});
 				const siemjManager = new SiemjManager(this._config);
 				const locExamples = await siemjManager.buildLocalizationExamples(this._rule, this._integrationTestTmpFilesPath);
 
 				return locExamples;
 			}
 			catch (error) {
-				ExceptionHelper.show(error, "Неожиданная ошибка получения примеров локализаций.");
+				ExceptionHelper.show(error, "Неожиданная ошибка получения примеров локализаций");
 			}
 		});
 	}
