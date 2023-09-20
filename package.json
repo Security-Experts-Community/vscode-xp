@@ -5,7 +5,7 @@
 	"author": "Dmitry Fedosov (@DmitryOffsec)",
 	"icon": "resources/xp.png",
 	"license": "MIT",
-	"version": "3.7.7",
+	"version": "3.7.8",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -544,7 +544,7 @@
 				"xpConfig.correlatorTimeoutPerSecond": {
 					"scope": "window",
 					"type": "integer",
-					"description": "Таймаут работы коррелятора",
+					"description": "Таймаут работы коррелятора в секундах",
 					"default": 180
 				},
 				"xpConfig.contentPrefix": {
