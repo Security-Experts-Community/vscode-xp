@@ -25,7 +25,6 @@ export class ExtensionHelper {
 			Log.error(null, showErrorMessage);
 		}
 
-		
 		return vscode.window.showErrorMessage(message);
 	}
 }

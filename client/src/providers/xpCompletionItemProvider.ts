@@ -7,6 +7,7 @@ import { Configuration } from '../models/configuration';
 import { CompleteSignature } from './signature/completeSignature';
 import { TaxonomyHelper } from '../helpers/taxonomyHelper';
 import { ExtensionHelper } from '../helpers/extensionHelper';
+import { Log } from '../extension';
 
 /**
  * Позволяет сформировать необходимые списки автодополнения одинаковые для всех типов контента.
@@ -39,11 +40,11 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 
 				autocompleteSignatures = autocompleteSignatures.concat(functionsSignatures);
 			} else {
-				console.warn("Не было считано ни одного описания функций.");
+				Log.warn("Не было считано ни одного описания функций.");
 			}
 		}
 		catch (error) {
-			ExtensionHelper.showError(`Не удалось считать описания функций языка XP. Их автодополнение и описание параметров работать не будет. Возможно поврежден файл '${signaturesFilePath}'.`, error);
+			ExtensionHelper.showError(`Не удалось считать описания функций языка XP. Их автодополнение и описание параметров работать не будет.`, error);
 		}
 
 		try {

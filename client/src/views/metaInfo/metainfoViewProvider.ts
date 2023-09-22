@@ -20,7 +20,7 @@ export class MetainfoViewProvider {
 
 	constructor(
 		private readonly _config: Configuration,
-		private readonly _formater: MustacheFormatter
+		private readonly _formatter: MustacheFormatter
 	) { }
 
 	public static init(config: Configuration): MetainfoViewProvider {
@@ -75,7 +75,7 @@ export class MetainfoViewProvider {
 			this.updateWebView();
 		}
 		catch (error) {
-			ExtensionHelper.showError("Ошибка визуализации метаданных.", error);
+			ExtensionHelper.showError("Ошибка визуализации метаданных", error);
 		}
 	}
 
@@ -85,11 +85,11 @@ export class MetainfoViewProvider {
 		const metaInfo = await this._rule.getMetaInfo().toObject();
 
 		// Подгружаем базовую ссылку для внешних ресурсов.
-		const resoucesUri = this._config.getExtensionUri();
-		const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
+		const resourcesUri = this._config.getExtensionUri();
+		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
 		metaInfo.ExtensionBaseUri = extensionBaseUri;
 
-		const metainfoHtml = this._formater.format(metaInfo);
+		const metainfoHtml = this._formatter.format(metaInfo);
 		this._view.webview.html = metainfoHtml;
 	}
 
@@ -109,10 +109,10 @@ export class MetainfoViewProvider {
 					await this.updateWebView();
 				}
 				catch (error) {
-					return ExceptionHelper.show(error, "Не удалось сохранить метаданные.");
+					return ExceptionHelper.show(error, "Не удалось сохранить метаданные");
 				}
 
-				return ExtensionHelper.showInfo("Метаданные правила сохранены.");
+				return ExtensionHelper.showInfo("Метаданные правила сохранены");
 			}
 		}
 	}

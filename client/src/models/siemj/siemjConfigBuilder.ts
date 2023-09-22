@@ -3,6 +3,7 @@ import * as path from 'path';
 
 import { Configuration } from '../configuration';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
+import { Log } from '../../extension';
 
 
 /**
@@ -242,7 +243,7 @@ out=${output}`;
 		const corrules = path.join('${output_folder}', this._config.getCorrelationsGraphFileName());
 		const table_list_defaults = path.join('${output_folder}', this._config.getCorrelationDefaultsFileName());
 		const crTimeout = this._config.getСorrelatorTimeoutPerSecond();
-
+		
 		let rulesTestsSection = 
 `
 [rules-tests]
@@ -345,6 +346,8 @@ out=\${output_folder}\\en_events.json`;
 type=SCENARIO
 scenario=${this._scenarios.join(" ")}
 `;
+		Log.info(`siemj.conf`);
+		Log.info(resultConfig);
 		return resultConfig;
 	}
 

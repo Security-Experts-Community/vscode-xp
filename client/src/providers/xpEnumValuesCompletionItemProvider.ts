@@ -7,6 +7,7 @@ import { Configuration } from '../models/configuration';
 import { CompleteSignature } from './signature/completeSignature';
 import { TaxonomyHelper } from '../helpers/taxonomyHelper';
 import { ExtensionHelper } from '../helpers/extensionHelper';
+import { Log } from '../extension';
 
 /**
  * Позволяет сформировать необходимые списки автодополнения одинаковые для всех типов контента.
@@ -19,7 +20,7 @@ export class XpEnumValuesCompletionItemProvider implements vscode.CompletionItem
 	/**
 	 * Считывает в память список автодополнения функций и полей таксономии.
 	 * @param context контекст расширения
-	 * @returns возвращает настроеннный провайдер.
+	 * @returns возвращает настроенный провайдер.
 	 */
 	public static async init(configuration: Configuration): Promise<XpEnumValuesCompletionItemProvider> {
 
@@ -30,11 +31,11 @@ export class XpEnumValuesCompletionItemProvider implements vscode.CompletionItem
 			taxonomySignatures = await TaxonomyHelper.getTaxonomySignaturesPlain(configuration);
 
 			if (taxonomySignatures.length == 0) {
-				console.warn("Не было считано ни одного описания функций.");
+				Log.warn("Не было считано ни одного поля таксономии");
 			}
 		}
 		catch (error) {
-			ExtensionHelper.showError(`Не удалось считать описания полей таксономии. Их автодополнение работать не будет. Возможно поврежден файл таксономии`, error);
+			ExtensionHelper.showError(`Не удалось считать описания полей таксономии. Автодополнение значений enum работать не будет.`, error);
 		}
 
 		return new XpEnumValuesCompletionItemProvider(taxonomySignatures);
