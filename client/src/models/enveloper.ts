@@ -7,7 +7,7 @@ import { StringHelper } from '../helpers/stringHelper';
 
 export class Enveloper {
 	/**
-	 * Оборачивает необёртнутые события в конверт с соответствующим mimiType и раскладывает их в одну строку.
+	 * Оборачивает события без конверта в конверт с соответствующим mimeType и раскладывает их в одну строку.
 	 * @param rawEvents сырые события
 	 * @param mimeType тип конверта для необертнутых событий
 	 * @returns события без конверта обёрнуты в конверт и разложены в одну строку каждое
@@ -15,17 +15,17 @@ export class Enveloper {
 	public static async addEnvelope(rawEvents: string, mimeType : EventMimeType) {
 		
 		if(!rawEvents) {
-			throw new XpException("В тест не добавлены сырые события. Добавьте их и повторите действие.");
+			throw new XpException("В тест не добавлены сырые события. Добавьте их и повторите действие");
 		}
 
 		if(!mimeType) {
-			throw new XpException("Не задан MIME-тип события. Добавьте его и повторите действие.");
+			throw new XpException("Не задан MIME-тип события. Добавьте его и повторите действие");
 		}
 
 		// Проверяем, если исходное событие в формате xml (EventViewer)
 		let rawEventsTrimmed = rawEvents.trim();
 		if(this.isRawEventXml(rawEventsTrimmed)) {
-			rawEventsTrimmed = this.newConvertXmlRawEventsToJson(rawEventsTrimmed);
+			rawEventsTrimmed = this.сonvertEventLogXmlRawEventsToJson(rawEventsTrimmed);
 		}
 
 		// Сжимаем json-события.
@@ -33,7 +33,7 @@ export class Enveloper {
 		const compressedRawEvents = compressedRawEventsString.split(Enveloper.END_OF_LINE);
 
 		if(!this.thereAreUnenvelopedEvents(compressedRawEvents)) {
-			throw new XpException("Конверт для всех событий уже добавлен.");
+			throw new XpException("Конверт для всех событий уже добавлен");
 		}
 
 		// Добавляем каждому конверт
@@ -163,7 +163,7 @@ export class Enveloper {
 		return envelopedEvents;
 	}
 
-	public static newConvertXmlRawEventsToJson(xmlRawEvent : string) : string {
+	public static сonvertEventLogXmlRawEventsToJson(xmlRawEvent : string) : string {
 
         const events = [];
         let xmlRawEventCorrected = xmlRawEvent

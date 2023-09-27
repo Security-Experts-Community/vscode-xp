@@ -426,7 +426,7 @@ suite('Enveloper', () => {
 </EventData>
 </Event>`;
 
-		const jsonEvent = Enveloper.newConvertXmlRawEventsToJson(xmlEvent);
+		const jsonEvent = Enveloper.сonvertEventLogXmlRawEventsToJson(xmlEvent);
 
 		assert.ok(jsonEvent);
 		// assert.ok(jsonEvent.Event);
@@ -482,7 +482,7 @@ suite('Enveloper', () => {
 </EventData>
 </Event>`;
 
-		const jsonEvent = Enveloper.newConvertXmlRawEventsToJson(xmlEvent);
+		const jsonEvent = Enveloper.сonvertEventLogXmlRawEventsToJson(xmlEvent);
 
 		assert.ok(jsonEvent);
 		// assert.ok(jsonEvent.Event);

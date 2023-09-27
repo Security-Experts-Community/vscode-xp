@@ -77,16 +77,17 @@ export class IntegrationTestEditorViewProvider {
 	public static readonly showEditorCommand = "IntegrationTestEditorView.showEditor";
 	public async showEditor(rule: Correlation | Enrichment) {
 
+		Log.info(`Редактор интеграционных тестов открыт с помощью команды ${IntegrationTestEditorViewProvider.showEditorCommand} для правила ${rule.getName()}`);
+
 		if (this._view) {
+			Log.info(`Открытый ранее редактор интеграционных тестов для правила ${this._rule.getName()} был автоматически закрыт`);
+
 			this._rule = null;
 			this._view.dispose();
-
-			Log.info(`Command ${IntegrationTestEditorViewProvider.showEditorCommand} started to be executed`);
 		}
 
 		if (!(rule instanceof Correlation || rule instanceof Enrichment)) {
-			Log.warn(`An attempt was detected to open an integration test view for content without integration tests`);
-			return vscode.window.showInformationMessage(`Редактор интеграционных тестов не поддерживает правил кроме корреляций и обогащений`);
+			return ExtensionHelper.showWarning(`Редактор интеграционных тестов не поддерживает правил кроме корреляций и обогащений`);
 		}
 
 		this._rule = rule;
@@ -102,9 +103,13 @@ export class IntegrationTestEditorViewProvider {
 				enableFindWidget: true
 			});
 
-		this._view.onDidDispose((e: void) => {
-			this._view = undefined;
-		},
+		// Создаем временную директорию для результатов тестов, которая посмотреть почему не прошли тесты.
+		this._integrationTestTmpFilesPath = this._config.getRandTmpSubDirectoryPath();
+
+		this._view.onDidDispose(async (e: void) => {
+				this._view = undefined;
+				await this.clearTestTmpDir();
+			},
 			this);
 
 		this._view.webview.options = {
@@ -119,6 +124,20 @@ export class IntegrationTestEditorViewProvider {
 		await this.updateView();
 	}
 
+	/**
+	 * Удаляет директорию в с временными файлами интеграционных тестов, который нужны для выявления ошибок в тестах.
+	 */
+	private async clearTestTmpDir() {
+		try {
+			if(fs.existsSync(this._integrationTestTmpFilesPath)) {
+				await fs.promises.rmdir(this._integrationTestTmpFilesPath, {recursive: true});
+			}
+		}
+		catch(error) {
+			Log.warn(`Не удалось удалить директорию временных файлов интеграционных тестов ${this._integrationTestTmpFilesPath}`);
+		}
+	}
+
 	private async updateView(focusTestNumber?: number): Promise<void> {
 
 		// Пользователь уже закрыл вьюшку.
@@ -126,7 +145,7 @@ export class IntegrationTestEditorViewProvider {
 			return;
 		}
 
-		Log.info(`WebView ${IntegrationTestEditorViewProvider.name} updated`, focusTestNumber);
+		Log.info(`WebView ${IntegrationTestEditorViewProvider.name} была обновлена`, focusTestNumber);
 
 		const resourcesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
@@ -614,7 +633,7 @@ export class IntegrationTestEditorViewProvider {
 					});
 				}
 
-				const ritd = new RunIntegrationTestDialog(this._config);
+				const ritd = new RunIntegrationTestDialog(this._config, this._integrationTestTmpFilesPath);
 				const testRunnerOptions = await ritd.getIntegrationTestRunOptions(this._rule);
 				testRunnerOptions.cancellationToken = cancellationToken;
 
@@ -630,7 +649,9 @@ export class IntegrationTestEditorViewProvider {
 
 				const executedIntegrationTests = this._rule.getIntegrationTests();
 				if(executedIntegrationTests.every(it => it.getStatus() === TestStatus.Success)) {
-					vscode.window.showInformationMessage(`Интеграционные тесты прошли успешно`);
+					vscode.window.showInformationMessage(`Интеграционные тесты правила '${this._rule.getName()}' прошли успешно`);
+					// Если тесты прошли, значит временные файлы не нужны.
+					await this.clearTestTmpDir();
 					return true;
 				} 
 
@@ -674,6 +695,8 @@ export class IntegrationTestEditorViewProvider {
 			'testNumber': testNumber
 		});
 	}
+
+	private _integrationTestTmpFilesPath: string;
 
 	public static TEXTAREA_END_OF_LINE = "\n";
 

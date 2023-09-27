@@ -34,7 +34,7 @@ export class Logger extends ILogger {
 		if (this._output == null || this._level < LogLevel.Debug) return;
 
 		console.log(this.timestamp, message ?? "", ...params);
-		this._output.appendLine(`${this.timestamp} ${message ?? ""}${this.formatParams(params)}`);
+		this._output.appendLine(`${this.timestamp} ${message ?? ""} ${this.formatParams(params)}`);
 	}
 
 	error(ex: Error|XpException, message?: string, ...params: any[]): void {
@@ -43,14 +43,14 @@ export class Logger extends ILogger {
 		if(ex) {
 			console.error(this.timestamp, message ?? "", ...params, ex);
 			this._output.appendLine(
-				`${this.timestamp} ${message ?? ""}${this.formatParams(params)}\n${String(ex.stack)}`,
+				`${this.timestamp} [Error] ${message ?? ""} ${this.formatParams(params)}\n${String(ex.stack)}`,
 			);
 			return;
 		}
 
 		console.error(this.timestamp, message ?? "", ...params);
 		this._output.appendLine(
-			`${this.timestamp} ${message ?? ""}${this.formatParams(params)}`,
+			`${this.timestamp} [Error] ${message ?? ""} ${this.formatParams(params)}`,
 		);
 	}
 
@@ -60,7 +60,7 @@ export class Logger extends ILogger {
 
 		console.warn(this.timestamp, message ?? "", ...params);
 		this._output.appendLine(
-			`${this.timestamp} ${message ?? ""}${this.formatParams(params)}`
+			`${this.timestamp} [Warning] ${message ?? ""} ${this.formatParams(params)}`
 		);
 	}
 
@@ -68,7 +68,7 @@ export class Logger extends ILogger {
 		if (this._output == null || this._level < LogLevel.Info) return;
 
 		console.log(this.timestamp, message ?? "", ...params);
-		this._output.appendLine(`${this.timestamp} ${message ?? ""}${this.formatParams(params)}`);
+		this._output.appendLine(`${this.timestamp} [Info] ${message ?? ""} ${this.formatParams(params)}`);
 	}
 
 	private formatParams(params: any[]): string {
@@ -76,6 +76,7 @@ export class Logger extends ILogger {
 	}
 
 	private get timestamp(): string {
+		// TODO: использовать moment
 		const date = new Date();
 		const yyyy = date.getFullYear();
 
