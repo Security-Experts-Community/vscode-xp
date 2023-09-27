@@ -3,7 +3,7 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { ExtensionHelper } from '../../../helpers/extensionHelper';
+import { DialogHelper } from '../../../helpers/dialogHelper';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { KbHelper } from '../../../helpers/kbHelper';
 import { ProcessHelper } from '../../../helpers/processHelper';
@@ -34,7 +34,7 @@ export class PackSIEMAllPackagesAction {
 		});
 
 		if(!fileInfos) {
-			ExtensionHelper.showError(`Путь не выбран.`);
+			DialogHelper.showError(`Путь не выбран.`);
 			return;
 		}
 
@@ -47,7 +47,7 @@ export class PackSIEMAllPackagesAction {
 		// Проверка наличия утилиты сборки kb-файлов.
 		const knowledgeBasePackagerCli = this.config.getKbPackFullPath();
 		if(!fs.existsSync(knowledgeBasePackagerCli)) {
-			ExtensionHelper.showError('Путь к утилите сборки пакетов экспертизы задан не верно. Измените его [в настройках расширения](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]) и повторите попытку');
+			DialogHelper.showError('Путь к утилите сборки пакетов экспертизы задан не верно. Измените его [в настройках расширения](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]) и повторите попытку');
 			return;
 		}
 
@@ -103,14 +103,14 @@ export class PackSIEMAllPackagesAction {
 				);
 				emitter.fire(`\n\nXP:: Промежуточный статус: Команда выполнена!\n\n`);
 				if(output.includes("Knowledge base package creation completed successfully")) {
-					ExtensionHelper.showInfo(`Пакет '${packageName}' успешно собран.`);
+					DialogHelper.showInfo(`Пакет '${packageName}' успешно собран.`);
 					return;
 				} 
-				ExtensionHelper.showError(`Ошибка сборки пакета '${packageName}'. Смотри Output.`);
+				DialogHelper.showError(`Ошибка сборки пакета '${packageName}'. Смотри Output.`);
 			}
 			catch(error) {
 				// TODO: Нужно все внутренние ошибки обрабатывть единообразно
-				ExtensionHelper.showError(`Внутренняя ошибка расширения.\n ${error.message}.`);
+				DialogHelper.showError(`Внутренняя ошибка расширения.\n ${error.message}.`);
 			}
 		});
 	}
@@ -129,7 +129,7 @@ export class PackKbAction {
 		// Проверка наличия утилиты сборки kb-файлов.
 		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();
 		if(!fs.existsSync(knowledgeBasePackagerCli)) {
-			ExtensionHelper.showError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку.");
+			DialogHelper.showError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку.");
 			return;
 		}
 
@@ -200,11 +200,11 @@ export class PackKbAction {
 				);
 
 				if(output.output.includes(this.successSubstring)) {
-					ExtensionHelper.showInfo(`Пакет '${packageName}' успешно собран.`);
+					DialogHelper.showInfo(`Пакет '${packageName}' успешно собран.`);
 					return;
 				} 
 
-				ExtensionHelper.showError(`Ошибка сборки пакета '${packageName}'. Смотри Output.`);
+				DialogHelper.showError(`Ошибка сборки пакета '${packageName}'. Смотри Output.`);
 				this._config.getOutputChannel().show();
 			}
 			catch(error) {

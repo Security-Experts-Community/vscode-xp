@@ -8,7 +8,7 @@ import { TestHelper } from '../../helpers/testHelper';
 import { TestStatus } from '../../models/tests/testStatus';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { UnitTestsListViewProvider } from './unitTestsListViewProvider';
 import { XpException } from '../../models/xpException';
@@ -164,7 +164,7 @@ export class UnitTestContentEditorViewProvider {
 			this._view.webview.html = htmlContent;
 		}
 		catch (error) {
-			ExtensionHelper.showError("Не удалось открыть интеграционные тесты.", error);
+			DialogHelper.showError("Не удалось открыть интеграционные тесты.", error);
 		}
 	}
 
@@ -183,7 +183,7 @@ export class UnitTestContentEditorViewProvider {
 			}
 
 			default: {
-				ExtensionHelper.showInfo("Такой команды нет в этой версии расширения.");
+				DialogHelper.showInfo("Такой команды нет в этой версии расширения.");
 			}
 		}
 	}
@@ -211,7 +211,7 @@ export class UnitTestContentEditorViewProvider {
 
 	private async runUnitTest(message: any) {
 		if (!message.test) {
-			ExtensionHelper.showError("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
+			DialogHelper.showError("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
 			return;
 		}
 

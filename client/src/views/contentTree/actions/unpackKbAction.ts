@@ -3,7 +3,7 @@ import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { ExtensionHelper } from '../../../helpers/extensionHelper';
+import { DialogHelper } from '../../../helpers/dialogHelper';
 import { ExecutionResult, ProcessHelper } from '../../../helpers/processHelper';
 import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
 import { Configuration } from '../../../models/configuration';
@@ -22,14 +22,14 @@ export class UnpackKbAction {
 		// Проверка наличия утилиты сборки kb-файлов.
 		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();
 		if(!fs.existsSync(knowledgeBasePackagerCli)) {
-			ExtensionHelper.showError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку.");
+			DialogHelper.showError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку.");
 			await VsCodeApiHelper.openSettings(this._config.getExtensionSettingsPrefix());
 			return;
 		}
 
 		const config = Configuration.get();
 		if(!config.isKbOpened()) {
-			ExtensionHelper.showInfo("Для распаковки пакетов нужно открыть базу знаний.");
+			DialogHelper.showInfo("Для распаковки пакетов нужно открыть базу знаний.");
 			return;
 		}
 
@@ -56,7 +56,7 @@ export class UnpackKbAction {
 			const exportDirPath = selectedPackage.getContentRootPath(Configuration.get());
 
 			if(!fs.existsSync(exportDirPath)) {
-				ExtensionHelper.showError(`Не существует такой папки для пакетов.`);
+				DialogHelper.showError(`Не существует такой папки для пакетов.`);
 				return;
 			}
 

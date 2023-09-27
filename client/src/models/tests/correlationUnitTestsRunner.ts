@@ -5,7 +5,7 @@ import * as path from 'path';
 import { EOL } from 'os';
 import { ExecutionResult, ProcessHelper } from '../../helpers/processHelper';
 import { TestHelper } from '../../helpers/testHelper';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
 import { Configuration } from '../configuration';
 import { TestStatus } from './testStatus';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
@@ -35,7 +35,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 		}
 
 		if(!this._config.isKbOpened()) {
-			ExtensionHelper.showError("Не выбрана база знаний.");
+			DialogHelper.showError("Не выбрана база знаний.");
 			return;
 		}
 
@@ -98,7 +98,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			);
 
 			if(!output.output) {
-				ExtensionHelper.showError('Не удалось запустить модульные тесты, команда запуска не вернула ожидаемые данные. Проверьте путь до утилит KBT [в настройках расширения](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]).');
+				DialogHelper.showError('Не удалось запустить модульные тесты, команда запуска не вернула ожидаемые данные. Проверьте путь до утилит KBT [в настройках расширения](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]).');
 				test.setStatus(TestStatus.Unknown);
 				return test;
 			}
@@ -135,7 +135,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 			// Коррекция вывода.
 			const ruleContent = await FileSystemHelper.readContentFile(ruleFilePath);
 			const lines = ruleContent.split(EOL);
-			lines.forEach(line => {if(line.includes("\n")){ExtensionHelper.showInfo(`File ${ruleFilePath} contains mixed ends of lines`);}});
+			lines.forEach(line => {if(line.includes("\n")){DialogHelper.showInfo(`File ${ruleFilePath} contains mixed ends of lines`);}});
 
 			diagnostics = TestHelper.correctWhitespaceCharacterFromErrorLines(ruleContent, diagnostics);
 
@@ -146,7 +146,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 		}
 		catch (error) {
 			test.setStatus(TestStatus.Unknown);
-			ExtensionHelper.showError("Тест завершился неожиданной ошибкой", error);
+			DialogHelper.showError("Тест завершился неожиданной ошибкой", error);
 			return test;
 		}
 	}

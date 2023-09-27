@@ -9,6 +9,7 @@ import { FileSystemHelper } from '../helpers/fileSystemHelper';
 import { Configuration } from '../models/configuration';
 import { OperationCanceledException } from '../models/operationCanceledException';
 import { XpException } from '../models/xpException';
+import { DialogHelper } from '../helpers/dialogHelper';
 
 export class RunIntegrationTestDialog {
 	constructor(private _config : Configuration, private _tmpFilesPath?: string) {}
@@ -77,7 +78,7 @@ export class RunIntegrationTestDialog {
 		const subRulesNotFound = uniqueSubRuleNames.filter(x => !rootDirectorySubRulePaths.includes(x));
 
 		// Если сабрули, для которых пути не найдены.
-		const result = await vscode.window.showInformationMessage(
+		const result = await DialogHelper.showInfo(
 			`Пути к сабрулям ${subRulesNotFound.join(", ")} обнаружить не удалось, возможно ошибка в правила. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?`,
 			this.CURRENT_PACKAGE,
 			this.ALL_PACKAGES);
@@ -112,7 +113,7 @@ export class RunIntegrationTestDialog {
 		const testRunnerOptions = new IntegrationTestRunnerOptions();
 		testRunnerOptions.tmpFilesPath = this._tmpFilesPath;
 
-		const result = await vscode.window.showInformationMessage(
+		const result = await DialogHelper.showInfo(
 			"Тестируемое правило обогащения может обогащать как нормализованные события, так и корреляционные. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",
 			this.CURRENT_PACKAGE,
 			this.ALL_PACKAGES);

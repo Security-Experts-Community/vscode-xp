@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { MustacheFormatter } from '../mustacheFormatter';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
 import { ContentTreeProvider } from '../contentTree/contentTreeProvider';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
@@ -145,7 +145,7 @@ export class CreateRuleViewProvider {
             this._view.webview.html = htmlContent;
         }
         catch (error) {
-            ExtensionHelper.showError("Не удалось отобразить шаблон правила корреляции.", error);
+            DialogHelper.showError("Не удалось отобразить шаблон правила корреляции.", error);
         }
     }
 
@@ -169,24 +169,24 @@ export class CreateRuleViewProvider {
         const [ruleName, templateName, ruleParentPath] = this.parseMessageFromFrontEnd(message);
 
         if(!ruleName) {
-            ExtensionHelper.showError("Не задано название правила корреляции.");
+            DialogHelper.showError("Не задано название правила корреляции.");
             return;
         }
 
         if(!templateName) {
-            ExtensionHelper.showError("Не задана информация о типе шаблона. Выберите шаблон и повторите действие.");
+            DialogHelper.showError("Не задана информация о типе шаблона. Выберите шаблон и повторите действие.");
             return;
         }
 
         if(!fs.existsSync(ruleParentPath)) {
-            ExtensionHelper.showError("Путь для создания правила корреляции не найден. Возможно репозиторий поврежден.");
+            DialogHelper.showError("Путь для создания правила корреляции не найден. Возможно репозиторий поврежден.");
             return;
         }
 
         // Проверка пути родительской директории и директории корреляции.
         const ruleFullPath = RuleBaseItem.getRuleDirectoryPath(ruleParentPath, ruleName);
         if(fs.existsSync(ruleFullPath)) {
-            const overwriteResult = await vscode.window.showInformationMessage(
+            const overwriteResult = await DialogHelper.showInfo(
                 `Правило с именем '${ruleName}' уже есть. Перезаписать его?`,
                 ...["Да", "Нет"]);
 
@@ -223,7 +223,7 @@ export class CreateRuleViewProvider {
             }
         }
         catch (error) {
-            ExtensionHelper.showError(`Не удалось создать и сохранить правило '${ruleName}'.`, error);
+            DialogHelper.showError(`Не удалось создать и сохранить правило '${ruleName}'.`, error);
             return;
         }
 
@@ -231,7 +231,7 @@ export class CreateRuleViewProvider {
         await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
         await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, rule);
         
-        ExtensionHelper.showInfo(`Правило ${ruleName} создано.`);
+        DialogHelper.showInfo(`Правило ${ruleName} создано.`);
         this._view.dispose();
     }
 
@@ -244,7 +244,7 @@ export class CreateRuleViewProvider {
         ruleName = ruleName.trim();
 
         if(ruleName.includes(" ")) {
-            ExtensionHelper.showError("Название правила не должно содержать пробел.");
+            DialogHelper.showError("Название правила не должно содержать пробел.");
             return;
         }
 

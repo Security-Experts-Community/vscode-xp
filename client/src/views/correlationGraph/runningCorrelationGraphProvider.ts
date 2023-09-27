@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { MustacheFormatter } from '../mustacheFormatter';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
@@ -77,7 +77,7 @@ export class RunningCorrelationGraphProvider {
             this._view.webview.html = htmlContent;
         }
         catch (error) {
-            ExtensionHelper.showError("Не удалось отобразить шаблон правила корреляции.", error);
+            DialogHelper.showError("Не удалось отобразить шаблон правила корреляции.", error);
         }
     }
 
@@ -87,7 +87,7 @@ export class RunningCorrelationGraphProvider {
                 const rawEvents = message.rawEvents;
 
                 if(!rawEvents) {
-                    ExtensionHelper.showError("Добавьте сырые события и повторите действие.");
+                    DialogHelper.showError("Добавьте сырые события и повторите действие.");
                     return;
                 }             
 				await this.corrGraphRun(rawEvents);
@@ -140,18 +140,18 @@ export class RunningCorrelationGraphProvider {
                     const correlatedEventsString = await runner.run(rootPath, rawEventsFilePath);
 
                     if(!correlatedEventsString) {
-                        ExtensionHelper.showInfo(`По этим событиям не произошло ни одной сработки корреляции из папки ${rootFolder}.`);
+                        DialogHelper.showInfo(`По этим событиям не произошло ни одной сработки корреляции из папки ${rootFolder}.`);
                         return;
                     }
                     
                     // Извлекаем имена сработавших корреляций.
                     const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /("correlation_name"\s*:\s*"(.*?)")/g);
                     if(!correlationNames) {
-                        ExtensionHelper.showError(`Не удалось скоррелировать нормализованные события с использованием графа для директории ${path.basename(rootPath)}.`);
+                        DialogHelper.showError(`Не удалось скоррелировать нормализованные события с использованием графа для директории ${path.basename(rootPath)}.`);
                         return;
                     }
 
-                    ExtensionHelper.showInfo(`Количество сработавших корреляций из папки ${rootFolder}: ${correlationNames.length}`);
+                    DialogHelper.showInfo(`Количество сработавших корреляций из папки ${rootFolder}: ${correlationNames.length}`);
 
                     // Отдаем события во front-end.
                     const formatedEvents = TestHelper.formatTestCodeAndEvents(correlatedEventsString);

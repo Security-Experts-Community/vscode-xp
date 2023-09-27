@@ -4,7 +4,7 @@ import { EOL } from 'os';
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { TestHelper } from '../../helpers/testHelper';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
 import { stat } from 'fs';
 
 export class FileDiagnostics {
@@ -166,7 +166,7 @@ export class SiemJOutputParser {
 			const ruleContent = await FileSystemHelper.readContentFile(ruleFilePath);
 			
 			const lines = ruleContent.split(EOL);
-			lines.forEach(line => {if(line.includes("\n")){ExtensionHelper.showInfo(`File ${ruleFilePath} contains mixed ends of lines`);}});
+			lines.forEach(line => {if(line.includes("\n")){DialogHelper.showInfo(`File ${ruleFilePath} contains mixed ends of lines`);}});
 
 			rfd.diagnostics = TestHelper.correctWhitespaceCharacterFromErrorLines(ruleContent, rfd.diagnostics);
 		}

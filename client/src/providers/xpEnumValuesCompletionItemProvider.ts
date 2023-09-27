@@ -6,7 +6,7 @@ import { FileSystemHelper } from '../helpers/fileSystemHelper';
 import { Configuration } from '../models/configuration';
 import { CompleteSignature } from './signature/completeSignature';
 import { TaxonomyHelper } from '../helpers/taxonomyHelper';
-import { ExtensionHelper } from '../helpers/extensionHelper';
+import { DialogHelper } from '../helpers/dialogHelper';
 import { Log } from '../extension';
 
 /**
@@ -35,7 +35,7 @@ export class XpEnumValuesCompletionItemProvider implements vscode.CompletionItem
 			}
 		}
 		catch (error) {
-			ExtensionHelper.showError(`Не удалось считать описания полей таксономии. Автодополнение значений enum работать не будет.`, error);
+			DialogHelper.showError(`Не удалось считать описания полей таксономии. Автодополнение значений enum работать не будет.`, error);
 		}
 
 		return new XpEnumValuesCompletionItemProvider(taxonomySignatures);

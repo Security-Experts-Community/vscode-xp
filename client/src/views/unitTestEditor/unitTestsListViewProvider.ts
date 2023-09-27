@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { CorrelationUnitTestsRunner } from '../../models/tests/correlationUnitTestsRunner';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
 import { Configuration } from '../../models/configuration';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
@@ -138,7 +138,7 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 						const tests = selectedRule.getUnitTests();
 						const index = test.getNumber() - 1;
 						if (!tests?.[index]) { 
-							ExtensionHelper.showError(`Не удалось найти тест ${test.getNumber()}`);
+							DialogHelper.showError(`Не удалось найти тест ${test.getNumber()}`);
 							return;
 						}
 						tests.splice(index, 1);

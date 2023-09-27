@@ -6,7 +6,7 @@ import { FileSystemHelper } from '../helpers/fileSystemHelper';
 import { Configuration } from '../models/configuration';
 import { CompleteSignature } from './signature/completeSignature';
 import { TaxonomyHelper } from '../helpers/taxonomyHelper';
-import { ExtensionHelper } from '../helpers/extensionHelper';
+import { DialogHelper } from '../helpers/dialogHelper';
 import { Log } from '../extension';
 
 /**
@@ -44,7 +44,7 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 			}
 		}
 		catch (error) {
-			ExtensionHelper.showError(`Не удалось считать описания функций языка XP. Их автодополнение и описание параметров работать не будет.`, error);
+			DialogHelper.showError(`Не удалось считать описания функций языка XP. Их автодополнение и описание параметров работать не будет.`, error);
 		}
 
 		try {
@@ -53,7 +53,7 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 			autocompleteSignatures = autocompleteSignatures.concat(taxonomySignatures);
 		}
 		catch (error) {
-			ExtensionHelper.showError(`Не удалось считать описания полей таксономии. Их автодополнение работать не будет.`, error);
+			DialogHelper.showError(`Не удалось считать описания полей таксономии. Их автодополнение работать не будет.`, error);
 		}
 
 		try {

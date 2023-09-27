@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Correlation } from '../../models/content/correlation';
 import { MustacheFormatter } from '../mustacheFormatter';
@@ -75,7 +75,7 @@ export class MetainfoViewProvider {
 			this.updateWebView();
 		}
 		catch (error) {
-			ExtensionHelper.showError("Ошибка визуализации метаданных", error);
+			DialogHelper.showError("Ошибка визуализации метаданных", error);
 		}
 	}
 
@@ -112,7 +112,7 @@ export class MetainfoViewProvider {
 					return ExceptionHelper.show(error, "Не удалось сохранить метаданные");
 				}
 
-				return ExtensionHelper.showInfo("Метаданные правила сохранены");
+				return DialogHelper.showInfo("Метаданные правила сохранены");
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fse from 'fs-extra';
 
-import { ExtensionHelper } from '../../../helpers/extensionHelper';
+import { DialogHelper } from '../../../helpers/dialogHelper';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { ContentTreeProvider } from '../contentTreeProvider';
 
@@ -15,7 +15,7 @@ export class DeleteContentItemCommand {
 			await fse.remove(folderToDeletePath);
 		}
 		catch(error) {
-			ExtensionHelper.showError("Ошибка удаления файла", error);
+			DialogHelper.showError("Ошибка удаления файла", error);
 		}
 
 		await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);

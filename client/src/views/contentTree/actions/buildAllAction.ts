@@ -8,7 +8,7 @@ import { SiemJOutputParser } from '../../../models/siemj/siemJOutputParser';
 import { Configuration } from '../../../models/configuration';
 import { SiemjConfBuilder } from '../../../models/siemj/siemjConfigBuilder';
 import { XpException } from '../../../models/xpException';
-import { ExtensionHelper } from '../../../helpers/extensionHelper';
+import { DialogHelper } from '../../../helpers/dialogHelper';
 import { Dictionary } from 'lodash';
 
 export class BuildAllAction {
@@ -74,10 +74,10 @@ export class BuildAllAction {
 					}
 
 					if(!siemJOutput.output.includes(this.SUCCESS_EXIT_CODE_SUBSTRING)) {
-						ExtensionHelper.showInfo(`Компиляция пакетов успешно завершена`);
+						DialogHelper.showInfo(`Компиляция пакетов успешно завершена`);
 					}
 					else {
-						ExtensionHelper.showError(this.COMPILATION_ERROR);
+						DialogHelper.showError(this.COMPILATION_ERROR);
 					}
 				}
 				finally {

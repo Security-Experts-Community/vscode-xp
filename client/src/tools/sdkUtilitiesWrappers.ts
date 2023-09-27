@@ -7,7 +7,7 @@ import { Normalization } from '../models/content/normalization';
 import { NormalizationUnitTest } from '../models/tests/normalizationUnitTest';
 // import { RuleFileDiagnostics } from '../views/integrationTests/ruleFileDiagnostics';
 import { ProcessHelper } from '../helpers/processHelper';
-import { ExtensionHelper } from '../helpers/extensionHelper';
+import { DialogHelper } from '../helpers/dialogHelper';
 import { ExceptionHelper } from '../helpers/exceptionHelper';
 import { FileSystemHelper } from '../helpers/fileSystemHelper';
 import { FileSystemException } from '../models/fileSystemException';

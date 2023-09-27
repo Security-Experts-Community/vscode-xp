@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ExtensionHelper } from '../helpers/extensionHelper';
+import { DialogHelper } from '../helpers/dialogHelper';
 import { TestHelper } from '../helpers/testHelper';
 import { VsCodeApiHelper } from '../helpers/vsCodeApiHelper';
 
@@ -17,7 +17,7 @@ export class TestsFormatContentMenuExtension {
 				const activeEditor = vscode.window.activeTextEditor;
 				const currDocument = activeEditor?.document;
 				if (!currDocument) {
-					await vscode.window.showInformationMessage("Документ для форматирования не открыт.");
+					await DialogHelper.showInfo("Документ для форматирования не открыт");
 					return;
 				}
 
@@ -32,7 +32,7 @@ export class TestsFormatContentMenuExtension {
 					});
 				}
 				catch (error) {
-					ExtensionHelper.showError("Не удалось упаковать кода теста.", error);
+					DialogHelper.showError("Не удалось упаковать кода теста", error);
 				}
 			}
 		);
@@ -73,7 +73,7 @@ export class TestsFormatContentMenuExtension {
 				const activeEditor = vscode.window.activeTextEditor;
 				const currDocument = activeEditor?.document;
 				if (!currDocument) {
-					await vscode.window.showInformationMessage("Документ для форматирования не открыт.");
+					await DialogHelper.showInfo("Документ для форматирования не открыт.");
 					return;
 				}
 
@@ -88,7 +88,7 @@ export class TestsFormatContentMenuExtension {
 					});
 				}
 				catch (error) {
-					ExtensionHelper.showError("Не удалось упаковать код теста. ", error);
+					DialogHelper.showError("Не удалось упаковать код теста. ", error);
 				}
 			},
 			this

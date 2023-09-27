@@ -19,7 +19,7 @@ export class ExceptionHelper {
 			case OperationCanceledException.name: {
 				const typedError = error as XpException;
 
-				Log.error(typedError);
+				Log.error(typedError.message, typedError);
 				vscode.window.showErrorMessage(typedError.message);
 				ExceptionHelper.recursiveWriteXpExceptionToOutput(typedError, outputChannel);
 				break;
@@ -38,7 +38,7 @@ export class ExceptionHelper {
 				}
 
 				// Пишем stack в output.
-				Log.error(error);
+				Log.error(error.message, error);
 				outputChannel.show();
 			}
 		}
@@ -49,12 +49,12 @@ export class ExceptionHelper {
 		// Есть вложенные исключения.
 		if(error instanceof XpException && error.getInnerException()) {
 			// Пишем текущие исключение.
-			Log.error(error);
+			Log.error(error.message, error);
 
 			// Пишем вложенное.
 			ExceptionHelper.recursiveWriteXpExceptionToOutput(error.getInnerException(), outputChannel);
 		} else {
-			Log.error(error);
+			Log.error(error.message, error);
 		}
 	}
 

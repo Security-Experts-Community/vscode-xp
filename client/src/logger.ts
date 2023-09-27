@@ -12,7 +12,8 @@ export const enum LogLevel {
 export abstract class ILogger {
 	public abstract debug(message: string, ...params: any[]): void;
 
-	public abstract error(ex: Error | unknown, message?: string, ...params: any[]): void;
+	public abstract error(message: string, ...params: any[]): void;
+	public abstract error(message: string, ex: Error | unknown, ...params: any[]): void;
 
 	public abstract info(message: string, ...params: any[]): void;
 
@@ -37,7 +38,8 @@ export class Logger extends ILogger {
 		this._output.appendLine(`${this.timestamp} ${message ?? ""} ${this.formatParams(params)}`);
 	}
 
-	error(ex: Error|XpException, message?: string, ...params: any[]): void {
+	error(message: string, ...params: any[]): void
+	error(message: string, ex: Error, ...params: any[]): void {
 		if (this._output == null || this._level < LogLevel.Error) return;
 
 		if(ex) {

@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import { ContentTreeProvider } from '../contentTreeProvider';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { KbHelper } from '../../../helpers/kbHelper';
-import { ExtensionHelper } from '../../../helpers/extensionHelper';
+import { DialogHelper } from '../../../helpers/dialogHelper';
 
 export class RenameTreeItemCommand {
 
@@ -23,7 +23,7 @@ export class RenameTreeItemCommand {
 			if(td.isDirty && openFilePath.includes(ruleDirPath)) {
 				const fileName = path.basename(openFilePath);
 				stopExecution = true;
-				ExtensionHelper.showInfo(`Файл '${fileName}' не сохранен. Сохраните его и повторите действие.`);
+				DialogHelper.showInfo(`Файл '${fileName}' не сохранен. Сохраните его и повторите действие.`);
 			}
 		});
 
@@ -86,7 +86,7 @@ export class RenameTreeItemCommand {
 			await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, selectedItem);
 		}
 		catch(error) {
-			ExtensionHelper.showInfo("Не удалось переименовать объект.");
+			DialogHelper.showInfo("Не удалось переименовать объект.");
 			return;
 		}
 	}

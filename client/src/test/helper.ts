@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as fsExtra from 'fs-extra';
 
 import { FileSystemHelper } from '../helpers/fileSystemHelper';
-import { ExtensionHelper } from '../helpers/extensionHelper';
+import { DialogHelper } from '../helpers/dialogHelper';
 import { YamlHelper } from '../helpers/yamlHelper';
 import { Configuration } from '../models/configuration';
 

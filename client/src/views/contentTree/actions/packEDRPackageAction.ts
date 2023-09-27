@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { ExtensionHelper } from '../../../helpers/extensionHelper';
+import { DialogHelper } from '../../../helpers/dialogHelper';
 import { ProcessHelper } from '../../../helpers/processHelper';
 import { Configuration } from '../../../models/configuration';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
@@ -98,15 +98,15 @@ export class PackEDRPackageAction {
 				outputChannel.appendLine(output);
 				
 				if(output.includes("done")) {
-					ExtensionHelper.showInfo(`Пакет '${packageName}' собран успешно.`);
+					DialogHelper.showInfo(`Пакет '${packageName}' собран успешно.`);
 					return;
 				}
 				// TODO: тут нужно сделать ссылку или кнопку для перехода в нужную панель
-				ExtensionHelper.showError(`Не удалось собрать пакет '${packageName}'. Подробности приведены в канале 'eXtraction and Processing' панели Output.`);			
+				DialogHelper.showError(`Не удалось собрать пакет '${packageName}'. Подробности приведены в канале 'eXtraction and Processing' панели Output.`);			
 			}
 			catch(error) {
 				// TODO: Нужно все внутренние ошибки обрабатывть единообразно
-				ExtensionHelper.showError(`Внутренняя ошибка расширения.\n ${error}`);
+				DialogHelper.showError(`Внутренняя ошибка расширения.\n ${error}`);
 			}
 			finally{
 				outputChannel.appendLine("----------------------------------------");
@@ -149,7 +149,7 @@ export class PackEDRAllPackagesAction implements PackAction {
 		}
 
 		if(!moduleDirectory) {
-			ExtensionHelper.showError(`Путь не выбран.`);
+			DialogHelper.showError(`Путь не выбран.`);
 			return;
 		}
 
@@ -157,14 +157,14 @@ export class PackEDRAllPackagesAction implements PackAction {
 
 		const metainfoPath = path.join(packagePath, "metainfo.json");
 		if(!fs.existsSync(metainfoPath)) {
-			ExtensionHelper.showError(`Путь к файлу описания пакета задан не верно: ${metainfoPath}!`);
+			DialogHelper.showError(`Путь к файлу описания пакета задан не верно: ${metainfoPath}!`);
 			return;
 		}
 
 		// Проверка наличия скрипту сборки graphs.zip
 		const edrPackager = path.join(this.config.getBuildToolsDirectoryFullPath(), "soldr-build", "gen_correlator_config.exe");
 		if(!fs.existsSync(edrPackager)) {
-			ExtensionHelper.showError(`Путь к скрипту сборки graphs.zip задан не верно: ${edrPackager}`);
+			DialogHelper.showError(`Путь к скрипту сборки graphs.zip задан не верно: ${edrPackager}`);
 			return;
 		}
 
@@ -193,14 +193,14 @@ export class PackEDRAllPackagesAction implements PackAction {
 				emitter.fire(`\r\nXP:: Command output:\n${output.trim()}\n\n`);
 
 				if(output.includes("done")) {
-					ExtensionHelper.showInfo(`Пакет '${packageName}' собран успешно.`);
+					DialogHelper.showInfo(`Пакет '${packageName}' собран успешно.`);
 					return;
 				} 
-				ExtensionHelper.showError(`Ошибка сборки пакета '${packageName}'. Смотри Terminal.`);
+				DialogHelper.showError(`Ошибка сборки пакета '${packageName}'. Смотри Terminal.`);
 			}
 			catch(error) {
 				// TODO: Нужно все внутренние ошибки обрабатывть единообразно
-				ExtensionHelper.showError(`Внутренняя ошибка расширения.\n ${error}.`);
+				DialogHelper.showError(`Внутренняя ошибка расширения.\n ${error}.`);
 			}
 		});
 	}

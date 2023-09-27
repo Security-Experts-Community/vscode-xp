@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
 import { Correlation } from '../../models/content/correlation';
 import { ContentFolder, ContentFolderType } from '../../models/content/contentFolder';
 import { Enrichment } from '../../models/content/enrichment';
@@ -173,14 +173,13 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 	
 					const config = Configuration.get();
 					if(!config.isKbOpened()) {
-						vscode.window.showInformationMessage("Для распаковки KB-пакета нужно открыть базу знаний");
-						return;
+						return DialogHelper.showInfo("Для распаковки KB-пакета нужно открыть базу знаний");
 					}
 					
 					const action = new UnpackKbAction(config);
 					try {
 						await action.run(selectedItem);
-						return vscode.window.showInformationMessage(`Пакет успешно распакован`);
+						return DialogHelper.showInfo(`Пакет успешно распакован`);
 					}
 					catch(error) {
 						ExceptionHelper.show(error, `Неожиданная ошибка распаковки KB-пакета`);
@@ -206,7 +205,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 				ContentTreeProvider.buildKbPackageCommand,
 				async (selectedPackage: RuleBaseItem) => {
 					if(!config.isKbOpened()) {
-						ExtensionHelper.showInfo("Для сбора графов нужно открыть базу знаний.");
+						DialogHelper.showInfo("Для сбора графов нужно открыть базу знаний.");
 						return;
 					}
 					
@@ -220,7 +219,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 					});
 
 					if(!fileInfos) {
-						ExtensionHelper.showError(`Путь не выбран.`);
+						DialogHelper.showError(`Путь не выбран.`);
 						return;
 					}
 
@@ -404,7 +403,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		const configContentType = this._config.getContentType();
 		
 		if(!actualContentType){
-			const answer = await vscode.window.showInformationMessage(
+			const answer = await DialogHelper.showInfo(
 				`База знаний не проинициализирована. Создать необходимые папки для формата ${configContentType}?`,
 				"Да",
 				"Нет");
@@ -421,7 +420,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		const configContentType = this._config.getContentType();
 
 		if(actualContentType == ContentType.EDR && configContentType == ContentType.SIEM) {
-			const answer = await vscode.window.showInformationMessage(
+			const answer = await DialogHelper.showInfo(
 				"Формат базы знаний (EDR) не соответствует текущему целевому продукту (SIEM). Выбрать другой продукт? Неправильная настройка не позволит собрать пакет",
 				"Да",
 				"Нет");
@@ -432,7 +431,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		}
 
 		if(actualContentType == ContentType.SIEM && configContentType == ContentType.EDR) {
-			const answer = await vscode.window.showInformationMessage(
+			const answer = await DialogHelper.showInfo(
 				"Формат базы знаний (SIEM) не соответствует текущему целевому продукту (EDR). Выбрать другой продукт? Неправильная настройка не позволит собрать пакет",
 				"Да",
 				"Нет");

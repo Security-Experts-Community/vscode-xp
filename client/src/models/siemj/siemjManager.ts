@@ -12,7 +12,7 @@ import { SiemjConfigHelper } from './siemjConfigHelper';
 import { FileSystemException } from '../fileSystemException';
 import { SiemjConfBuilder } from './siemjConfigBuilder';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
 import { Localization, LocalizationExample } from '../content/localization';
 import { IntegrationTest } from '../tests/integrationTest';
 import { StringHelper } from '../../helpers/stringHelper';
@@ -318,7 +318,7 @@ export class SiemjManager {
 			}
 		}
 		catch (error) {
-			ExtensionHelper.showError(`Ошибка разбора локализации из теста`, error);
+			DialogHelper.showError(`Ошибка разбора локализации из теста`, error);
 			return null;
 		}
 

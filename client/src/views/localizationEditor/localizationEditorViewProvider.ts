@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
 
-import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
 import { Localization, LocalizationExample } from '../../models/content/localization';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
@@ -164,7 +164,7 @@ export class LocalizationEditorViewProvider {
 			case 'buildLocalizations': {
 
 				if( !(this._rule instanceof Correlation) ) {
-					return ExtensionHelper.showInfo(
+					return DialogHelper.showInfo(
 						"В настоящий момент поддерживается проверка локализаций только для корреляций. Если вам требуется поддержка других правил, можете добавить или проверить наличие подобного [Issue](https://github.com/Security-Experts-Community/vscode-xp/issues).");					
 				}
 
@@ -173,7 +173,7 @@ export class LocalizationEditorViewProvider {
 				
 				const locExamples = await this.getLocalizationExamples();
 				if (locExamples.length === 0) {
-					return ExtensionHelper.showInfo(
+					return DialogHelper.showInfo(
 						"По имеющимся событиям не отработала ни одна локализация. Проверьте, что интеграционные тесты проходят, корректны критерии локализации. После исправлений повторите.");
 				}
 
@@ -188,10 +188,10 @@ export class LocalizationEditorViewProvider {
 					const localizations = message.localizations;
 					await this.saveLocalization(localizations);
 
-					ExtensionHelper.showInfo(`Правила локализации для ${this._rule.getName()} сохранены`);
+					DialogHelper.showInfo(`Правила локализации для ${this._rule.getName()} сохранены`);
 				}
 				catch (error) {
-					ExtensionHelper.showError("Не удалось сохранить правила локализации.", error);
+					DialogHelper.showError("Не удалось сохранить правила локализации.", error);
 				}
 			}
 		}
@@ -216,7 +216,7 @@ export class LocalizationEditorViewProvider {
 
 		const firstDuplicate = this.findDuplicates(criteria);
 		if (firstDuplicate != null) {
-			ExtensionHelper.showError(`Критерий '${firstDuplicate}' дублируется в нескольких правилах локализации`);
+			DialogHelper.showError(`Критерий '${firstDuplicate}' дублируется в нескольких правилах локализации`);
 			return;
 		}
 
@@ -251,7 +251,7 @@ export class LocalizationEditorViewProvider {
 				
 				let result: string;
 				if(fs.existsSync(this._integrationTestTmpFilesPath)) {
-					result = await vscode.window.showInformationMessage(
+					result = await DialogHelper.showInfo(
 						"Обнаружены результаты предыдущего запуска интеграционных тестов. Если вы модифицировали только правила локализации, то можно использовать предыдущие результаты. В противном случае необходимо запустить интеграционные тесты еще раз.", 
 						LocalizationEditorViewProvider.USE_OLD_TESTS_RESULT,
 						LocalizationEditorViewProvider.RESTART_TESTS);

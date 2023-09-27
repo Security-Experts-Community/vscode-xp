@@ -1,6 +1,6 @@
 import * as classTransformer from 'class-transformer';
 import { Extension } from 'typescript';
-import { ExtensionHelper } from '../../helpers/extensionHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
 
 import { Attack } from '../../models/metaInfo/attack';
 import { DataSource } from '../../models/metaInfo/dataSource';
