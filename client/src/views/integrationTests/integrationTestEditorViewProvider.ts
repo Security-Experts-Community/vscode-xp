@@ -633,8 +633,7 @@ export class IntegrationTestEditorViewProvider {
 					});
 				}
 
-				// const ritd = new RunIntegrationTestDialog(this._config, this._integrationTestTmpFilesPath);
-				const ritd = new RunIntegrationTestDialog(this._config);
+				const ritd = new RunIntegrationTestDialog(this._config, this._integrationTestTmpFilesPath);
 				const testRunnerOptions = await ritd.getIntegrationTestRunOptions(this._rule);
 				testRunnerOptions.cancellationToken = cancellationToken;
 
