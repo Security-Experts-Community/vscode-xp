@@ -8,8 +8,8 @@ import { XpException } from '../models/xpException';
 import { Log } from '../extension';
 
 export interface ExecutionProcessOptions {
-	encoding: EncodingType;
-	outputChannel : vscode.OutputChannel;
+	encoding?: EncodingType;
+	outputChannel? : vscode.OutputChannel;
 	token?: vscode.CancellationToken;
 	/**
 	 * Проверяет выполнимость команды (например, отсутствия нужного модуля в директориях PATH).

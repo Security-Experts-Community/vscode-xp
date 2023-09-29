@@ -8,7 +8,7 @@ import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider
 import { BaseUnitTest } from '../tests/baseUnitTest';
 import { NormalizationUnitTest } from '../tests/normalizationUnitTest';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
-import { NormalizationUnitTestsRunner } from '../tests/normalizationUnitTestsRunner';
+import { NormalizationUnitTestsRunner } from '../tests/normalizationUnitTestRunner';
 import { Configuration } from '../configuration';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { NormalizationUnitTestOutputParser } from '../tests/normalizationUnitTestOutputParser';
@@ -47,11 +47,11 @@ export class Normalization extends RuleBaseItem {
 	}
 	
 	public createNewUnitTest(): BaseUnitTest {
-		return NormalizationUnitTest.create(this);
+		return NormalizationUnitTest.createFromExistFile(this);
 	}
 
 	public convertUnitTestFromObject(object: any) : NormalizationUnitTest{
-		return Object.assign(NormalizationUnitTest.create(this), object) as NormalizationUnitTest;
+		return Object.assign(NormalizationUnitTest.createFromExistFile(this), object) as NormalizationUnitTest;
 	}
 
 	public async rename(newName: string): Promise<void> {

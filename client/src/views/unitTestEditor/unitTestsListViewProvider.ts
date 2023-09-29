@@ -40,7 +40,6 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 
 	public static init(config: Configuration) : UnitTestsListViewProvider {
 
-		const outputChannel = Configuration.get().getOutputChannel();
 		const testsListViewProvider = new UnitTestsListViewProvider(config);
 
 		const testsListView = vscode.window.createTreeView(
@@ -92,7 +91,7 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 						await VsCodeApiHelper.saveTestFiles(selectedRule);
 					}
 					
-					await testsListViewProvider.runTests(); 
+					await testsListViewProvider.runTests(selectedRule); 
 					// Обновляем статус тестов.
 					await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
 				}
@@ -158,17 +157,15 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 	private constructor(private _config : Configuration) {
 	}
 
-	public async runTests() {
+	public async runTests(rule: RuleBaseItem | Table | Macros) {
 
 		// Очищаем предыдущий вывод и показываем окно вывода.
 		this._config.getOutputChannel().clear();
-		this._config.getOutputChannel().show();
-		
 		const tests = await this.getChildren();
 
 		// Сбрасываем результаты предыдущих тестов.
 		tests.forEach(t => t.setStatus(TestStatus.Unknown));
-		const testHandler = (unitTest : BaseUnitTest) => {
+		const testHandler = async (unitTest : BaseUnitTest) => {
 			const rule = unitTest.getRule();
 			const testRunner = rule.getUnitTestRunner();
 			return testRunner.run(unitTest).then( 
@@ -182,12 +179,10 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
 		}, async (progress) => {
-			progress.report( {message : `Выполняются модульные тесты`});
-			await tests.reduce(
-				(p, t) => 
-					p.then(_ => testHandler(t)),
-					Promise.resolve()
-			);
+			progress.report( {message : `Выполняются модульные тесты правила ${rule.getName()}`});
+			for (const test of tests) {
+				await testHandler(test);
+			}
 		});
 	}
 

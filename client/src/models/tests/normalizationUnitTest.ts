@@ -33,7 +33,7 @@ export class NormalizationUnitTest extends BaseUnitTest {
 				if (regex && regex.length > 0) {
 					const index = parseInt(regex[1]);
 					
-					const unitTest = rule.createNewUnitTest();
+					const unitTest = NormalizationUnitTest.create(index, rule);
 					unitTest.setTestExpectation(expectedNormalizedEvent);
 					
 					const rawEventFileName = `raw_${index}.txt`;
@@ -54,7 +54,9 @@ export class NormalizationUnitTest extends BaseUnitTest {
 
 					return unitTest;
 				}
-			});
+			})
+			// Сортируем тесты, ибо в противном случае сначала будет 1, потом 10 и т.д.
+			.sort((a, b) => a.getNumber() - b.getNumber());
 
 		return tests;
 	}
@@ -63,7 +65,24 @@ export class NormalizationUnitTest extends BaseUnitTest {
 		return Object.assign(new NormalizationUnitTest(1), object) as NormalizationUnitTest;
 	}
 
-	public static create(rule : Normalization) : NormalizationUnitTest {
+	public static create(number: number, rule : Normalization) : NormalizationUnitTest {
+		const baseDirFullPath = rule.getDirectoryPath();
+
+		const test = new NormalizationUnitTest(number);
+		test.setRule(rule);
+		test.setTestExpectation(test.getDefaultExpectation());
+		test.setTestInputData(test.getDefaultInputData());
+
+		test.command = { 
+			command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,  
+			title: "Open File", 
+			arguments: [test] 
+		};
+		return test;
+	}
+
+
+	public static createFromExistFile(rule : Normalization) : NormalizationUnitTest {
 		const baseDirFullPath = rule.getDirectoryPath();
 		const testsFullPath = path.join(baseDirFullPath, "tests");
 
@@ -103,8 +122,15 @@ export class NormalizationUnitTest extends BaseUnitTest {
 		// 	throw new Error("Нельзя сохранять тест без входных данных");
 		// }
 	
-		await FileSystemHelper.writeContentFile(this.getTestInputDataPath(), this.getTestInputData());
-		await FileSystemHelper.writeContentFile(this.getTestExpectationPath(), this.getTestExpectation());
+		await FileSystemHelper.writeContentFileIfChanged(
+			this.getTestInputDataPath(),
+			this.getTestInputData()
+		);
+
+		await FileSystemHelper.writeContentFileIfChanged(
+			this.getTestExpectationPath(),
+			this.getTestExpectation()
+		);
 	}
 
 	public getTestExpectationPath() : string {
@@ -115,7 +141,7 @@ export class NormalizationUnitTest extends BaseUnitTest {
 		return path.join(this.getTestsDirPath(), `raw_${this.getNumber()}.txt`);
 	}
 
-	protected constructor(number: number) {
+	protected constructor(number = 0) {
 		super(number);
 	}
 	

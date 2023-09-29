@@ -117,8 +117,8 @@ export class UnitTestContentEditorViewProvider {
 
 		const rule = this._test.getRule();
 
-		const resoucesUri = this._config.getExtensionUri();
-		const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
+		const resourcesUri = this._config.getExtensionUri();
+		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
 
 		const plain = {
 			"UnitTest": null,
@@ -177,18 +177,17 @@ export class UnitTestContentEditorViewProvider {
 			}
 
 			case 'runTest': {
-				this.saveTest(message);
 				await this.runUnitTest(message);
 				return;
 			}
 
 			default: {
-				DialogHelper.showInfo("Такой команды нет в этой версии расширения.");
+				DialogHelper.showError("Переданная команда не поддерживается");
 			}
 		}
 	}
 
-	private saveTest(message: any) {
+	private async saveTest(message: any) {
 		const testInfo = message.test;
 		try {
 			const rawEvent = testInfo.rawEvent;
@@ -201,7 +200,9 @@ export class UnitTestContentEditorViewProvider {
 				throw new XpException(`Не задано ожидаемое нормализованное событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`);
 			}
 			this._test.setTestExpectation(expectation);
-			this._test.save();
+			await this._test.save();
+
+			DialogHelper.showInfo("Тест успешно сохранён");
 		}
 		catch (error) {
 			ExceptionHelper.show(error, `Не удалось сохранить модульный тест №${this._test.label} правила ${this._test.getRule().getName()}`);

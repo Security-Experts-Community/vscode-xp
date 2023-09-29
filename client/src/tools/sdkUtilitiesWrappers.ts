@@ -11,6 +11,8 @@ import { DialogHelper } from '../helpers/dialogHelper';
 import { ExceptionHelper } from '../helpers/exceptionHelper';
 import { FileSystemHelper } from '../helpers/fileSystemHelper';
 import { FileSystemException } from '../models/fileSystemException';
+import { Log } from '../extension';
+import { XpException } from '../models/xpException';
 // import { RuleBaseItem } from '../models/content/ruleBaseItem';
 // import { BuildLocsOutputParser, FillFPTAOutputParser } from './outputParsers/fillFptaOutputParser';
 // import { RCCOutputParser } from './outputParsers/rccOutputParser';
@@ -24,9 +26,9 @@ import { FileSystemException } from '../models/fileSystemException';
  * 
  */
 export class SDKUtilitiesWrappers {
-	constructor(private config: Configuration) {}
+	constructor(private _config: Configuration) {}
 	
-	/** Функция запуска утилиты создания грфов формул нормализации
+	/** Функция запуска утилиты создания графов формул нормализации
 	 * 
 	 * @param buildDirectory - путь до корня директории сборки
 	 * @returns true - успех, продолжаем цепочку выполнения
@@ -34,77 +36,66 @@ export class SDKUtilitiesWrappers {
 	 */
 	public async testNormalization(unitTest: NormalizationUnitTest): Promise<string> {
 		const rule = unitTest.getRule();
-		return vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
-			title: `Запуск теста №${unitTest.getNumber()} формулы нормализации '${rule.getName()}'`
-		}, async (progress) => {
-			try {
-				const outputChannel = this.config.getOutputChannel();
-				outputChannel.appendLine("----------------------------------------");
-				outputChannel.appendLine(`XP :: Запуск теста №${unitTest.getNumber()} формулы нормализации '${rule.getName()}'`);
-				outputChannel.appendLine("----------------------------------------");
+		Log.info(`Запуск теста №${unitTest.getNumber()} формулы нормализации '${rule.getName()}'`);
 
-				/** Типовая команда выглядит так:
-				 * 
-				 * ptsiem-sdk\release-25.0\25.0.10201\normalize.exe 
-				 *   --sdk "ptsiem-sdk\release-25.1\25.1.11776" 
-				 *   --temp "temp" 
-				 *   -t "taxonomy\release-25.0\25.0.214\taxonomy.json" 
-				 *   -s "temp\formula.xp" 
-				 *   -r "temp\raw.txt" 
-				 *   -e
-				 */
+		/** Типовая команда выглядит так:
+		 * 
+		 * ptsiem-sdk\release-25.0\25.0.10201\normalize.exe 
+		 *   --sdk "ptsiem-sdk\release-25.1\25.1.11776" 
+		 *   --temp "temp" 
+		 *   -t "taxonomy\release-25.0\25.0.214\taxonomy.json" 
+		 *   -s "temp\formula.xp" 
+		 *   -r "temp\raw.txt" 
+		 *   -e
+		 */
 
-				// Формируем параметры запуска утилиты
-				const normalizeExePath = this.config.getNormalizer();
-				const sdkPath = this.config.getSiemSdkDirectoryPath();
-				const rootPath = rule.getContentRootPath(this.config);
-				const rootFolder = path.basename(rootPath);
-				const tempPath = this.config.getTmpDirectoryPath(rootFolder);				
-				const taxonomyPath = this.config.getTaxonomyFullPath();
-				const appendixPath = this.config.getAppendixFullPath();
+		// Формируем параметры запуска утилиты
+		const normalizeExePath = this._config.getNormalizer();
+		const sdkPath = this._config.getSiemSdkDirectoryPath();
+		const rootPath = rule.getContentRootPath(this._config);
+		const rootFolder = path.basename(rootPath);
+		const tempPath = this._config.getTmpDirectoryPath(rootFolder);				
+		const taxonomyPath = this._config.getTaxonomyFullPath();
+		const appendixPath = this._config.getAppendixFullPath();
 
-				const formulaPath = rule.getFilePath();
-				if(!FileSystemHelper.isValidPath(formulaPath)) {
-					throw new FileSystemException(`В пути ${formulaPath} к правилу нормализации содержаться недопустимые символы. Допустима только латинский буквы, цифры и знак подчёркивания.`);
-				}
+		const formulaPath = rule.getFilePath();
+		if(!FileSystemHelper.isValidPath(formulaPath)) {
+			throw new FileSystemException(`В пути ${formulaPath} к правилу нормализации содержаться недопустимые символы. Допустима только латинский буквы, цифры и знак подчёркивания.`);
+		}
 
-				const rawEventPath = unitTest.getTestInputDataPath();
+		const rawEventPath = unitTest.getTestInputDataPath();
 
-				process.env.PTSIEM_SDK_ROOT = this.config.getSiemSdkDirectoryPath();
+		process.env.PTSIEM_SDK_ROOT = this._config.getSiemSdkDirectoryPath();
 
-				// Запускаем утилиту с параметрами
-				// TODO: Возможно есть смысл отслеживать неуспешные запуски по кодам ошибки от дочернего процесса
-				const output = await ProcessHelper.execute(
-					normalizeExePath,
-					[
-						"--sdk", sdkPath,
-						"--temp", tempPath,
-						"-t", taxonomyPath,
-						"-s", formulaPath,
-						"-r", rawEventPath,
-						// Параметр опциональный. 
-						// Отключили для совместимости с системными тестами
-						// "-x", appendixPath,
-						"-e"
-					],
-					{	
-						encoding: 'utf-8',
-						outputChannel: outputChannel
-					}
-				);
-
-				outputChannel.appendLine("XP :: Нормализация тестового события завершена");
-				outputChannel.appendLine("");
-
-				return output.output;
+		// Запускаем утилиту с параметрами
+		const output = await ProcessHelper.execute(
+			normalizeExePath,
+			[
+				"--sdk", sdkPath,
+				"--temp", tempPath,
+				"-t", taxonomyPath,
+				"-s", formulaPath,
+				"-r", rawEventPath,
+				// Параметр опциональный. 
+				// Отключили для совместимости с системными тестами
+				// "-x", appendixPath,
+				"-e"
+			],
+			{	
+				outputChannel: this._config.getOutputChannel()
 			}
-			catch(error) {
-				ExceptionHelper.show(error, `Произошла неожиданная ошибка при нормализации события через нормализатор.`);
-				return "";
-			}
-		});
+		);
+
+		if(output.exitCode !== 0) {
+			throw new XpException(`Нормализатор вернул код ошибки ${output.exitCode}`);
+		}
+
+		if(!output.output) {
+			throw new XpException(`Нормализатор вернул пустую строку`);
+		}
+
+		Log.info(`Нормализация тестового события завершена`);
+		return output.output;
 	}
 }
 // 	/** Функция проверки отсутствия ошибок в диагностических сообщениях

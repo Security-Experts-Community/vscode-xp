@@ -114,6 +114,23 @@ $('textarea').on('focusin', function() {
 	$(this).height(this.scrollHeight);
 });
 
+function saveTest() {
+	// Получаем значения.	
+	const baseTestElement = $("#main-body");
+	const id = parseInt(baseTestElement.find('[name="test"]')[0].id);
+	const rawEvent = baseTestElement.find('[name="raw-event"]').val();
+	const expectation = baseTestElement.find('[name="expected"]').val();
+
+	vscode.postMessage({
+		command: 'saveTest',
+		test: {
+			"id": id,
+			"rawEvent" : rawEvent,
+			"expectation" : expectation,
+		}
+	});
+}
+
 $(document).ready(function() {
 	raws = $('[name=word-wrap]');
 	for (i = 0; i < raws.length; i++) {
@@ -138,22 +155,16 @@ $(document).ready(function() {
 		});
 	});
 
+	// Сохраняем все тесты по хот кею Ctrl+S
+	$(document).on("keydown", e => {
+		if (e.ctrlKey && e.code == 'KeyS') {
+			e.preventDefault();
+			saveTest();
+		}
+	});
+
 	// Сохраняем тест
 	$(document).on("click",'#save_test', function () {
-
-		// Получаем значения.	
-		const baseTestElement = $("#main-body");
-		const id = parseInt(baseTestElement.find('[name="test"]')[0].id);
-		const rawEvent = baseTestElement.find('[name="raw-event"]').val();
-		const expectation = baseTestElement.find('[name="expected"]').val();
-
-		vscode.postMessage({
-			command: 'saveTest',
-			test: {
-				"id": id,
-				"rawEvent" : rawEvent,
-				"expectation" : expectation,
-			}
-		});
+		saveTest();
 	});
 });

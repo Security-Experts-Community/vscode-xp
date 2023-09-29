@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.9.1 (Pre-Release)
+
+- исправлен баг с перемешиванием тестов нормализаций.
+
 ## 3.8.0 (Release)
 
 - фича [#132](https://github.com/Security-Experts-Community/vscode-xp/issues/132) - увеличение количества получаемых тестовых локализаций и увеличение скорости их генерации (special thanks @mmaximov);

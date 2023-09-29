@@ -53,15 +53,15 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 		
 		const difference = diffJson(expectation, actual);
 		
-		let result_diff = "";
+		let eventsDiff = "";
 		for (const part of difference) {
 			const sign = part.added ? '+' :	(part.removed ? '-' : ' ');
 			const lines = part.value.split(/\r?\n/).filter((line)=>{return line != '';});
 			for (const line of lines) {
-				result_diff += sign + line + '\n';
+				eventsDiff += sign + line + '\n';
 			}
 		}
-		unitTest.setOutput(result_diff);
+		unitTest.setOutput(eventsDiff);
 
 		if (difference.length == 1) {
 			unitTest.setStatus(TestStatus.Success);
@@ -79,6 +79,39 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 
 		if(eventObject['time']) {
 			delete eventObject['time'];
+		}
+
+		// Костыль. Нивелируем appendix.xp
+		// event_src.host = coalesce(event_src.fqdn, event_src.hostname, event_src.ip, recv_ipv4, recv_ipv6, recv_host)
+		if(eventObject['event_src.fqdn'] || eventObject['event_src.hostname'] || eventObject['event_src.ip'] || eventObject['recv_ipv4'] || eventObject['recv_ipv6'] ||eventObject['recv_host']) {
+			delete eventObject['event_src.host'];
+		}
+
+		// src.host = coalesce(src.fqdn, src.hostname, src.ip, src.mac)
+		if(eventObject['src.fqdn'] || eventObject['src.hostname'] || eventObject['src.ip'] || eventObject['src.mac']) {
+			delete eventObject['src.host'];
+		}
+
+		// dst.host = coalesce(dst.fqdn, dst.hostname, dst.ip, dst.mac)
+		if(eventObject['dst.fqdn'] || eventObject['dst.hostname'] || eventObject['dst.ip'] || eventObject['dst.mac']) {
+			delete eventObject['dst.host'];
+		}
+
+		// external_src.host = coalesce(external_src.fqdn, external_src.hostname, external_src.ip)
+		if(eventObject['external_src.fqdn'] || eventObject['external_src.hostname'] || eventObject['external_src.ip']) {
+			delete eventObject['external_src.host'];
+		}
+
+		// external_dst.host = coalesce(external_dst.fqdn, external_dst.hostname, external_dst.ip)
+		if(eventObject['external_dst.fqdn'] || eventObject['external_dst.hostname'] || eventObject['external_dst.ip']) {
+			delete eventObject['external_dst.host'];
+		}
+		
+		// if importance == null then
+		// 		importance = "info"
+		// endif
+		if(!eventObject['importance']) {
+			eventObject['importance'] = "info";
 		}
 
 		return eventObject;
