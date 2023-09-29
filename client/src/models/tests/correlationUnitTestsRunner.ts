@@ -134,9 +134,6 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 
 			// Коррекция вывода.
 			const ruleContent = await FileSystemHelper.readContentFile(ruleFilePath);
-			const lines = ruleContent.split(EOL);
-			lines.forEach(line => {if(line.includes("\n")){DialogHelper.showInfo(`File ${ruleFilePath} contains mixed ends of lines`);}});
-
 			diagnostics = TestHelper.correctWhitespaceCharacterFromErrorLines(ruleContent, diagnostics);
 
 			// Выводим ошибки в нативной для VsCode форме.

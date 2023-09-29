@@ -114,6 +114,10 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 			eventObject['importance'] = "info";
 		}
 
+		if(eventObject['event_src.host']) {
+			delete eventObject['event_src.host'];
+		}
+
 		return eventObject;
 	}
 }

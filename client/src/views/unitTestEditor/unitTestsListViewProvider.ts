@@ -13,6 +13,8 @@ import { BaseUnitTest } from '../../models/tests/baseUnitTest';
 import { Table } from '../../models/content/table';
 import { Macros } from '../../models/content/macros';
 import { SiemjManager } from '../../models/siemj/siemjManager';
+import { Correlation } from '../../models/content/correlation';
+import { Normalization } from '../../models/content/normalization';
 
 /**
  * Список тестов в отдельной вьюшке.
@@ -68,9 +70,12 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 		config.getContext().subscriptions.push(
 			vscode.commands.registerCommand(
 				UnitTestsListViewProvider.reloadAndRefreshCommand, 
-				(rule: RuleBaseItem) => { 
-					rule.reloadUnitTests();
-					testsListViewProvider.refresh(); 
+				() => { 
+					const selectedRule = ContentTreeProvider.getSelectedItem();
+					if(selectedRule instanceof Correlation || selectedRule instanceof Normalization) {
+						selectedRule.reloadUnitTests();
+						testsListViewProvider.refresh(); 
+					}
 				}
 			)
 		);	
