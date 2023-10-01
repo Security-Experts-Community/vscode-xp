@@ -534,7 +534,7 @@ export class Configuration {
 	 */
 	public getСorrelatorTimeoutPerSecond() : number {
 		const configuration = vscode.workspace.getConfiguration("xpConfig");
-		const correlatorTimeout = configuration.get<number>("correlatorTimeoutPerSecond");
+		const correlatorTimeout = configuration.get<number>("correlatorTimeout");
 		return correlatorTimeout;
 	}
 

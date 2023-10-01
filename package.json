@@ -541,7 +541,7 @@
 					"type": "string",
 					"markdownDescription": "Путь к выходной директории"
 				},
-				"xpConfig.correlatorTimeoutPerSecond": {
+				"xpConfig.correlatorTimeout": {
 					"scope": "window",
 					"type": "integer",
 					"description": "Таймаут работы коррелятора в секундах",
