@@ -145,7 +145,8 @@ export class IntegrationTestEditorViewProvider {
 			return;
 		}
 
-		Log.info(`WebView ${IntegrationTestEditorViewProvider.name} была обновлена`, focusTestNumber);
+		const resultFocusTestNumber = focusTestNumber ?? 1;
+		Log.info(`WebView ${IntegrationTestEditorViewProvider.name} была обновлена. Выбранный тест ${resultFocusTestNumber ?? "1"}`);
 
 		const resourcesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
@@ -154,7 +155,7 @@ export class IntegrationTestEditorViewProvider {
 			"IntegrationalTests": [],
 			"ExtensionBaseUri": extensionBaseUri,
 			"RuleName": this._rule.getName(),
-			"ActiveTestNumber": focusTestNumber == null ? 1 : focusTestNumber,
+			"ActiveTestNumber": resultFocusTestNumber,
 		};
 
 		try {
@@ -515,7 +516,7 @@ export class IntegrationTestEditorViewProvider {
 				return;
 			}
 			integrationTestSimplifiedContent = integrationTestContent.replace(
-				RegExpHelper.getExpectSection(),
+				RegExpHelper.getExpectSectionRegExp(),
 				"expect $1 {}");
 		}
 		catch (error) {
@@ -577,7 +578,7 @@ export class IntegrationTestEditorViewProvider {
 				const generatedExpectSection = `expect 1 ${testOutput}`;
 				const currentTestCode = currentIngTest.getTestCode();
 				const newTestCode = currentTestCode.replace(
-					RegExpHelper.getExpectSection(),
+					RegExpHelper.getExpectSectionRegExp(),
 					generatedExpectSection);
 
 				// Удаляем временные файлы.
@@ -641,11 +642,7 @@ export class IntegrationTestEditorViewProvider {
 				const testRunner = new IntegrationTestRunner(this._config, outputParser);
 				const siemjResult = await testRunner.run(this._rule, testRunnerOptions);
 
-				// Вывод ошибок и предупреждений, если такие имеются.
-				this._config.getDiagnosticCollection().clear();
-				for (const diagnostic of siemjResult.fileDiagnostics) {
-					this._config.getDiagnosticCollection().set(diagnostic.uri, diagnostic.diagnostics);
-				}
+				this._config.resetDiagnostics(siemjResult.fileDiagnostics);
 
 				const executedIntegrationTests = this._rule.getIntegrationTests();
 				if(executedIntegrationTests.every(it => it.getStatus() === TestStatus.Success)) {
@@ -656,10 +653,20 @@ export class IntegrationTestEditorViewProvider {
 				} 
 
 				if(executedIntegrationTests.some(it => it.getStatus() === TestStatus.Success)) {
-					DialogHelper.showInfo(`Не все тесты прошли успешно`);
+					DialogHelper.showInfo(`Не все тесты правила '${this._rule.getName()}' прошли успешно`);
+
+					const failedTestNumbers = executedIntegrationTests
+						.filter(it => it.getStatus() === TestStatus.Failed)
+						.map(fit => fit.getNumber());
+					
+					for(const failedTestNumber of failedTestNumbers) {
+						await this.showTestResultDiff(failedTestNumber);
+					}
 					return true;
 				} 
 
+				// TODO: PoC
+				
 				vscode.window.showErrorMessage(`Все тесты не были пройдены. Проверьте наличие синтаксических ошибок в коде правила или его зависимостях`);
 			}
 			catch (error) {
@@ -669,6 +676,57 @@ export class IntegrationTestEditorViewProvider {
 			return true;
 		});
 	}
+
+	private async showTestResultDiff(testNumber: number) {
+		// Получаем фактическое событие.
+		const actualEventsFilePath = TestHelper.getTestActualEventsFilePath(this._integrationTestTmpFilesPath, testNumber);
+		if(!actualEventsFilePath) {
+			DialogHelper.showError(`Результаты интеграционного теста №${testNumber} правила ${this._rule.getName()} не найдены`);
+			return;
+		}
+
+		const actualEvent = await FileSystemHelper.readContentFile(actualEventsFilePath);
+		if(!actualEvent) {
+			DialogHelper.showError(`Фактическое событий интеграционного теста №${testNumber} правила ${this._rule.getName()} пусто`);
+			return;
+		}
+
+		const clearedActualEvent = TestHelper.cleanTestCode(actualEvent.trim());
+		const formattedActualEvent = TestHelper.formatTestCodeAndEvents(clearedActualEvent);
+
+		// Записываем очищенное фактическое значение файл для последующего сравнения
+		const actualEventTestFilePath = path.join(this._integrationTestTmpFilesPath, `actualEvents${testNumber}.json`);
+		await FileSystemHelper.writeContentFile(actualEventTestFilePath, formattedActualEvent);
+
+		// Получаем ожидаемое событие.
+		const tests = this._rule.getIntegrationTests();
+		if(tests.length <= testNumber) {
+			DialogHelper.showError(`Запрашиваемый интеграционный тест №${testNumber} правила ${this._rule.getName()} не найден`);
+			return;
+		}
+
+		const testIndex = testNumber - 1;
+		const test = tests[testIndex];
+
+		const testCode = test.getTestCode();
+		const expectedEvent = RegExpHelper.getSingleExpectEvent(testCode);
+		if(!expectedEvent) {
+			DialogHelper.showError(`Ожидаемое событий интеграционного теста №${testNumber} правила ${this._rule.getName()} пусто`);
+			return;
+		}
+		const formattedExpectedEvent = TestHelper.formatTestCodeAndEvents(expectedEvent.trim());
+
+		// Записываем ожидаемое фактическое значение файл для последующего сравнения
+		const expectedEventTestFilePath = path.join(this._integrationTestTmpFilesPath, `expectedEvents${testNumber}.json`);
+		await FileSystemHelper.writeContentFile(expectedEventTestFilePath, formattedExpectedEvent);
+
+		vscode.commands.executeCommand("vscode.diff", 
+			vscode.Uri.file(actualEventTestFilePath),
+			vscode.Uri.file(expectedEventTestFilePath),
+			`Фактическое и ожидаемое события теста №${testNumber}`
+		);
+	}
+
 
 	async saveTest(message: any): Promise<IntegrationTest> {
 		// Обновляем и сохраняем тест.

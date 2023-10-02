@@ -60,7 +60,7 @@ export class IntegrationTestRunner {
 		});
 
 		if(!atLeastOneTestIsValid) {
-			throw new XpException("Для запуска тестов нужно добавить сырые события и условия выполнения теста.");
+			throw new XpException("Для запуска тестов нужно добавить сырые события и условия выполнения теста");
 		}
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
@@ -95,14 +95,14 @@ export class IntegrationTestRunner {
 			case CompilationType.Auto: {
 				const dependentCorrelations = options.dependentCorrelations;
 				if(dependentCorrelations.length === 0) {
-					throw new XpException("Опции запуска интеграционных тестов неконсистентны.");
+					throw new XpException("Опции запуска интеграционных тестов неконсистентны");
 				}
 
 				configBuilder.addCorrelationsGraphBuilding(true, options.dependentCorrelations);
 				break;
 			}
 			default: {
-				throw new XpException("Опции запуска интеграционных тестов неконсистентны.");
+				throw new XpException("Опции запуска интеграционных тестов неконсистентны");
 			}
 
 		}
@@ -111,7 +111,7 @@ export class IntegrationTestRunner {
 		configBuilder.addTestsRun(rule.getDirectoryPath(), options.tmpFilesPath);
 		const siemjConfContent = configBuilder.build();
 		if(!siemjConfContent) {
-			throw new XpException("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов.");
+			throw new XpException("Не удалось сгенерировать файл siemj.conf для заданного правила и тестов");
 		}
 
 		const siemjManager = new SiemjManager(this._config, options.cancellationToken);
@@ -119,7 +119,7 @@ export class IntegrationTestRunner {
 		const executedTests = rule.getIntegrationTests();
 
 		if(siemjExecutionResult.isInterrupted) {
-			throw new OperationCanceledException(`Запуск интеграционных тестов правила ${rule.getName()} был отменён.`);
+			throw new OperationCanceledException(`Запуск интеграционных тестов правила ${rule.getName()} был отменён`);
 		}
 
 		const siemjResult = await this._outputParser.parse(siemjExecutionResult.output);

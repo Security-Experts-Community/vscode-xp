@@ -4,7 +4,7 @@ import { Log } from '../extension';
 export class DialogHelper {
 	static async showInfo(message: string, ...params: string[]) : Promise<string> {
 		let returnValue: string;
-		if(params) {
+		if(params.length !== 0) {
 			returnValue = await vscode.window.showInformationMessage(message, ...params);	
 		} else {
 			returnValue = await  vscode.window.showInformationMessage(message);
@@ -12,7 +12,7 @@ export class DialogHelper {
 		
 		// Пишем в лог
 		let showInfoMessage: string;
-		if(params) {
+		if(params.length !== 0) {
 			const paramsString = params.filter(p => p).map(p => `"${p}"`).join(", ");
 			showInfoMessage = `"${returnValue}" = vscode.window.showInformationMessage("${message}", ${paramsString})`;
 		} else {

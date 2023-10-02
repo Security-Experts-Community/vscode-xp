@@ -11,6 +11,7 @@ import { Localization } from './content/localization';
 import { EDRPathHelper } from './locator/EDRPathLocator';
 import { OsType, PathLocator } from './locator/pathLocator';
 import { SIEMPathHelper } from './locator/SIEMPathLocator';
+import { FileDiagnostics } from './siemj/siemJOutputParser';
 
 export type EncodingType = "windows-1251" | "utf-8"
 
@@ -74,6 +75,21 @@ export class Configuration {
 		return undefined;
 	}
 
+	/**
+	 * Очищает все диагностики и добавляет новые
+	 * @param diagnostics 
+	 */
+	public resetDiagnostics(diagnostics: FileDiagnostics[]) : void {
+		this._diagnosticCollection.clear();
+		for (const diagnostic of diagnostics) {
+			this._diagnosticCollection.set(diagnostic.uri, diagnostic.diagnostics);
+		}
+	}
+
+	/**
+	 * TODO: инкапсулировать доступ к диагностикам
+	 * @returns 
+	 */
 	public getDiagnosticCollection() : vscode.DiagnosticCollection {
 		return this._diagnosticCollection;
 	}

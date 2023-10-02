@@ -1,5 +1,6 @@
 import { EOL } from 'os';
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 import { RuleBaseItem } from '../models/content/ruleBaseItem';
 import { IntegrationTest } from '../models/tests/integrationTest';
@@ -9,6 +10,7 @@ import { ParseException } from '../models/parseException';
 import { BaseUnitTest } from '../models/tests/baseUnitTest';
 import { StringHelper } from './stringHelper';
 import { Log } from '../extension';
+import { FileSystemHelper } from './fileSystemHelper';
 
 export type EventMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
@@ -29,6 +31,9 @@ export class TestHelper {
 
 			/\s*"time"(\s*):(\s*)".*?",/g,	// в середине json-а
 			/,\s*"time"(\s*):(\s*)".*?"/g,	// в конце json-а
+
+			/\s*"incident.name"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"incident.name"(\s*):(\s*)".*?"/g,	// в конце json-а
 
 			/\s*"siem_id"(\s*):(\s*)".*?",/g,	// в середине json-а
 			/,\s*"siem_id"(\s*):(\s*)".*?"/g,	// в конце json-а
@@ -54,6 +59,22 @@ export class TestHelper {
 		}
 
 		return testCode;
+	}
+
+	/**
+	 * Возвращает путь к результату интеграционных тестов. Данный путь существует только тогда, когда включено сохранение временных файлов. В противном случае директория очищается.
+	 * @param integrationTestsTmpDirPath 
+	 * @param testNumber 
+	 */
+	public static getTestActualEventsFilePath(integrationTestsTmpDirPath: string, testNumber: number): string {
+		// c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
+		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
+		const resultEvent = files.find(fp => {
+			const fileName = path.basename(fp).toLocaleLowerCase();
+			return fileName === `raw_events_${testNumber}_norm_enr_cor_enr.json`;
+		});
+
+		return resultEvent;
 	}
 
 	public static cleanModularTestResult(testCode: string) : string {

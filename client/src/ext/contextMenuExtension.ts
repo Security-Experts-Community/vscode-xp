@@ -38,7 +38,7 @@ export class TestsFormatContentMenuExtension {
 		);
 
 		// Форматирование кода тестов при запросе форматирования.
-		const formater = vscode.languages.registerDocumentFormattingEditProvider('test', {
+		const formatter = vscode.languages.registerDocumentFormattingEditProvider('test', {
 			provideDocumentFormattingEdits(document: vscode.TextDocument): vscode.TextEdit[] {
 
 				const originalTestCode = document.getText();
@@ -52,7 +52,7 @@ export class TestsFormatContentMenuExtension {
 				return [vscode.TextEdit.replace(documentRage, formattedTestCode)];
 			}
 		});
-		context.subscriptions.push(formater);
+		context.subscriptions.push(formatter);
 
 		// Форматирование кода теста для выделенного участка.
 		const rangeFormatter = vscode.languages.registerDocumentRangeFormattingEditProvider('test', {

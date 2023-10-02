@@ -1,7 +1,17 @@
 import * as vscode from 'vscode';
 export class RegExpHelper {
-	public static getExpectSection() : RegExp {
+	public static getExpectSectionRegExp() : RegExp {
 		return /expect\s*(\d+|not)\s*{(.*)}/gm;
+	}
+
+	public static getSingleExpectEvent(text: string) : string {
+		const result = /expect\s*1\s*({.*})/gm.exec(text);
+
+		if(result.length !== 2) {
+			throw new Error("Не удалось извлечь ожидаемое событие из кода теста");
+		}
+
+		return result[1];
 	}
 
 	public static getJsons() : RegExp {
