@@ -21,7 +21,7 @@
 			<!-- Tab links -->
 			<div class="tab">
 				<div class = 'tablinks-wrap'>
-					{{#IntegrationalTests}}
+					{{#IntegrationTests}}
 					<div 
 						class="tablinks {{TestStatus}}"
 						onclick="openTest('{{TestNumber}}')" 
@@ -36,7 +36,7 @@
 							&#128465;
 						</button>
 					</div>
-					{{/IntegrationalTests}}
+					{{/IntegrationTests}}
 					<button id="add-test" onclick="createTest()">+</button>
 				</div>
 			</div>
@@ -44,7 +44,7 @@
 
 		<!-- Tab content -->
 		<div id="main-body" class="tabs">
-		{{#IntegrationalTests}}
+		{{#IntegrationTests}}
 		<div id="{{TestNumber}}" name="test" data-test="{{JsonedTestObject}}" class="tabcontent">
 			
 			<!-- Верните две строки ниже, когда будете готовы выводить сообщение об ошибке -->
@@ -55,7 +55,7 @@
 			<!-- Raw Events -->
 			<div class="test_block">
 				<div class="block_header">
-					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
 					<label for="raw_event" class="label">Сырые события:</label>
 
 					<input type="checkbox" name="word-wrap" onclick="wrap(this);" checked>
@@ -89,11 +89,10 @@
 			{{#NormEvents}}
 			<div class="test_block">
 				<div class="block_header">
-					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
 					<label for="norm_event" class="label">Нормализованное событие:</label>
 				</div>
 				<div class="manage_buttons">
-					<input name="fast_test" type="button" value="&#9654;   Получить ожидаемое событие  ">
 				</div>
 				<div class="text">
 					<div 
@@ -110,11 +109,20 @@
 			<!-- Test Conditions -->
 			<div class="test_block">
 				<div class="block_header">
-					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
-					<label for="expect" class="label">Условия прохождения теста:</label>
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
+					<label for="expect" class="label">Условие прохождение теста:</label>
 				</div>
 				<div class="manage_buttons">
-					<input id="clean_test_button" type="button" value="Очистить">
+					<!-- Получить ожидаемое событие можно только при наличии нормализованных событий -->
+					{{#NormEvents.0}}
+						<input name="fast_test" type="button" value="&#9654;   Получить ожидаемое событие  ">
+					{{/NormEvents.0}}
+					<!-- Сравнить полученные результаты можно только если тест прошёл неуспешно -->
+					{{#IsFailed}}
+						<input id="open_result_diff" type="button" value="Сравнить полученные результаты">
+					{{/IsFailed}}
+
+					<input id="clean_test_button" type="button" value="Очистить" alt="Исключает из кода теста технические поля события">
 				</div>
 
 				<div class="text">
@@ -128,7 +136,7 @@
 				</div>
 			</div>
 		</div>
-		{{/IntegrationalTests}}
+		{{/IntegrationTests}}
 		</div>
 		
 		<!-- Сохраняем временные данные. -->
@@ -255,7 +263,7 @@
 					});
 				};
 
-			function togleTextarea(arrow) {
+			function toggleTextarea(arrow) {
 				labels = arrow.parentNode.parentNode.children[1];
 				txt = arrow.parentNode.parentNode.children[2];
 				if (txt.style.display == 'none') {
@@ -615,6 +623,14 @@
 						activeTestNumber : activeTestNumber,
 
 						testCode : testCode,
+					});
+				});
+
+				$(document).on("click",'#open_result_diff', function () {
+					const activeTestNumber = $("#active_test_number").val();
+					vscode.postMessage({
+						command: 'openResultDiff',
+						activeTestNumber : activeTestNumber
 					});
 				});
 

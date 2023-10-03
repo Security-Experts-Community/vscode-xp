@@ -55,7 +55,7 @@ export class IntegrationTestEditorViewProvider {
 				async (rule: Correlation | Enrichment) => {
 					// Обновляем интеграционные тесты для того, чтобы можно было увидеть актуальные тесты при их модификации на ЖД.
 					if (!rule) {
-						DialogHelper.showError("Правило еще не успело подгрузиться. Повторите еще раз.");
+						DialogHelper.showError("Правило еще не успело загрузится. Повторите еще раз");
 						return;
 					}
 					rule.reloadIntegrationTests();
@@ -77,7 +77,7 @@ export class IntegrationTestEditorViewProvider {
 	public static readonly showEditorCommand = "IntegrationTestEditorView.showEditor";
 	public async showEditor(rule: Correlation | Enrichment) {
 
-		Log.info(`Редактор интеграционных тестов открыт с помощью команды ${IntegrationTestEditorViewProvider.showEditorCommand} для правила ${rule.getName()}`);
+		Log.info(`Редактор интеграционных тестов открыт для правила ${rule.getName()} с помощью команды ${IntegrationTestEditorViewProvider.showEditorCommand}`);
 
 		if (this._view) {
 			Log.info(`Открытый ранее редактор интеграционных тестов для правила ${this._rule.getName()} был автоматически закрыт`);
@@ -152,7 +152,7 @@ export class IntegrationTestEditorViewProvider {
 		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
 
 		const plain = {
-			"IntegrationalTests": [],
+			"IntegrationTests": [],
 			"ExtensionBaseUri": extensionBaseUri,
 			"RuleName": this._rule.getName(),
 			"ActiveTestNumber": resultFocusTestNumber,
@@ -163,7 +163,7 @@ export class IntegrationTestEditorViewProvider {
 
 			// Если тестов нет, то создаём пустую форму для первого теста
 			if (integrationTest.length === 0) {
-				plain["IntegrationalTests"].push({
+				plain["IntegrationTests"].push({
 					"TestNumber": 1,
 					"RawEvents": '',
 					"NormEvents": '',
@@ -181,6 +181,7 @@ export class IntegrationTestEditorViewProvider {
 					const formattedTestCode = TestHelper.formatTestCodeAndEvents(it.getTestCode());
 					const formattedNormalizedEvents = TestHelper.formatTestCodeAndEvents(it.getNormalizedEvents());
 
+					let isFailed = false;
 					let testStatusStyle: string;
 					const testStatus = it.getStatus();
 					switch (testStatus) {
@@ -194,11 +195,12 @@ export class IntegrationTestEditorViewProvider {
 						}
 						case TestStatus.Failed: {
 							testStatusStyle = "failure";
+							isFailed = true;
 							break;
 						}
 					}
-
-					plain["IntegrationalTests"].push({
+				
+					plain["IntegrationTests"].push({
 						"TestNumber": it.getNumber(),
 						"RawEvents": rawEvents,
 						"NormEvents": formattedNormalizedEvents,
@@ -206,6 +208,7 @@ export class IntegrationTestEditorViewProvider {
 						"TestOutput": it.getOutput(),
 						"JsonedTestObject": jsonedTestObject,
 						"TestStatus": testStatusStyle,
+						"IsFailed" : isFailed
 					});
 				});
 			}
@@ -284,6 +287,15 @@ export class IntegrationTestEditorViewProvider {
 			case 'cleanTestCode': {
 				return this.cleanTestCode(message);
 			}
+
+			case 'openResultDiff': {
+				if(!message.activeTestNumber) {
+					DialogHelper.showError('Номер теста не передан в запросе на back-end');
+					return;
+				}
+				const activeTestNumber = parseInt(message.activeTestNumber);
+				return this.showTestResultDiff(activeTestNumber);
+			}
 		}
 	}
 
@@ -292,7 +304,7 @@ export class IntegrationTestEditorViewProvider {
 	}
 
 	private async runToolingAction(message: any) {
-		// Проверяем, что комманда использует утилиты.
+		// Проверяем, что команда использует утилиты.
 		const commandName = message.command as string;
 		if (!['normalize', 'normalizeAndEnrich', 'fastTest', 'fullTest'].includes(commandName)) {
 			return;
@@ -654,19 +666,9 @@ export class IntegrationTestEditorViewProvider {
 
 				if(executedIntegrationTests.some(it => it.getStatus() === TestStatus.Success)) {
 					DialogHelper.showInfo(`Не все тесты правила '${this._rule.getName()}' прошли успешно`);
-
-					const failedTestNumbers = executedIntegrationTests
-						.filter(it => it.getStatus() === TestStatus.Failed)
-						.map(fit => fit.getNumber());
-					
-					for(const failedTestNumber of failedTestNumbers) {
-						await this.showTestResultDiff(failedTestNumber);
-					}
 					return true;
 				} 
 
-				// TODO: PoC
-				
 				vscode.window.showErrorMessage(`Все тесты не были пройдены. Проверьте наличие синтаксических ошибок в коде правила или его зависимостях`);
 			}
 			catch (error) {
@@ -700,7 +702,7 @@ export class IntegrationTestEditorViewProvider {
 
 		// Получаем ожидаемое событие.
 		const tests = this._rule.getIntegrationTests();
-		if(tests.length <= testNumber) {
+		if(tests.length < testNumber) {
 			DialogHelper.showError(`Запрашиваемый интеграционный тест №${testNumber} правила ${this._rule.getName()} не найден`);
 			return;
 		}

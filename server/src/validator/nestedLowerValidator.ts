@@ -52,8 +52,8 @@ export class NestedLowerValidator extends IValidator {
 						const diagnostic = this.getDiagnosticByRegExpResult(
 							lowerCallResult,
 							textDocument,
-							"Данное условие некорректно, так как регистр первого параметра отличается от второго параметра.",
-							DiagnosticSeverity.Error);
+							"Вероятно, данное условие некорректно, так как регистр первого параметра отличается от второго параметра.",
+							DiagnosticSeverity.Warning);
 
 						diagnostics.push(diagnostic);
 						break;

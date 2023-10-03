@@ -114,7 +114,7 @@ export class RunIntegrationTestDialog {
 		testRunnerOptions.tmpFilesPath = this._tmpFilesPath;
 
 		const result = await DialogHelper.showInfo(
-			"Тестируемое правило обогащения может обогащать как нормализованные события, так и корреляционные. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",
+			"Правило обогащения может обогащать как нормализованные события, так и корреляционные. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",
 			this.CURRENT_PACKAGE,
 			this.ALL_PACKAGES);
 
