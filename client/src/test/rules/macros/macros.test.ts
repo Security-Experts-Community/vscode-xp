@@ -5,6 +5,7 @@ import * as path from 'path';
 import { TestFixture, getDocUri, testCompletion} from '../../helper';
 import { ContentTreeProvider } from '../../../views/contentTree/contentTreeProvider';
 import { Macros } from '../../../models/content/macros';
+import { Configuration } from '../../../models/configuration';
 
 suite('Макросы', () => {
 
@@ -56,6 +57,8 @@ suite('Макросы', () => {
 	});
 
 	test('Правильное создание ObjectID', async () => {
+		Configuration.get().setContentPrefix('LOC');
+		
 		const macroDirectory = TestFixture.getMacrosPath("ProcessStart");
 		const macro = await Macros.parseFromDirectory(macroDirectory);
 		const expectedObjectId = "LOC-RF-196803747";

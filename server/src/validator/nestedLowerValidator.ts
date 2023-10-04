@@ -44,7 +44,7 @@ export class NestedLowerValidator extends IValidator {
 				let stringLiteral = lowerCallResult[1];
 
 				// Обработаем ситуацию появления ошибки с \System и исключаем \\\\\S в пути.
-				stringLiteral = stringLiteral.replace(/(\\A|\\W|\\B|\\S)(\+|\*|\?|\.|$)+/gm, "");
+				stringLiteral = stringLiteral.replace(/(\\A|\\W|\\B|\\S)(\+|\*|\?|\.|$|{)+/gm, "");
 
 				for(const char of stringLiteral) {
 					// В литерале есть большая буква, добавляем ошибку.

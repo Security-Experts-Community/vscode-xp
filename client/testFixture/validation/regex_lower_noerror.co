@@ -1,0 +1,10 @@
+
+rule Rule: Event+ timer 1m
+
+    on Event {
+        $alert.regex_match = regex(lower(object.process.cmdline), "\.\S{2,6}\s+", 0)
+    }
+
+emit {
+}
+

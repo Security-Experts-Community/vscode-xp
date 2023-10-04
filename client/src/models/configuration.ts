@@ -544,6 +544,11 @@ export class Configuration {
 		return taxonomyFullPath;
 	}
 
+	public async setContentPrefix(prefix: string) : Promise<void> {
+		const configuration = vscode.workspace.getConfiguration("xpConfig");
+		await configuration.update("contentPrefix", prefix, true, false);
+	}
+
 	/**
 	 * Возвращает таймаут работы коррелятора.
 	 * @returns 

@@ -5,8 +5,7 @@ import * as path from 'path';
 import { getDocUri, testCompletion, TestFixture } from '../../helper';
 import { ContentTreeProvider } from '../../../views/contentTree/contentTreeProvider';
 import { Enrichment } from '../../../models/content/enrichment';
-import { IntegrationTest } from '../../../models/tests/integrationTest';
-import { Localization } from '../../../models/content/localization';
+import { Configuration } from '../../../models/configuration';
 
 suite('Обогащение', () => {
 
@@ -24,6 +23,8 @@ suite('Обогащение', () => {
 	});
 
 	test('Правильное создание ObjectID', async () => {
+		Configuration.get().setContentPrefix('LOC');
+		
 		const enrichment = Enrichment.create("New_enrichment");
 		const expectedObjectId = "LOC-ER-140080387";
 		assert.strictEqual(enrichment.generateObjectId(), expectedObjectId);

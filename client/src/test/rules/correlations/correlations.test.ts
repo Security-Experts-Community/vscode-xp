@@ -8,6 +8,7 @@ import { TestFixture } from '../../helper';
 import { ContentTreeProvider } from '../../../views/contentTree/contentTreeProvider';
 import { MetaInfo } from '../../../models/metaInfo/metaInfo';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
+import { Configuration } from '../../../models/configuration';
 
 suite('Корреляции', () => {
 
@@ -72,6 +73,8 @@ suite('Корреляции', () => {
 	});
 
 	test('Правильное создание ObjectID', async () => {
+		Configuration.get().setContentPrefix('LOC');
+		
 		const correlation = Correlation.create("New_correlation");
 		const expectedObjectId = "LOC-CR-109745836";
 		

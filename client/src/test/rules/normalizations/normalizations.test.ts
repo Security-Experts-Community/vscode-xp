@@ -5,6 +5,7 @@ import * as path from 'path';
 import { getDocUri, testCompletion, TestFixture } from '../../helper';
 import { Normalization } from '../../../models/content/normalization';
 import { ContentTreeProvider } from '../../../views/contentTree/contentTreeProvider';
+import { Configuration } from '../../../models/configuration';
 
 suite('Нормализация', () => {
 
@@ -52,6 +53,8 @@ suite('Нормализация', () => {
 	});
 
 	test('Правильное создание ObjectID', async () => {
+		Configuration.get().setContentPrefix('LOC');
+		
 		const rulePath = TestFixture.getNormalizationPath("empty_normalization_code");
 		const normalization = await Normalization.parseFromDirectory(rulePath);
 		const expectedObjectId = "LOC-NF-196826125";

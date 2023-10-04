@@ -5,6 +5,7 @@ import * as path from 'path';
 import { TestFixture } from '../helper';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 import { Table } from '../../models/content/table';
+import { Configuration } from '../../models/configuration';
 
 suite('Табличные списки', () => {
 
@@ -59,6 +60,8 @@ suite('Табличные списки', () => {
 	});
 
 	test('Правильное создание ObjectID', async () => {
+		Configuration.get().setContentPrefix('LOC');
+		
 		const tablePath = TestFixture.getTablesPath("AD_Domain_Controllers");
 		const table = await Table.parseFromDirectory(tablePath);
 		const expectedObjectId = "LOC-TL-41842215";

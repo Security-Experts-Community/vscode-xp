@@ -12,9 +12,17 @@ suite('Проверки логики использования функции l
 		const actualDiagnostics = vscode.languages.getDiagnostics(docUri);
 		assert.ok(actualDiagnostics.length == 0);
 	});
+
+	test('regex(lower(datafield3), "\\.\\S{2,6}\\s+\\"))', async () => {
+		const docUri = TestFixture.getValidationUri('regex_lower_noerror.co');
+		await activate(docUri);
+
+		const actualDiagnostics = vscode.languages.getDiagnostics(docUri);
+		assert.ok(actualDiagnostics.length === 0);
+	});
 	
 	test('regex(lower(datafield3), "UPN=(.*?)@", 1) != lower(subject.name)', async () => {
-		const docUri = TestFixture.getValidationUri('regex_lower_errro.co');
+		const docUri = TestFixture.getValidationUri('regex_lower_error.co');
 		await activate(docUri);
 
 		const actualDiagnostics = vscode.languages.getDiagnostics(docUri);
