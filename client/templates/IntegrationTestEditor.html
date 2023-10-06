@@ -185,8 +185,27 @@
 					tests: tests
 				});
 			};
+			// Подсветка синтаксиса кода теста.
+			const xpTestCodeHighlighter = el => {
+				const s = el?.innerText;
+				if(!s)  {
+					return;
+				}
+				const highlightNormEvent = hljs.highlight(s, {language: 'xp-test-code'}).value;
+				el.innerHTML = highlightNormEvent;
+			};
+
+			// Подсветка синтаксиса json.
+			const jsonHighlighter = el => {
+				const s = el?.innerText;
+				if(!s)  {
+					return;
+				}
+				const highlightNormEvent = hljs.highlight(s, {language: 'json'}).value;
+				el.innerHTML = highlightNormEvent;
+			};
 			
-			const editor = (el, tab = '    ') => {
+			const editor = (el, highlight, tab = '    ') => {
 					const caret = () => {
 						const range = window.getSelection().getRangeAt(0);
 						const prefix = range.cloneRange();
@@ -219,6 +238,8 @@
 						return pos;
 					};
 
+					highlight(el);
+
 					// Обработка символа табуляции
 					el.addEventListener('keydown', e => {
 						if (e.which === 9) {
@@ -226,6 +247,7 @@
 							const range = window.getSelection().getRangeAt(0);
 							range.deleteContents();
 							range.insertNode(document.createTextNode(tab));
+							highlight(el);
 							setCaret(pos);
 							e.preventDefault();
 						}
@@ -235,6 +257,7 @@
 					el.addEventListener('keyup', e => {
 						if ((e.keyCode >= 0x30 || e.keyCode == 0x20) && !(e.ctrlKey && e.code == 'KeyA')) {
 							const pos = caret();
+							highlight(el);
 							setCaret(pos);
 						}
 					});
@@ -427,14 +450,12 @@
 				// Добавляем автоподстветку для каждого из полей кода тестов.
 				const xpTestElements = document.querySelectorAll(".xp-test_highlight");
 				for(el of xpTestElements) {
-					el.innerHTML = hljs.highlight(el.innerHTML ? el.innerHTML : '', {language: 'xp-test-code'}).value
-					editor(el);
+					editor(el, xpTestCodeHighlighter);
 				}
 
 				const jsonElements = document.querySelectorAll(".json_highlight");
 				for(el of jsonElements) {
-					el.innerHTML = hljs.highlight(el.innerHTML ? el.innerHTML : '', {language: 'json'}).value
-					editor(el);
+					editor(el, jsonHighlighter);
 				}
 			}
 
