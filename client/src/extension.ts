@@ -103,7 +103,7 @@ export async function activate(context: ExtensionContext) {
 			{
 				lineWidth: -1,
 				indent: 4,
-				noArrayIndent: true
+				noArrayIndent: true,
 			}
 		);
 

@@ -408,7 +408,7 @@ export class MetaInfo {
 		let yamlContent = YamlHelper.stringify(metaInfoObject);
 		yamlContent = this.correctEventIds(yamlContent);
 
-		await FileSystemHelper.writeContentFile(metaInfoFullPath, yamlContent);
+		await FileSystemHelper.writeContentFileIfChanged(metaInfoFullPath, yamlContent);
 	}
 
 	public correctEventIds(metaInfoContent: string): string {
@@ -417,6 +417,9 @@ export class MetaInfo {
 
 		let curResult: RegExpExecArray | null;
 		while ((curResult = eventIdItemRegExp.exec(metaInfoContent))) {
+			if(curResult.length != 2)
+				continue;
+
 			const eventIdFull = curResult[0];
 			const eventId = curResult[1];
 

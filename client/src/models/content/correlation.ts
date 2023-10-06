@@ -23,6 +23,11 @@ import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { XPObjectType } from './xpObjectType';
 import { FileSystemException } from '../fileSystemException';
 
+export class CorrelationEvent {
+	correlation_name: string;
+	correlation_type: string;
+}
+
 export class Correlation extends RuleBaseItem {
 	protected getLocalizationPrefix(): string {
 		return "corrname";

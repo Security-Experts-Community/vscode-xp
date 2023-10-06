@@ -1,12 +1,13 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as os from 'os';
 
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
 import { EventMimeType as EventMimeType, TestHelper } from '../../helpers/testHelper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
-import { Correlation } from '../../models/content/correlation';
+import { Correlation, CorrelationEvent } from '../../models/content/correlation';
 import { Enrichment } from '../../models/content/enrichment';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
@@ -294,7 +295,12 @@ export class IntegrationTestEditorViewProvider {
 					return;
 				}
 				const activeTestNumber = parseInt(message.activeTestNumber);
-				return this.showTestResultDiff(activeTestNumber);
+				try {
+					await this.showTestResultDiff(activeTestNumber);
+				}
+				catch(error) {
+					ExceptionHelper.show(error, "Ошибка сравнения фактического и ожидаемого события");
+				}
 			}
 		}
 	}
@@ -680,25 +686,6 @@ export class IntegrationTestEditorViewProvider {
 	}
 
 	private async showTestResultDiff(testNumber: number) {
-		// Получаем фактическое событие.
-		const actualEventsFilePath = TestHelper.getTestActualEventsFilePath(this._integrationTestTmpFilesPath, testNumber);
-		if(!actualEventsFilePath) {
-			DialogHelper.showError(`Результаты интеграционного теста №${testNumber} правила ${this._rule.getName()} не найдены`);
-			return;
-		}
-
-		const actualEvent = await FileSystemHelper.readContentFile(actualEventsFilePath);
-		if(!actualEvent) {
-			DialogHelper.showError(`Фактическое событий интеграционного теста №${testNumber} правила ${this._rule.getName()} пусто`);
-			return;
-		}
-
-		const clearedActualEvent = TestHelper.cleanTestCode(actualEvent.trim());
-		const formattedActualEvent = TestHelper.formatTestCodeAndEvents(clearedActualEvent);
-
-		// Записываем очищенное фактическое значение файл для последующего сравнения
-		const actualEventTestFilePath = path.join(this._integrationTestTmpFilesPath, `actualEvents${testNumber}.json`);
-		await FileSystemHelper.writeContentFile(actualEventTestFilePath, formattedActualEvent);
 
 		// Получаем ожидаемое событие.
 		const tests = this._rule.getIntegrationTests();
@@ -716,11 +703,51 @@ export class IntegrationTestEditorViewProvider {
 			DialogHelper.showError(`Ожидаемое событий интеграционного теста №${testNumber} правила ${this._rule.getName()} пусто`);
 			return;
 		}
+
+		let expectedKeys: string[] = [];
+		try {
+			const expectedEventObject = JSON.parse(expectedEvent);
+			expectedKeys = Object.keys(expectedEventObject);
+		}
+		catch(error) {
+			throw new XpException(`Из ожидаемого события тест №${test.getNumber} не удалось получить JSON. Проверьте его корректность и повторите`, error);
+		}
+
 		const formattedExpectedEvent = TestHelper.formatTestCodeAndEvents(expectedEvent.trim());
 
 		// Записываем ожидаемое фактическое значение файл для последующего сравнения
 		const expectedEventTestFilePath = path.join(this._integrationTestTmpFilesPath, `expectedEvents${testNumber}.json`);
 		await FileSystemHelper.writeContentFile(expectedEventTestFilePath, formattedExpectedEvent);
+
+
+		// Получаем фактическое событие.
+		const actualEventsFilePath = TestHelper.getTestActualEventsFilePath(this._integrationTestTmpFilesPath, testNumber);
+		if(!actualEventsFilePath) {
+			throw new XpException(`Результаты интеграционного теста №${testNumber} правила ${this._rule.getName()} не найдены`);
+		}
+
+		// Событие может прилетать не одно
+		const actualEventsString = await FileSystemHelper.readContentFile(actualEventsFilePath);
+		if(!actualEventsString) {
+			throw new XpException(`Фактическое событий интеграционного теста №${testNumber} правила ${this._rule.getName()} пусто`);
+		}
+
+		const actualEvents = actualEventsString.split(os.EOL).filter(l => l);
+		// Отбираем ожидаемое событие по имени правила
+		const actualFilteredEvents = TestHelper.filterCorrelationEvents(actualEvents, this._rule.getName());
+
+		// Исключаем поля, которых нет в ожидаемом, чтобы сравнение было репрезентативным.
+		const actualFilteredEventsString = actualFilteredEvents
+			.map(arl => JSON.parse(arl))
+			.map(aro => TestHelper.removeAnotherObjectKeys(aro, expectedKeys))
+			.map(aro => JSON.stringify(aro))
+			.join(os.EOL);
+
+		const formattedActualEvent = TestHelper.formatTestCodeAndEvents(actualFilteredEventsString);
+
+		// Записываем очищенное фактическое значение файл для последующего сравнения
+		const actualEventTestFilePath = path.join(this._integrationTestTmpFilesPath, `actualEvents${testNumber}.json`);
+		await FileSystemHelper.writeContentFile(actualEventTestFilePath, formattedActualEvent);
 
 		vscode.commands.executeCommand("vscode.diff", 
 			vscode.Uri.file(actualEventTestFilePath),
@@ -733,7 +760,7 @@ export class IntegrationTestEditorViewProvider {
 	async saveTest(message: any): Promise<IntegrationTest> {
 		// Обновляем и сохраняем тест.
 		const test = await TestHelper.saveIntegrationTest(this._rule, message);
-		DialogHelper.showInfo(`Тест №${test.getNumber()} сохранен.`);
+		DialogHelper.showInfo(`Тест №${test.getNumber()} сохранен`);
 		return test;
 	}
 
@@ -742,7 +769,7 @@ export class IntegrationTestEditorViewProvider {
 		// Номер активного теста.
 		const activeTestNumberString = message?.activeTestNumber;
 		if (!activeTestNumberString) {
-			throw new XpException(`Не задан номер активного теста.`);
+			throw new XpException(`Не задан номер активного теста`);
 		}
 
 		return TestHelper.saveAllTest(message, this._rule);

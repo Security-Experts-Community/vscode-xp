@@ -1,4 +1,4 @@
-import { EOL } from 'os';
+import * as os from 'os';
 import * as vscode from 'vscode';
 import * as path from 'path';
 
@@ -11,10 +11,41 @@ import { BaseUnitTest } from '../models/tests/baseUnitTest';
 import { StringHelper } from './stringHelper';
 import { Log } from '../extension';
 import { FileSystemHelper } from './fileSystemHelper';
+import { CorrelationEvent } from '../models/content/correlation';
 
 export type EventMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
 export class TestHelper {
+
+	public static removeAnotherObjectKeys(object: any, requiredKeys: string[]): string {
+
+		const objectCopy = Object.assign({}, object);
+		const objectKeys = Object.keys(object);
+		for(const objectKey of objectKeys) {
+			if(!requiredKeys.includes(objectKey)) {
+				delete objectCopy[objectKey];
+			}
+		}
+
+		return objectCopy;
+	}
+
+	public static filterCorrelationEvents(jsons: string[], ruleName: string): string[] {
+		const filteredJsons: string[] = [];
+		for(const eventJson of jsons) {
+			try {
+				const eventObject = JSON.parse(eventJson) as CorrelationEvent;
+				if(eventObject.correlation_name === ruleName) {
+					filteredJsons.push(eventJson.trim());
+				}
+			}
+			catch(error: unknown) {
+				continue;
+			}
+		}
+
+		return filteredJsons;
+	}
 
 	/**
 	 * Убирает из кода теста ключи 'generator.version', 'uuid', '_subjects', '_objects', 'subevents', 'subevents.time'
@@ -199,7 +230,7 @@ export class TestHelper {
 					return neo;
 				})
 				.map(neo => JSON.stringify(neo))
-				.join(EOL);
+				.join(os.EOL);
 
 		}
 		catch (error) {
@@ -508,14 +539,14 @@ export class TestHelper {
 				let rawEvents = plainTest?.rawEvents;
 
 				// Из textarea новые строки только \n, поэтому надо их поправить под систему.
-				rawEvents = rawEvents.replace(/(?<!\\)\n/gm, EOL);
+				rawEvents = rawEvents.replace(/(?<!\\)\n/gm, os.EOL);
 				test.setRawEvents(TestHelper.compressTestCode(rawEvents));
 
 				// Код теста.
 				let testCode = plainTest?.testCode;
 
 				// Из textarea новые строки только \n, поэтому надо их поправить под систему.
-				testCode = testCode.replace(/(?<!\\)\n/gm, EOL);
+				testCode = testCode.replace(/(?<!\\)\n/gm, os.EOL);
 				test.setTestCode(TestHelper.compressTestCode(testCode));
 
 				// Нормализованные события.
