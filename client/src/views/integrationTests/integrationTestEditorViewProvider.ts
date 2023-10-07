@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as os from 'os';
 
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
@@ -13,19 +12,17 @@ import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
 import { SiemjManager } from '../../models/siemj/siemjManager';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { FastTest } from '../../models/tests/fastTest';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { TestStatus } from '../../models/tests/testStatus';
-import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { XpException } from '../../models/xpException';
 import { Enveloper } from '../../models/enveloper';
 import { ExtensionState } from '../../models/applicationState';
-import { RunIntegrationTestDialog } from '../runIntegrationDialog';
 import { Log } from '../../extension';
 import { ShowTestResultsDiffCommand } from './showTestResultsDiffCommand';
+import { RunIntegrationTestsCommand } from './runIntegrationTestsCommand';
 
 export class IntegrationTestEditorViewProvider {
 
@@ -106,11 +103,11 @@ export class IntegrationTestEditorViewProvider {
 			});
 
 		// Создаем временную директорию для результатов тестов, которая посмотреть почему не прошли тесты.
-		this._integrationTestTmpFilesPath = this._config.getRandTmpSubDirectoryPath();
+		this._testsTmpFilesPath = this._config.getRandTmpSubDirectoryPath();
 
 		this._view.onDidDispose(async (e: void) => {
 				this._view = undefined;
-				await this.clearTestTmpDir();
+				await FileSystemHelper.recursivelyDeleteDirectory(this._testsTmpFilesPath);
 			},
 			this);
 
@@ -129,16 +126,7 @@ export class IntegrationTestEditorViewProvider {
 	/**
 	 * Удаляет директорию в с временными файлами интеграционных тестов, который нужны для выявления ошибок в тестах.
 	 */
-	private async clearTestTmpDir() {
-		try {
-			if(fs.existsSync(this._integrationTestTmpFilesPath)) {
-				await fs.promises.rmdir(this._integrationTestTmpFilesPath, {recursive: true});
-			}
-		}
-		catch(error) {
-			Log.warn(`Не удалось удалить директорию временных файлов интеграционных тестов ${this._integrationTestTmpFilesPath}`);
-		}
-	}
+
 
 	private async updateView(focusTestNumber?: number): Promise<void> {
 
@@ -297,18 +285,27 @@ export class IntegrationTestEditorViewProvider {
 				}
 				
 				try {
-					const activeTestNumber = parseInt(message?.selectedTestNumber);
-					if(!activeTestNumber) {
+					const selectedTestNumber = parseInt(message?.selectedTestNumber);
+					if(!selectedTestNumber) {
 						throw new XpException(`Переданное значение ${message?.activeTestNumber} не является номером интеграционного теста`);
 					}
 
-					const command = new ShowTestResultsDiffCommand(this._rule, this._integrationTestTmpFilesPath, activeTestNumber);
+					const command = new ShowTestResultsDiffCommand( {
+							config : this._config,
+							rule: this._rule, 
+							tmpDirPath: this._testsTmpFilesPath,
+							testNumber: selectedTestNumber
+						}
+					);
 					await command.execute();
 				}
 				catch(error) {
 					ExceptionHelper.show(error, "Ошибка сравнения фактического и ожидаемого события");
 				}
 				break;
+			}
+			default: {
+				Log.error(`Команда ${message?.command} не найдена`);
 			}
 		}
 	}
@@ -320,7 +317,7 @@ export class IntegrationTestEditorViewProvider {
 	private async runToolingAction(message: any) {
 		// Проверяем, что команда использует утилиты.
 		const commandName = message.command as string;
-		if (!['normalize', 'normalizeAndEnrich', 'fastTest', 'fullTest'].includes(commandName)) {
+		if (!['normalize', 'normalizeAndEnrich', 'fastTest', RunIntegrationTestsCommand.name].includes(commandName)) {
 			return;
 		}
 
@@ -386,14 +383,39 @@ export class IntegrationTestEditorViewProvider {
 					return;
 				}
 
-				case 'fullTest': {
-					// webView надо обновлять только если промис runFullTests вернет true
-					// В противной ситуации - вьюшка ведет себя непредсказуемо из-за eventLoop
-					const shouldUpdateViewAfterTestsRunned = await this.runFullTests(message);
-					if (shouldUpdateViewAfterTestsRunned) {
-						await this.updateView(this.getSelectedTestNumber(message));
+				case RunIntegrationTestsCommand.name: {
+					// Сохраняем актуальное состояние тестов из вьюшки.
+					let rule: RuleBaseItem;
+					try {
+						rule = await TestHelper.saveAllTest(message, this._rule);
+						DialogHelper.showInfo(`Все тесты сохранены`);
 					}
+					catch (error) {
+						ExceptionHelper.show(error, `Не удалось сохранить тесты`);
+						return false;
+					}
+
+					try {
+						const command = new RunIntegrationTestsCommand({
+							config: this._config,
+							rule: rule,
+							tmpDirPath: this._testsTmpFilesPath
+						});
+
+						const shouldUpdateViewAfterTestsRunned = await command.execute();
+						// Обновляем только в том случае, если есть что нового показать пользователю.
+						if (shouldUpdateViewAfterTestsRunned) {
+							await this.updateView(this.getSelectedTestNumber(message));
+						}
+					}
+					catch(error) {
+						ExceptionHelper.show(error, `Не удалось выполнить тесты`);
+					}
+
 					break;
+				}
+				default: {
+					Log.error(`Команда ${message?.command} не найдена`);
 				}
 			}
 		}
@@ -622,78 +644,6 @@ export class IntegrationTestEditorViewProvider {
 		});
 	}
 
-	private async runFullTests(message: any): Promise<boolean> {
-
-		return vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			cancellable: true,
-		}, async (progress, cancellationToken: vscode.CancellationToken) => {
-
-			await VsCodeApiHelper.saveRuleCodeFile(this._rule);
-
-			let tests: IntegrationTest[] = [];
-			try {
-				// Сохраняем активные тесты.
-				const rule = await TestHelper.saveAllTest(message, this._rule);
-				DialogHelper.showInfo(`Все тесты сохранены`);
-				tests = rule.getIntegrationTests();
-			}
-			catch (error) {
-				ExceptionHelper.show(error, `Не удалось сохранить тесты`);
-				return false;
-			}
-
-			if (tests.length == 0) {
-				DialogHelper.showInfo(`Тесты для правила '${this._rule.getName()}' не найдены. Добавьте хотя бы один тест и повторите`);
-				return false;
-			}
-
-			try {
-				// Уточняем информацию для пользователей если в правиле обнаружено использование сабрулей.
-				const ruleCode = await this._rule.getRuleCode();
-				if (TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
-					progress.report({
-						message: `Интеграционные тесты для правила с сабрулями '${this._rule.getName()}'`
-					});
-				} else {
-					progress.report({
-						message: `Интеграционные тесты для правила '${this._rule.getName()}'`
-					});
-				}
-
-				const ritd = new RunIntegrationTestDialog(this._config, this._integrationTestTmpFilesPath);
-				const testRunnerOptions = await ritd.getIntegrationTestRunOptions(this._rule);
-				testRunnerOptions.cancellationToken = cancellationToken;
-
-				const outputParser = new SiemJOutputParser();
-				const testRunner = new IntegrationTestRunner(this._config, outputParser);
-				const siemjResult = await testRunner.run(this._rule, testRunnerOptions);
-
-				this._config.resetDiagnostics(siemjResult.fileDiagnostics);
-
-				const executedIntegrationTests = this._rule.getIntegrationTests();
-				if(executedIntegrationTests.every(it => it.getStatus() === TestStatus.Success)) {
-					DialogHelper.showInfo(`Интеграционные тесты правила '${this._rule.getName()}' прошли успешно`);
-					// Если тесты прошли, значит временные файлы не нужны.
-					await this.clearTestTmpDir();
-					return true;
-				} 
-
-				if(executedIntegrationTests.some(it => it.getStatus() === TestStatus.Success)) {
-					DialogHelper.showInfo(`Не все тесты правила '${this._rule.getName()}' прошли успешно`);
-					return true;
-				} 
-
-				vscode.window.showErrorMessage(`Все тесты не были пройдены. Проверьте наличие синтаксических ошибок в коде правила или его зависимостях`);
-			}
-			catch (error) {
-				ExceptionHelper.show(error, `Ошибка запуска тестов`);
-			}
-
-			return true;
-		});
-	}
-
 	async saveTest(message: any): Promise<IntegrationTest> {
 		// Обновляем и сохраняем тест.
 		const test = await TestHelper.saveIntegrationTest(this._rule, message);
@@ -720,7 +670,7 @@ export class IntegrationTestEditorViewProvider {
 		});
 	}
 
-	private _integrationTestTmpFilesPath: string;
+	private _testsTmpFilesPath: string;
 
 	public static TEXTAREA_END_OF_LINE = "\n";
 

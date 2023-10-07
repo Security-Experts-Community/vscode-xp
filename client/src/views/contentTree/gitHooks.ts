@@ -4,6 +4,7 @@ import { Uri } from 'vscode';
 import { API, Branch } from '../../@types/vscode.git';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Configuration } from '../../models/configuration';
+import { Log } from '../../extension';
 
 export class GitHooks {
 	constructor(private _git : API, private _config: Configuration) {}
@@ -30,6 +31,7 @@ export class GitHooks {
 			const outputDirectory = this._config.getBaseOutputDirectoryPath();
 			if(fs.existsSync(outputDirectory)) {
 				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(outputDirectory);
+				Log.info(`Выходная директория '${outputDirectory} была очищена после смены ветки в git`);
 			}
 		}
 

@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as crypto from 'crypto';
+import { Log } from '../extension';
 
 export class FileSystemHelper {
 
@@ -201,12 +202,23 @@ export class FileSystemHelper {
 			await fs.promises.rmdir(entityDirPath, {recursive : true});
 		}
 
-		const entityFilePaths = fs.readdirSync(dirPath, { withFileTypes: true })
+		const entityFilePaths = (await fs.promises.readdir(dirPath, { withFileTypes: true }))
 			.filter(entity => entity.isFile())
 			.map(entity => path.join(dirPath, entity.name));
 
 		for(const entityFilePath of entityFilePaths) {
 			await fs.promises.unlink(entityFilePath);
+		}
+	}
+
+	public static async recursivelyDeleteDirectory(dirPath: string) {
+		try {
+			if(fs.existsSync(dirPath)) {
+				await fs.promises.rmdir(dirPath, {recursive: true});
+			}
+		}
+		catch(error) {
+			Log.warn(`Не удалось удалить директорию временных файлов интеграционных тестов ${dirPath}`);
 		}
 	}
 

@@ -1,6 +1,7 @@
 import * as os from 'os';
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 
 import { RuleBaseItem } from '../models/content/ruleBaseItem';
 import { IntegrationTest } from '../models/tests/integrationTest';
@@ -563,6 +564,8 @@ export class TestHelper {
 
 		return rule;
 	}
+
+
 
 	public static escapeRawEvent(normalizedEvent: string) {
 		return normalizedEvent;

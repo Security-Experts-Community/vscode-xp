@@ -34,16 +34,18 @@ export class Logger extends ILogger {
 	}
 
 	debug(message: string, ...params: any[]): void {
-		if (this._level < LogLevel.Debug) return;
-		if (this._output == null || this._level < LogLevel.Debug) return;
+		const logLevel = LogLevel.Debug;
+		if (this._level < logLevel) return;
 
-		console.log(this.timestamp, message ?? "", ...params);
-		this._output.appendLine(`${this.timestamp} ${message ?? ""} ${this.formatParams(params)}`);
+		this.writeLog(logLevel, message, ...params);
 	}
 
 	error(message: string, ...params: any[]): void
 	error(message: string, ex: Error, ...params: any[]): void {
-		if (this._output == null || this._level < LogLevel.Error) return;
+		const logLevel = LogLevel.Error;
+		if (this._level < logLevel) return;
+
+		
 
 		if(ex) {
 			console.error(this.timestamp, message ?? "", ...params, ex);
@@ -53,28 +55,22 @@ export class Logger extends ILogger {
 			return;
 		}
 
-		console.error(this.timestamp, message ?? "", ...params);
-		this._output.appendLine(
-			`${this.timestamp} [Error] ${message ?? ""} ${this.formatParams(params)}`,
-		);
+		this.writeLog(logLevel, message, ...params);
 	}
 
 	warn(message: string, ex?: Error, ...params: any[]): void
 	warn(message: string, ...params: any[]): void {
-		if (this._level < LogLevel.Warn) return;
-		if (this._output == null || this._level < LogLevel.Warn) return;
+		const logLevel = LogLevel.Warn;
+		if (this._level < logLevel) return;
 
-		console.warn(this.timestamp, message ?? "", ...params);
-		this._output.appendLine(
-			`${this.timestamp} [Warning] ${message ?? ""} ${this.formatParams(params)}`
-		);
+		this.writeLog(logLevel, message, ...params);
 	}
 
 	info(message: string, ...params: any[]): void  {
 		const logLevel = LogLevel.Info;
-		if (this._output == null || this._level < logLevel) return;
+		if (this._level < logLevel) return;
 
-		this.writeLog(logLevel, message, params);
+		this.writeLog(logLevel, message, ...params);
 	}
 
 	private writeLog(level: LogLevel, message: string, ...params: any[]) {
@@ -99,11 +95,9 @@ export class Logger extends ILogger {
 			}
 		}
 
-		if(params.length != 0) {
-			this._output.appendLine(
-				`${formattedMessage} ${this.formatParams(params)}`,
-			);
-		}
+		this._output.appendLine(
+			`${formattedMessage} ${this.formatParams(params)}`
+		);
 	}
 
 	private formatMessage(level: LogLevel, message: string): string {

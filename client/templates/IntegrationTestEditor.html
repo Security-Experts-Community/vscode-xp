@@ -565,7 +565,7 @@
 					const activeTestNumber = $("#active_test_number").val();
 
 					vscode.postMessage({
-						command: 'fullTest',
+						command: 'RunIntegrationTestsCommand',
 						activeTestNumber : activeTestNumber,
 						tests: tests
 					});

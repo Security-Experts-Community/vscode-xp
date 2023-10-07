@@ -13,7 +13,7 @@ import { Aggregation } from '../../models/content/aggregation';
 import { Macros } from '../../models/content/macros';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
-import { API } from '../../@types/vscode.git';
+import { API, APIState } from '../../@types/vscode.git';
 import { Configuration } from '../../models/configuration';
 import { OpenKnowledgebaseCommand } from './commands/openKnowledgebaseCommand';
 import { UnitTestsListViewProvider } from '../unitTestEditor/unitTestsListViewProvider';
@@ -59,6 +59,11 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 					kbTreeProvider.refresh();
 				});
 			});
+
+			// gitApi.onDidChangeState( (e: APIState) => {
+			// 	gitHooks.update();
+			// 	kbTreeProvider.refresh();
+			// });
 		}
 
 

@@ -239,14 +239,13 @@ export async function activate(context: ExtensionContext) {
 		);
 
 		// Очистка директории временных файлов.
-		
 		const tmpDirectory = config.getTmpDirectoryPath();
 		if(fs.existsSync(tmpDirectory)) {
 			try {
 				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
 			}
 			catch (error) {
-				Log.warn(error);
+				Log.warn('Ошибка очистки файлов из временной директории', error);
 			}
 		}
 

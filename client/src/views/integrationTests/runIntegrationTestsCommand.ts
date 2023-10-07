@@ -1,0 +1,69 @@
+import * as vscode from 'vscode';
+
+import { Command, CommandParams } from '../command';
+import { TestHelper } from '../../helpers/testHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
+import { RunIntegrationTestDialog } from '../runIntegrationDialog';
+import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
+import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
+import { TestStatus } from '../../models/tests/testStatus';
+import { FileSystemHelper } from '../../helpers/fileSystemHelper';
+
+export class RunIntegrationTestsCommand extends Command {
+
+	constructor(private params: CommandParams) {
+		super();
+	}
+	
+	public async execute(): Promise<boolean> {
+		return vscode.window.withProgress({
+			location: vscode.ProgressLocation.Notification,
+			cancellable: true,
+		}, async (progress, cancellationToken: vscode.CancellationToken) => {
+
+			const tests = this.params.rule.getIntegrationTests();
+			if (tests.length == 0) {
+				DialogHelper.showInfo(`Тесты для правила '${this.params.rule.getName()}' не найдены. Добавьте хотя бы один тест и повторите`);
+				return false;
+			}
+
+			// Уточняем информацию для пользователей если в правиле обнаружено использование сабрулей.
+			const ruleCode = await this.params.rule.getRuleCode();
+			if (TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
+				progress.report({
+					message: `Интеграционные тесты для правила с сабрулями '${this.params.rule.getName()}'`
+				});
+			} else {
+				progress.report({
+					message: `Интеграционные тесты для правила '${this.params.rule.getName()}'`
+				});
+			}
+
+			const ritd = new RunIntegrationTestDialog(this.params.config, this.params.tmpDirPath);
+			const testRunnerOptions = await ritd.getIntegrationTestRunOptions(this.params.rule);
+			testRunnerOptions.cancellationToken = cancellationToken;
+
+			const outputParser = new SiemJOutputParser();
+			const testRunner = new IntegrationTestRunner(this.params.config, outputParser);
+			const siemjResult = await testRunner.run(this.params.rule, testRunnerOptions);
+
+			this.params.config.resetDiagnostics(siemjResult.fileDiagnostics);
+
+			const executedIntegrationTests = this.params.rule.getIntegrationTests();
+			if(executedIntegrationTests.every(it => it.getStatus() === TestStatus.Success)) {
+				DialogHelper.showInfo(`Интеграционные тесты правила '${this.params.rule.getName()}' прошли успешно`);
+				// Если тесты прошли, значит временные файлы не нужны.
+				await FileSystemHelper.recursivelyDeleteDirectory(this.params.tmpDirPath);
+				return true;
+			} 
+
+			if(executedIntegrationTests.some(it => it.getStatus() === TestStatus.Success)) {
+				DialogHelper.showInfo(`Не все тесты правила '${this.params.rule.getName()}' прошли успешно`);
+				return true;
+			} 
+
+			vscode.window.showErrorMessage(`Все тесты не были пройдены. Проверьте наличие синтаксических ошибок в коде правила или его зависимостях`);
+			return true;
+		});
+	}
+}
