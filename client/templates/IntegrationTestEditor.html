@@ -627,10 +627,10 @@
 				});
 
 				$(document).on("click",'#open_result_diff', function () {
-					const activeTestNumber = $("#active_test_number").val();
+					const selectedTestNumber = $("#active_test_number").val();
 					vscode.postMessage({
-						command: 'openResultDiff',
-						activeTestNumber : activeTestNumber
+						command: 'ShowTestResultsDiffCommand',
+						selectedTestNumber : selectedTestNumber
 					});
 				});
 

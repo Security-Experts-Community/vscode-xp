@@ -509,27 +509,26 @@ export class TestHelper {
 		}
 
 		// Проверяем, что все тесты - нормальные
-		const checkedTestsArray = plainTests.map((plainTest, index) => {
+		plainTests.forEach((plainTest, index) => {
 			// Сырые события.
-			const rawEvents = plainTest.rawEvents;
+			let rawEvents = plainTest?.rawEvents;
+			rawEvents = rawEvents ? rawEvents.trim() : "";
 			if (!rawEvents || rawEvents == "") {
-				throw new XpException(`Попытка сохранения теста №${plainTest.number ?? 0} без сырых событий.`);
+				throw new XpException(`Попытка сохранения теста №${plainTest.number ?? 0} без сырых событий`);
 			}
 
 			// Код теста.
-			const testCode = plainTest.testCode;
+			const testCode = plainTest?.testCode;
 			if (!testCode || testCode == "") {
-				throw new XpException("Попытка сохранения теста без тестового кода событий.");
+				throw new XpException("Попытка сохранения теста без тестового кода событий");
 			}
-
-			return plainTest;
 		});
 
-		if (checkedTestsArray.length) {
+		if (plainTests.length) {
 			// Очищаем интеграционные тесты.
 			rule.clearIntegrationTests();
 
-			const tests = checkedTestsArray.map((plainTest, index) => {
+			const tests = plainTests.map((plainTest, index) => {
 				const test = rule.createIntegrationTest();
 
 				const number = index + 1;

@@ -25,6 +25,7 @@ import { Enveloper } from '../../models/enveloper';
 import { ExtensionState } from '../../models/applicationState';
 import { RunIntegrationTestDialog } from '../runIntegrationDialog';
 import { Log } from '../../extension';
+import { ShowTestResultsDiffCommand } from './showTestResultsDiffCommand';
 
 export class IntegrationTestEditorViewProvider {
 
@@ -78,7 +79,7 @@ export class IntegrationTestEditorViewProvider {
 	public static readonly showEditorCommand = "IntegrationTestEditorView.showEditor";
 	public async showEditor(rule: Correlation | Enrichment) {
 
-		Log.info(`Редактор интеграционных тестов открыт для правила ${rule.getName()} с помощью команды ${IntegrationTestEditorViewProvider.showEditorCommand}`);
+		Log.info(`Редактор интеграционных тестов открыт для правила ${rule.getName()}`);
 
 		if (this._view) {
 			Log.info(`Открытый ранее редактор интеграционных тестов для правила ${this._rule.getName()} был автоматически закрыт`);
@@ -147,7 +148,7 @@ export class IntegrationTestEditorViewProvider {
 		}
 
 		const resultFocusTestNumber = focusTestNumber ?? 1;
-		Log.info(`WebView ${IntegrationTestEditorViewProvider.name} была обновлена. Текущий тест №${resultFocusTestNumber ?? "1"}`);
+		Log.info(`WebView ${IntegrationTestEditorViewProvider.name} была загружена/обновлена. Текущий тест №${resultFocusTestNumber ?? "1"}`);
 
 		const resourcesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
@@ -241,7 +242,7 @@ export class IntegrationTestEditorViewProvider {
 					return;
 				}
 
-				const activeTestNumber = this.getActiveTestNumber(message);
+				const activeTestNumber = this.getSelectedTestNumber(message);
 				this.updateView(activeTestNumber);
 				return;
 			}
@@ -253,7 +254,7 @@ export class IntegrationTestEditorViewProvider {
 					DialogHelper.showInfo(`Все тесты сохранены`);
 
 					// Добавляем в DOM новый тест.
-					const activeTestNumber = this.getActiveTestNumber(message);
+					const activeTestNumber = this.getSelectedTestNumber(message);
 					this.updateView(activeTestNumber);
 				}
 				catch (error) {
@@ -289,18 +290,25 @@ export class IntegrationTestEditorViewProvider {
 				return this.cleanTestCode(message);
 			}
 
-			case 'openResultDiff': {
-				if(!message.activeTestNumber) {
+			case ShowTestResultsDiffCommand.name: {
+				if(!message?.selectedTestNumber) {
 					DialogHelper.showError('Номер теста не передан в запросе на back-end');
 					return;
 				}
-				const activeTestNumber = parseInt(message.activeTestNumber);
+				
 				try {
-					await this.showTestResultDiff(activeTestNumber);
+					const activeTestNumber = parseInt(message?.selectedTestNumber);
+					if(!activeTestNumber) {
+						throw new XpException(`Переданное значение ${message?.activeTestNumber} не является номером интеграционного теста`);
+					}
+
+					const command = new ShowTestResultsDiffCommand(this._rule, this._integrationTestTmpFilesPath, activeTestNumber);
+					await command.execute();
 				}
 				catch(error) {
 					ExceptionHelper.show(error, "Ошибка сравнения фактического и ожидаемого события");
 				}
+				break;
 			}
 		}
 	}
@@ -383,7 +391,7 @@ export class IntegrationTestEditorViewProvider {
 					// В противной ситуации - вьюшка ведет себя непредсказуемо из-за eventLoop
 					const shouldUpdateViewAfterTestsRunned = await this.runFullTests(message);
 					if (shouldUpdateViewAfterTestsRunned) {
-						await this.updateView(this.getActiveTestNumber(message));
+						await this.updateView(this.getSelectedTestNumber(message));
 					}
 					break;
 				}
@@ -397,7 +405,7 @@ export class IntegrationTestEditorViewProvider {
 		}
 	}
 
-	private getActiveTestNumber(message: any): number {
+	private getSelectedTestNumber(message: any): number {
 		const activeTestNumberString = message?.activeTestNumber;
 		if (!activeTestNumberString) {
 			DialogHelper.showError(`Не задан номер активного теста.`);
@@ -627,6 +635,7 @@ export class IntegrationTestEditorViewProvider {
 			try {
 				// Сохраняем активные тесты.
 				const rule = await TestHelper.saveAllTest(message, this._rule);
+				DialogHelper.showInfo(`Все тесты сохранены`);
 				tests = rule.getIntegrationTests();
 			}
 			catch (error) {
@@ -635,7 +644,7 @@ export class IntegrationTestEditorViewProvider {
 			}
 
 			if (tests.length == 0) {
-				DialogHelper.showInfo(`Тесты для правила '${this._rule.getName()}' не найдены. Добавьте хотя бы один тест и повторите.`);
+				DialogHelper.showInfo(`Тесты для правила '${this._rule.getName()}' не найдены. Добавьте хотя бы один тест и повторите`);
 				return false;
 			}
 
@@ -684,78 +693,6 @@ export class IntegrationTestEditorViewProvider {
 			return true;
 		});
 	}
-
-	private async showTestResultDiff(testNumber: number) {
-
-		// Получаем ожидаемое событие.
-		const tests = this._rule.getIntegrationTests();
-		if(tests.length < testNumber) {
-			DialogHelper.showError(`Запрашиваемый интеграционный тест №${testNumber} правила ${this._rule.getName()} не найден`);
-			return;
-		}
-
-		const testIndex = testNumber - 1;
-		const test = tests[testIndex];
-
-		const testCode = test.getTestCode();
-		const expectedEvent = RegExpHelper.getSingleExpectEvent(testCode);
-		if(!expectedEvent) {
-			DialogHelper.showError(`Ожидаемое событий интеграционного теста №${testNumber} правила ${this._rule.getName()} пусто`);
-			return;
-		}
-
-		let expectedKeys: string[] = [];
-		try {
-			const expectedEventObject = JSON.parse(expectedEvent);
-			expectedKeys = Object.keys(expectedEventObject);
-		}
-		catch(error) {
-			throw new XpException(`Из ожидаемого события тест №${test.getNumber} не удалось получить JSON. Проверьте его корректность и повторите`, error);
-		}
-
-		const formattedExpectedEvent = TestHelper.formatTestCodeAndEvents(expectedEvent.trim());
-
-		// Записываем ожидаемое фактическое значение файл для последующего сравнения
-		const expectedEventTestFilePath = path.join(this._integrationTestTmpFilesPath, `expectedEvents${testNumber}.json`);
-		await FileSystemHelper.writeContentFile(expectedEventTestFilePath, formattedExpectedEvent);
-
-
-		// Получаем фактическое событие.
-		const actualEventsFilePath = TestHelper.getTestActualEventsFilePath(this._integrationTestTmpFilesPath, testNumber);
-		if(!actualEventsFilePath) {
-			throw new XpException(`Результаты интеграционного теста №${testNumber} правила ${this._rule.getName()} не найдены`);
-		}
-
-		// Событие может прилетать не одно
-		const actualEventsString = await FileSystemHelper.readContentFile(actualEventsFilePath);
-		if(!actualEventsString) {
-			throw new XpException(`Фактическое событий интеграционного теста №${testNumber} правила ${this._rule.getName()} пусто`);
-		}
-
-		const actualEvents = actualEventsString.split(os.EOL).filter(l => l);
-		// Отбираем ожидаемое событие по имени правила
-		const actualFilteredEvents = TestHelper.filterCorrelationEvents(actualEvents, this._rule.getName());
-
-		// Исключаем поля, которых нет в ожидаемом, чтобы сравнение было репрезентативным.
-		const actualFilteredEventsString = actualFilteredEvents
-			.map(arl => JSON.parse(arl))
-			.map(aro => TestHelper.removeAnotherObjectKeys(aro, expectedKeys))
-			.map(aro => JSON.stringify(aro))
-			.join(os.EOL);
-
-		const formattedActualEvent = TestHelper.formatTestCodeAndEvents(actualFilteredEventsString);
-
-		// Записываем очищенное фактическое значение файл для последующего сравнения
-		const actualEventTestFilePath = path.join(this._integrationTestTmpFilesPath, `actualEvents${testNumber}.json`);
-		await FileSystemHelper.writeContentFile(actualEventTestFilePath, formattedActualEvent);
-
-		vscode.commands.executeCommand("vscode.diff", 
-			vscode.Uri.file(actualEventTestFilePath),
-			vscode.Uri.file(expectedEventTestFilePath),
-			`Фактическое и ожидаемое события теста №${testNumber}`
-		);
-	}
-
 
 	async saveTest(message: any): Promise<IntegrationTest> {
 		// Обновляем и сохраняем тест.

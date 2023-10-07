@@ -41,11 +41,13 @@ let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
 
 export async function activate(context: ExtensionContext) {
 
-	try{
+	try {
 		// Инициализация реестр глобальных параметров.
 		const config = await Configuration.init(context);
 		Log = new Logger(config);
 		Log.setLogLevel(LogLevel.Debug);
+
+		Log.info(`Начата активация расширения '${Configuration.getExtensionDisplayName()}'`);
 
 		// Конфигурирование LSP.
 		const serverModule = context.asAbsolutePath(
@@ -244,14 +246,14 @@ export async function activate(context: ExtensionContext) {
 				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
 			}
 			catch (error) {
-				// TODO: 
-				Configuration.get().getOutputChannel().appendLine(error.stack);
+				Log.warn(error);
 			}
-			
 		}
+
+		Log.info(`Расширение '${Configuration.getExtensionDisplayName()}' активировано`);
 	}
 	catch(error) {
-		ExceptionHelper.show(error, "Не удалось активировать расширение 'eXtraction and Processing'");
+		ExceptionHelper.show(error, `Расширение '${Configuration.getExtensionDisplayName()}' не удалось активировать`);
 	}
 }
 

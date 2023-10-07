@@ -24,7 +24,7 @@ export class Configuration {
 		const contentType = this.getContentType();
 		this.setContentType(contentType);
 
-		const extensionName = this.getExtensionDisplayName();
+		const extensionName = Configuration.getExtensionDisplayName();
 		this._outputChannel = vscode.window.createOutputChannel(extensionName);
 		this._diagnosticCollection = vscode.languages.createDiagnosticCollection(extensionName);
 
@@ -114,7 +114,7 @@ export class Configuration {
 		return this._context.extensionPath;
 	}
 
-	public getExtensionDisplayName() : string {
+	public static getExtensionDisplayName() : string {
 		return "eXtraction and Processing";
 	}
 
@@ -442,10 +442,10 @@ export class Configuration {
 
 	public getTmpDirectoryPath(rootFolder?: string) : string {
 		if(rootFolder) {
-			return path.join(os.tmpdir(), this.getExtensionDisplayName(), rootFolder);
+			return path.join(os.tmpdir(), Configuration.getExtensionDisplayName(), rootFolder);
 		}
 
-		return path.join(os.tmpdir(), this.getExtensionDisplayName());
+		return path.join(os.tmpdir(), Configuration.getExtensionDisplayName());
 	}
 
 	public getTmpSiemjConfigPath(rootFolder: string) : string {

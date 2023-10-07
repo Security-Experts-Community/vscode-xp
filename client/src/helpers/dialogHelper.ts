@@ -7,7 +7,7 @@ export class DialogHelper {
 		if(params.length !== 0) {
 			returnValue = await vscode.window.showInformationMessage(message, ...params);	
 		} else {
-			returnValue = await  vscode.window.showInformationMessage(message);
+			return vscode.window.showInformationMessage(message);
 		}
 		
 		// Пишем в лог
