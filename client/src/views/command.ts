@@ -4,7 +4,7 @@ import { RuleBaseItem } from '../models/content/ruleBaseItem';
 export interface CommandParams {
 	config: Configuration;
 	rule: RuleBaseItem;
-	tmpDirPath: string;
+	tmpDirPath?: string;
 }
 
 

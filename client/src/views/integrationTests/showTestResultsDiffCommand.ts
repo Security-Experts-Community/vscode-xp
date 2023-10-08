@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as os from 'os';
 
 import { Command, CommandParams } from '../command';
-
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { RegExpHelper } from '../../helpers/regExpHelper';

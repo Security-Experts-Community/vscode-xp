@@ -494,9 +494,10 @@
 
 					// Передает тест как параметр запроса.
 					vscode.postMessage({
-						command: 'normalize',
+						command: 'NormalizeRawEventsCommand',
 						test: test,
-						rawEvents : rawEvents
+						rawEvents : rawEvents,
+						isEnrichmentRequired: false
 					});
 				});
 
@@ -513,9 +514,10 @@
 
 					// Передает тест как параметр запроса.
 					vscode.postMessage({
-						command: 'normalizeAndEnrich',
+						command: 'NormalizeRawEventsCommand',
 						test: test,
-						rawEvents : rawEvents
+						rawEvents : rawEvents,
+						isEnrichmentRequired: true
 					});
 				});
 

@@ -6,7 +6,7 @@ import { DialogHelper } from '../../helpers/dialogHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
 import { EventMimeType as EventMimeType, TestHelper } from '../../helpers/testHelper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
-import { Correlation, CorrelationEvent } from '../../models/content/correlation';
+import { Correlation } from '../../models/content/correlation';
 import { Enrichment } from '../../models/content/enrichment';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
@@ -23,6 +23,7 @@ import { ExtensionState } from '../../models/applicationState';
 import { Log } from '../../extension';
 import { ShowTestResultsDiffCommand } from './showTestResultsDiffCommand';
 import { RunIntegrationTestsCommand } from './runIntegrationTestsCommand';
+import { NormalizeRawEventsCommand } from './normalizeRawEventsCommand';
 
 export class IntegrationTestEditorViewProvider {
 
@@ -126,8 +127,6 @@ export class IntegrationTestEditorViewProvider {
 	/**
 	 * Удаляет директорию в с временными файлами интеграционных тестов, который нужны для выявления ошибок в тестах.
 	 */
-
-
 	private async updateView(focusTestNumber?: number): Promise<void> {
 
 		// Пользователь уже закрыл вьюшку.
@@ -216,7 +215,10 @@ export class IntegrationTestEditorViewProvider {
 
 	private async receiveMessageFromWebView(message: any) {
 
-		await this.runToolingAction(message);
+		const executed = await this.runToolingAction(message);
+		if(executed) {
+			return;
+		}
 
 		// События, не требующие запуска утилит.
 		switch (message.command) {
@@ -305,7 +307,7 @@ export class IntegrationTestEditorViewProvider {
 				break;
 			}
 			default: {
-				Log.error(`Команда ${message?.command} не найдена`);
+				DialogHelper.showError(`Команда ${message?.command} не найдена`);
 			}
 		}
 	}
@@ -317,29 +319,42 @@ export class IntegrationTestEditorViewProvider {
 	private async runToolingAction(message: any) {
 		// Проверяем, что команда использует утилиты.
 		const commandName = message.command as string;
-		if (!['normalize', 'normalizeAndEnrich', 'fastTest', RunIntegrationTestsCommand.name].includes(commandName)) {
-			return;
+		if (![
+			NormalizeRawEventsCommand.name,
+			RunIntegrationTestsCommand.name,
+			'fastTest'
+			].includes(commandName)
+		) {
+			return false;
 		}
 
 		if (ExtensionState.get().isToolingExecution()) {
-			return DialogHelper.showError("Дождитесь окончания выполняющихся процессов и повторите.");
+			DialogHelper.showError("Дождитесь окончания выполняющихся процессов и повторите");
+			return true;
 		}
 
 		ExtensionState.get().runToolingExecution();
 
 		try {
 			switch (message.command) {
-				case 'normalize': {
-					if (!message.test) {
-						DialogHelper.showInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
-						return;
+				case NormalizeRawEventsCommand.name: {
+
+					if (typeof message?.isEnrichmentRequired !== "boolean" ) {
+						DialogHelper.showInfo("Не задан параметр обогащения событий");
+						return true;
 					}
+					const isEnrichmentRequired = message?.isEnrichmentRequired as boolean;
 
 					// Актуализируем сырые события в тесте из вьюшки.
-					let rawEvents = message.rawEvents;
+					let rawEvents = message?.rawEvents;
 					if (!rawEvents) {
 						DialogHelper.showInfo("Не заданы сырые события для нормализации. Задайте события и повторите");
-						return;
+						return true;
+					}
+
+					if (!message?.test) {
+						DialogHelper.showInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
+						return true;
 					}
 
 					const currTest = IntegrationTest.convertFromObject(message.test);
@@ -347,28 +362,16 @@ export class IntegrationTestEditorViewProvider {
 					currTest.setRawEvents(rawEvents);
 					await currTest.save();
 
-					await this.normalizeRawEvents(false, currTest);
-					break;
-				}
-				case 'normalizeAndEnrich': {
-					if (!message.test) {
-						DialogHelper.showInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
-						return;
-					}
+					const command = new NormalizeRawEventsCommand({
+						config: this._config,
+						isEnrichmentRequired: isEnrichmentRequired,
+						rule: this._rule,
+						test: currTest
+					});
 
-					// Актуализируем сырые события в тесте из вьюшки.
-					const rawEvents = message.rawEvents;
-					if (!rawEvents) {
-						DialogHelper.showInfo("Не заданы сырые события для нормализации. Задайте события и повторите");
-						return;
-					}
-
-					const currTest = IntegrationTest.convertFromObject(message.test);
-					currTest.setRawEvents(rawEvents);
-					await currTest.save();
-
-					await this.normalizeRawEvents(true, currTest);
-					break;
+					await command.execute();
+					this.updateView(currTest.getNumber());
+					return true;
 				}
 
 				case 'fastTest': {
@@ -380,7 +383,8 @@ export class IntegrationTestEditorViewProvider {
 							// testWithNewTestCode.getNumber()
 						);
 					}
-					return;
+
+					return true;
 				}
 
 				case RunIntegrationTestsCommand.name: {
@@ -392,7 +396,7 @@ export class IntegrationTestEditorViewProvider {
 					}
 					catch (error) {
 						ExceptionHelper.show(error, `Не удалось сохранить тесты`);
-						return false;
+						return true;
 					}
 
 					try {
@@ -412,10 +416,10 @@ export class IntegrationTestEditorViewProvider {
 						ExceptionHelper.show(error, `Не удалось выполнить тесты`);
 					}
 
-					break;
+					return true;
 				}
 				default: {
-					Log.error(`Команда ${message?.command} не найдена`);
+					return false;
 				}
 			}
 		}
@@ -481,55 +485,6 @@ export class IntegrationTestEditorViewProvider {
 		this._view.webview.postMessage({
 			'command': 'updateRawEvents',
 			'rawEvents': envelopedRawEventsString
-		});
-	}
-
-	private async normalizeRawEvents(enrich: boolean, test: IntegrationTest) {
-
-		const rawEventsFilePath = test.getRawEventsFilePath();
-
-		vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			cancellable: false
-		}, async (progress) => {
-
-			try {
-				const siemjManager = new SiemjManager(this._config);
-				let normEvents: string;
-				if (enrich) {
-					progress.report({ message: `Нормализация и обогащение сырых событий для теста №${test.getNumber()}` });
-					normEvents = await siemjManager.normalizeAndEnrich(this._rule, rawEventsFilePath);
-				} else {
-					progress.report({ message: `Нормализация сырых событий для теста №${test.getNumber()}` });
-					normEvents = await siemjManager.normalize(this._rule, rawEventsFilePath);
-				}
-
-				test.setNormalizedEvents(normEvents);
-			}
-			catch (error) {
-				ExceptionHelper.show(error, "Не удалось нормализовать событие");
-				this._config.getOutputChannel().show();
-				return;
-			}
-
-			// Обновление теста.
-			const tests = this._rule.getIntegrationTests();
-			const ruleTestIndex = tests.findIndex(it => it.getNumber() == test.getNumber());
-			if (ruleTestIndex == -1) {
-				DialogHelper.showError("Не удалось обновить интеграционный тест");
-				return;
-			}
-
-			// Выводим статус.
-			if (enrich) {
-				DialogHelper.showInfo("Нормализация и обогащение сырых событий завершено успешно");
-			} else {
-				DialogHelper.showInfo("Нормализация сырых событий завершена успешно");
-			}
-
-			// Обновляем правило.
-			tests[ruleTestIndex] = test;
-			this.updateView(test.getNumber());
 		});
 	}
 
