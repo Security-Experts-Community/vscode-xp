@@ -225,7 +225,7 @@
 							const pos = caret() + tab.length;
 							const range = window.getSelection().getRangeAt(0);
 							range.deleteContents();
-							range.insertNode(document.createTextNode(tab));
+							document.execCommand("InsertHTML", false, tab);
 							setCaret(pos);
 							e.preventDefault();
 						}
@@ -427,13 +427,13 @@
 				// Добавляем автоподстветку для каждого из полей кода тестов.
 				const xpTestElements = document.querySelectorAll(".xp-test_highlight");
 				for(el of xpTestElements) {
-					el.innerHTML = hljs.highlight(el.innerHTML ? el.innerHTML : '', {language: 'xp-test-code'}).value
+					el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: 'xp-test-code'}).value
 					editor(el);
 				}
 
 				const jsonElements = document.querySelectorAll(".json_highlight");
 				for(el of jsonElements) {
-					el.innerHTML = hljs.highlight(el.innerHTML ? el.innerHTML : '', {language: 'json'}).value
+					el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: 'json'}).value
 					editor(el);
 				}
 			}
