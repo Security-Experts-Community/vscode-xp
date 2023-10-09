@@ -4,13 +4,12 @@ import * as path from 'path';
 
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
-import { EventMimeType as EventMimeType, TestHelper } from '../../helpers/testHelper';
+import { EventMimeType, TestHelper } from '../../helpers/testHelper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
 import { Correlation } from '../../models/content/correlation';
 import { Enrichment } from '../../models/content/enrichment';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
-import { SiemjManager } from '../../models/siemj/siemjManager';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { FastTest } from '../../models/tests/fastTest';
@@ -392,7 +391,7 @@ export class IntegrationTestEditorViewProvider {
 					let rule: RuleBaseItem;
 					try {
 						rule = await TestHelper.saveAllTest(message, this._rule);
-						DialogHelper.showInfo(`Все тесты сохранены`);
+						Log.info(`Все тесты правила ${this._rule.getName()} сохранены`);
 					}
 					catch (error) {
 						ExceptionHelper.show(error, `Не удалось сохранить тесты`);
