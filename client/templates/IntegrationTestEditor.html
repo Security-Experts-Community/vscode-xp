@@ -139,7 +139,6 @@
 		</div>
 		{{/IntegrationTests}}
 		</div>
-		<vscode-button id="howdy">Howdy!123</vscode-button>
 		
 		<!-- Сохраняем временные данные. -->
 		<input id="active_test_number" type="hidden" value="{{ActiveTestNumber}}">
@@ -149,7 +148,9 @@
 		<script	src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/highlight-11.7.0.min.js"></script>
-		<script type="module" nonce="DGSADGASDHRYASDG" src="{{WebviewUri}}"></script>
+
+		<!-- Для работоспособности vscode ui toolkit -->
+		<script type="module" src="{{WebviewUri}}"></script>
 
 		<script>
 			// Глобальное определение функций.

@@ -17,7 +17,7 @@ import { provideVSCodeDesignSystem, vsCodeButton, Button, allComponents } from "
 // components at once, there's a handy convenience function:
 //
 provideVSCodeDesignSystem().register(allComponents);
-// 
+//
 // provideVSCodeDesignSystem().register(vsCodeButton());
 
 // Get access to the VS Code API from within the webview context

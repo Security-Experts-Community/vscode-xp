@@ -34,7 +34,6 @@ import { ExceptionHelper } from './helpers/exceptionHelper';
 import { FileSystemHelper } from './helpers/fileSystemHelper';
 import { XpEnumValuesCompletionItemProvider } from './providers/xpEnumValuesCompletionItemProvider';
 import { LogLevel, Logger } from './logger';
-// import { provideVSCodeDesignSystem, vsCodeButton } from "@vscode/webview-ui-toolkit";
 
 export let Log: Logger;
 let client: LanguageClient;
@@ -50,8 +49,6 @@ export async function activate(context: ExtensionContext) {
 
 		Log.info(`Начата активация расширения '${Configuration.getExtensionDisplayName()}'`);
 
-
-		// provideVSCodeDesignSystem().register(vsCodeButton());
 
 		// Конфигурирование LSP.
 		const serverModule = context.asAbsolutePath(
@@ -252,8 +249,6 @@ export async function activate(context: ExtensionContext) {
 				Log.warn('Ошибка очистки файлов из временной директории', error);
 			}
 		}
-
-		// provideVSCodeDesignSystem().register(vsCodeButton());
 
 		Log.info(`Расширение '${Configuration.getExtensionDisplayName()}' активировано`);
 	}
