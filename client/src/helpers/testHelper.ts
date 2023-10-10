@@ -23,7 +23,20 @@ export class TestHelper {
 		return /expect\s+not\s+/gm.test(testCode);
 	}
 
-	public static removeAnotherObjectKeys(object: any, requiredKeys: string[]): string {
+	public static removeKeys(object: any, removedKeys: string[]): any {
+
+		const objectCopy = Object.assign({}, object);
+		const objectKeys = Object.keys(object);
+		for(const objectKey of objectKeys) {
+			if(removedKeys.includes(objectKey)) {
+				delete objectCopy[objectKey];
+			}
+		}
+
+		return objectCopy;
+	}
+
+	public static removeAnotherObjectKeys(object: any, requiredKeys: string[]): any {
 
 		const objectCopy = Object.assign({}, object);
 		const objectKeys = Object.keys(object);

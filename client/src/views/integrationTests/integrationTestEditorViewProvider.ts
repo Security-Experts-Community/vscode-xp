@@ -557,10 +557,12 @@ export class IntegrationTestEditorViewProvider {
 					throw new XpException(`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено неуспешно. Возможно интеграционный тест не проходит с условием expect 1 {"correlation_name": "${this._rule.getName()}"}. Добейтесь того чтобы данный тест проходил и повторите.`);
 				}
 
-				// Проверка, что не было ошибки и нам вернулся json.
-				const testOutput = resultTest.getOutput();
+				// Проверка, что не было ошибки и нам вернулся json, исключение поля time и форматируем.
+				let testOutput = resultTest.getOutput();
 				try {
-					JSON.parse(testOutput);
+					let testObject = JSON.parse(testOutput);
+					testObject = TestHelper.removeKeys(testObject, ["time"]);
+					testOutput = JSON.stringify(testObject, null, 4);
 				}
 				catch(error) {
 					throw new XpException("Полученные данные не являются событием формата json", error);
@@ -570,15 +572,15 @@ export class IntegrationTestEditorViewProvider {
 				const tests = this._rule.getIntegrationTests();
 				const ruleTestIndex = tests.findIndex(it => it.getNumber() == resultTest.getNumber());
 				if (ruleTestIndex == -1) {
-					throw new XpException("Не удалось получить интеграционный тест.");
+					throw new XpException("Не удалось получить интеграционный тест");
 				}
 
 				// Переносим данные из быстрого теста в модульный.
-				const currentIngTest = tests[ruleTestIndex];
+				const currentIntTest = tests[ruleTestIndex];
 
 				// Меняем код теста на новый
 				const generatedExpectSection = `expect 1 ${testOutput}`;
-				const currentTestCode = currentIngTest.getTestCode();
+				const currentTestCode = currentIntTest.getTestCode();
 				const newTestCode = currentTestCode.replace(
 					RegExpHelper.getExpectSectionRegExp(),
 					generatedExpectSection);
@@ -589,7 +591,7 @@ export class IntegrationTestEditorViewProvider {
 				// Обновляем код теста.
 				currTest.setTestCode(newTestCode);
 				
-				DialogHelper.showInfo("Ожидаемое событие в коде теста успешно обновлено. Сохраните тест если результат вас устраивает.");
+				DialogHelper.showInfo("Ожидаемое событие в коде теста успешно обновлено. Сохраните тест если результат вас устраивает");
 				return currTest;
 			}
 			catch (error) {
