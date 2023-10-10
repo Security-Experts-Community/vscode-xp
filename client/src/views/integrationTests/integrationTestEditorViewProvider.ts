@@ -142,11 +142,14 @@ export class IntegrationTestEditorViewProvider {
 		const resourcesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
 
+		const webviewUri = this.getUri(this._view.webview, this._config.getExtensionUri(), ["client", "out", "ui.js"]);
+
 		const plain = {
 			"IntegrationTests": [],
 			"ExtensionBaseUri": extensionBaseUri,
 			"RuleName": this._rule.getName(),
 			"ActiveTestNumber": resultFocusTestNumber,
+			"WebviewUri": webviewUri
 		};
 
 		try {
