@@ -513,7 +513,7 @@ export class IntegrationTestEditorViewProvider {
 			const integrationTestContent = await FileSystemHelper.readContentFile(integrationTestPath);
 
 			// Проверку на наличие expect not {} в тесте, в этом случае невозможно получить ожидаемое событие.
-			if(/expect\s+not\s+/gm.test(integrationTestContent)) {
+			if(TestHelper.isNegativeTest(integrationTestContent)) {
 				DialogHelper.showWarning("Невозможно получить ожидаемого события для теста с кодом expect not {}. Скорректируйте код теста если это необходимо, сохраните его и повторите.");
 				return;
 			}

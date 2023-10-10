@@ -8,6 +8,7 @@ import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
 import { TestStatus } from '../../models/tests/testStatus';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
+import { Log } from '../../extension';
 
 export class RunIntegrationTestsCommand extends Command {
 
@@ -20,6 +21,8 @@ export class RunIntegrationTestsCommand extends Command {
 			location: vscode.ProgressLocation.Notification,
 			cancellable: true,
 		}, async (progress, cancellationToken: vscode.CancellationToken) => {
+
+			Log.info(`Запущены интеграционные тесты для правила '${this.params.rule.getName()}'`);
 
 			const tests = this.params.rule.getIntegrationTests();
 			if (tests.length == 0) {
