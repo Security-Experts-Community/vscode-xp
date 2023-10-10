@@ -574,8 +574,9 @@
 		}
 	},
 	"scripts": {
-		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -b",
+		"vscode:prepublish": "npm run package",
+  		"compile": "node ./esbuild.js",
+		"package": "NODE_ENV=production node ./esbuild.js",
 		"watch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd .."
 	},
@@ -586,6 +587,7 @@
 		"@types/mocha": "^8.2.2",
 		"@typescript-eslint/eslint-plugin": "^4.21.0",
 		"@typescript-eslint/parser": "^4.21.0",
+		"esbuild": "^0.16.17",
 		"eslint": "^7.23.0",
 		"mocha": "^9.2.2"
 	},
@@ -594,6 +596,7 @@
 		"@types/fs-extra": "^9.0.12",
 		"@types/mustache": "^4.1.2",
 		"@types/node": "^12.12.0",
+		"@vscode/webview-ui-toolkit": "^1.2.2",
 		"class-transformer": "^0.5.1",
 		"crc-32": "^1.2.2",
 		"diff": "^5.1.0",

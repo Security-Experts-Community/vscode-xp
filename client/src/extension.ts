@@ -34,8 +34,9 @@ import { ExceptionHelper } from './helpers/exceptionHelper';
 import { FileSystemHelper } from './helpers/fileSystemHelper';
 import { XpEnumValuesCompletionItemProvider } from './providers/xpEnumValuesCompletionItemProvider';
 import { LogLevel, Logger } from './logger';
+// import { provideVSCodeDesignSystem, vsCodeButton } from "@vscode/webview-ui-toolkit";
 
-export let Log : Logger;
+export let Log: Logger;
 let client: LanguageClient;
 let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
 
@@ -48,6 +49,9 @@ export async function activate(context: ExtensionContext) {
 		Log.setLogLevel(LogLevel.Debug);
 
 		Log.info(`Начата активация расширения '${Configuration.getExtensionDisplayName()}'`);
+
+
+		// provideVSCodeDesignSystem().register(vsCodeButton());
 
 		// Конфигурирование LSP.
 		const serverModule = context.asAbsolutePath(
@@ -122,7 +126,7 @@ export async function activate(context: ExtensionContext) {
 
 		siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(XPPackingTaskProvider.Type, new XPPackingTaskProvider(config));
 
-		
+
 		// Расширение нативного контекстого меню.
 		TestsFormatContentMenuExtension.init(context);
 
@@ -190,7 +194,7 @@ export async function activate(context: ExtensionContext) {
 					},
 					{
 						scheme: 'file',
-						language: 'xp'					
+						language: 'xp'
 					}
 				],
 				literalItemProvider,
@@ -240,7 +244,7 @@ export async function activate(context: ExtensionContext) {
 
 		// Очистка директории временных файлов.
 		const tmpDirectory = config.getTmpDirectoryPath();
-		if(fs.existsSync(tmpDirectory)) {
+		if (fs.existsSync(tmpDirectory)) {
 			try {
 				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
 			}
@@ -249,9 +253,11 @@ export async function activate(context: ExtensionContext) {
 			}
 		}
 
+		// provideVSCodeDesignSystem().register(vsCodeButton());
+
 		Log.info(`Расширение '${Configuration.getExtensionDisplayName()}' активировано`);
 	}
-	catch(error) {
+	catch (error) {
 		ExceptionHelper.show(error, `Расширение '${Configuration.getExtensionDisplayName()}' не удалось активировать`);
 	}
 }
@@ -261,7 +267,7 @@ export async function deactivate(): Promise<void> | undefined {
 		return undefined;
 	}
 
-	if(siemCustomPackingTaskProvider){
+	if (siemCustomPackingTaskProvider) {
 		siemCustomPackingTaskProvider.dispose();
 	}
 
