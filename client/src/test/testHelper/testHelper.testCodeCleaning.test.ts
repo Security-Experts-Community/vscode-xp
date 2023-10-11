@@ -213,7 +213,6 @@ const expectedTestCode =
     "category.low": "Permission Groups Discovery",
     "origin_app_id": "00000000-0000-0000-0000-000000000005",
     "subject": "account",
-    "_rule": "Active_Directory_Snapshot",
     "subject.account.domain": "testlab",
     "object": "resource",
     "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",
@@ -509,7 +508,6 @@ Got results:
     "category.low": "Permission Groups Discovery",
     "origin_app_id": "00000000-0000-0000-0000-000000000005",
     "subject": "account",
-    "_rule": "Active_Directory_Snapshot",
     "subject.account.domain": "testlab",
     "object": "resource",
     "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",
@@ -549,7 +547,7 @@ expect 1 {
     "status": "success"
 }`;
 
-        const extectedTestCode = 
+        const expectedTestCode = 
 `table_list default
 expect 1 {
     "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",
@@ -557,7 +555,7 @@ expect 1 {
 }`;
 
         const actualTestCode = TestHelper.cleanTestCode(testCode);
-        assert.strictEqual(actualTestCode, extectedTestCode);
+        assert.strictEqual(actualTestCode, expectedTestCode);
     });
 
 
@@ -603,19 +601,18 @@ Got results:
 }
 [INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`;
 
-        const extectedTestCode = 
+        const expectedTestCode = 
 `SUCCESS!
 Got results:
 
 {
-    "_rule": "ESC_Checkpoint_Admin_Modification",
     "incident.severity": "high",
     "normalized": true
 }
 [INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`;
 
         const actualTestCode = TestHelper.cleanTestCode(testCode);
-        assert.strictEqual(actualTestCode, extectedTestCode);
+        assert.strictEqual(actualTestCode, expectedTestCode);
     });
 
 });
