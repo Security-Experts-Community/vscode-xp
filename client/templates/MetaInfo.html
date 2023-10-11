@@ -143,9 +143,17 @@
 					<div>
 						{{#EventID}}
 						<div name='dataSource' class="complex">
-							<input name="provider" type="text" value="{{Provider}}" list="providers" required />
+							<!-- <input name="provider" type="text" value="{{Provider}}" list="providers" required /> -->
+							<div class="dropdown-group">
+							<vscode-dropdown name="provider" value="{{Provider}}" aria-required="true" class="vscode-dropdown">
+  								<vscode-option>Microsoft-Windows-Security-Auditing</vscode-option>
+  								<vscode-option>Microsoft-Windows-Sysmon</vscode-option>
+  								<vscode-option>Microsoft-Windows-PowerShell</vscode-option>
+								<vscode-option>Unix</vscode-option>
+								<vscode-option>MacOS</vscode-option>
+							</vscode-dropdown>
 							<input name="eventID" type="text" value="{{.}}" title="{{.}}" required>
-
+							</div>
 							<input class="delete" type="button" value="-" title="-" onclick="deleteValue(this)">
 						</div>
 						{{/EventID}}
@@ -179,10 +187,28 @@
 					<div>
 						{{#Techniques}}
 						<div name='attack' class="complex">
-							<input name="tactic" type="text" value="{{Tactic}}" list="tactics" required />
+							<!-- <input name="tactic" type="text" value="{{Tactic}}" list="tactics" required />
+							<input name="techniques" type="text" value="{{.}}" title="{{.}}" required> -->
+						<div class="dropdown-group">
+							<vscode-dropdown name="tactic" value="{{Tactic}}" aria-required="true" class="vscode-dropdown">
+  								<vscode-option>reconnaissance</vscode-option>
+								<vscode-option>resource-development</vscode-option>
+								<vscode-option>initial-access</vscode-option>
+								<vscode-option>execution</vscode-option>
+								<vscode-option>persistence</vscode-option>
+								<vscode-option>privilege-escalation</vscode-option>
+								<vscode-option>defense-evasion</vscode-option>
+								<vscode-option>credential-access</vscode-option>
+								<vscode-option>discovery</vscode-option>
+								<vscode-option>lateral-movement</vscode-option>
+								<vscode-option>collection</vscode-option>
+								<vscode-option>command-and-control</vscode-option>
+								<vscode-option>exfiltration</vscode-option>
+								<vscode-option>impact</vscode-option>
+							</vscode-dropdown>
 							<input name="techniques" type="text" value="{{.}}" title="{{.}}" required>
-
-							<input class="delete" type="button" value="-" title="-" onclick="deleteValue(this)">
+						</div>
+						<input class="delete" type="button" value="-" title="-" onclick="deleteValue(this)">
 						</div>
 						{{/Techniques}}
 					</div>
@@ -192,6 +218,8 @@
 			</tr>
 		</table>
 	</div>
+
+	<script type="module" src="{{WebviewUri}}"></script>
 
 	<script>
 		const vscode = acquireVsCodeApi();
@@ -360,16 +388,19 @@
 			complexDiv.classList.add("complex");
 			complexDiv.setAttribute("name", name);
 
-			const newField1 = document.createElement('input');
-			newField1.type = 'text';
-			newField1.required = true;
-			newField1.name = a;
-			newField1.setAttribute('list', b);
+			const dropdownGroupDiv = document.createElement('div');
+			dropdownGroupDiv.classList.add("dropdown-group");
 
-			const newField2 = document.createElement('input');
-			newField2.required = true;
-			newField2.type = 'text';
-			newField2.name = c;
+			// const newField1 = document.createElement('input');
+			// newField1.type = 'text';
+			// newField1.required = true;
+			// newField1.name = a;
+			// newField1.setAttribute('list', b);
+
+			const inputField = document.createElement('input');
+			inputField.required = true;
+			inputField.type = 'text';
+			inputField.name = c;
 
 			const deleteButton = document.createElement('input');
 			deleteButton.type = 'button';
@@ -379,10 +410,11 @@
 				deleteButton.parentNode.remove();
 			}
 
-			complexDiv.appendChild(newField1);
-			complexDiv.appendChild(newField2);
-			complexDiv.appendChild(deleteButton);
+			$(`[name="${a}"]`).first().clone(true, true).appendTo(dropdownGroupDiv)
+			dropdownGroupDiv.appendChild(inputField)
 
+			complexDiv.appendChild(dropdownGroupDiv);
+			complexDiv.appendChild(deleteButton);
 			const simpleDiv = document.createElement('div');
 			simpleDiv.appendChild(complexDiv);
 
