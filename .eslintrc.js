@@ -3,6 +3,10 @@
 module.exports = {
 	root: true,
 	parser: '@typescript-eslint/parser',
+	parserOptions: {
+		ecmaVersion: 6,
+		sourceType: 'module'
+	},
 	plugins: [
 		'@typescript-eslint',
 	],
@@ -12,9 +16,9 @@ module.exports = {
 	],
 	rules: {
 		'semi': [2, "always"],
-		'@typescript-eslint/no-unused-vars': 0,
-		'@typescript-eslint/no-explicit-any': 0,
-		'@typescript-eslint/explicit-module-boundary-types': 0,
-		'@typescript-eslint/no-non-null-assertion': 0,
+		'@typescript-eslint/no-unused-vars': 'warn',
+		'@typescript-eslint/no-explicit-any': 'warn',
+		'@typescript-eslint/explicit-module-boundary-types': 'warn',
+		'@typescript-eslint/no-non-null-assertion': 'warn',
 	}
 };

@@ -577,7 +577,8 @@
 		"vscode:prepublish": "npm run package",
   		"compile": "node ./esbuild.js",
 		"package": "NODE_ENV=production node ./esbuild.js",
-		"watch": "tsc -b -w",
+		"watch": "node ./esbuild.js --watch",
+		"tswatch": "tsc -b -w",
 		"postinstall": "cd client && npm install && cd ../server && npm install && cd .."
 	},
 	"devDependencies": {
