@@ -17,6 +17,8 @@ import { SiemJOutputParser, SiemjExecutionResult } from '../../models/siemj/siem
 import { IntegrationTestRunner, IntegrationTestRunnerOptions } from '../../models/tests/integrationTestRunner';
 import { RunIntegrationTestDialog } from '../runIntegrationDialog';
 import { Enrichment } from '../../models/content/enrichment';
+import { FileSystemHelper } from '../../helpers/fileSystemHelper';
+import { Log } from '../../extension';
 
 export class LocalizationEditorViewProvider {
 
@@ -163,22 +165,33 @@ export class LocalizationEditorViewProvider {
 		switch (message.command) {
 			case 'buildLocalizations': {
 
-				if( !(this._rule instanceof Correlation) ) {
-					return DialogHelper.showInfo(
-						"В настоящий момент поддерживается проверка локализаций только для корреляций. Если вам требуется поддержка других правил, можете добавить или проверить наличие подобного [Issue](https://github.com/Security-Experts-Community/vscode-xp/issues).");					
+				try {
+					if( !(this._rule instanceof Correlation) ) {
+						return DialogHelper.showInfo(
+							"В настоящий момент поддерживается проверка локализаций только для корреляций. Если вам требуется поддержка других правил, можете добавить или проверить наличие подобного [Issue](https://github.com/Security-Experts-Community/vscode-xp/issues).");					
+					}
+	
+					const localizations = message.localizations;
+					await this.saveLocalization(localizations);
+					
+					const locExamples = await this.getLocalizationExamples();
+					if (locExamples.length === 0) {
+						return DialogHelper.showInfo(
+							"По имеющимся событиям не отработала ни одна локализация. Проверьте, что интеграционные тесты проходят, корректны критерии локализации. После исправлений повторите.");
+					}
+	
+					this._rule.setLocalizationExamples(locExamples);
+					this.showLocalizationEditor(this._rule, true);
 				}
-
-				const localizations = message.localizations;
-				await this.saveLocalization(localizations);
-				
-				const locExamples = await this.getLocalizationExamples();
-				if (locExamples.length === 0) {
-					return DialogHelper.showInfo(
-						"По имеющимся событиям не отработала ни одна локализация. Проверьте, что интеграционные тесты проходят, корректны критерии локализации. После исправлений повторите.");
+				catch(error) {
+					try {
+						await FileSystemHelper.deleteAllSubDirectoriesAndFiles(this._integrationTestTmpFilesPath);
+					}
+					catch(error) {
+						Log.warn("Ошибка очистки временных файлов интеграционных тестов", error);
+					}
+					DialogHelper.showError("Неожиданная ошибка тестирования локализаций", error);
 				}
-
-				this._rule.setLocalizationExamples(locExamples);
-				this.showLocalizationEditor(this._rule, true);
 				break;
 			}
 
@@ -191,7 +204,7 @@ export class LocalizationEditorViewProvider {
 					DialogHelper.showInfo(`Правила локализации для ${this._rule.getName()} сохранены`);
 				}
 				catch (error) {
-					DialogHelper.showError("Не удалось сохранить правила локализации.", error);
+					DialogHelper.showError("Не удалось сохранить правила локализации", error);
 				}
 			}
 		}
@@ -247,46 +260,41 @@ export class LocalizationEditorViewProvider {
 			location: vscode.ProgressLocation.Notification,
 			cancellable: true,
 		}, async (progress, token) => {
-			try {
 				
-				let result: string;
-				if(fs.existsSync(this._integrationTestTmpFilesPath)) {
-					result = await DialogHelper.showInfo(
-						"Обнаружены результаты предыдущего запуска интеграционных тестов. Если вы модифицировали только правила локализации, то можно использовать предыдущие результаты. В противном случае необходимо запустить интеграционные тесты еще раз.", 
-						LocalizationEditorViewProvider.USE_OLD_TESTS_RESULT,
-						LocalizationEditorViewProvider.RESTART_TESTS);
+			let result: string;
+			if(fs.existsSync(this._integrationTestTmpFilesPath)) {
+				result = await DialogHelper.showInfo(
+					"Обнаружены результаты предыдущего запуска интеграционных тестов. Если вы модифицировали только правила локализации, то можно использовать предыдущие результаты. В противном случае необходимо запустить интеграционные тесты еще раз.", 
+					LocalizationEditorViewProvider.USE_OLD_TESTS_RESULT,
+					LocalizationEditorViewProvider.RESTART_TESTS);
 
-					// Если пользователь закрыл диалог, завершаем работу.
-					if(!result) {
-						return;
-					}
+				// Если пользователь закрыл диалог, завершаем работу.
+				if(!result) {
+					return;
 				}
+			}
 
-				if(!result || result === LocalizationEditorViewProvider.RESTART_TESTS) {
-					progress.report({ message: `Получение зависимостей правила для корректной сборки графа корреляций` });
-					const ritd = new RunIntegrationTestDialog(this._config, this._integrationTestTmpFilesPath);
-					const options = await ritd.getIntegrationTestRunOptions(this._rule);
-					options.cancellationToken = token;
-	
-					progress.report({ message: `Получение корреляционных событий на основе интеграционных тестов правила` });
-					const outputParser = new SiemJOutputParser();
-					const testRunner = new IntegrationTestRunner(this._config, outputParser);
-					const siemjResult = await testRunner.run(this._rule, options);
-	
-					if (!siemjResult.testsStatus) {
-						throw new XpException("Не все интеграционные тесты прошли. Для получения тестовых локализации необходимо чтобы успешно проходили все интеграционные тесты.");
-					}
+			if(!result || result === LocalizationEditorViewProvider.RESTART_TESTS) {
+				progress.report({ message: `Получение зависимостей правила для корректной сборки графа корреляций` });
+				const ritd = new RunIntegrationTestDialog(this._config, this._integrationTestTmpFilesPath);
+				const options = await ritd.getIntegrationTestRunOptions(this._rule);
+				options.cancellationToken = token;
+
+				progress.report({ message: `Получение корреляционных событий на основе интеграционных тестов правила` });
+				const outputParser = new SiemJOutputParser();
+				const testRunner = new IntegrationTestRunner(this._config, outputParser);
+				const siemjResult = await testRunner.run(this._rule, options);
+
+				if (!siemjResult.testsStatus) {
+					throw new XpException("Не все интеграционные тесты прошли. Для получения тестовых локализации необходимо чтобы успешно проходили все интеграционные тесты.");
 				}
-
-				progress.report({ message: `Генерация локализаций на основе корреляционных событий из интеграционных тестов`});
-				const siemjManager = new SiemjManager(this._config);
-				const locExamples = await siemjManager.buildLocalizationExamples(this._rule, this._integrationTestTmpFilesPath);
-
-				return locExamples;
 			}
-			catch (error) {
-				ExceptionHelper.show(error, "Неожиданная ошибка получения примеров локализаций");
-			}
+
+			progress.report({ message: `Генерация локализаций на основе корреляционных событий из интеграционных тестов`});
+			const siemjManager = new SiemjManager(this._config);
+			const locExamples = await siemjManager.buildLocalizationExamples(this._rule, this._integrationTestTmpFilesPath);
+
+			return locExamples;
 		});
 	}
 

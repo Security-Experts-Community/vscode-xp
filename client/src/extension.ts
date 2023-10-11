@@ -249,6 +249,17 @@ export async function activate(context: ExtensionContext) {
 			}
 		}
 
+		// Очистка директории выходных файлов. Нужна для сохранения консистентности нормализаций.
+		const baseOutputDirectory = config.getBaseOutputDirectoryPath();
+		if(fs.existsSync(baseOutputDirectory)) {
+			try {
+				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(baseOutputDirectory);
+			}
+			catch (error) {
+				Log.warn('Ошибка очистки файлов из выходной директории', error);
+			}
+		}
+
 		Log.info(`Расширение '${Configuration.getExtensionDisplayName()}' активировано`);
 	}
 	catch(error) {

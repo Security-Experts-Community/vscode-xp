@@ -301,7 +301,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			});
 		}
 
-		await FileSystemHelper.writeContentFile(localizationFullPath, localizationYamlContent);
+		await FileSystemHelper.writeContentFileIfChanged(localizationFullPath, localizationYamlContent);
 	}
 
 	protected getLocalizationPath(localizationLanguage: LocalizationLanguage, fullPath : string) : string {

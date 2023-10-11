@@ -300,7 +300,7 @@ export class TestHelper {
 	}
 
 	public static formatTestCodeAndEvents(testCode: string) {
-		const compressedNormalizedEventReg = /{"\S.*}$/gm;
+		const compressedNormalizedEventReg = /{\S.+}$/gm;
 
 		let formattedTestCode = testCode;
 		let comNormEventResult: RegExpExecArray | null;

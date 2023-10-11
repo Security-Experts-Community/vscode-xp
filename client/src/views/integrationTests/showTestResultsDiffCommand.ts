@@ -10,6 +10,7 @@ import { RegExpHelper } from '../../helpers/regExpHelper';
 import { TestHelper } from '../../helpers/testHelper';
 import { XpException } from '../../models/xpException';
 import { Log } from '../../extension';
+import { FileSystemException } from '../../models/fileSystemException';
 
 export interface ShowTestResultsDiffParams extends CommandParams {
 	testNumber: number;
@@ -69,7 +70,7 @@ export class ShowTestResultsDiffCommand extends Command {
 		}
 
 		if(!fs.existsSync(actualEventsFilePath)) {
-			throw new XpException(`Файл результатов тестов ${actualEventsFilePath} не найден`);
+			throw new FileSystemException(`Файл результатов тестов ${actualEventsFilePath} не найден`, actualEventsFilePath);
 		}
 
 		// Событие может прилетать не одно
@@ -86,19 +87,21 @@ export class ShowTestResultsDiffCommand extends Command {
 		let formattedActualEvent = "";
 		if(actualFilteredEvents.length !== 0) {
 			// Исключаем поля, которых нет в ожидаемом, чтобы сравнение было репрезентативным.
-			let actualOutputEventsString = "";
-			if(expectedKeys.length !== 0) {
-				actualOutputEventsString = actualFilteredEvents
-					.map(arl => JSON.parse(arl))
-					.map(aro => TestHelper.removeAnotherObjectKeys(aro, expectedKeys))
-					.map(aro => JSON.stringify(aro))
-					.join(os.EOL);
-			} else {
-				// Так как в правилах expect not нет ожидаемых событий, ничего не фильтруем.
-				actualOutputEventsString = actualFilteredEvents.join(os.EOL);
-			}
-			
-			// Помимо форматирование их требутеся почистить от технических полей.
+			// let actualOutputEventsString = "";
+			// if(expectedKeys.length !== 0) {
+			// 	actualOutputEventsString = actualFilteredEvents
+			// 		.map(arl => JSON.parse(arl))
+			// 		.map(aro => TestHelper.removeAnotherObjectKeys(aro, expectedKeys))
+			// 		.map(aro => JSON.stringify(aro))
+			// 		.join(os.EOL);
+			// } else {
+			// 	// Так как в правилах expect not нет ожидаемых событий, ничего не фильтруем.
+			// 	actualOutputEventsString = actualFilteredEvents.join(os.EOL);
+			// }
+
+			const actualOutputEventsString = actualFilteredEvents.join(os.EOL);
+
+			// Помимо форматирование их требуется почистить от технических полей.
 			formattedActualEvent = TestHelper.formatTestCodeAndEvents(actualOutputEventsString);
 			formattedActualEvent = TestHelper.cleanTestCode(formattedActualEvent);
 		} else {
