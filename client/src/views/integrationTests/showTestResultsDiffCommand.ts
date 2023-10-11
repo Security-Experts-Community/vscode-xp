@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as os from 'os';
+import * as fs from 'fs';
 
 import { Command, CommandParams } from '../command';
 import { DialogHelper } from '../../helpers/dialogHelper';
@@ -32,11 +33,17 @@ export class ShowTestResultsDiffCommand extends Command {
 		const testIndex = this.params.testNumber - 1;
 		const currTest = tests[testIndex];
 
-		const testCode = currTest.getTestCode();
-		const expectedEvent = RegExpHelper.getSingleExpectEvent(testCode);
-		if(!expectedEvent) {
-			DialogHelper.showError(`Ожидаемое событий интеграционного теста №${this.params.testNumber} правила ${this.params.rule.getName()} пусто`);
-			return;
+		let expectedEvent = "";
+		if(!TestHelper.isNegativeTest(currTest.getTestCode())) {
+			const testCode = currTest.getTestCode();
+			expectedEvent = RegExpHelper.getSingleExpectEvent(testCode);
+			if(!expectedEvent) {
+				DialogHelper.showError(`Ожидаемое событий интеграционного теста №${this.params.testNumber} правила ${this.params.rule.getName()} пусто`);
+				return;
+			}
+		} else {
+			// Если не ожидаем событие, а получили его. Тогда хочется увидеть что мы получили, поэтому задаем заглушку для отсутствующего ожидаемого.
+			expectedEvent = "{}";
 		}
 
 		let expectedKeys: string[] = [];
@@ -61,6 +68,10 @@ export class ShowTestResultsDiffCommand extends Command {
 			throw new XpException(`Результаты интеграционного теста №${this.params.testNumber} правила ${this.params.rule.getName()} не найдены`);
 		}
 
+		if(!fs.existsSync(actualEventsFilePath)) {
+			throw new XpException(`Файл результатов тестов ${actualEventsFilePath} не найден`);
+		}
+
 		// Событие может прилетать не одно
 		const actualEventsString = await FileSystemHelper.readContentFile(actualEventsFilePath);
 		if(!actualEventsString) {
@@ -71,14 +82,32 @@ export class ShowTestResultsDiffCommand extends Command {
 		// Отбираем ожидаемое событие по имени правила
 		const actualFilteredEvents = TestHelper.filterCorrelationEvents(actualEvents, this.params.rule.getName());
 
-		// Исключаем поля, которых нет в ожидаемом, чтобы сравнение было репрезентативным.
-		const actualFilteredEventsString = actualFilteredEvents
-			.map(arl => JSON.parse(arl))
-			.map(aro => TestHelper.removeAnotherObjectKeys(aro, expectedKeys))
-			.map(aro => JSON.stringify(aro))
-			.join(os.EOL);
-
-		const formattedActualEvent = TestHelper.formatTestCodeAndEvents(actualFilteredEventsString);
+		// Если мы не получили сработки нашей корреляции, тогда покажем те события, который отработали.
+		let formattedActualEvent = "";
+		if(actualFilteredEvents.length !== 0) {
+			// Исключаем поля, которых нет в ожидаемом, чтобы сравнение было репрезентативным.
+			let actualOutputEventsString = "";
+			if(expectedKeys.length !== 0) {
+				actualOutputEventsString = actualFilteredEvents
+					.map(arl => JSON.parse(arl))
+					.map(aro => TestHelper.removeAnotherObjectKeys(aro, expectedKeys))
+					.map(aro => JSON.stringify(aro))
+					.join(os.EOL);
+			} else {
+				// Так как в правилах expect not нет ожидаемых событий, ничего не фильтруем.
+				actualOutputEventsString = actualFilteredEvents.join(os.EOL);
+			}
+			
+			// Помимо форматирование их требутеся почистить от технических полей.
+			formattedActualEvent = TestHelper.formatTestCodeAndEvents(actualOutputEventsString);
+			formattedActualEvent = TestHelper.cleanTestCode(formattedActualEvent);
+		} else {
+			// Из отработавших правил не исключаем никаких полей, чтобы было видно полный результат.
+			// Помимо форматирование их требутеся почистить от технических полей.
+			const actualOutputEventsString = actualEvents.join(os.EOL);
+			formattedActualEvent = TestHelper.formatTestCodeAndEvents(actualOutputEventsString);
+			formattedActualEvent = TestHelper.cleanTestCode(formattedActualEvent);
+		}
 
 		// Записываем очищенное фактическое значение файл для последующего сравнения
 		const actualEventTestFilePath = path.join(this.params.tmpDirPath, `actualEvents${this.params.testNumber}.json`);

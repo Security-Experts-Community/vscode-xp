@@ -13,12 +13,30 @@ import { StringHelper } from './stringHelper';
 import { Log } from '../extension';
 import { FileSystemHelper } from './fileSystemHelper';
 import { CorrelationEvent } from '../models/content/correlation';
+import { ArgumentException } from '../models/argumentException';
 
 export type EventMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
 export class TestHelper {
 
-	public static removeAnotherObjectKeys(object: any, requiredKeys: string[]): string {
+	public static isNegativeTest(testCode: string) : boolean {
+		return /expect\s+not\s+/gm.test(testCode);
+	}
+
+	public static removeKeys(object: any, removedKeys: string[]): any {
+
+		const objectCopy = Object.assign({}, object);
+		const objectKeys = Object.keys(object);
+		for(const objectKey of objectKeys) {
+			if(removedKeys.includes(objectKey)) {
+				delete objectCopy[objectKey];
+			}
+		}
+
+		return objectCopy;
+	}
+
+	public static removeAnotherObjectKeys(object: any, requiredKeys: string[]): any {
 
 		const objectCopy = Object.assign({}, object);
 		const objectKeys = Object.keys(object);
@@ -40,8 +58,8 @@ export class TestHelper {
 					filteredJsons.push(eventJson.trim());
 				}
 			}
-			catch(error: unknown) {
-				continue;
+			catch(error) {
+				Log.warn("Ошибка фильтрации событий", error);
 			}
 		}
 
@@ -54,7 +72,10 @@ export class TestHelper {
 	 * @returns код теста, очищенный от тегов
 	 */
 	public static cleanTestCode(testCode: string): string {
-		if (!testCode) { return ""; }
+		if (!testCode) { 
+			throw new ArgumentException("Не задан обязательных параметр", "testCode");
+		}
+
 		const regexPatterns = [
 			/\s*"generator.version"(\s*):(\s*)"(.*?",)/g,
 
@@ -72,6 +93,9 @@ export class TestHelper {
 
 			/\s*"labels"(\s*):(\s*)".*?",/g,	// в середине json-а
 			/,\s*"labels"(\s*):(\s*)".*?"/g,	// в конце json-а
+
+			/\s*"_rule"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"_rule"(\s*):(\s*)".*?"/g,	// в конце json-а
 
 			/\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\],/g,
 			/,\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\]/g,
@@ -189,7 +213,7 @@ export class TestHelper {
 		}
 
 		// TODO: надо поддержать упаковку любых json-ов
-		const compressedNormalizedEventReg = /^{$[\s\S]+?^}$/gm;
+		const compressedNormalizedEventReg = /^{$[\s\S]+?^}/gm;
 
 		let comNormEventResult: RegExpExecArray | null;
 		let compressedRawEvents = rawEvents;
