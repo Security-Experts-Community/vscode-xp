@@ -89,7 +89,8 @@ export class MetainfoViewProvider {
 		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
 		metaInfo.ExtensionBaseUri = extensionBaseUri;
 
-		const metainfoHtml = this._formatter.format(metaInfo);
+		const webviewUri = this.getUri(this._view.webview, this._config.getExtensionUri(), ["client", "out", "ui.js"]);
+		const metainfoHtml = this._formatter.format({ ...metaInfo, "WebviewUri": webviewUri });
 		this._view.webview.html = metainfoHtml;
 	}
 
@@ -118,4 +119,8 @@ export class MetainfoViewProvider {
 	}
 
 	private _metaInfoUpdater = new MetaInfoUpdater();
+
+	private getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]) {
+		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
+	}
 }
