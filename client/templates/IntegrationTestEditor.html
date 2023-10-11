@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-DGSADGASDHRYASDG';"> -->
 	<title>Тесты</title>
 
 	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/main.css">
@@ -147,6 +148,9 @@
 		<script	src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/highlight-11.7.0.min.js"></script>
+
+		<!-- Для работоспособности vscode ui toolkit -->
+		<script type="module" src="{{WebviewUri}}"></script>
 
 		<script>
 			// Глобальное определение функций.

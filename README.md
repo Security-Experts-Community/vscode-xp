@@ -68,3 +68,17 @@ git clone https://github.com/Security-Experts-Community/vscode-xp
 Перед сборкой установочного пакета расширения (\*.vsix-файл) вам нужно в корне проекта выполнить команду `npm install -g vsce`.
 
 Чтобы собрать установочный пакет расширения, выполните команду `vsce package -o vscode-xp.vsix` или запустите скрипт `publish.py` в корне проекта.
+
+### Прокидывание vscode ui toolkit в webview
+
+1. В провайдер webview добавляем `const webviewUri = this.getUri(this._view.webview, this._config.getExtensionUri(), ["client", "out", "ui.js"]);`
+
+2. Прокидываем webviewUri в plain: `"WebviewUri": webviewUri`
+
+3. В вебвью добавляем в раздел скриптов добавляем `<script type="module" src="{{WebviewUri}}"></script>`
+
+4. Добавляем в вебвью любой компонент из [документации тулкита](https://github.com/microsoft/vscode-webview-ui-toolkit/blob/main/docs/components.md)
+
+
+### Если не подтягиваются изменения кода в процессе разработки
+Такое очень редко, но бывает. Поочередно прописываем `npm run package` и `npm run compile`

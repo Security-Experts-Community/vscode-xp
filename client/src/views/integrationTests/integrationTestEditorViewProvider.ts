@@ -99,16 +99,18 @@ export class IntegrationTestEditorViewProvider {
 			vscode.ViewColumn.One,
 			{
 				retainContextWhenHidden: true,
-				enableFindWidget: true
+				enableFindWidget: true,
+				enableScripts: true,
+				localResourceRoots: [vscode.Uri.joinPath(this._config.getExtensionUri(), "client", "out")]
 			});
 
 		// Создаем временную директорию для результатов тестов, которая посмотреть почему не прошли тесты.
 		this._testsTmpFilesPath = this._config.getRandTmpSubDirectoryPath();
 
 		this._view.onDidDispose(async (e: void) => {
-				this._view = undefined;
-				await FileSystemHelper.recursivelyDeleteDirectory(this._testsTmpFilesPath);
-			},
+			this._view = undefined;
+			await FileSystemHelper.recursivelyDeleteDirectory(this._testsTmpFilesPath);
+		},
 			this);
 
 		this._view.webview.options = {
@@ -139,11 +141,14 @@ export class IntegrationTestEditorViewProvider {
 		const resourcesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
 
+		const webviewUri = this.getUri(this._view.webview, this._config.getExtensionUri(), ["client", "out", "ui.js"]);
+
 		const plain = {
 			"IntegrationTests": [],
 			"ExtensionBaseUri": extensionBaseUri,
 			"RuleName": this._rule.getName(),
 			"ActiveTestNumber": resultFocusTestNumber,
+			"WebviewUri": webviewUri
 		};
 
 		try {
@@ -187,7 +192,7 @@ export class IntegrationTestEditorViewProvider {
 							break;
 						}
 					}
-				
+
 					plain["IntegrationTests"].push({
 						"TestNumber": it.getNumber(),
 						"RawEvents": rawEvents,
@@ -196,7 +201,7 @@ export class IntegrationTestEditorViewProvider {
 						"TestOutput": it.getOutput(),
 						"JsonedTestObject": jsonedTestObject,
 						"TestStatus": testStatusStyle,
-						"IsFailed" : isFailed
+						"IsFailed": isFailed
 					});
 				});
 			}
@@ -204,18 +209,36 @@ export class IntegrationTestEditorViewProvider {
 			const template = await FileSystemHelper.readContentFile(this._templatePath);
 			const formatter = new MustacheFormatter(template);
 			const htmlContent = formatter.format(plain);
-
 			this._view.webview.html = htmlContent;
+
+			// const webviewUri = this.getUri(this._view.webview, this._config.getExtensionUri(), ["client", "out", "ui.js"]);
+			// this._view.webview.html = `<!DOCTYPE html>
+			// <html lang="en">
+			//   <head>
+			// 	<meta charset="UTF-8">
+			// 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			// 	<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-DGSADGASDHRYASDG';">
+			// 	<title>Hello World!</title>
+			//   </head>
+			//   <body>
+			// 		<vscode-button id="howdy">Howdy!</vscode-button>
+			// 		<script type="module" nonce="DGSADGASDHRYASDG" src="${webviewUri}"></script>
+			//   </body>
+			// </html>`;
 		}
 		catch (error) {
 			DialogHelper.showError("Не удалось открыть интеграционные тесты", error);
 		}
 	}
 
+	private getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]) {
+		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
+	}
+
 	private async receiveMessageFromWebView(message: any) {
 
 		const executed = await this.runToolingAction(message);
-		if(executed) {
+		if (executed) {
 			return;
 		}
 
@@ -280,27 +303,27 @@ export class IntegrationTestEditorViewProvider {
 			}
 
 			case ShowTestResultsDiffCommand.name: {
-				if(!message?.selectedTestNumber) {
+				if (!message?.selectedTestNumber) {
 					DialogHelper.showError('Номер теста не передан в запросе на back-end');
 					return;
 				}
-				
+
 				try {
 					const selectedTestNumber = parseInt(message?.selectedTestNumber);
-					if(!selectedTestNumber) {
+					if (!selectedTestNumber) {
 						throw new XpException(`Переданное значение ${message?.activeTestNumber} не является номером интеграционного теста`);
 					}
 
-					const command = new ShowTestResultsDiffCommand( {
-							config : this._config,
-							rule: this._rule, 
-							tmpDirPath: this._testsTmpFilesPath,
-							testNumber: selectedTestNumber
-						}
+					const command = new ShowTestResultsDiffCommand({
+						config: this._config,
+						rule: this._rule,
+						tmpDirPath: this._testsTmpFilesPath,
+						testNumber: selectedTestNumber
+					}
 					);
 					await command.execute();
 				}
-				catch(error) {
+				catch (error) {
 					ExceptionHelper.show(error, "Ошибка сравнения фактического и ожидаемого события");
 				}
 				break;
@@ -322,7 +345,7 @@ export class IntegrationTestEditorViewProvider {
 			NormalizeRawEventsCommand.name,
 			RunIntegrationTestsCommand.name,
 			'fastTest'
-			].includes(commandName)
+		].includes(commandName)
 		) {
 			return false;
 		}
@@ -338,7 +361,7 @@ export class IntegrationTestEditorViewProvider {
 			switch (message.command) {
 				case NormalizeRawEventsCommand.name: {
 
-					if (typeof message?.isEnrichmentRequired !== "boolean" ) {
+					if (typeof message?.isEnrichmentRequired !== "boolean") {
 						DialogHelper.showInfo("Не задан параметр обогащения событий");
 						return true;
 					}
@@ -375,7 +398,7 @@ export class IntegrationTestEditorViewProvider {
 
 				case 'fastTest': {
 					const testWithNewTestCode = await this.generateTestCode(message);
-					if(testWithNewTestCode) {
+					if (testWithNewTestCode) {
 						return this.updateTestCode(
 							testWithNewTestCode.getTestCode(),
 							// TODO: добавить конкретный тест для обновления, иначе может быть обновлён не тот тест.
@@ -411,7 +434,7 @@ export class IntegrationTestEditorViewProvider {
 							await this.updateView(this.getSelectedTestNumber(message));
 						}
 					}
-					catch(error) {
+					catch (error) {
 						ExceptionHelper.show(error, `Не удалось выполнить тесты`);
 					}
 
@@ -502,7 +525,7 @@ export class IntegrationTestEditorViewProvider {
 		let normalizedEvents = "";
 		try {
 			normalizedEvents = currTest.getNormalizedEvents();
-			if(!normalizedEvents) {
+			if (!normalizedEvents) {
 				DialogHelper.showError("Для запуска быстрого теста нужно хотя бы одно нормализованное событие. Нормализуйте сырые события и повторите действие.");
 				return;
 			}
@@ -564,7 +587,7 @@ export class IntegrationTestEditorViewProvider {
 					testObject = TestHelper.removeKeys(testObject, ["time"]);
 					testOutput = JSON.stringify(testObject, null, 4);
 				}
-				catch(error) {
+				catch (error) {
 					throw new XpException("Полученные данные не являются событием формата json", error);
 				}
 
@@ -590,7 +613,6 @@ export class IntegrationTestEditorViewProvider {
 
 				// Обновляем код теста.
 				currTest.setTestCode(newTestCode);
-				
 				DialogHelper.showInfo("Ожидаемое событие в коде теста успешно обновлено. Сохраните тест если результат вас устраивает");
 				return currTest;
 			}

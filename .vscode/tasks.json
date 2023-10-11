@@ -10,7 +10,7 @@
 				"reveal": "never"
 			},
 			"problemMatcher": [
-				"$tsc"
+				"$esbuild"
 			]
 		},
 		{
@@ -26,7 +26,7 @@
 				"reveal": "never"
 			},
 			"problemMatcher": [
-				"$tsc-watch"
+				"$esbuild-watch"
 			]
 		}
 	]

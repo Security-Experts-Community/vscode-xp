@@ -12,9 +12,10 @@
         "vscode": "^1.75.0"
     },
     "dependencies": {
-        "vscode-languageclient": "^7.0.0",
+        "@vscode/webview-ui-toolkit": "^1.2.2",
+        "guid-typescript": "^1.0.9",
         "lru-cache": "^6.0.0",
-        "guid-typescript": "^1.0.9"
+        "vscode-languageclient": "^7.0.0"
     },
     "devDependencies": {
         "@types/vscode": "^1.52.0",

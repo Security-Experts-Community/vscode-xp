@@ -11,8 +11,9 @@
 			"outFiles": ["${workspaceRoot}/client/out/**/*.js"],
 			"preLaunchTask": {
 				"type": "npm",
-				"script": "watch"
-			}
+				"script": "compile"
+			},
+			"autoAttachChildProcesses": true
 		},
 		{
 			"type": "node",
