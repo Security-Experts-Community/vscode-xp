@@ -139,6 +139,7 @@
 		</div>
 		{{/IntegrationTests}}
 		</div>
+		123
 		
 		<!-- Сохраняем временные данные. -->
 		<input id="active_test_number" type="hidden" value="{{ActiveTestNumber}}">
@@ -171,11 +172,6 @@
 					const rawEvents = $(this).find('[name="raw_events"]').text();
 					const testCode = $(this).find('[name="expect"]').text();
 					const normEvents = $(this).find('[name="norm_event"]').text();
-
-					console.log('тесткод\n')
-					console.log(testCode)
-					console.log('тесткод перед text()\n')
-					console.log($(this).find('[name="expect"]').html())
 
 
 					tests.push({
@@ -247,15 +243,7 @@
 						return pos;
 					};
 
-					// console.log("el\n")
-					// console.log(el)
-
 					el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
-
-							// console.log('redos\n')
-							// console.log(redos)
-							// console.log("undos\n")
-							// console.log(undos)
 
 					// событие перед вводом символа
 					el.addEventListener('beforeinput', e=> {
@@ -265,20 +253,14 @@
 					// Обработка символа табуляции
 					el.addEventListener('keydown', e => {
 						if (e.which === 9) {
+							undos.push(el.innerHTML)
 							const pos = caret() + tab.length;
 							const range = window.getSelection().getRangeAt(0);
 							range.deleteContents();
 							document.execCommand("InsertHTML", false, tab);
-							undos.push(el.innerHTML)
 							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
 							setCaret(pos);
 							e.preventDefault();
-							
-							
-							// console.log('redos\n')
-							// console.log(redos)
-							// console.log("undos\n")
-							// console.log(undos)
 						}
 					});
 
@@ -286,51 +268,30 @@
 					el.addEventListener('keyup', e => {
 						if ((e.keyCode >= 0x30 || e.keyCode == 0x20) && !(e.ctrlKey && e.code == 'KeyA') && !(e.ctrlKey && e.code == 'KeyZ') && !(e.ctrlKey && e.code == 'KeyY')) {
 							const pos = caret();
-							// undos.push(el.innerHTML)
 							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
 							setCaret(pos);
-							
-							
-							// console.log('redos\n')
-							// console.log(redos)
-							// console.log("undos\n")
-							// console.log(undos)
 						}
 					});
 
-					el.addEventListener('keyup', e => {
+					el.addEventListener('keydown', e => {
 						if (e.ctrlKey && e.code == 'KeyZ') {
 							const prevHTML = undo(redos, undos, el.innerHTML)
 							if (prevHTML) {
-								console.log(prevHTML)
 								el.innerHTML = prevHTML
-								console.log('я внутри')
 								const pos = caret();
 								setCaret(pos);
 							}
-							
-							// console.log('redos\n')
-							// console.log(redos)
-							// console.log("undos\n")
-							// console.log(undos)
 						}
 					});
 
-					el.addEventListener('keyup', e => {
+					el.addEventListener('keydown', e => {
 						if (e.ctrlKey && e.code == 'KeyY') {
 							const prevHTML = redo(redos, undos, el.innerHTML)
 							if (prevHTML) {
-								console.log(prevHTML)
 								el.innerHTML = prevHTML
-								console.log('я внутри')
 								const pos = caret();
 								setCaret(pos);
 							}
-							
-							// console.log('redos\n')
-							// console.log(redos)
-							// console.log("undos\n")
-							// console.log(undos)
 						}
 					});
 				};
@@ -678,7 +639,6 @@
 				// Сохраняем все тесты по хот кею Ctrl+S
 				$(document).on("keydown", e => {
 					if (e.ctrlKey && e.code == 'KeyS') {
-						console.log(e.keyCode);
 						e.preventDefault();
 						saveAllTests();
 					}
