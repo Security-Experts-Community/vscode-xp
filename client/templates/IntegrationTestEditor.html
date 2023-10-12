@@ -4,6 +4,7 @@
 	<meta charset="UTF-8">
 
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'nonce-DGSADGASDHRYASDG';"> -->
 	<title>Тесты</title>
 
 	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/main.css">
@@ -148,6 +149,9 @@
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/highlight-11.7.0.min.js"></script>
 
+		<!-- Для работоспособности vscode ui toolkit -->
+		<script type="module" src="{{WebviewUri}}"></script>
+
 		<script>
 			// Глобальное определение функций.
 
@@ -168,6 +172,7 @@
 					const testCode = $(this).find('[name="expect"]').text();
 					const normEvents = $(this).find('[name="norm_event"]').text();
 
+
 					tests.push({
 						"number" : id,
 						"rawEvents" : rawEvents,
@@ -185,8 +190,26 @@
 					tests: tests
 				});
 			};
+
+			const undo = (redos, undos, currentHtml) => {
+				if (undos.length) {
+					redos.push(currentHtml);
+					return undos.pop();
+				} else {
+					return null;
+				}
+			};
+
+			const redo = (redos, undos, currentHtml) => {
+				if (redos.length) {
+					undos.push(currentHtml);
+					return redos.pop();
+				} else {
+					return null;
+				}
+			};
 			
-			const editor = (el, tab = '    ') => {
+			const editor = (el, language, redos, undos, tab = '    ') => {
 					const caret = () => {
 						const range = window.getSelection().getRangeAt(0);
 						const prefix = range.cloneRange();
@@ -219,13 +242,22 @@
 						return pos;
 					};
 
+					el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
+
+					// событие перед вводом символа
+					el.addEventListener('beforeinput', e=> {
+						undos.push(el.innerHTML)
+					})
+
 					// Обработка символа табуляции
 					el.addEventListener('keydown', e => {
 						if (e.which === 9) {
+							undos.push(el.innerHTML)
 							const pos = caret() + tab.length;
 							const range = window.getSelection().getRangeAt(0);
 							range.deleteContents();
 							document.execCommand("InsertHTML", false, tab);
+							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
 							setCaret(pos);
 							e.preventDefault();
 						}
@@ -233,9 +265,32 @@
 
 					// Обработка вставки символа с поддержкой выделения на Ctrl+A.
 					el.addEventListener('keyup', e => {
-						if ((e.keyCode >= 0x30 || e.keyCode == 0x20) && !(e.ctrlKey && e.code == 'KeyA')) {
+						if ((e.keyCode >= 0x30 || e.keyCode == 0x20) && !(e.ctrlKey && e.code == 'KeyA') && !(e.ctrlKey && e.code == 'KeyZ') && !(e.ctrlKey && e.code == 'KeyY')) {
 							const pos = caret();
+							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
 							setCaret(pos);
+						}
+					});
+
+					el.addEventListener('keydown', e => {
+						if (e.ctrlKey && e.code == 'KeyZ') {
+							const prevHTML = undo(redos, undos, el.innerHTML)
+							if (prevHTML) {
+								el.innerHTML = prevHTML
+								const pos = caret();
+								setCaret(pos);
+							}
+						}
+					});
+
+					el.addEventListener('keydown', e => {
+						if (e.ctrlKey && e.code == 'KeyY') {
+							const prevHTML = redo(redos, undos, el.innerHTML)
+							if (prevHTML) {
+								el.innerHTML = prevHTML
+								const pos = caret();
+								setCaret(pos);
+							}
 						}
 					});
 				};
@@ -423,22 +478,25 @@
 				$(this).height(this.scrollHeight);
 			});
 
-			function addEditorEvents() {
+			function addEditorEvents(redos, undos) {
 				// Добавляем автоподстветку для каждого из полей кода тестов.
 				const xpTestElements = document.querySelectorAll(".xp-test_highlight");
 				for(el of xpTestElements) {
-					el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: 'xp-test-code'}).value
-					editor(el);
+					// el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: 'xp-test-code'}).value
+					editor(el, 'xp-test-code', redos, undos);
 				}
 
 				const jsonElements = document.querySelectorAll(".json_highlight");
 				for(el of jsonElements) {
-					el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: 'json'}).value
-					editor(el);
+					// el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: 'json'}).value
+					editor(el, 'json', redos, undos);
 				}
 			}
 
 			$(document).ready(function() {
+
+				const redos = []
+				const undos = []
 
 				addEventListenerOnClickForStopPropaginationAndDeleteTest()
 
@@ -580,7 +638,6 @@
 				// Сохраняем все тесты по хот кею Ctrl+S
 				$(document).on("keydown", e => {
 					if (e.ctrlKey && e.code == 'KeyS') {
-						console.log(e.keyCode);
 						e.preventDefault();
 						saveAllTests();
 					}
@@ -627,7 +684,7 @@
 				);
 
 				// Добавляем автоподстветку для каждого из полей кода тестов.
-				addEditorEvents();
+				addEditorEvents(redos, undos);
 			});
 
 			function createTest() {	
@@ -666,7 +723,7 @@
 
 				// Добавляем обработчик для удаления вкладки и подсвечиваем содержимое 
 				addEventListenerOnClickForStopPropaginationAndDeleteTest()
-				addEditorEvents();
+				addEditorEvents(redos, undos);
 
 				// Переходим на созданную вкладку
 				openTest(new_id);
