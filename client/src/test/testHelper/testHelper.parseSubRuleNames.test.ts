@@ -5,6 +5,23 @@ import { TestHelper } from '../../helpers/testHelper';
 
 suite('TestHelper.parseSubRuleNames', async () => {
 
+    test('Есть комменты для сабрулей', async () => {
+
+        const ruleCode =
+`event Event:
+key:
+    event_src.host, subject.account.id
+filter {
+    in_list([
+        "Super_Duper_SubRule", # Тут есть "dfdf"
+    ], correlation_name)
+`;
+
+        const subRuleNames = TestHelper.parseSubRuleNames(ruleCode);
+
+        assert.deepStrictEqual(subRuleNames, ["Super_Duper_SubRule"]);
+    });
+
     test('Сравнение имени сабруля c lower', async () => {
 
         const ruleCode =

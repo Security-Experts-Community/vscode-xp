@@ -9,6 +9,7 @@ import { diffJson } from 'diff';
 import { UnitTestRunner } from './unitTestsRunner';
 import { UnitTestOutputParser } from './unitTestOutputParser';
 import { XpException } from '../xpException';
+import { RegExpHelper } from '../../helpers/regExpHelper';
 
 export class NormalizationUnitTestsRunner implements UnitTestRunner {
 
@@ -38,9 +39,9 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 			return unitTest;
 		}
 
-		const normalizedEventResult = /^\{.*\}/is.exec(utilityOutput);
+		const normalizedEventResult = RegExpHelper.parseJsonsFromMultilineString(utilityOutput);
 		if(!normalizedEventResult || normalizedEventResult.length != 1) {
-			throw new XpException("Нормализатор не вернул никакого события или вернул ошибку. Исправьте правило нормализации и повторите.");
+			throw new XpException("Нормализатор не вернул никакого события или вернул ошибку. Исправьте правило нормализации и повторите");
 		}
 		const normalizedEvent = normalizedEventResult[0];
 

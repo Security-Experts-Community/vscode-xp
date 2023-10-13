@@ -94,9 +94,6 @@ export class TestHelper {
 			/\s*"labels"(\s*):(\s*)".*?",/g,	// в середине json-а
 			/,\s*"labels"(\s*):(\s*)".*?"/g,	// в конце json-а
 
-			/\s*"_rule"(\s*):(\s*)".*?",/g,	// в середине json-а
-			/,\s*"_rule"(\s*):(\s*)".*?"/g,	// в конце json-а
-
 			/\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\],/g,
 			/,\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\]/g,
 
@@ -505,7 +502,7 @@ export class TestHelper {
 		// const correlationNameWithLowerCompareRegex = /lower\(\s*correlation_name\s*\)\s*==\s*"(\w+)"/gm;
 		const correlationNameWithLowerCompareRegexResult = RegExpHelper.parseValues(ruleCode, this.LOWER_CORRELATION_NAME_COMPARE_REGEX, "gm");
 
-		// const correlationNameWihtLowerInListRegex = /in_list\(\s*(\[[\w\W]+\])\s*,\s*lower\(correlation_name\)/gm;
+		// const correlationNameWithLowerInListRegex = /in_list\(\s*(\[[\w\W]+\])\s*,\s*lower\(correlation_name\)/gm;
 		const correlationNameWithLowerInListRegexResult = RegExpHelper.parseJsArrays(ruleCode, this.INLIST_LOWER_CORRELATION_NAME_REGEX, "gm");
 
 		const correlationNameInListRegexResult = RegExpHelper.parseJsArrays(ruleCode, this.INLIST_CORRELATION_NAME_REGEX, "gm");

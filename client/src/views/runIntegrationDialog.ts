@@ -10,6 +10,7 @@ import { Configuration } from '../models/configuration';
 import { OperationCanceledException } from '../models/operationCanceledException';
 import { XpException } from '../models/xpException';
 import { DialogHelper } from '../helpers/dialogHelper';
+import { Log } from '../extension';
 
 export class RunIntegrationTestDialog {
 	constructor(private _config : Configuration, private _tmpFilesPath?: string) {}
@@ -37,9 +38,12 @@ export class RunIntegrationTestDialog {
 		const testRunnerOptions = new IntegrationTestRunnerOptions();
 		testRunnerOptions.tmpFilesPath = this._tmpFilesPath;
 
+		// Получение сабрулей из кода.
 		const ruleCode = await rule.getRuleCode();
 		const subRuleNames = TestHelper.parseSubRuleNames(ruleCode).map(srn => srn.toLocaleLowerCase());
 		const uniqueSubRuleNames = [...new Set(subRuleNames)];
+
+		Log.info(`Из правила ${rule.getName()} получены следующие подправила (subrules)`, uniqueSubRuleNames);
 
 		// У правила нет зависимых корреляций, собираем только его.
 		if(uniqueSubRuleNames.length == 0) {

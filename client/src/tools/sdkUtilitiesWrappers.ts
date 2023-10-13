@@ -86,15 +86,11 @@ export class SDKUtilitiesWrappers {
 			}
 		);
 
-		if(output.exitCode !== 0) {
-			throw new XpException(`Нормализатор вернул код ошибки ${output.exitCode}`);
-		}
-
 		if(!output.output) {
 			throw new XpException(`Нормализатор вернул пустую строку`);
 		}
 
-		Log.info(`Нормализация тестового события завершена`);
+		Log.info(`Нормализация тестового события завершена c кодом ${output.exitCode}`);
 		return output.output;
 	}
 }

@@ -59,7 +59,7 @@ export class ShowTestResultsDiffCommand extends Command {
 		const formattedExpectedEvent = TestHelper.formatTestCodeAndEvents(expectedEvent.trim());
 
 		// Записываем ожидаемое фактическое значение файл для последующего сравнения
-		const expectedEventTestFilePath = path.join(this.params.tmpDirPath, `expectedEvents${this.params.testNumber}.json`);
+		const expectedEventTestFilePath = path.join(this.params.tmpDirPath, `expectedEvents_${this.params.testNumber}.json`);
 		await FileSystemHelper.writeContentFile(expectedEventTestFilePath, formattedExpectedEvent);
 
 
@@ -87,19 +87,17 @@ export class ShowTestResultsDiffCommand extends Command {
 		let formattedActualEvent = "";
 		if(actualFilteredEvents.length !== 0) {
 			// Исключаем поля, которых нет в ожидаемом, чтобы сравнение было репрезентативным.
-			// let actualOutputEventsString = "";
-			// if(expectedKeys.length !== 0) {
-			// 	actualOutputEventsString = actualFilteredEvents
-			// 		.map(arl => JSON.parse(arl))
-			// 		.map(aro => TestHelper.removeAnotherObjectKeys(aro, expectedKeys))
-			// 		.map(aro => JSON.stringify(aro))
-			// 		.join(os.EOL);
-			// } else {
-			// 	// Так как в правилах expect not нет ожидаемых событий, ничего не фильтруем.
-			// 	actualOutputEventsString = actualFilteredEvents.join(os.EOL);
-			// }
-
-			const actualOutputEventsString = actualFilteredEvents.join(os.EOL);
+			let actualOutputEventsString = "";
+			if(expectedKeys.length !== 0) {
+				actualOutputEventsString = actualFilteredEvents
+					.map(arl => JSON.parse(arl))
+					.map(aro => TestHelper.removeAnotherObjectKeys(aro, expectedKeys))
+					.map(aro => JSON.stringify(aro))
+					.join(os.EOL);
+			} else {
+				// Так как в правилах expect not нет ожидаемых событий, ничего не фильтруем.
+				actualOutputEventsString = actualFilteredEvents.join(os.EOL);
+			}
 
 			// Помимо форматирование их требуется почистить от технических полей.
 			formattedActualEvent = TestHelper.formatTestCodeAndEvents(actualOutputEventsString);

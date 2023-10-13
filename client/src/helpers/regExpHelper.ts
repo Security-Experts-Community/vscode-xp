@@ -14,8 +14,16 @@ export class RegExpHelper {
 		return result[1];
 	}
 
-	public static getJsons() : RegExp {
-		return /({.*?})/g;
+	public static parseJsonsFromMultilineString(str: string) : string[] {
+		const jsons : string[] = [];
+		let currResult: RegExpExecArray | null;
+		const regExp = /^\{[\s\S]+?\}/gm;
+		while ((currResult = regExp.exec(str))) {
+			const curValue = currResult[0];
+			jsons.push(curValue);
+		}
+
+		return jsons;
 	}
 
 	public static getAllStrings(inputText : string, regExp: RegExp) : string[] {
@@ -76,27 +84,39 @@ export class RegExpHelper {
 	 * Парсить js-массивы ([1, 2, 3]) из строки по регулярному выражению и объединяет их в единый список.
 	 * Регулярное выражение собирает значение первой группы и только они попадают в массив.
 	 * @param text строка 
-	 * @param regExp регулярное выражение с заполненой второй группой
+	 * @param regExp регулярное выражение с заполненной второй группой
 	 * @returns совокупный список всех элементов
 	 */
 	public static parseJsArrays(text : string, reg : string|RegExp, flags : string) : string[] {
-		const arrays : string [] = [];
 		let parseResult: RegExpExecArray | null;
 		const regExp = new RegExp(reg, flags);
+		const elements: string[] = [];
 		while ((parseResult = regExp.exec(text))) {
 			if(parseResult.length != 2) {
 				continue;
 			}
 			
 			const array : string = parseResult[1];
-			arrays.push(array);
+			// Чистим от возможных комментариев.
+			// [
+			// 	"Super_Duper_SubRule", # Тут есть комментарий
+			// ];
+			let elementsResult: RegExpExecArray | null;
+			
+			const elementRegExp = /(?<!#.*?)"(\w+?)"/gm;
+			while ((elementsResult = elementRegExp.exec(array))) {
+				if(elementsResult.length != 2) {
+					continue;
+				}
+				const currElem = elementsResult[1];
+				elements.push(currElem);
+			}
 		}
 
-		const values = arrays.flatMap(array => JSON.parse(array));
-		return values;
+		return elements;
 	}
 
-	public static parseFunctionCalls(text: string, lineNumber: number, fuctionNames: string[]) : vscode.Range [] {
+	public static parseFunctionCalls(text: string, lineNumber: number, functionNames: string[]) : vscode.Range [] {
 		const functionCallRegEx = /(?:.*?)([A-Za-z0-9_]+)\(/g;
 
 		const functionCalls : vscode.Range [] = [];
@@ -111,7 +131,7 @@ export class RegExpHelper {
 			
 			// Находим вызов функции.
 			const functionCall = parseResult[1];
-			if(!fuctionNames.includes(functionCall)) {
+			if(!functionNames.includes(functionCall)) {
 				continue;
 			}
 

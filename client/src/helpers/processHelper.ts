@@ -113,6 +113,15 @@ export class ProcessHelper {
 					options.outputChannel.append(encodedData);
 				}
 			});
+
+			child.stderr.on("data", function(exception : Error) {
+				const encodedData = exception.toString();
+				executionResult.output += encodedData;
+
+				if(options.outputChannel) {
+					options.outputChannel.append(encodedData);
+				}
+			});
 		
 			child.on('close', function(code : number) {
 				executionResult.exitCode = code;
