@@ -369,6 +369,11 @@
 					"command": "SiemContentEditor.deleteContentItemCommand",
 					"when": "view == KnowledgebaseTree",
 					"group": "ZCommonItems@4"
+				},
+				{
+					"command": "TableListsEditorView.showView",
+					"when": "view == KnowledgebaseTree && (viewItem == Table)",
+					"group": "ZCommonItems@4"
 				}
 			]
 		},
@@ -412,8 +417,8 @@
 			},
 			{
 				"command": "TableListsEditorView.showView",
-				"title": "Создать табличный список",
-				"shortTitle": "Создать табличный список",
+				"title": "Редактировать табличный список",
+				"shortTitle": "Редактировать табличный список",
 				"category": "Редактор XP"
 			},
 			{
