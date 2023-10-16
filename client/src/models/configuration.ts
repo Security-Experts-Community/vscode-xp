@@ -124,7 +124,7 @@ export class Configuration {
 			case "win32" : return OsType.Windows;
 			case "linux" : return OsType.Linux;
 			case "darwin" : return OsType.Mac;
-			default: throw new Error("Платформа не поддеживается.");
+			default: throw new Error("Платформа не поддерживается.");
 		}
 	}
 
@@ -154,11 +154,10 @@ export class Configuration {
 	 * @returns внутреннее имя расширения.
 	 */
 	public getExtensionSettingsPrefix() : string {
-		// TODO: обновить после переименования
-		return "xplang";
+		return "xpConfig";
 	}
 
-	public getResoucesUri() : vscode.Uri {
+	public getResourcesUri() : vscode.Uri {
 		const templatesUri = vscode.Uri.joinPath(this.getExtensionUri(), "templates");
 		return templatesUri;
 	}

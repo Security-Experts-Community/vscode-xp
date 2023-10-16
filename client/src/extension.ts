@@ -45,7 +45,11 @@ export async function activate(context: ExtensionContext) {
 		// Инициализация реестр глобальных параметров.
 		const config = await Configuration.init(context);
 		Log = new Logger(config);
-		Log.setLogLevel(LogLevel.Debug);
+		if(config.getExtensionMode() === vscode.ExtensionMode.Development) {
+			Log.setLogLevel(LogLevel.Debug);
+		} else {
+			Log.setLogLevel(LogLevel.Error);
+		}
 
 		Log.info(`Начата активация расширения '${Configuration.getExtensionDisplayName()}'`);
 
