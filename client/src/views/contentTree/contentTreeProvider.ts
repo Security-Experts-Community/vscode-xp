@@ -64,6 +64,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 			// 	gitHooks.update();
 			// 	kbTreeProvider.refresh();
 			// });
+		} else {
+			DialogHelper.showWarning(`Наличие системы контроля версии [git](https://git-scm.com/) необходимо для работы расширения. Требования к расширению можно посмотреть [здесь](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#id3)`);
 		}
 
 
@@ -360,7 +362,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 			if(dirName.startsWith(".") || dirName.toLocaleLowerCase() == "_meta") 
 				continue;
 
-			// В случане штатной директории пакетов будет возможности создавать и собирать пакеты.
+			// В случае штатной директории пакетов будет возможности создавать и собирать пакеты.
 			// packages может встречаться не в корне открытого контета.
 			if(this.isContentRoot(dirName)) {
 				const packagesDirPath = path.join(subFolderPath, dirName);

@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { DialogHelper } from '../helpers/dialogHelper';
 import { TestHelper } from '../helpers/testHelper';
 import { VsCodeApiHelper } from '../helpers/vsCodeApiHelper';
+import { ExceptionHelper } from '../helpers/exceptionHelper';
 
 export class TestsFormatContentMenuExtension {
 
@@ -32,7 +33,7 @@ export class TestsFormatContentMenuExtension {
 					});
 				}
 				catch (error) {
-					DialogHelper.showError("Не удалось упаковать кода теста", error);
+					ExceptionHelper.show(error, "Не удалось упаковать кода теста");
 				}
 			}
 		);
@@ -88,7 +89,7 @@ export class TestsFormatContentMenuExtension {
 					});
 				}
 				catch (error) {
-					DialogHelper.showError("Не удалось упаковать код теста. ", error);
+					ExceptionHelper.show(error, "Не удалось упаковать код теста");
 				}
 			},
 			this

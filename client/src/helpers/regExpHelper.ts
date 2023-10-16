@@ -4,6 +4,10 @@ export class RegExpHelper {
 		return /expect\s*(\d+|not)\s*{(.*)}/gm;
 	}
 
+	public static getTmpActualResultEventFile() : RegExp { 
+		return /raw_events_\d+_norm_enr_cor(r)?_enr\.json/gm;
+	}
+
 	public static getSingleExpectEvent(text: string) : string {
 		const result = /expect\s*1\s*({.*})/gm.exec(text);
 

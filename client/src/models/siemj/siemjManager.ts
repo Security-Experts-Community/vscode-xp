@@ -11,12 +11,10 @@ import { RuleBaseItem } from '../content/ruleBaseItem';
 import { SiemjConfigHelper } from './siemjConfigHelper';
 import { FileSystemException } from '../fileSystemException';
 import { SiemjConfBuilder } from './siemjConfigBuilder';
-import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { DialogHelper } from '../../helpers/dialogHelper';
-import { Localization, LocalizationExample } from '../content/localization';
-import { IntegrationTest } from '../tests/integrationTest';
-import { StringHelper } from '../../helpers/stringHelper';
+import { LocalizationExample } from '../content/localization';
 import { TestHelper } from '../../helpers/testHelper';
+import { RegExpHelper } from '../../helpers/regExpHelper';
 
 export class SiemjManager {
 
@@ -198,11 +196,11 @@ export class SiemjManager {
 		// raw_events_1_norm_enr_cor_enr.json
 		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
 		const correlatedEventFilePaths = files.filter(fp => {
-			return /raw_events_\d+_norm_enr_cor_enr\.json/gm.test(path.basename(fp));
+			return RegExpHelper.getTmpActualResultEventFile().test(path.basename(fp));
 		});
 
 		if(correlatedEventFilePaths.length === 0) {
-			throw new XpException("Корреляционные события не найдены.");
+			throw new XpException("Корреляционные события не найдены");
 		}
 
 		const contentRootPath = rule.getContentRootPath(this._config);

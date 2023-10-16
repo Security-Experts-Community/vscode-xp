@@ -122,12 +122,19 @@ export class TestHelper {
 	public static getTestActualEventsFilePath(integrationTestsTmpDirPath: string, testNumber: number): string {
 		// c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
 		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
-		const resultEvent = files.find(fp => {
+		const resultEvents = files.filter(fp => {
 			const fileName = path.basename(fp).toLocaleLowerCase();
-			return fileName === `raw_events_${testNumber}_norm_enr_cor_enr.json`;
+			return RegExpHelper.getTmpActualResultEventFile().test(fileName);
 		});
 
-		return resultEvent;
+		if(resultEvents.length < testNumber) {
+			throw new Error("Нужного файла фактического корреляционного событий не найдено");
+		}
+
+		const testIndex = testNumber - 1;
+		const testFilePath = resultEvents[testIndex];
+
+		return testFilePath;
 	}
 
 	public static cleanModularTestResult(testCode: string) : string {

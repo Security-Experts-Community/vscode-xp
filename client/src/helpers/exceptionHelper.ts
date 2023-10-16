@@ -19,7 +19,7 @@ export class ExceptionHelper {
 			case OperationCanceledException.name: {
 				const typedError = error as XpException;
 
-				Log.error(typedError.message, typedError);
+				// Log.error(typedError.message, typedError);
 				vscode.window.showErrorMessage(typedError.message);
 				ExceptionHelper.recursiveWriteXpExceptionToOutput(typedError, outputChannel);
 				break;

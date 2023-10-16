@@ -110,7 +110,10 @@ export class LocalizationEditorViewProvider {
 				LocalizationEditorViewProvider.viewId,
 				`Правила локализации '${rule.getName()}'`,
 				vscode.ViewColumn.One,
-				{ retainContextWhenHidden: true });
+				{
+					retainContextWhenHidden: true, 
+					enableFindWidget: true
+				});
 
 			this._view.webview.options = {
 				enableScripts: true
@@ -190,7 +193,7 @@ export class LocalizationEditorViewProvider {
 					catch(error) {
 						Log.warn("Ошибка очистки временных файлов интеграционных тестов", error);
 					}
-					DialogHelper.showError("Неожиданная ошибка тестирования локализаций", error);
+					ExceptionHelper.show(error, "Неожиданная ошибка тестирования локализаций");
 				}
 				break;
 			}
@@ -204,7 +207,7 @@ export class LocalizationEditorViewProvider {
 					DialogHelper.showInfo(`Правила локализации для ${this._rule.getName()} сохранены`);
 				}
 				catch (error) {
-					DialogHelper.showError("Не удалось сохранить правила локализации", error);
+					ExceptionHelper.show(error, "Не удалось сохранить правила локализации");
 				}
 			}
 		}
@@ -262,15 +265,20 @@ export class LocalizationEditorViewProvider {
 		}, async (progress, token) => {
 				
 			let result: string;
+			
 			if(fs.existsSync(this._integrationTestTmpFilesPath)) {
-				result = await DialogHelper.showInfo(
-					"Обнаружены результаты предыдущего запуска интеграционных тестов. Если вы модифицировали только правила локализации, то можно использовать предыдущие результаты. В противном случае необходимо запустить интеграционные тесты еще раз.", 
-					LocalizationEditorViewProvider.USE_OLD_TESTS_RESULT,
-					LocalizationEditorViewProvider.RESTART_TESTS);
+				const subDirItems = await fs.promises.readdir(this._integrationTestTmpFilesPath, { withFileTypes: true });
 
-				// Если пользователь закрыл диалог, завершаем работу.
-				if(!result) {
-					return;
+				if(subDirItems.length > 0) {
+					result = await DialogHelper.showInfo(
+						"Обнаружены результаты предыдущего запуска интеграционных тестов. Если вы модифицировали только правила локализации, то можно использовать предыдущие результаты. В противном случае необходимо запустить интеграционные тесты еще раз.", 
+						LocalizationEditorViewProvider.USE_OLD_TESTS_RESULT,
+						LocalizationEditorViewProvider.RESTART_TESTS);
+	
+					// Если пользователь закрыл диалог, завершаем работу.
+					if(!result) {
+						return;
+					}
 				}
 			}
 
@@ -298,7 +306,7 @@ export class LocalizationEditorViewProvider {
 		});
 	}
 
-	private findDuplicates(arr): string {
+	private findDuplicates(arr: string[]): string {
 		const sorted_arr = arr.slice().sort();
 		for (let i = 0; i < sorted_arr.length - 1; i++) {
 			if (sorted_arr[i + 1] == sorted_arr[i]) {

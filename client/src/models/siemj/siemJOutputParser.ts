@@ -14,6 +14,7 @@ export class SiemjExecutionResult {
 	public fileDiagnostics : FileDiagnostics[] = [];
 	public failedTestNumbers : number[] = [];
 	public tmpDirectoryPath: string;
+	public testCount?: number;
 }
 
 export class SiemJOutputParser {
@@ -95,7 +96,8 @@ export class SiemJOutputParser {
 
 		// Количество тестов не собрали.
 		// TEST_RULES [Err] :: Collected 5 tests.
-		const runningTestRegExp = /TEST_RULES \[Err\] :: Collected (\d+) tests./gm;
+		// TEST_RULES :: Collected 6 tests.
+		const runningTestRegExp = /TEST_RULES (?:\[Err\] )?:: Collected (\d+) tests./gm;
 		if(!siemjOutput.match(runningTestRegExp)) {
 			result.testsStatus = false;
 			return;
@@ -108,6 +110,8 @@ export class SiemJOutputParser {
 			const testCountString = collectedTestsResult[1];
 			testCount = parseInt(testCountString);
 		}
+
+		result.testCount = testCount;
 
 		// Все тесты прошли.
 		if(siemjOutput.includes(this.TESTS_SUCCESS_SUBSTRING)) {

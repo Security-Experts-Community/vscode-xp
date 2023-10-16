@@ -104,7 +104,7 @@ export class ShowTestResultsDiffCommand extends Command {
 			formattedActualEvent = TestHelper.cleanTestCode(formattedActualEvent);
 		} else {
 			// Из отработавших правил не исключаем никаких полей, чтобы было видно полный результат.
-			// Помимо форматирование их требутеся почистить от технических полей.
+			// Помимо форматирование их требуется почистить от технических полей.
 			const actualOutputEventsString = actualEvents.join(os.EOL);
 			formattedActualEvent = TestHelper.formatTestCodeAndEvents(actualOutputEventsString);
 			formattedActualEvent = TestHelper.cleanTestCode(formattedActualEvent);
