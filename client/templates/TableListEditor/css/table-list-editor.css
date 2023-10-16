@@ -1,0 +1,64 @@
+body {
+	padding: 20px;
+	min-width: 460px;
+	line-height: normal;
+	word-break: keep-all;
+	/* font-size: var(--vscode-font-size); */
+}
+
+vscode-text-field {
+	width: 100%;
+}
+
+vscode-text-area {
+	width: 100%;
+}
+
+vscode-dropdown {
+	width: 100%;
+}
+
+vscode-data-grid-row {
+	border: 1px solid var(--vscode-quickInput-background);
+}
+
+.tle {
+	width: 100%;
+	height: auto;
+
+	display: flex;
+	flex-direction: column;
+
+	gap: 10px;
+}
+
+.tle__row {
+	width: 100%;
+
+	display: flex;
+	flex-direction: column;
+}
+
+.tle__row > label {
+	display: block;
+	color: var(--vscode-foreground);
+	cursor: pointer;
+	font-size: var(--vscode-font-size);
+	line-height: normal;
+	margin-bottom: 2px;
+}
+
+.tle__row__input__helper {
+	color: var(--vscode-input-placeholderForeground);
+}
+
+.tle__row__table__cell-icon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+}
+
+.span_input-required {
+	color: var(--vscode-editorError-foreground);
+}

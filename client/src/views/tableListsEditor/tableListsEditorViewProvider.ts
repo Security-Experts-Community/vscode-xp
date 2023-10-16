@@ -7,10 +7,10 @@ import { MustacheFormatter } from '../mustacheFormatter';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
 
-export class TableListsEditorViewProvider  {
+export class TableListsEditorViewProvider {
 
 	public static readonly viewId = 'TableListsEditorView';
-	
+
 	private _view?: vscode.WebviewPanel;
 	private _rule: RuleBaseItem;
 
@@ -21,23 +21,23 @@ export class TableListsEditorViewProvider  {
 	public static init(context: Configuration) {
 
 		const templateFilePath = path.join(
-			Configuration.get().getExtensionPath(), "client", "templates", "TableListEditor.html");
+			Configuration.get().getExtensionPath(), "client", "templates", "TableListEditor", "html", "TableListEditor.html");
 
 		const provider = new TableListsEditorViewProvider(templateFilePath);
-	
+
 		context.getContext().subscriptions.push(
 			vscode.commands.registerCommand(
-				TableListsEditorViewProvider.showView, 
+				TableListsEditorViewProvider.showView,
 				async (parentItem: RuleBaseItem) => provider.showView()
 			)
-		);	
+		);
 	}
 
 	public static showView = "TableListsEditorView.showView";
-	public showView()  {
+	public showView() {
 
 		// Если открыта еще одна локализация, то закрываем её перед открытием новой.
-		if(this._view) {
+		if (this._view) {
 			this._view.dispose();
 			this._view = undefined;
 		}
@@ -48,12 +48,12 @@ export class TableListsEditorViewProvider  {
 				TableListsEditorViewProvider.viewId,
 				'Редактирование табличного списка',
 				vscode.ViewColumn.One,
-				{retainContextWhenHidden : true});
+				{ retainContextWhenHidden: true });
 
 			this._view.webview.options = {
 				enableScripts: true
 			};
-			
+
 			this._view.webview.onDidReceiveMessage(
 				this.receiveMessageFromWebView,
 				this
@@ -62,9 +62,12 @@ export class TableListsEditorViewProvider  {
 			const config = Configuration.get();
 			const resoucesUri = config.getExtensionUri();
 			const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
-			
+
+			const webviewUri = this.getUri(this._view.webview, resoucesUri, ["client", "out", "ui.js"]);
+
 			const templatePlainObject = {
-				"ExtensionBaseUri" : extensionBaseUri
+				"ExtensionBaseUri": extensionBaseUri,
+				"WebviewUri": webviewUri
 			};
 
 			// Подгружаем шаблон и шаблонизируем данные.
@@ -74,7 +77,7 @@ export class TableListsEditorViewProvider  {
 
 			this._view.webview.html = htmlContent;
 		}
-		catch(error) {
+		catch (error) {
 			DialogHelper.showError(`Не удалось открыть правила локализации.`, error);
 		}
 	}
@@ -85,5 +88,9 @@ export class TableListsEditorViewProvider  {
 				break;
 			}
 		}
+	}
+
+	private getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]) {
+		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
 	}
 }
