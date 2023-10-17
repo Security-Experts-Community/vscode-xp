@@ -1,18 +1,23 @@
 import { tableColumn } from '../store/htmlStore.js';
+import { addOnClickEventListenerToRemoveColumnButton } from './removeColumn.js'
 
 /** 
- * Функция добавления колонки к data-grid из vscode webview ui toolkit в TableListEditor.html
+ * Функция добавляющая колонку в data-grid vscode-webview-ui-toolkit в TableListEditor.html
  */
 const _addColumn = () => {
 	$('vscode-data-grid').append(tableColumn);
+	addOnClickEventListenerToRemoveColumnButton($('vscode-data-grid').children().last().children('.remove-icon'));
 }
 
 /**  
- * Функция, запускающая при клике на кнопку с id addColumnButton выполнение функции добавления колонки _addColumn()
+ * Функция, добавляющая прослушиватель событий на кнопку "Добавить колонку",
+ * запускающий при клике на кнопку "Добавить колонку" выполнение функции добавления колонки _addColumn()
+ * 
+ * (в этом вебвью прослушивание событий добавляется только со стороны js, не в html).
  */
-export const addEventListenerToAddColumnButton = () => {
+export const addOnClickEventListenerToAddColumnButton = () => {
 	$('#addColumnButton')[0].addEventListener("click", (e) => {
-		e.stopPropagation()
-		_addColumn()
+		e.stopPropagation();
+		_addColumn();
 	});
 }

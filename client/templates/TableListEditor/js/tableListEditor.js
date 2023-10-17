@@ -1,5 +1,7 @@
-import { addEventListenerToAddColumnButton } from './function/addColumn.js';
+import { addOnClickEventListenerToAddColumnButton } from './function/addColumn.js';
+import { addOnClickEventListenerToAllRemoveColumnButtons } from './function/removeColumn.js'
 
-$(document).ready(function () {
-	addEventListenerToAddColumnButton();
+$(function () {
+	addOnClickEventListenerToAddColumnButton();
+	addOnClickEventListenerToAllRemoveColumnButtons();
 });
