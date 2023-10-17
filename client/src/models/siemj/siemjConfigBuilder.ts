@@ -4,6 +4,7 @@ import * as path from 'path';
 import { Configuration } from '../configuration';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Log } from '../../extension';
+import { XpException } from '../xpException';
 
 
 /**
@@ -30,6 +31,11 @@ temp=${this._config.getTmpDirectoryPath(this._contentRootFolder)}`;
 	 * @param force пересобирать ли ранее собранный	граф
 	 */
 	public addNormalizationsGraphBuilding(force = true) : void {
+
+		if(this._scenarios.includes(SiemjConfBuilder.MAKE_NFGRAPH_SCENARIO)) {
+			throw new XpException(`Дублирование сценария ${SiemjConfBuilder.MAKE_NFGRAPH_SCENARIO} при генерации конфигурационного файла siemj.conf`);
+		}
+
 		const xpAppendixPath = this._config.getAppendixFullPath();
 
 		if (!force){
@@ -50,7 +56,7 @@ xp_appendix=${xpAppendixPath}
 out=${output}`;
 
 		this._siemjConfigSection += nfgraphBuildingSection;
-		this._scenarios.push("make-nfgraph");
+		this._scenarios.push(SiemjConfBuilder.MAKE_NFGRAPH_SCENARIO);
 	}
 
 	/**
@@ -356,4 +362,6 @@ scenario=${this._scenarios.join(" ")}
 
 	private _siemjConfigSection : string;
 	private _scenarios : string[] = [];
+
+	private static MAKE_NFGRAPH_SCENARIO = "make-nfgraph";
 }

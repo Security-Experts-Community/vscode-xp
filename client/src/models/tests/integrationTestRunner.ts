@@ -11,6 +11,7 @@ import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
 import { XpException } from '../xpException';
 import { SiemjManager } from '../siemj/siemjManager';
 import { OperationCanceledException } from '../operationCanceledException';
+import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 
 export enum CompilationType {
 	DontCompile = 0,
@@ -73,7 +74,26 @@ export class IntegrationTestRunner {
 		}
 
 		const configBuilder = new SiemjConfBuilder(this._config, rootPath);
-		configBuilder.addNormalizationsGraphBuilding(false);
+
+		const gitApi = await VsCodeApiHelper.getGitExtension();
+		if(!gitApi) {
+			// Нет git-а - пересобираем все нормализации.
+			configBuilder.addNormalizationsGraphBuilding(true);
+		} else {
+			// Есть хоть одна измененная нормализация, пересобираем все.
+			if(VsCodeApiHelper.isWorkDirectoryUsingGit(gitApi, rootPath)) {
+				const changePaths = VsCodeApiHelper.gitWorkingTreeChanges(gitApi, rootPath);
+				const isNormalizationsСhanged = changePaths.some(cp => cp.endsWith(".xp"));
+				if(isNormalizationsСhanged) {
+					configBuilder.addNormalizationsGraphBuilding(true);
+				} else {
+					configBuilder.addNormalizationsGraphBuilding(false);
+				}
+			} else {
+				configBuilder.addNormalizationsGraphBuilding(true);
+			}
+		}
+
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();

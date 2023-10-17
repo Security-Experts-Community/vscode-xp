@@ -40,7 +40,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		knowledgebaseDirectoryPath: string) {
 
 		const context = config.getContext();
-		const gitApi = await VsCodeApiHelper.getScmGitApiCore();
+		const gitApi = await VsCodeApiHelper.getGitExtension();
 
 		const kbTreeProvider = new ContentTreeProvider(knowledgebaseDirectoryPath, gitApi, config);
 
@@ -65,7 +65,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 			// 	kbTreeProvider.refresh();
 			// });
 		} else {
-			DialogHelper.showWarning(`Наличие системы контроля версии [git](https://git-scm.com/) необходимо для работы расширения. Требования к расширению можно посмотреть [здесь](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#id3)`);
+			DialogHelper.showWarning(`Наличие системы контроля версии [git](https://git-scm.com/) необходимо для эффективной работы расширения. Требования можно посмотреть [здесь](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#id3)`);
 		}
 
 
