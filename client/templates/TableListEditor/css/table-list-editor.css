@@ -1,9 +1,19 @@
 body {
-	padding: 20px;
 	min-width: 460px;
+	min-height: calc(100% - 20px);
 	line-height: normal;
 	word-break: keep-all;
+	padding: 20px;
 	/* font-size: var(--vscode-font-size); */
+
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+footer {
+	width: 100%;
+	padding-top: 20px;
 }
 
 vscode-text-field {
@@ -61,4 +71,8 @@ vscode-data-grid-row {
 
 .span_input-required {
 	color: var(--vscode-editorError-foreground);
+}
+
+.tle__row__save-button {
+	width: 100%;
 }

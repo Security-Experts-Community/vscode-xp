@@ -12,13 +12,6 @@
         <title>Редактор табличного списка</title>
 
 		<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/TableListEditor/css/table-list-editor.css">
-
-        <!-- <link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/main.css">
-	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/meta.css"> -->
-
-        <!-- Для отладки в браузере добавляю прямую ссылку на JQuery. -->
-        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-        <script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
     </head>
     <body>
 		<form class="tle">
@@ -89,13 +82,22 @@
 						</vscode-data-grid-cell>
 						<vscode-data-grid-cell grid-column="7" class="tle__row__table__cell-icon">🗑️</vscode-data-grid-cell>
 					</vscode-data-grid-row>
+					
 				</vscode-data-grid>
 			</div>
 		</form>
-
-
+		<footer>
+			<vscode-button id="addColumnButton" appearance="secondary">Добавить колонку</vscode-button>
+			<vscode-button>Сохранить</vscode-button>
+		</footer>
 
 		<!-- Для работоспособности vscode ui toolkit -->
 		<script type="module" src="{{WebviewUri}}"></script>
+
+		<!-- Для отладки в браузере добавляю прямую ссылку на JQuery. -->
+		<script	src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
+
+		<script type="module" src="{{{ExtensionBaseUri}}}/client/templates/TableListEditor/js/tableListEditor.js""></script>
 	</body>
 </html>
