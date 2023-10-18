@@ -2,14 +2,9 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-
-        <!--
-		Use a content security policy to only allow loading images from https or from our extension directory,
-		and only allow scripts that have a specific nonce.
-	-->
-
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Редактор табличного списка</title>
+
+		<title>Редактор табличного списка</title>
 
 		<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/TableListEditor/css/table-list-editor.css">
     </head>
@@ -42,6 +37,7 @@
 			</div>
 			<div class="tle__row">
 				<label>Колонки</label>
+				<!-- Поменял верстку у колонки vscode-data-grid? Скопируй её в константу ../js/store/htmlStore.js/tableColumn -->
 				<vscode-data-grid grid-template-columns="40px minmax(120px,1fr) minmax(120px,1fr) minmax(40px,1fr) minmax(40px,1fr) minmax(40px,1fr) 40px" aria-label="Колонки">
 					<vscode-data-grid-row row-type="header">
 						<vscode-data-grid-cell cell-type="columnheader" grid-column="1"></vscode-data-grid-cell>
@@ -58,7 +54,7 @@
 						<vscode-data-grid-cell cell-type="columnheader" grid-column="6">Может содержать null</vscode-data-grid-cell>
 						<vscode-data-grid-cell cell-type="columnheader" grid-column="7"></vscode-data-grid-cell>
 					</vscode-data-grid-row>
-					<vscode-data-grid-row>
+					<vscode-data-grid-row draggable="true" class="draggable-row">
     					<vscode-data-grid-cell grid-column="1" class="tle__row__table__cell-icon move-icon">:::</vscode-data-grid-cell>
     					<vscode-data-grid-cell grid-column="2">
 							<vscode-text-field type="text"></vscode-text-field>
@@ -98,6 +94,7 @@
 		<script	src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 		<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
 
+		<!-- Главный js файл для этого webView -->
 		<script type="module" src="{{{ExtensionBaseUri}}}/client/templates/TableListEditor/js/tableListEditor.js""></script>
 	</body>
 </html>
