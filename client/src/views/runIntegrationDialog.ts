@@ -43,7 +43,7 @@ export class RunIntegrationTestDialog {
 		const subRuleNames = TestHelper.parseSubRuleNames(ruleCode).map(srn => srn.toLocaleLowerCase());
 		const uniqueSubRuleNames = [...new Set(subRuleNames)];
 
-		Log.info(`Из правила ${rule.getName()} получены следующие подправила (subrules)`, uniqueSubRuleNames);
+		Log.info(`Из правила ${rule.getName()} получены следующие подправила (subrules): `, uniqueSubRuleNames);
 
 		// У правила нет зависимых корреляций, собираем только его.
 		if(uniqueSubRuleNames.length == 0) {

@@ -114,14 +114,6 @@ export class NormalizationUnitTest extends BaseUnitTest {
 			throw new XpException("Для модульного теста не задан порядковый номер");
 		}
 
-		// if(!this.getTestExpectation()) {
-		// 	throw new Error("Нельзя сохранять пустой тест");
-		// }
-
-		// if(!this.getTestInputData()){
-		// 	throw new Error("Нельзя сохранять тест без входных данных");
-		// }
-	
 		await FileSystemHelper.writeContentFileIfChanged(
 			this.getTestInputDataPath(),
 			this.getTestInputData()

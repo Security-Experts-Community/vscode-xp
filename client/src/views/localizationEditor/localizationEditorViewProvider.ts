@@ -19,6 +19,7 @@ import { RunIntegrationTestDialog } from '../runIntegrationDialog';
 import { Enrichment } from '../../models/content/enrichment';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Log } from '../../extension';
+import { OperationCanceledException } from 'typescript';
 
 export class LocalizationEditorViewProvider {
 
@@ -277,7 +278,7 @@ export class LocalizationEditorViewProvider {
 	
 					// Если пользователь закрыл диалог, завершаем работу.
 					if(!result) {
-						return;
+						throw new OperationCanceledException();
 					}
 				}
 			}

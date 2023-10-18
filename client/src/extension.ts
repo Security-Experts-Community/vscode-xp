@@ -247,7 +247,7 @@ export async function activate(context: ExtensionContext) {
 		if(fs.existsSync(tmpDirectory)) {
 			try {
 				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
-				Log.info(`Директория временных файлов '${tmpDirectory} была успешно очищена`);
+				Log.info(`Директория временных файлов '${tmpDirectory}' была успешно очищена`);
 			}
 			catch (error) {
 				Log.warn('Ошибка очистки файлов из временной директории', error);
@@ -259,7 +259,7 @@ export async function activate(context: ExtensionContext) {
 		if(fs.existsSync(baseOutputDirectory)) {
 			try {
 				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(baseOutputDirectory);
-				Log.info(`Директория выходных файлов '${tmpDirectory} была успешно очищена`);
+				Log.info(`Директория выходных файлов '${baseOutputDirectory}' была успешно очищена`);
 			}
 			catch (error) {
 				Log.warn('Ошибка очистки файлов из выходной директории', error);

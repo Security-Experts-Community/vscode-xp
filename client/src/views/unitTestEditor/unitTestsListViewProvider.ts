@@ -1,8 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { CorrelationUnitTestsRunner } from '../../models/tests/correlationUnitTestsRunner';
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { Configuration } from '../../models/configuration';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
@@ -12,7 +9,6 @@ import { TestStatus } from '../../models/tests/testStatus';
 import { BaseUnitTest } from '../../models/tests/baseUnitTest';
 import { Table } from '../../models/content/table';
 import { Macros } from '../../models/content/macros';
-import { SiemjManager } from '../../models/siemj/siemjManager';
 import { Correlation } from '../../models/content/correlation';
 import { Normalization } from '../../models/content/normalization';
 
@@ -164,8 +160,6 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 
 	public async runTests(rule: RuleBaseItem | Table | Macros) {
 
-		// Очищаем предыдущий вывод и показываем окно вывода.
-		this._config.getOutputChannel().clear();
 		const tests = await this.getChildren();
 
 		// Сбрасываем результаты предыдущих тестов.

@@ -1,5 +1,6 @@
 import * as js_yaml from 'js-yaml';
 import * as prettier from 'prettier';
+import * as os from 'os';
 
 export class YamlHelper {
 	public static configure(
@@ -10,7 +11,7 @@ export class YamlHelper {
 	}
 
 	/**
-	 * Сериализует в строку локализацию. Отличие в принудельном обрамлении в строку и дублировании одинарных кавычек.
+	 * Сериализует в строку локализацию. Отличие в принудительном обрамлении в строку и дублировании одинарных кавычек.
 	 * @param object объект для сериализации в строку
 	 * @returns 
 	 */
@@ -18,9 +19,9 @@ export class YamlHelper {
 		const localizationDumpOptions = Object.assign({}, this.dumpOptions);
 		localizationDumpOptions.forceQuotes = true;
 
-		const yamlContent = js_yaml.dump(object, localizationDumpOptions);
+		let yamlContent = js_yaml.dump(object, localizationDumpOptions);
 
-		return prettier.format(
+		yamlContent = prettier.format(
 			yamlContent,
 			{
 				'parser': 'yaml',
@@ -29,12 +30,14 @@ export class YamlHelper {
 				'singleQuote': true,
 			}
 		);
+
+		return yamlContent.replace(/\n/g, os.EOL);
 	}
 
 	public static stringify(object: any): string {
-		const yamlContent = js_yaml.dump(object, this.dumpOptions);
+		let yamlContent = js_yaml.dump(object, this.dumpOptions);
 
-		return prettier.format(
+		yamlContent = prettier.format(
 			yamlContent,
 			{
 				'parser': 'yaml',
@@ -43,6 +46,8 @@ export class YamlHelper {
 				// 'maxLineLength': this.dumpOptions.lineWidth,
 			}
 		);
+
+		return yamlContent.replace(/\n/g, os.EOL);
 	}
 
 	public static stringifyTable(object: any) : string {

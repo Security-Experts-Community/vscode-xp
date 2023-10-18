@@ -82,8 +82,8 @@ export class Localization {
 			return [];
 		}
 
-		const ruLocContant = await FileSystemHelper.readContentFile(ruLocFilePath);
-		const ruLocObject = YamlHelper.parse(ruLocContant);
+		const ruLocContent = await FileSystemHelper.readContentFile(ruLocFilePath);
+		const ruLocObject = YamlHelper.parse(ruLocContent);
 		const ruEventDescriptionsObject = ruLocObject.EventDescriptions as any[];
 		const ruDescription = ruLocObject.Description as string;
 
@@ -93,13 +93,13 @@ export class Localization {
 		let enEventDescriptionsObject : any[] = [];
 		let enDescription : string;
 		if(fs.existsSync(enLocFilePath)) {
-			const enLocContant = await FileSystemHelper.readContentFile(enLocFilePath);
-			const enLocObject = YamlHelper.parse(enLocContant);
+			const enLocContent = await FileSystemHelper.readContentFile(enLocFilePath);
+			const enLocObject = YamlHelper.parse(enLocContent);
 			enEventDescriptionsObject = enLocObject.EventDescriptions as any[];
 			enDescription = enLocObject.Description as string;
 		}
 
-		// Читаем метаданные для извелечения критериев локализаций.
+		// Читаем метаданные для извлечения критериев локализаций.
 		const eventDescriptions = this.parseEventDescriptions(ruleDirectoryPath);
 
 		const localizations : Localization[] = []; 
@@ -185,8 +185,8 @@ export class Localization {
 			return null;
 		}
 		
-		const ruLocContant = await FileSystemHelper.readContentFile(ruLocFilePath);
-		const ruLocObject = YamlHelper.parse(ruLocContant);
+		const ruLocContent = await FileSystemHelper.readContentFile(ruLocFilePath);
+		const ruLocObject = YamlHelper.parse(ruLocContent);
 
 		return ruLocObject.Description;
 	}
@@ -197,8 +197,8 @@ export class Localization {
 			return null;
 		}
 		
-		const enLocContant = await FileSystemHelper.readContentFile(enLocFilePath);
-		const enLocObject = YamlHelper.parse(enLocContant);
+		const enLocContent = await FileSystemHelper.readContentFile(enLocFilePath);
+		const enLocObject = YamlHelper.parse(enLocContent);
 
 		return enLocObject.Description;
 	}

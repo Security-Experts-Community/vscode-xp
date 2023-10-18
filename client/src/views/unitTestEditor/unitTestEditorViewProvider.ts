@@ -61,16 +61,6 @@ export class UnitTestContentEditorViewProvider {
 				async (test: BaseUnitTest) => {
 					// Открываем код теста.
 					vscode.commands.executeCommand(UnitTestContentEditorViewProvider.showEditorCommand, test);
-
-					// Показываем вывод теста, если он есть.
-					const testOutput = test.getOutput();
-					if (!testOutput) {
-						return;
-					}
-
-					const outputChannel = Configuration.get().getOutputChannel();
-					outputChannel.clear();
-					outputChannel.append(testOutput);
 				}
 			)
 		);
@@ -194,11 +184,14 @@ export class UnitTestContentEditorViewProvider {
 			if (!rawEvent) {
 				throw new XpException(`Не задано сырое событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`);
 			}
-			this._test.setTestInputData(rawEvent);
+			const compressedRawEvent = TestHelper.compressTestCode(rawEvent);
+			this._test.setTestInputData(compressedRawEvent);
+
 			const expectation = testInfo.expectation;
 			if (!expectation) {
 				throw new XpException(`Не задано ожидаемое нормализованное событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`);
 			}
+			
 			this._test.setTestExpectation(expectation);
 			await this._test.save();
 
