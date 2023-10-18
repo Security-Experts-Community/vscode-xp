@@ -32,6 +32,11 @@ vscode-data-grid-row {
 	border: 1px solid var(--vscode-quickInput-background);
 }
 
+vscode-data-grid-cell {
+	display: flex;
+	align-items: center;
+}
+
 .tle {
 	width: 100%;
 	height: auto;
@@ -71,4 +76,17 @@ vscode-data-grid-row {
 
 .span_input-required {
 	color: var(--vscode-editorError-foreground);
+}
+
+.row_insert-highlight {
+	height: 42px; 
+	background-color: var(--vscode-button-background);
+}
+
+.draggable-row {
+	height: 42px;
+}
+
+.move-row-button {
+	cursor: grab;
 }

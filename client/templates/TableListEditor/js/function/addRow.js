@@ -1,6 +1,6 @@
 import { tableRow } from '../store/htmlStore.js';
 import { addOnClickEventListenerToRemoveRowButton } from './removeRow.js'
-import { addOnDragStartAndOverEventListenerToRow } from './moveRow.js'
+// import { addSortableJQueryUIToDraggableRow } from './moveRow.js'
 
 /** 
  * Функция добавляющая колонку в data-grid vscode-webview-ui-toolkit в TableListEditor.html
@@ -8,7 +8,6 @@ import { addOnDragStartAndOverEventListenerToRow } from './moveRow.js'
 const _addRow = () => {
 	$('vscode-data-grid').append(tableRow);
 	addOnClickEventListenerToRemoveRowButton($('vscode-data-grid').children().last().children('.remove-row-button'));
-	addOnDragStartAndOverEventListenerToRow($('vscode-data-grid').children().last());
 }
 
 /**  
