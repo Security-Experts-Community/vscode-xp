@@ -5,7 +5,7 @@
  * нужно обновить этот шаблон! Код из vscode-data-grid-row в TableListEditor.html 
  * должен совпадать с этим шаблоном!
  */
-export const tableColumn = `
+export const tableRow = `
 	<vscode-data-grid-row draggable="true" class="draggable-row">
     	<vscode-data-grid-cell grid-column="1" class="tle__row__table__cell-icon move-icon">:::</vscode-data-grid-cell>
     	<vscode-data-grid-cell grid-column="2">
@@ -28,6 +28,6 @@ export const tableColumn = `
     	<vscode-data-grid-cell grid-column="6">
 			<vscode-checkbox></vscode-checkbox>
 		</vscode-data-grid-cell>
-		<vscode-data-grid-cell grid-column="7" class="tle__row__table__cell-icon remove-icon">🗑️</vscode-data-grid-cell>
+		<vscode-data-grid-cell grid-column="7" class="tle__row__table__cell-icon remove-row-button">🗑️</vscode-data-grid-cell>
 	</vscode-data-grid-row>
 `;

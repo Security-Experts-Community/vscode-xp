@@ -72,7 +72,3 @@ vscode-data-grid-row {
 .span_input-required {
 	color: var(--vscode-editorError-foreground);
 }
-
-.tle__row__save-button {
-	width: 100%;
-}

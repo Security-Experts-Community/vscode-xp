@@ -1,9 +1,9 @@
-import { addOnClickEventListenerToAddColumnButton } from './function/addColumn.js';
-import { addOnDragStartAndOverEventListenerToVsCodeDataGridRows } from './function/moveColumn.js';
-import { addOnClickEventListenerToAllRemoveColumnButtons } from './function/removeColumn.js'
+import { addOnClickEventListenerToAddRowButton } from './function/addRow.js';
+import { addOnDragStartAndOverEventListenerToAllRows } from './function/moveRow.js';
+import { addOnClickEventListenerToAllRemoveRowButtons } from './function/removeRow.js'
 
 $(function () {
-	addOnClickEventListenerToAddColumnButton();
-	addOnClickEventListenerToAllRemoveColumnButtons();
-	addOnDragStartAndOverEventListenerToVsCodeDataGridRows();
+	addOnClickEventListenerToAddRowButton();
+	addOnClickEventListenerToAllRemoveRowButtons();
+	addOnDragStartAndOverEventListenerToAllRows();
 });
