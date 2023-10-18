@@ -7,7 +7,7 @@
  */
 export const tableRow = `
 	<vscode-data-grid-row draggable="true" class="draggable-row">
-    	<vscode-data-grid-cell grid-column="1" class="tle__row__table__cell-icon move-icon">:::</vscode-data-grid-cell>
+    	<vscode-data-grid-cell grid-column="1" draggable="true" class="tle__row__table__cell-icon move-row-button">:::</vscode-data-grid-cell>
     	<vscode-data-grid-cell grid-column="2">
 			<vscode-text-field type="text"></vscode-text-field>
 		</vscode-data-grid-cell>
