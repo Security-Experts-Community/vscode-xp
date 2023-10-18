@@ -69,6 +69,7 @@ out=${output}`;
 
 	public addTablesSchemaBuilding() : void {
 		// Если нет табличных списков, то не собираем схему		
+		// TODO: данная логика тут лишняя, вынести на уровень выше.
 		if (!FileSystemHelper.checkIfFilesIsExisting(this._contentRootPath, /\.tl$/)) {
 
 			const corrDefaultsPath = path.join(this._outputFolder, "correlation_defaults.json");
