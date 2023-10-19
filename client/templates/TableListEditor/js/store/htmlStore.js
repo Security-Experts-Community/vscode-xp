@@ -5,7 +5,7 @@
  * нужно обновить этот шаблон! Код из vscode-data-grid-row в TableListEditor.html 
  * должен совпадать с этим шаблоном!
  */
-export const tableRow = `
+export const tableRowHTML = `
 	<vscode-data-grid-row class="draggable-row">
     	<vscode-data-grid-cell grid-column="1" class="tle__row__table__cell-icon move-row-button">::::</vscode-data-grid-cell>
     	<vscode-data-grid-cell grid-column="2">
@@ -19,11 +19,11 @@ export const tableRow = `
                 <vscode-option value="DataTime">Регулярное выражение</vscode-option>
 			</vscode-dropdown>
 		</vscode-data-grid-cell>
-    	<vscode-data-grid-cell grid-column="4">
-			<vscode-checkbox></vscode-checkbox>
+    	<vscode-data-grid-cell grid-column="4" class="jqIdCheckboxParent">
+			<vscode-checkbox class="jqIdCheckbox"></vscode-checkbox>
 		</vscode-data-grid-cell>
-		<vscode-data-grid-cell grid-column="5">
-			<vscode-checkbox></vscode-checkbox>
+		<vscode-data-grid-cell grid-column="5" class="jqIndexCheckboxParent">
+			<vscode-checkbox class="jqIndexCheckbox"></vscode-checkbox>
 		</vscode-data-grid-cell>
     	<vscode-data-grid-cell grid-column="6">
 			<vscode-checkbox></vscode-checkbox>

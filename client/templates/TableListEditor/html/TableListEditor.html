@@ -11,7 +11,13 @@
     <body>
 		<form class="tle">
 			<div class="tle__row">
-				<vscode-text-field type="text" required pattern="[A-Z][a-zA-Z0-9_]+">
+				<vscode-text-field 
+					type="text" 
+					required 
+					aria-required="true"
+					aria-errormessage=">Название должно начинаться с латинской буквы, может содержать латинские буквы, цифры и символ подчеркивания" 
+					pattern="[A-Z][a-zA-Z0-9_]+"
+					>
 					Название
 					<span class="span_input-required">*</span>
 				</vscode-text-field>
@@ -67,11 +73,11 @@
                       			<vscode-option value="DataTime">Регулярное выражение</vscode-option>
 							</vscode-dropdown>
 						</vscode-data-grid-cell>
-    					<vscode-data-grid-cell grid-column="4">
-							<vscode-checkbox></vscode-checkbox>
+    					<vscode-data-grid-cell grid-column="4" class="jqIdCheckboxParent">
+							<vscode-checkbox class="jqIdCheckbox"></vscode-checkbox>
 						</vscode-data-grid-cell>
-						<vscode-data-grid-cell grid-column="5">
-							<vscode-checkbox></vscode-checkbox>
+						<vscode-data-grid-cell grid-column="5" class="jqIndexCheckboxParent">
+							<vscode-checkbox class="jqIndexCheckbox"></vscode-checkbox>
 						</vscode-data-grid-cell>
     					<vscode-data-grid-cell grid-column="6">
 							<vscode-checkbox></vscode-checkbox>

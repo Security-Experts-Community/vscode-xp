@@ -4,6 +4,7 @@ export const makeRowsSortableTakingIntoDynamicallyAddedRows = () => {
 		handle: ".move-row-button",
 		placeholder: "row_insert-highlight",
 		axis: 'y',
+		tolerance: "pointer"
 	})
 }
 

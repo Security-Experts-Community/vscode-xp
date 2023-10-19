@@ -1,10 +1,20 @@
+import { makeDisabledIdCheckboxesEnabledWhenRemoveRowWithCheckedIdCheckbox } from "./checkboxesBehavior.js";
+
 /** 
  * Функция, удаляющая родителя кнопки "🗑️": колонку из data-grid vscode-webview-ui-toolkit,
  * в которой находится эта кнопка.
+ * 
+ * Перед удалением вызывает функцию makeDisabledIdCheckboxesEnabledWhenRemoveRowWithCheckedIdCheckbox(),
+ * которая при удалении строки с выбранным чекбоксом "Ключевое поле" снимает ограничение 
+ * на выбор чекбоксов "Ключевое поле" других строк
  * @param {JQuery<HTMLElement>} buttonElement - кнопка удаления
  */
 const _removeRow = (buttonElement) => {
-	$(buttonElement).parent().remove();
+	const rowToRemove = $(buttonElement).parent();
+	const idCheckbox = rowToRemove.children('.jqIdCheckboxParent').children('.jqIdCheckbox')[0];
+
+	makeDisabledIdCheckboxesEnabledWhenRemoveRowWithCheckedIdCheckbox(idCheckbox);
+	rowToRemove.remove();
 }
 
 /** 
@@ -29,7 +39,6 @@ export const addOnClickEventListenerToRemoveRowButton = (buttonElement) => {
  * на каждую кнопоку "🗑️" на вебвью при первой его загрузке.
  * 
  * Эту функцию нужно использовать только один раз после загрузки DOM.
- * @param {JQuery<HTMLElement>} buttonElement - кнопка удаления
  */
 export const addOnClickEventListenerToAllRemoveRowButtons = () => {
 	$.each($('.remove-row-button'), function (i) {
