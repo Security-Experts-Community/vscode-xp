@@ -48,7 +48,7 @@ export async function activate(context: ExtensionContext) {
 		if(config.getExtensionMode() === vscode.ExtensionMode.Development) {
 			Log.setLogLevel(LogLevel.Debug);
 		} else {
-			Log.setLogLevel(LogLevel.Error);
+			Log.setLogLevel(LogLevel.Info);
 		}
 
 		Log.info(`Начата активация расширения '${Configuration.getExtensionDisplayName()}'`);
@@ -127,7 +127,7 @@ export async function activate(context: ExtensionContext) {
 		siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(XPPackingTaskProvider.Type, new XPPackingTaskProvider(config));
 
 		
-		// Расширение нативного контекстого меню.
+		// Расширение нативного контекстного меню.
 		TestsFormatContentMenuExtension.init(context);
 
 		// Подпись функций.
