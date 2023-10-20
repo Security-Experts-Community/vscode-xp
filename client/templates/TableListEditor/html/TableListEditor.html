@@ -15,8 +15,9 @@
 					type="text" 
 					required 
 					aria-required="true"
-					aria-errormessage=">Название должно начинаться с латинской буквы, может содержать латинские буквы, цифры и символ подчеркивания" 
+					aria-errormessage="Название должно начинаться с латинской буквы, может содержать латинские буквы, цифры и символ подчеркивания" 
 					pattern="[A-Z][a-zA-Z0-9_]+"
+					class="jqNameInput jqInput_invalid"
 					>
 					Название
 					<span class="span_input-required">*</span>
@@ -30,11 +31,11 @@
 				<vscode-text-area resize="vertical" type="text">Описание (английский)</vscode-text-area>
 			</div>
 			<div class="tle__row">
-				<label for="type-dropdown">
+				<label for="jqTypeDropdown">
 					Назначение
 					<span class="span_input-required">*</span>
 				</label>
-				<vscode-dropdown id="type-dropdown">
+				<vscode-dropdown id="jqTypeDropdown">
   					<vscode-option>Справочник</vscode-option>
   					<vscode-option>Заполняется правилами корреляции</vscode-option>
   					<vscode-option>Заполняется правилами обогащения</vscode-option>
@@ -63,7 +64,7 @@
 					<vscode-data-grid-row class="draggable-row">
     					<vscode-data-grid-cell grid-column="1" class="tle__row__table__cell-icon move-row-button">::::</vscode-data-grid-cell>
     					<vscode-data-grid-cell grid-column="2">
-							<vscode-text-field type="text"></vscode-text-field>
+							<vscode-text-field type="text" class="jqRawNameInput"></vscode-text-field>
 						</vscode-data-grid-cell>
     					<vscode-data-grid-cell grid-column="3">
 							<vscode-dropdown>
@@ -87,11 +88,11 @@
 					
 				</vscode-data-grid>
 			</div>
+			<div class=".tle__buttons">
+				<vscode-button id="addRowButton" appearance="secondary">Добавить строку</vscode-button>
+				<vscode-button id="jqSaveButton" type="submit">Сохранить</vscode-button>
+			</div>
 		</form>
-		<footer>
-			<vscode-button id="addRowButton" appearance="secondary">Добавить строку</vscode-button>
-			<vscode-button>Сохранить</vscode-button>
-		</footer>
 
 		<!-- Для работоспособности vscode ui toolkit -->
 		<script type="module" src="{{WebviewUri}}"></script>

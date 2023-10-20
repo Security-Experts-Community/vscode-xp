@@ -11,11 +11,6 @@ body {
 	justify-content: space-between;
 }
 
-footer {
-	width: 100%;
-	padding-top: 20px;
-}
-
 vscode-text-field {
 	width: 100%;
 }
@@ -74,6 +69,11 @@ vscode-data-grid-cell {
 	cursor: pointer;
 }
 
+.tle__buttons {
+	width: 100%;
+	padding-top: 20px;
+}
+
 .span_input-required {
 	color: var(--vscode-editorError-foreground);
 }
@@ -89,4 +89,8 @@ vscode-data-grid-cell {
 
 .move-row-button {
 	cursor: grab;
+}
+
+.jqInput_invalid::part(root) {
+  border: 1px solid var(--vscode-inputValidation-errorBorder);
 }
