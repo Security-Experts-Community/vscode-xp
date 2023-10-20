@@ -3,6 +3,8 @@ import * as path from 'path';
 import * as os from 'os';
 import * as crypto from 'crypto';
 import { Log } from '../extension';
+import { IntegrationTest } from '../models/tests/integrationTest';
+import { MetaInfo } from '../models/metaInfo/metaInfo';
 
 export class FileSystemHelper {
 
@@ -81,7 +83,7 @@ export class FileSystemHelper {
 
 		// Метаданные.
 		const fileName = path.basename(ruleFilePath);
-		if(fileName === "metainfo.yaml") {
+		if(fileName === MetaInfo.METAINFO_FILENAME) {
 			const ruleDirectoryPath = path.dirname(ruleFilePath);
 			return ruleDirectoryPath;
 		}

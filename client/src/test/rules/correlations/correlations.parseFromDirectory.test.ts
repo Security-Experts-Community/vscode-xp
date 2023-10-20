@@ -41,7 +41,14 @@ suite('Correlations.parseFromDirectory', () => {
 		const rulePath = TestFixture.getCorrelationPath("Active_Directory_Snapshot");
 		const correlation = await Correlation.parseFromDirectory(rulePath);
 
-		assert.strictEqual(await correlation.getRuleCode(), "event Event {\r\n\r\n}\r\n\r\nrule Active_Directory_Snapshot : Event {\r\n\r\n}");
+		assert.strictEqual(await correlation.getRuleCode(), 
+`event Event {
+
+}
+
+rule Active_Directory_Snapshot : Event {
+
+}`);
 	});
 
 	test('Парсинг наиболее полной корреляции', async () => {
