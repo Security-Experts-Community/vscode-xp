@@ -1,8 +1,9 @@
 import * as assert from 'assert';
-import { StringHelper } from '../../../helpers/stringHelper';
+import * as os from 'os';
 
 import { Correlation } from '../../../models/content/correlation';
 import { TestFixture } from '../../helper';
+import { StringHelper } from '../../../helpers/stringHelper';
 
 suite('Correlations.parseFromDirectory', () => {
 
@@ -42,13 +43,16 @@ suite('Correlations.parseFromDirectory', () => {
 		const correlation = await Correlation.parseFromDirectory(rulePath);
 
 		assert.strictEqual(await correlation.getRuleCode(), 
-`event Event {
-
-}
-
-rule Active_Directory_Snapshot : Event {
-
-}`);
+`event Event {` + 
+os.EOL +
+os.EOL +
+`}` + 
+os.EOL + 
+os.EOL +
+`rule Active_Directory_Snapshot : Event {` +
+os.EOL +
+os.EOL +
+`}`);
 	});
 
 	test('Парсинг наиболее полной корреляции', async () => {
@@ -111,7 +115,10 @@ table_list default
 table_list {"Common_whitelist_auto":[{"rule":"Active_Directory_Snapshot","specific_value": "pushkin|172.16.222.132"}]}
 expect not {"correlation_name": "Active_Directory_Snapshot"}`;
 
-		assert.strictEqual(StringHelper.textToOneLine(testCode2), StringHelper.textToOneLine(expectedTestCode2));
+		assert.strictEqual(
+			StringHelper.textToOneLine(testCode2),
+			StringHelper.textToOneLine(expectedTestCode2)
+		);
 	});
 
 	test('Парсинг правила с несовпадающими LocalizationId', async() => {
