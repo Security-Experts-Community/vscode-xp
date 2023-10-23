@@ -1,4 +1,5 @@
 import { makeDisabledIdCheckboxesEnabledWhenRemoveRowWithCheckedIdCheckbox } from "./checkboxesBehavior.js";
+import { checkIfInvalidInputsExist } from "./validation.js";
 
 /** 
  * Функция, удаляющая родителя кнопки "🗑️": колонку из data-grid vscode-webview-ui-toolkit,
@@ -15,6 +16,7 @@ const _removeRow = (buttonElement) => {
 
 	makeDisabledIdCheckboxesEnabledWhenRemoveRowWithCheckedIdCheckbox(idCheckbox);
 	rowToRemove.remove();
+	checkIfInvalidInputsExist();
 }
 
 /** 

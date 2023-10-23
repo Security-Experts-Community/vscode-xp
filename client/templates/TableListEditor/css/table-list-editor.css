@@ -32,6 +32,17 @@ vscode-data-grid-cell {
 	align-items: center;
 }
 
+/* убираем неподходящее для проекта поведение подсветки ячеек vscode-data-grid-cell */
+vscode-data-grid-cell:focus,
+vscode-data-grid-cell:active,
+vscode-data-grid-cell:focus-within {
+	background-color: transparent;
+	outline: none;
+	/* должно быть именно так, без этого при взаимодействии скачет размер внутренних элементов */
+	border: solid calc(var(--border-width) * 1px) transparent;
+}
+
+
 .tle {
 	width: 100%;
 	height: auto;
@@ -93,4 +104,23 @@ vscode-data-grid-cell {
 
 .jqInput_invalid::part(root) {
   border: 1px solid var(--vscode-inputValidation-errorBorder);
+}
+
+
+
+/* Тултипы и прочее поведение jquery ui*/
+
+  .ui-tooltip, .arrow:after {
+    background: var(--vscode-inputValidation-errorBorder);
+  }
+  .ui-tooltip {
+	max-width: 70%;
+    padding: 10px 20px;
+	color: white;
+	/* костыль, без которого тултип плохо обрабатывает коллизии и прыгает по экрану*/
+	position: absolute;
+  }
+
+  .ui-helper-hidden-accessible {
+    display: none;
 }

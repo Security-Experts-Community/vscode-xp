@@ -1,6 +1,7 @@
 import { tableRowHTML } from '../store/htmlStore.js';
 import { addOnClickEventListenerToRemoveRowButton } from './removeRow.js'
 import { addOnChangeEventListenerToIdCheckbox, makeNewRowIdCheckboxDisabledIfAnyIdCheckboxIsChecked } from './checkboxesBehavior.js'
+import { validateInput } from './validation.js';
 
 /** 
  * Функция добавляющая строку в data-grid vscode-webview-ui-toolkit в TableListEditor.html
@@ -10,10 +11,12 @@ const _addRow = () => {
 
 	const removeButtonElement = $('vscode-data-grid').children().last().children('.remove-row-button')[0]
 	const idCheckboxElement = $('vscode-data-grid').children().last().children('.jqIdCheckboxParent').children('.jqIdCheckbox')[0];
+	const rowInputElement = $('vscode-data-grid').children().last().children('.jqRowNameInputParent').children('.jqRowNameInput')[0];
 
 	addOnClickEventListenerToRemoveRowButton(removeButtonElement);
 	addOnChangeEventListenerToIdCheckbox(idCheckboxElement);
 	makeNewRowIdCheckboxDisabledIfAnyIdCheckboxIsChecked(idCheckboxElement);
+	validateInput(rowInputElement);
 }
 
 /**  

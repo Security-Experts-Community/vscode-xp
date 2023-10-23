@@ -11,18 +11,10 @@
     <body>
 		<form class="tle">
 			<div class="tle__row">
-				<vscode-text-field 
-					type="text" 
-					required 
-					aria-required="true"
-					aria-errormessage="Название должно начинаться с латинской буквы, может содержать латинские буквы, цифры и символ подчеркивания" 
-					pattern="[A-Z][a-zA-Z0-9_]+"
-					class="jqNameInput jqInput_invalid"
-					>
+				<vscode-text-field type="text" class="jqNameInput jqInput">
 					Название
 					<span class="span_input-required">*</span>
 				</vscode-text-field>
-				<span class="tle__row__input__helper">Должно начинаться с латинской буквы, может содержать латинские буквы, цифры и символ подчеркивания</span>
 			</div>
 			<div class="tle__row">
 				<vscode-text-area resize="vertical">Описание (русский)</vscode-text-area>
@@ -63,8 +55,8 @@
 					</vscode-data-grid-row>
 					<vscode-data-grid-row class="draggable-row">
     					<vscode-data-grid-cell grid-column="1" class="tle__row__table__cell-icon move-row-button">::::</vscode-data-grid-cell>
-    					<vscode-data-grid-cell grid-column="2">
-							<vscode-text-field type="text" class="jqRawNameInput"></vscode-text-field>
+    					<vscode-data-grid-cell grid-column="2" class="jqRowNameInputParent">
+							<vscode-text-field type="text" class="jqRowNameInput jqInput"></vscode-text-field>
 						</vscode-data-grid-cell>
     					<vscode-data-grid-cell grid-column="3">
 							<vscode-dropdown>
