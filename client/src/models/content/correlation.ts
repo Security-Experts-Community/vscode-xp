@@ -288,7 +288,7 @@ export class Correlation extends RuleBaseItem {
 			
 			// Модифицируем код, если он есть
 			if (ruleCode) {
-				const newRuleCode = ContentHelper.replaceAllCorrelantionNameWithinCode(newRuleName, ruleCode);
+				const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode(newRuleName, ruleCode);
 				await this.setRuleCode(newRuleCode);
 			}
 		}

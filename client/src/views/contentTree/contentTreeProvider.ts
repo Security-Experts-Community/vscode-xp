@@ -72,8 +72,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		// Ручное или автоматическое обновление дерева контента
 		vscode.commands.registerCommand(
 			ContentTreeProvider.refreshTreeCommand,
-			async () => {
-				kbTreeProvider.refresh();
+			async (item: KbTreeBaseItem) => {
+				kbTreeProvider.refresh(item);
 			}
 		);
 	
@@ -313,8 +313,12 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		this._gitAPI = _gitAPI;
 	}
 
-	refresh(): void {
-		this._onDidChangeTreeData.fire();
+	refresh(item?: KbTreeBaseItem): void {
+		if(item) {
+			this._onDidChangeTreeData.fire(item);
+		} else {
+			this._onDidChangeTreeData.fire(undefined);
+		}
 	}
 
 	getTreeItem(element: ContentFolder|RuleBaseItem): vscode.TreeItem {
@@ -337,7 +341,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 			const subDirectories = FileSystemHelper.readSubDirectoryNames(this._knowledgebaseDirectoryPath);
 			this.initializeRootIfNeeded(subDirectories);
 
-			// В случане штатной директории пакетов будет возможности создавать и собирать пакеты.
+			// В случае штатной директории пакетов будет возможности создавать и собирать пакеты.
 			const dirName = path.basename(this._knowledgebaseDirectoryPath);
 			if (this.isContentRoot(dirName)){
 				const packagesFolder = await ContentFolder.create(this._knowledgebaseDirectoryPath, ContentFolderType.ContentRoot);
@@ -534,8 +538,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		return this._selectedItem;
 	}
 
-	public static async refresh() : Promise<void> {
-		return vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
+	public static async refresh(item?: KbTreeBaseItem) : Promise<void> {
+		return vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand, item);
 	}
 
 	public static async selectItem(item: KbTreeBaseItem) : Promise<boolean> {
@@ -557,8 +561,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 	public static readonly refreshTreeCommand = 'SiemContentEditor.refreshKbTree';
 
-	private _onDidChangeTreeData: vscode.EventEmitter<ContentFolder|RuleBaseItem|undefined|void> = new vscode.EventEmitter<ContentFolder|RuleBaseItem|undefined|void>();
-	readonly onDidChangeTreeData: vscode.Event<ContentFolder|RuleBaseItem|undefined|void> = this._onDidChangeTreeData.event;
+	private _onDidChangeTreeData: vscode.EventEmitter<KbTreeBaseItem|undefined> = new vscode.EventEmitter<KbTreeBaseItem|undefined>();
+	readonly onDidChangeTreeData: vscode.Event<KbTreeBaseItem|undefined> = this._onDidChangeTreeData.event;
 }
 
 

@@ -268,6 +268,13 @@ export class TestHelper {
 		return jsonlCleaned;
 	}
 
+	public static isDefaultLocalization(localization: string) {
+		// account start process success на узле wks01.testlab.esc
+		const defaultLocRegExp = /^\w+ \w+ \w+ \w+ (на узле|on host) [\w.]+$/g;
+		return defaultLocRegExp.test(localization);
+	}
+
+
 	public static compressTestCode(testCode: string) {
 		const compressedNormalizedEventReg = /{\s*[\s\S]*\s*}$/gm;
 

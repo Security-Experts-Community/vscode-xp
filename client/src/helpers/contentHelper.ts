@@ -189,7 +189,7 @@ export class ContentHelper {
         await fse.copy(templateDirPath, templateTmpDirPath, {recursive: true}); 
     }
 
-    public static replaceAllCorrelantionNameWithinCode(newRuleName : string, ruleCode : string): string {
+    public static replaceAllCorrelationNameWithinCode(newRuleName : string, ruleCode : string): string {
         if (!ruleCode) { return ""; }
 
         const parseRuleNameReg = /rule\s+(\S+?)\s*:/gm;

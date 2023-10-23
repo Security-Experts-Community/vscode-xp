@@ -15,6 +15,13 @@ import { XpException } from '../xpException';
 import { BaseUnitTest } from '../tests/baseUnitTest';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
+import { TestStatus } from '../tests/testStatus';
+
+export enum ContentItemStatus {
+	Default = 1,
+	Verified,
+	Unverified
+}
 
 /**
  * Базовый класс для всех правил.
@@ -23,6 +30,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 
 	constructor(name: string, parentDirectoryPath? : string) {
 		super(name, parentDirectoryPath);
+		this.iconPath = new vscode.ThemeIcon('file');
 	}
 
 	public abstract convertUnitTestFromObject(object: any) : BaseUnitTest;
@@ -354,7 +362,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 
 		let locId = localization.getLocalizationId();
 
-		// Локализация без индетификатора локализации - новая локализация. 
+		// Локализация без идентификатора локализации - новая локализация. 
 		if(locId) {
 			// Если есть LocalizationId, тогда добавляем как есть.
 			this._localizations.push(localization);
@@ -450,7 +458,42 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		throw new XpException("Сохранение данного типа контента не реализовано.");
 	}
 
-	iconPath = new vscode.ThemeIcon('file');
+	public setStatus(status: ContentItemStatus, tooltip?: string) : void {
+
+		this._status = status;
+		const config = Configuration.get();
+		const extensionResources = path.join(config.getExtensionPath(), 'resources');
+
+		if(tooltip) {
+			this.tooltip = tooltip;
+		} else {
+			// Задаем дефолтное значение подсказки, которая показывается при наведении.
+			this.tooltip = this.getName();
+		}
+
+		switch (this._status) {
+			case ContentItemStatus.Default: {
+				this.iconPath = vscode.ThemeIcon.File;
+				return;
+			}
+
+			case ContentItemStatus.Verified: {
+				const iconPath = path.join(extensionResources, 'test-passed.svg');
+				this.iconPath = { light: iconPath, dark: iconPath };
+				return;
+			}
+
+			case ContentItemStatus.Unverified: {
+				const iconPath = path.join(extensionResources, 'test-failed.svg');
+				this.iconPath = { light: iconPath, dark: iconPath };
+				return;
+			}
+			default: {
+				throw new XpException(`Поддержка значения ${status} еще не реализована`);
+			}
+		}
+	}
+	
 
 	private _localizations: Localization [] = [];
 	private _localizationExamples : LocalizationExample [] = [];
@@ -461,6 +504,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	private _ruDescription : string;
 	private _enDescription : string;
 
+	private _status : ContentItemStatus;
 	private _ruleCode = "";
 
 	contextValue = "BaseRule";

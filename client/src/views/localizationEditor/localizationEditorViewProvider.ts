@@ -5,7 +5,7 @@ import * as path from 'path';
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
 import { Localization, LocalizationExample } from '../../models/content/localization';
-import { RuleBaseItem } from '../../models/content/ruleBaseItem';
+import { ContentItemStatus, RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Correlation } from '../../models/content/correlation';
 import { Configuration } from '../../models/configuration';
 import { StringHelper } from '../../helpers/stringHelper';
@@ -20,6 +20,9 @@ import { Enrichment } from '../../models/content/enrichment';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Log } from '../../extension';
 import { OperationCanceledException } from 'typescript';
+import { TestHelper } from '../../helpers/testHelper';
+import { TestStatus } from '../../models/tests/testStatus';
+import { ContentTreeProvider } from '../contentTree/contentTreeProvider';
 
 export class LocalizationEditorViewProvider {
 
@@ -179,10 +182,20 @@ export class LocalizationEditorViewProvider {
 					await this.saveLocalization(localizations);
 					
 					const locExamples = await this.getLocalizationExamples();
+
 					if (locExamples.length === 0) {
 						return DialogHelper.showInfo(
 							"По имеющимся событиям не отработала ни одна локализация. Проверьте, что интеграционные тесты проходят, корректны критерии локализации. После исправлений повторите.");
 					}
+
+					const verifiedLocalization = locExamples.some(le => TestHelper.isDefaultLocalization(le.ruText));
+					if(verifiedLocalization) {
+						this._rule.setStatus(ContentItemStatus.Unverified, "Локализации не прошли проверку");
+					} else {
+						this._rule.setStatus(ContentItemStatus.Verified, "Локализации прошли проверку");
+					}
+
+					await ContentTreeProvider.refresh(this._rule);
 	
 					this._rule.setLocalizationExamples(locExamples);
 					this.showLocalizationEditor(this._rule, true);

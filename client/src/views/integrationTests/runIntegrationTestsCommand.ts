@@ -8,7 +8,9 @@ import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
 import { TestStatus } from '../../models/tests/testStatus';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
+import { ContentItemStatus, RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Log } from '../../extension';
+import { ContentTreeProvider } from '../contentTree/contentTreeProvider';
 
 export class RunIntegrationTestsCommand extends Command {
 
@@ -57,15 +59,26 @@ export class RunIntegrationTestsCommand extends Command {
 				DialogHelper.showInfo(`Интеграционные тесты правила '${this.params.rule.getName()}' прошли успешно`);
 				// Если тесты прошли, значит временные файлы не нужны.
 				await FileSystemHelper.recursivelyDeleteDirectory(this.params.tmpDirPath);
+
+				// Задаём и обновляем статус элемента дерева
+				this.params.rule.setStatus(ContentItemStatus.Verified, "Интеграционные тесты пройдены");
+				await ContentTreeProvider.refresh(this.params.rule);
+
 				return true;
 			} 
 
 			if(executedIntegrationTests.some(it => it.getStatus() === TestStatus.Success)) {
 				DialogHelper.showInfo(`Не все тесты правила '${this.params.rule.getName()}' прошли успешно`);
+
+				this.params.rule.setStatus(ContentItemStatus.Unverified, "Интеграционные тесты не пройдены");
+				await ContentTreeProvider.refresh(this.params.rule);
+
 				return true;
 			} 
 
 			vscode.window.showErrorMessage(`Все тесты не были пройдены. Проверьте наличие синтаксических ошибок в коде правила или его зависимостях`);
+			this.params.rule.setStatus(ContentItemStatus.Default);
+			ContentTreeProvider.refresh(this.params.rule);
 			return true;
 		});
 	}

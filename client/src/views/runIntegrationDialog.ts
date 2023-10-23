@@ -43,13 +43,13 @@ export class RunIntegrationTestDialog {
 		const subRuleNames = TestHelper.parseSubRuleNames(ruleCode).map(srn => srn.toLocaleLowerCase());
 		const uniqueSubRuleNames = [...new Set(subRuleNames)];
 
-		Log.info(`Из правила ${rule.getName()} получены следующие подправила (subrules): `, uniqueSubRuleNames);
-
 		// У правила нет зависимых корреляций, собираем только его.
 		if(uniqueSubRuleNames.length == 0) {
 			testRunnerOptions.correlationCompilation = CompilationType.CurrentRule;
 			return testRunnerOptions;
 		}
+
+		Log.info(`Из правила ${rule.getName()} получены следующие подправила (subrules): `, uniqueSubRuleNames);
 
 		const currentPackagePath = rule.getPackagePath(this._config);
 		const currPackageSubRulePaths = FileSystemHelper.getRecursiveDirPathByName(currentPackagePath, uniqueSubRuleNames);
