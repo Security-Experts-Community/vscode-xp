@@ -195,8 +195,14 @@ export class Enrichment extends RuleBaseItem {
 		const modularTest = CorrelationUnitTest.parseFromRuleDirectory(enrichment);
 		enrichment.addUnitTests(modularTest);
 
-		const integrationalTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
-		enrichment.addIntegrationTests(integrationalTests);
+		const integrationTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
+		enrichment.addIntegrationTests(integrationTests);
+
+		// Описание можно посматривать при наведении мыши.
+		// TODO: добавить поддержку английской локализации
+		if(ruDescription) {
+			enrichment.setTooltip(enrichment.getRuDescription());
+		}
 
 		// Добавляем команду на открытие.
 		enrichment.setCommand({

@@ -47,6 +47,10 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		return newUnitTest;
 	}
 
+	public setTooltip(tooltip: string) : void {
+		this.tooltip = tooltip;
+	}
+
 	public static getRuleDirectoryPath(parentDirPath : string, ruleName : string ) : string {
 		if(!parentDirPath) {
 			throw new ArgumentException(`Не задан путь к директории правила.`);

@@ -115,6 +115,12 @@ export class Correlation extends RuleBaseItem {
 		const integrationTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
 		correlation.addIntegrationTests(integrationTests);
 
+		// Описание можно посматривать при наведении мыши.
+		// TODO: добавить поддержку английской локализации
+		if(ruDescription) {
+			correlation.setTooltip(correlation.getRuDescription());
+		}
+
 		// Добавляем команду на открытие.
 		correlation.setCommand({
 			command: ContentTreeProvider.onRuleClickCommand,
