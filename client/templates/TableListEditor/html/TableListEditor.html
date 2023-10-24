@@ -7,6 +7,7 @@
 		<title>Редактор табличного списка</title>
 
 		<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/TableListEditor/css/table-list-editor.css">
+		<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/shared/ui/toggleSwitch/css/toggle-switch.css">
     </head>
     <body>
 		<form class="tle">
@@ -22,7 +23,7 @@
 			<div class="tle__row">
 				<vscode-text-area resize="vertical" type="text">Описание (английский)</vscode-text-area>
 			</div>
-			<div class="tle__row">
+			<div class="tle__row jqDropdownInserter">
 				<label for="jqTypeDropdown">
 					Назначение
 					<span class="span_input-required">*</span>

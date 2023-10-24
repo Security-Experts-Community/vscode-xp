@@ -85,6 +85,21 @@ vscode-data-grid-cell:focus-within {
 	padding-top: 20px;
 }
 
+.tle__row__switch-group {
+	display: flex;
+	gap: 10px;
+}
+
+.time-input-group {
+	display: flex;
+	gap: 4px;
+	align-items: center;
+}
+
+.time-input {
+	width: 100px;
+}
+
 .span_input-required {
 	color: var(--vscode-editorError-foreground);
 }
@@ -107,20 +122,19 @@ vscode-data-grid-cell:focus-within {
 }
 
 
-
 /* Тултипы и прочее поведение jquery ui*/
-
-  .ui-tooltip, .arrow:after {
+.ui-tooltip, .arrow:after {
     background: var(--vscode-inputValidation-errorBorder);
   }
-  .ui-tooltip {
+  
+.ui-tooltip {
 	max-width: 70%;
     padding: 10px 20px;
 	color: white;
 	/* костыль, без которого тултип плохо обрабатывает коллизии и прыгает по экрану*/
 	position: absolute;
-  }
+}
 
-  .ui-helper-hidden-accessible {
+.ui-helper-hidden-accessible {
     display: none;
 }

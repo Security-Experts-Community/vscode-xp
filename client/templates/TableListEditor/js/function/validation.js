@@ -4,6 +4,8 @@ const _inputInvalidClass = 'jqInput_invalid';
 
 const _nameInputClass = 'jqNameInput';
 const _rowNameInputClass = 'jqRowNameInput';
+const _rowSizeInputClass = "jqSizeInput";
+const _rowTimeInputClass = "jqTimeInput";
 
 const _nameInputRegExp = new RegExp("[A-Z][a-zA-Z0-9_]+");
 const _rowNameInputRegExp = new RegExp("[A-Z][a-zA-Z0-9_.]+");
@@ -79,6 +81,12 @@ const _validateInputWithCheckingOfInputType = (inputElement) => {
 	}
 	else if (_checkIfElementHasClass(inputElement, _rowNameInputClass)) {
 		_checkIfInputValid(inputElement, _rowNameInputRegExp, _rowNameInputErrorMessageString)
+	}
+	else if (_checkIfElementHasClass(inputElement, _rowSizeInputClass)) {
+		// _checkIfInputValid(inputElement, _rowNameInputRegExp, _rowNameInputErrorMessageString)
+	}
+	else if (_checkIfElementHasClass(inputElement, _rowTimeInputClass)) {
+		// _checkIfInputValid(inputElement, _rowNameInputRegExp, _rowNameInputErrorMessageString)
 	}
 }
 

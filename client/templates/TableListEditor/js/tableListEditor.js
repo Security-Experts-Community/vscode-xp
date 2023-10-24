@@ -3,6 +3,7 @@ import { makeRowsSortableTakingIntoDynamicallyAddedRows } from './function/moveR
 import { addOnClickEventListenerToAllRemoveRowButtons } from './function/removeRow.js'
 import { addOnChangeEventListenerToAllIdCheckboxes } from './function/checkboxesBehavior.js';
 import { enableValidation } from './function/validation.js';
+import { enableSelectingTypeOnDropdown } from './function/dropdownTypeSelectBehavior.js';
 
 $(function () {
 	addOnClickEventListenerToAddRowButton();
@@ -10,4 +11,5 @@ $(function () {
 	makeRowsSortableTakingIntoDynamicallyAddedRows();
 	addOnChangeEventListenerToAllIdCheckboxes();
 	enableValidation();
+	enableSelectingTypeOnDropdown();
 });
