@@ -3,11 +3,11 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
-import { KbTreeBaseItem } from './kbTreeBaseItem';
+import { ContentTreeBaseItem } from './contentTreeBaseItem';
 import { XpException } from '../xpException';
 import { XPObjectType } from './xpObjectType';
 
-export class Table extends KbTreeBaseItem {
+export class Table extends ContentTreeBaseItem {
 
 	public async rename(newName: string): Promise<void> {
 		throw new XpException('Method not implemented.');

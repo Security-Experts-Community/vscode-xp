@@ -5,7 +5,7 @@ import { XpException } from '../models/xpException';
 import { IncorrectFieldFillingException } from '../views/incorrectFieldFillingException';
 import { Log } from '../extension';
 import { Configuration } from '../models/configuration';
-import { OperationCanceledException } from 'typescript';
+import { OperationCanceledException } from '../models/operationCanceledException';
 
 export class ExceptionHelper {
 	public static async show(error: Error, defaultMessage?: string) {
@@ -19,7 +19,6 @@ export class ExceptionHelper {
 			case OperationCanceledException.name: {
 				const typedError = error as XpException;
 
-				// Log.error(typedError.message, typedError);
 				vscode.window.showErrorMessage(typedError.message);
 				ExceptionHelper.recursiveWriteXpExceptionToOutput(typedError, outputChannel);
 				break;

@@ -31,9 +31,10 @@ import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';
 import { GitHooks } from './gitHooks';
 import { InitKBRootCommand } from './commands/initKnowledgebaseRootCommand';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
-import { KbTreeBaseItem } from '../../models/content/kbTreeBaseItem';
+import { ContentTreeBaseItem } from '../../models/content/contentTreeBaseItem';
+import { LocalizationEditorViewProvider } from '../localizationEditor/localizationEditorViewProvider';
 
-export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseItem> {
+export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeBaseItem> {
 
 	static async init(
 		config: Configuration,
@@ -56,14 +57,12 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 			gitApi.onDidOpenRepository( (r) => {
 				r.state.onDidChange( (e) => {
 					gitHooks.update();
-					kbTreeProvider.refresh();
 				});
 			});
 
-			// gitApi.onDidChangeState( (e: APIState) => {
-			// 	gitHooks.update();
-			// 	kbTreeProvider.refresh();
-			// });
+			gitApi.onDidChangeState( (e: APIState) => {
+				gitHooks.update();
+			});
 		} else {
 			DialogHelper.showWarning(`Наличие системы контроля версии [git](https://git-scm.com/) необходимо для эффективной работы расширения. Требования можно посмотреть [здесь](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#id3)`);
 		}
@@ -72,7 +71,14 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		// Ручное или автоматическое обновление дерева контента
 		vscode.commands.registerCommand(
 			ContentTreeProvider.refreshTreeCommand,
-			async (item: KbTreeBaseItem) => {
+			async () => {
+				kbTreeProvider.refresh();
+			}
+		);
+
+		vscode.commands.registerCommand(
+			ContentTreeProvider.refreshItemCommand,
+			async (item: ContentTreeBaseItem) => {
 				kbTreeProvider.refresh(item);
 			}
 		);
@@ -95,7 +101,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 					const ruleFilePath = item.getFilePath();
 	
 					if (ruleFilePath && !fs.existsSync(ruleFilePath)) {
-						// Попытка открыть несуществующее правило. 
+						// Попытка открыть несуществующий item
 						// Возможно при переключении веток репозитория или ручной модификации репозитория.
 						ContentTreeProvider.setSelectedItem(null);
 						await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
@@ -277,7 +283,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 		context.subscriptions.push(
 			contentTree.onDidChangeSelection(
-				async (e: vscode.TreeViewSelectionChangeEvent<KbTreeBaseItem>) => {
+				async (e: vscode.TreeViewSelectionChangeEvent<ContentTreeBaseItem>) => {
 					if(e.selection && e.selection.length == 1) {
 						const selectedItem = e.selection[0];
 						return ContentTreeProvider.selectItem(selectedItem);
@@ -290,7 +296,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 	public static selectedFilePath: string;
 
-	private static async showRuleTreeItem(kbTree: vscode.TreeView<KbTreeBaseItem>, filePath: string) : Promise<void>{
+	private static async showRuleTreeItem(kbTree: vscode.TreeView<ContentTreeBaseItem>, filePath: string) : Promise<void>{
 		if(!filePath) {
 			return;
 		}
@@ -313,7 +319,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		this._gitAPI = _gitAPI;
 	}
 
-	refresh(item?: KbTreeBaseItem): void {
+	refresh(item?: ContentTreeBaseItem): void {
 		if(item) {
 			this._onDidChangeTreeData.fire(item);
 		} else {
@@ -325,7 +331,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		return element;
 	}
 
-	async getChildren(element?: ContentFolder|RuleBaseItem): Promise<KbTreeBaseItem[]> {
+	async getChildren(element?: ContentFolder|RuleBaseItem): Promise<ContentTreeBaseItem[]> {
 
 		if (!this._knowledgebaseDirectoryPath) {
 			return Promise.resolve([]);
@@ -354,7 +360,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 		// Получаем список поддиректорий.
 		const subFolderPath = element.getDirectoryPath();
-		const kbItems : (KbTreeBaseItem)[]= [];
+		const kbItems : (ContentTreeBaseItem)[]= [];
 
 		const subDirectories = FileSystemHelper.readSubDirectoryNames(subFolderPath);
 		this.notifyIfContentTypeIsSelectedIncorrectly(subDirectories);
@@ -387,8 +393,14 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 			// Если ошибка в текущем элементе, продолжаем парсить остальные
 			try {
-				const kbItem = await ContentTreeProvider.createContentElement(directoryPath);
-				kbItems.push(kbItem);
+				const contentItem = await ContentTreeProvider.createContentElement(directoryPath);
+				if(contentItem instanceof RuleBaseItem) {
+					if(await LocalizationEditorViewProvider.provider.updateRule(contentItem)) {
+						DialogHelper.showInfo(`Правило ${contentItem.getName()} было обновлено в редакторе локализаций`);
+					}
+				}
+
+				kbItems.push(contentItem);
 			}
 			catch (error) {
 				ExceptionHelper.show(error, `Ошибка парсинга директории ${directoryPath}`);
@@ -426,7 +438,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 	}
 
 	private async notifyIfContentTypeIsSelectedIncorrectly(subDirectories: string[]) : Promise<void> {
-		// Проверяем тип контента фактический и выбранный и увеломляем если что-то не так.
+		// Проверяем тип контента фактический и выбранный и уведомляем если что-то не так.
 		const actualContentType = Configuration.getContentTypeBySubDirectories(subDirectories);
 		const configContentType = this._config.getContentType();
 
@@ -453,7 +465,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		}
 	}
 
-	private highlightsLabelForNewOrEditRules(items: KbTreeBaseItem[]) : void {
+	private highlightsLabelForNewOrEditRules(items: ContentTreeBaseItem[]) : void {
 		const kbUri = vscode.Uri.file(this._knowledgebaseDirectoryPath);
 		if(!this._gitAPI) {
 			return;
@@ -481,7 +493,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		}
 	}
 
-	public async getParent(element: RuleBaseItem) : Promise<KbTreeBaseItem> {
+	public async getParent(element: RuleBaseItem) : Promise<ContentTreeBaseItem> {
 
 		// Дошли до корня контента, заканчиваем обход.
 		const contentRoot = ContentFolderType[ContentFolderType.ContentRoot];
@@ -504,7 +516,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		return Promise.resolve(parentFolder);
 	}
 
-	public static async createContentElement(elementDirectoryPath: string) : Promise<Correlation|Normalization|ContentFolder|Enrichment|Table|Aggregation|Macros> {
+	public static async createContentElement(elementDirectoryPath: string) : Promise<RuleBaseItem|ContentFolder|Table|Aggregation|Macros> {
 
 		// Маппинг типов файлов на функции создания экземпляра
 		const entityCreators = { 
@@ -538,11 +550,14 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		return this._selectedItem;
 	}
 
-	public static async refresh(item?: KbTreeBaseItem) : Promise<void> {
-		return vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand, item);
+	public static async refresh(item?: ContentTreeBaseItem) : Promise<void> {
+		if(item) {
+			return vscode.commands.executeCommand(ContentTreeProvider.refreshItemCommand, item);
+		}
+		return vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
 	}
 
-	public static async selectItem(item: KbTreeBaseItem) : Promise<boolean> {
+	public static async selectItem(item: ContentTreeBaseItem) : Promise<boolean> {
 		return vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, item);
 	}
 
@@ -560,9 +575,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 	private static _selectedItem : RuleBaseItem | Table | Macros;
 
 	public static readonly refreshTreeCommand = 'SiemContentEditor.refreshKbTree';
+	public static readonly refreshItemCommand = 'xp.contentTree.refreshItem';
 
-	private _onDidChangeTreeData: vscode.EventEmitter<KbTreeBaseItem|undefined> = new vscode.EventEmitter<KbTreeBaseItem|undefined>();
-	readonly onDidChangeTreeData: vscode.Event<KbTreeBaseItem|undefined> = this._onDidChangeTreeData.event;
+	private _onDidChangeTreeData: vscode.EventEmitter<ContentTreeBaseItem|undefined> = new vscode.EventEmitter<ContentTreeBaseItem|undefined>();
+	readonly onDidChangeTreeData: vscode.Event<ContentTreeBaseItem|undefined> = this._onDidChangeTreeData.event;
 }
 
 

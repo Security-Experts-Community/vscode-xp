@@ -8,9 +8,9 @@ import { ArgumentException } from '../argumentException';
 import { XpException } from '../xpException';
 
 /**
- * Базовый класс для всех item-ом из дерева контента.
+ * Базовый класс для всех item-ом дерева контента.
  */
-export abstract class KbTreeBaseItem extends vscode.TreeItem {
+export abstract class ContentTreeBaseItem extends vscode.TreeItem {
 	constructor(protected _name : string, 
 		protected _parentPath : string) {
 		super(_name, vscode.TreeItemCollapsibleState.None);
@@ -109,13 +109,13 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 		return path.join(this._parentPath, this._name, this._fileName);
 	}
 
-	public setLabel(label:string) : void {
-		this.label = label;
+	public setLabel(newLabel:string) : void {
+		this.label = newLabel;
 	}
 
-	public setHighlightsLabel(label:string) : void {
+	public setHighlightsLabel(newLabel:string) : void {
 		this.label = {
-			label:label, highlights:[[0,label.length]]
+			label:newLabel, highlights:[[0,newLabel.length]]
 		};
 	}
 

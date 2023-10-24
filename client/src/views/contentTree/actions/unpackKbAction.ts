@@ -8,7 +8,7 @@ import { ExecutionResult, ProcessHelper } from '../../../helpers/processHelper';
 import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
 import { Configuration } from '../../../models/configuration';
 import { ContentTreeProvider } from '../contentTreeProvider';
-import { KbTreeBaseItem } from '../../../models/content/kbTreeBaseItem';
+import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 import { ContentHelper } from '../../../helpers/contentHelper';
 import { XpException } from '../../../models/xpException';
@@ -17,7 +17,7 @@ export class UnpackKbAction {
 	constructor(private _config: Configuration) {
 	}
 
-	public async run(selectedPackage : KbTreeBaseItem) : Promise<void> {
+	public async run(selectedPackage : ContentTreeBaseItem) : Promise<void> {
 
 		// Проверка наличия утилиты сборки kb-файлов.
 		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();

@@ -3,13 +3,12 @@ import * as path from "path";
 import * as fs from "fs";
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { RuleBaseItem } from './ruleBaseItem';
-import { KbTreeBaseItem } from './kbTreeBaseItem';
+import { ContentTreeBaseItem } from './contentTreeBaseItem';
 import { XpException } from '../xpException';
 
 export enum ContentFolderType {
 	ContentRoot = 1,
-	PackageFolder, 		// Директория пакета
+	PackageFolder, 			// Директория пакета
 	CorrelationsFolder, 	// Директория, с базовой директорией correlation_rules
 	EnrichmentsFolder, 		// Директория, с базовой директорией enrichment_rules
 	AggregationsFolder, 	// Директория, с базовой директорией aggregation_rules
@@ -18,7 +17,7 @@ export enum ContentFolderType {
 	AnotherFolder,
 }
 
-export class ContentFolder extends KbTreeBaseItem {
+export class ContentFolder extends ContentTreeBaseItem {
 	public getObjectType(): string {
 		throw new Error('Method not implemented.');
 	}

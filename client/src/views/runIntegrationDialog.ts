@@ -88,7 +88,7 @@ export class RunIntegrationTestDialog {
 			this.ALL_PACKAGES);
 
 		if(!result) {
-			throw new OperationCanceledException("Операция отменена.");
+			throw new OperationCanceledException("Операция отменена");
 		}
 		
 		switch(result) {

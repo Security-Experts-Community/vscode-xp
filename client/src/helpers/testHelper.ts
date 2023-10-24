@@ -276,7 +276,7 @@ export class TestHelper {
 
 
 	public static compressTestCode(testCode: string) {
-		const compressedNormalizedEventReg = /{\s*[\s\S]*\s*}$/gm;
+		const compressedNormalizedEventReg = /{\s*[\s\S]*\s*}\s*$/gm;
 
 		let formattedTestCode = testCode;
 		let comNormEventResult: RegExpExecArray | null;
@@ -311,16 +311,16 @@ export class TestHelper {
 	}
 
 	public static formatTestCodeAndEvents(testCode: string) {
-		const compressedNormalizedEventReg = /{\S.+}$/gm;
+		const compressedNormalizedEventReg = /({\S.+})\s*$/gm;
 
 		let formattedTestCode = testCode;
 		let comNormEventResult: RegExpExecArray | null;
 		while ((comNormEventResult = compressedNormalizedEventReg.exec(testCode))) {
-			if (comNormEventResult.length != 1) {
+			if (comNormEventResult.length != 2) {
 				continue;
 			}
 
-			const compressedEvent = comNormEventResult[0];
+			const compressedEvent = comNormEventResult[1];
 			const escapedCompressedEvent = TestHelper.escapeRawEvent(compressedEvent);
 
 			// Форматируем событие и сортируем поля объекта, чтобы поля групп типа subject.* были рядом.
@@ -575,14 +575,16 @@ export class TestHelper {
 
 				// Из textarea новые строки только \n, поэтому надо их поправить под систему.
 				rawEvents = rawEvents.replace(/(?<!\\)\n/gm, os.EOL);
-				test.setRawEvents(TestHelper.compressTestCode(rawEvents));
+				const compressedRawEvents = TestHelper.compressTestCode(rawEvents);
+				test.setRawEvents(compressedRawEvents);
 
 				// Код теста.
 				let testCode = plainTest?.testCode;
 
 				// Из textarea новые строки только \n, поэтому надо их поправить под систему.
 				testCode = testCode.replace(/(?<!\\)\n/gm, os.EOL);
-				test.setTestCode(TestHelper.compressTestCode(testCode));
+				const compressedCode = TestHelper.compressTestCode(testCode);
+				test.setTestCode(compressedCode);
 
 				// Нормализованные события.
 				const normEvents = plainTest?.normEvents;
@@ -603,7 +605,15 @@ export class TestHelper {
 
 
 	public static escapeRawEvent(normalizedEvent: string) {
-		return normalizedEvent;
+		return normalizedEvent
+			.replace(/\\n/g, "\\n")
+			.replace(/\\'/g, "\\'")
+			.replace(/\\"/g, '\\"')
+			.replace(/\\&/g, "\\&")
+			.replace(/\\r/g, "\\r")
+			.replace(/\\t/g, "\\t")
+			.replace(/\\b/g, "\\b")
+			.replace(/\\f/g, "\\f");
 	}
 
 	private static CORRELATION_NAME_COMPARE_REGEX = /correlation_name\s*==\s*"(\w+)"/gm;

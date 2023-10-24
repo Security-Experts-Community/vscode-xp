@@ -19,14 +19,20 @@ import { RunIntegrationTestDialog } from '../runIntegrationDialog';
 import { Enrichment } from '../../models/content/enrichment';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Log } from '../../extension';
-import { OperationCanceledException } from 'typescript';
 import { TestHelper } from '../../helpers/testHelper';
 import { TestStatus } from '../../models/tests/testStatus';
 import { ContentTreeProvider } from '../contentTree/contentTreeProvider';
+import { ContentTreeBaseItem } from '../../models/content/contentTreeBaseItem';
+import { Normalization } from '../../models/content/normalization';
+import { ContentFolder } from '../../models/content/contentFolder';
+import { Table } from '../../models/content/table';
+import { Aggregation } from '../../models/content/aggregation';
+import { OperationCanceledException } from '../../models/operationCanceledException';
 
 export class LocalizationEditorViewProvider {
 
 	public static readonly viewId = 'LocalizationView';
+	public static provider: LocalizationEditorViewProvider;
 
 	private _view?: vscode.WebviewPanel;
 	private _rule: RuleBaseItem;
@@ -41,14 +47,14 @@ export class LocalizationEditorViewProvider {
 		const templateFilePath = path.join(
 			config.getExtensionPath(), "client", "templates", "LocalizationEditor.html");
 
-		const provider = new LocalizationEditorViewProvider(
+		LocalizationEditorViewProvider.provider = new LocalizationEditorViewProvider(
 			config,
 			templateFilePath);
 
 		config.getContext().subscriptions.push(
 			vscode.commands.registerCommand(
 				LocalizationEditorViewProvider.showLocalizationEditorCommand,
-				async (correlation: Correlation) => provider.showLocalizationEditor(correlation)
+				async (correlation: Correlation) => LocalizationEditorViewProvider.provider.showLocalizationEditor(correlation)
 			)
 		);
 	}
@@ -70,45 +76,6 @@ export class LocalizationEditorViewProvider {
 		}
 
 		try {
-			const localizations = rule.getLocalizations();
-
-			const plainLocalizations: any[] = [];
-			localizations.forEach(loc => {
-
-				const locId = loc.getLocalizationId();
-				if (!locId) {
-					throw new XpException("Не задан LocalizationId.");
-				}
-
-				const criteria = loc.getCriteria();
-				if (!criteria) {
-					throw new XpException(`Критерий для правила локализации не задан: LocalizationId = '${locId}'.`);
-				}
-
-				// Ошибка в том случае, если нет обоих локализаций.
-				if (!loc.getRuLocalizationText() && !loc.getEnLocalizationText()) {
-					throw new XpException(`Для критерия LocalizationId = '${locId}' не задано ни одного значения.`);
-				}
-
-				let ruLocalizationText = loc.getRuLocalizationText();
-				if (!loc.getRuLocalizationText()) {
-					ruLocalizationText = "";
-				}
-
-				let enLocalizationText = loc.getEnLocalizationText();
-				if (!enLocalizationText) {
-					enLocalizationText = "";
-				}
-
-				plainLocalizations.push({
-					"Criteria": criteria,
-
-					"LocalizationId": locId,
-					"RuLocalization": ruLocalizationText,
-					"EnLocalization": enLocalizationText,
-				});
-			});
-
 			// Создать и показать панель.
 			this._view = vscode.window.createWebviewPanel(
 				LocalizationEditorViewProvider.viewId,
@@ -128,32 +95,99 @@ export class LocalizationEditorViewProvider {
 				this
 			);
 
-			const config = Configuration.get();
-			const resourcesUri = config.getExtensionUri();
-			const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
-
-			const locExamples = this._rule.getLocalizationExamples();
-			const templatePlainObject = {
-				"RuleName": rule.getName(),
-				"RuDescription": rule.getRuDescription(),
-				"EnDescription": rule.getEnDescription(),
-				"Localizations": plainLocalizations,
-				"ExtensionBaseUri": extensionBaseUri,
-				"LocalizationExamples": locExamples,
-				"IsLocalizableRule": this.isLocalizableRule(rule),
-				"IsTestedLocalizationsRule" : this.isTestedLocalizationsRule(rule)
-			};
-
-			// Подгружаем шаблон и шаблонизируем данные.
-			const template = (await fs.promises.readFile(this._templatePath)).toString();
-			const formatter = new MustacheFormatter(template);
-			const htmlContent = formatter.format(templatePlainObject);
-
-			this._view.webview.html = htmlContent;
+			this.updateView();
 		}
 		catch (error) {
 			ExceptionHelper.show(error, `Не удалось открыть правила локализации`);
 		}
+	}
+
+	/**
+	 * Обновляем состояние правила и его визуализацию, если оно изменилось. Нельзя обновить одно правило другим, проверяется совпадение имён правил.
+	 * @param newRule новое состояние правила
+	 */
+	public async updateRule(newRule: RuleBaseItem): Promise<boolean> {
+		if(this._rule && this._rule.getName() === newRule.getName()) {
+			// Сохраняем текущий статус правила
+			const prevIcon = this._rule.iconPath;
+			newRule.iconPath = prevIcon;
+
+			// Сохраняем примеры локализаций
+			const localizationExamples = this._rule.getLocalizationExamples();
+			newRule.setLocalizationExamples(localizationExamples);
+
+			this._rule = newRule;
+			this.updateView();
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Обновляем визуализацию правила
+	 */
+	public async updateView() {
+		const localizations = this._rule.getLocalizations();
+
+		const plainLocalizations: any[] = [];
+		localizations.forEach(loc => {
+
+			const locId = loc.getLocalizationId();
+			if (!locId) {
+				throw new XpException("Не задан LocalizationId");
+			}
+
+			const criteria = loc.getCriteria();
+			if (!criteria) {
+				throw new XpException(`Критерий для правила локализации не задан: LocalizationId = '${locId}'.`);
+			}
+
+			// Ошибка в том случае, если нет обоих локализаций.
+			if (!loc.getRuLocalizationText() && !loc.getEnLocalizationText()) {
+				throw new XpException(`Для критерия LocalizationId = '${locId}' не задано ни одного значения.`);
+			}
+
+			let ruLocalizationText = loc.getRuLocalizationText();
+			if (!loc.getRuLocalizationText()) {
+				ruLocalizationText = "";
+			}
+
+			let enLocalizationText = loc.getEnLocalizationText();
+			if (!enLocalizationText) {
+				enLocalizationText = "";
+			}
+
+			plainLocalizations.push({
+				"Criteria": criteria,
+
+				"LocalizationId": locId,
+				"RuLocalization": ruLocalizationText,
+				"EnLocalization": enLocalizationText,
+			});
+		});
+
+		const resourcesUri = this._config.getExtensionUri();
+		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
+
+		const locExamples = this._rule.getLocalizationExamples();
+		const templatePlainObject = {
+			"RuleName": this._rule.getName(),
+			"RuDescription": this._rule.getRuDescription(),
+			"EnDescription": this._rule.getEnDescription(),
+			"Localizations": plainLocalizations,
+			"ExtensionBaseUri": extensionBaseUri,
+			"LocalizationExamples": locExamples,
+			"IsLocalizableRule": this.isLocalizableRule(this._rule),
+			"IsTestedLocalizationsRule" : this.isTestedLocalizationsRule(this._rule)
+		};
+
+		// Подгружаем шаблон и шаблонизируем данные.
+		const template = (await fs.promises.readFile(this._templatePath)).toString();
+		const formatter = new MustacheFormatter(template);
+		const htmlContent = formatter.format(templatePlainObject);
+
+		this._view.webview.html = htmlContent;
 	}
 
 	private isLocalizableRule(rule: RuleBaseItem): boolean {
@@ -177,6 +211,10 @@ export class LocalizationEditorViewProvider {
 						return DialogHelper.showInfo(
 							"В настоящий момент поддерживается проверка локализаций только для корреляций. Если вам требуется поддержка других правил, можете добавить или проверить наличие подобного [Issue](https://github.com/Security-Experts-Community/vscode-xp/issues).");					
 					}
+
+					// Сбрасываем статус правила в исходный
+					this._rule.setStatus(ContentItemStatus.Default);
+					await ContentTreeProvider.refresh(this._rule);
 	
 					const localizations = message.localizations;
 					await this.saveLocalization(localizations);
@@ -190,6 +228,7 @@ export class LocalizationEditorViewProvider {
 
 					const verifiedLocalization = locExamples.some(le => TestHelper.isDefaultLocalization(le.ruText));
 					if(verifiedLocalization) {
+						DialogHelper.showError("Обнаружена локализация по умолчанию. Исправьте/добавьте нужные критерии локализаций и повторите");
 						this._rule.setStatus(ContentItemStatus.Unverified, "Локализации не прошли проверку");
 					} else {
 						this._rule.setStatus(ContentItemStatus.Verified, "Локализации прошли проверку");
@@ -201,13 +240,19 @@ export class LocalizationEditorViewProvider {
 					this.showLocalizationEditor(this._rule, true);
 				}
 				catch(error) {
+					ExceptionHelper.show(error, "Неожиданная ошибка тестирования локализаций");
+
+					// Если произошла отмена операции, мы не очищаем временные файлы.
+					if(error instanceof OperationCanceledException) {
+						return;	
+					}
+					
 					try {
 						await FileSystemHelper.deleteAllSubDirectoriesAndFiles(this._integrationTestTmpFilesPath);
 					}
 					catch(error) {
 						Log.warn("Ошибка очистки временных файлов интеграционных тестов", error);
 					}
-					ExceptionHelper.show(error, "Неожиданная ошибка тестирования локализаций");
 				}
 				break;
 			}

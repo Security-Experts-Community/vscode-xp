@@ -6,7 +6,7 @@ import { MetaInfo } from '../metaInfo/metaInfo';
 import { Localization, LocalizationExample, LocalizationLanguage } from './localization';
 import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { IntegrationTest } from '../tests/integrationTest';
-import { KbTreeBaseItem } from './kbTreeBaseItem';
+import { ContentTreeBaseItem } from './contentTreeBaseItem';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Configuration } from '../configuration';
 import { YamlHelper } from '../../helpers/yamlHelper';
@@ -15,7 +15,6 @@ import { XpException } from '../xpException';
 import { BaseUnitTest } from '../tests/baseUnitTest';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
-import { TestStatus } from '../tests/testStatus';
 
 export enum ContentItemStatus {
 	Default = 1,
@@ -26,7 +25,7 @@ export enum ContentItemStatus {
 /**
  * Базовый класс для всех правил.
  */
-export abstract class RuleBaseItem extends KbTreeBaseItem {
+export abstract class RuleBaseItem extends ContentTreeBaseItem {
 
 	constructor(name: string, parentDirectoryPath? : string) {
 		super(name, parentDirectoryPath);

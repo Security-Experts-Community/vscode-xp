@@ -88,7 +88,7 @@ export class Correlation extends RuleBaseItem {
 
 		const ruleFilePath = correlation.getRuleFilePath();
 		if (!fs.existsSync(ruleFilePath)) {
-			throw new XpException(`Файл с кодом правила '${ruleFilePath}' не существует.`);
+			throw new XpException(`Файл с кодом правила '${ruleFilePath}' не существует`);
 		}
 		
 		const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
