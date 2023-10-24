@@ -12,6 +12,7 @@ import { XpException } from '../xpException';
 import { SiemjManager } from '../siemj/siemjManager';
 import { OperationCanceledException } from '../operationCanceledException';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
+import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 
 export enum CompilationType {
 	DontCompile = 0,
@@ -119,6 +120,12 @@ export class IntegrationTestRunner {
 				}
 
 				configBuilder.addCorrelationsGraphBuilding(true, options.dependentCorrelations);
+				break;
+			}
+			case CompilationType.DontCompile: {
+				// Если мы не собираем граф корреляции, то нужно создать пустой json-файл, чтобы siemj не ругался.
+				const corrGraphFilePath = this._config.getCorrelationsGraphFilePath(rootFolder);
+				await FileSystemHelper.writeContentFile(corrGraphFilePath, "{}");
 				break;
 			}
 			default: {

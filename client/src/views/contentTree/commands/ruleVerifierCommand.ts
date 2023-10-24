@@ -17,6 +17,8 @@ import { SiemJOutputParser } from '../../../models/siemj/siemJOutputParser';
 import { IntegrationTestRunner } from '../../../models/tests/integrationTestRunner';
 import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
+import { Enrichment } from '../../../models/content/enrichment';
+import { Log } from '../../../extension';
 
 /**
  * Проверяет контент по требованиям. В настоящий момент реализована только проверка интеграционных тестов и локализаций.
@@ -38,12 +40,21 @@ export class ContentVerifierCommand {
 
 			// Сбрасываем статус правил в исходный
 			// TODO: Добавить поддержку других типов
-			const items = parentItem.getChildren();
-			const rules = items.filter(i => (i instanceof Correlation)).map<RuleBaseItem>(r => r as RuleBaseItem);
-			for(const rule of rules) {
-				rule.setStatus(ContentItemStatus.Default);
+			// const items = parentItem.getChildren();
+			const totalChildItems = this.getChildrenRecursively(parentItem);
+			const rules = totalChildItems.filter(i => (i instanceof RuleBaseItem)).map<RuleBaseItem>(r => r as RuleBaseItem);
+			if(rules.length === 0) {
+				DialogHelper.showInfo(`В директории ${parentItem.getName()} не найдено контента для проверки`);
+				return;
 			}
 
+			// TODO: Обновление статуса ведет к обновлению дерева и утраты управления состоянием узлов.
+			// for(const rule of rules) {
+			// 	rule.setStatus(ContentItemStatus.Default);
+			//  await ContentTreeProvider.refresh(parentItem);
+			// }
+
+			Log.info(`В ${parentItem.getName()} директории начата проверка ${rules.length} правил`);
 			try {
 				for(const rule of rules) {
 					progress.report({ message: `Проверка правила ${rule.getName()}`});
@@ -62,40 +73,58 @@ export class ContentVerifierCommand {
 	}
 
 	private async testRule(rule: RuleBaseItem, progress: any, cancellationToken: vscode.CancellationToken) {
-		progress.report({ message: `Получение зависимостей правила ${rule.getName()} для корректной сборки графа корреляций` });
-		const ritd = new RunIntegrationTestDialog(this._config, this._integrationTestTmpFilesPath);
-		const options = await ritd.getIntegrationTestRunOptions(rule);
-		options.cancellationToken = cancellationToken;
 
-		progress.report({ message: `Проверка интеграционных тестов правила ${rule.getName()}`});
-		const outputParser = new SiemJOutputParser();
-		const testRunner = new IntegrationTestRunner(this._config, outputParser);
+		if(rule instanceof Correlation || rule instanceof Enrichment) {
+			progress.report({ message: `Получение зависимостей правила ${rule.getName()} для корректной сборки графа корреляций` });
+			const ritd = new RunIntegrationTestDialog(this._config, this._integrationTestTmpFilesPath);
+			const options = await ritd.getIntegrationTestRunOptions(rule);
+			options.cancellationToken = cancellationToken;
+	
+			progress.report({ message: `Проверка интеграционных тестов правила ${rule.getName()}`});
+			const outputParser = new SiemJOutputParser();
+			const testRunner = new IntegrationTestRunner(this._config, outputParser);
+	
+			// TODO: исключить лишнюю сборку артефактов
+			const siemjResult = await testRunner.run(rule, options);
+	
+			if (!siemjResult.testsStatus) {
+				rule.setStatus(ContentItemStatus.Unverified, "Интеграционные тесты не прошли проверку");
+				return;
+			}
 
-		// TODO: исключить лишнюю сборку артефактов
-		const siemjResult = await testRunner.run(rule, options);
-
-		if (!siemjResult.testsStatus) {
-			rule.setStatus(ContentItemStatus.Unverified, "Интеграционные тесты не прошли проверку");
-			return;
+			rule.setStatus(ContentItemStatus.Verified, "Интеграционные тесты прошли проверку");
 		}
 
-		progress.report({ message: `Проверка локализаций правила ${rule.getName()}`});
-		const siemjManager = new SiemjManager(this._config);
-		const locExamples = await siemjManager.buildLocalizationExamples(rule, this._integrationTestTmpFilesPath);
+		if(rule instanceof Correlation) {
+			progress.report({ message: `Проверка локализаций правила ${rule.getName()}`});
+			const siemjManager = new SiemjManager(this._config);
+			const locExamples = await siemjManager.buildLocalizationExamples(rule, this._integrationTestTmpFilesPath);
 
-		if (locExamples.length === 0) {
-			rule.setStatus(ContentItemStatus.Unverified, "Локализации не были получены");
-			return;
+			if (locExamples.length === 0) {
+				rule.setStatus(ContentItemStatus.Unverified, "Локализации не были получены");
+				return;
+			}
+
+			const verifiedLocalization = locExamples.some(le => TestHelper.isDefaultLocalization(le.ruText));
+			if(verifiedLocalization) {
+				rule.setStatus(ContentItemStatus.Unverified, "Локализации не прошли проверку");
+			} else {
+				rule.setStatus(ContentItemStatus.Verified, "Интеграционные тесты и локализации прошли проверку");
+			}
+
+			rule.setLocalizationExamples(locExamples);
 		}
+	}
 
-		const verifiedLocalization = locExamples.some(le => TestHelper.isDefaultLocalization(le.ruText));
-		if(verifiedLocalization) {
-			rule.setStatus(ContentItemStatus.Unverified, "Локализации не прошли проверку");
-		} else {
-			rule.setStatus(ContentItemStatus.Verified, "Локализации прошли проверку");
+	private getChildrenRecursively(parentItem: ContentTreeBaseItem): ContentTreeBaseItem[] {
+		const items = parentItem.getChildren();
+		const totalItems:  ContentTreeBaseItem[] = [];
+		totalItems.push(...items);
+		for(const item of items) {
+			const childItems = this.getChildrenRecursively(item);
+			totalItems.push(...childItems);
 		}
-
-		rule.setLocalizationExamples(locExamples);
+		return totalItems;
 	}
 
 	private _integrationTestTmpFilesPath: string

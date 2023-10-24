@@ -11,6 +11,7 @@ import { OperationCanceledException } from '../models/operationCanceledException
 import { XpException } from '../models/xpException';
 import { DialogHelper } from '../helpers/dialogHelper';
 import { Log } from '../extension';
+import { RegExpHelper } from '../helpers/regExpHelper';
 
 export class RunIntegrationTestDialog {
 	constructor(private _config : Configuration, private _tmpFilesPath?: string) {}
@@ -117,14 +118,20 @@ export class RunIntegrationTestDialog {
 		const testRunnerOptions = new IntegrationTestRunnerOptions();
 		testRunnerOptions.tmpFilesPath = this._tmpFilesPath;
 
-		const result = await DialogHelper.showInfo(
-			"Правило обогащения может обогащать как нормализованные события, так и корреляционные. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",
-			this.CURRENT_PACKAGE,
-			this.ALL_PACKAGES);
+		// TODO: экспериментальная оптимизация
+		const ruleCode = await rule.getRuleCode();
+		const events = RegExpHelper.getAllStrings(ruleCode, /event\s*(\w+)\s*:/gm);
 
-		if(!result) {
-			throw new OperationCanceledException("Операция отменена.");
-		}
+		// Одно событие, значит если там проверяется отсутствие в фильтре правила корреляции, то можно граф корреляции не собирать.
+		if(events.length === 1) {
+			const corrNameFilter = RegExpHelper.getAllStrings(ruleCode, /filter\s+{[\s\S]+?(correlation_name\s+==\s+null|filter::NotFromCorrelator\s*\(\))[\s\S]+?}/gm);
+			if(corrNameFilter.length === 1) {
+				testRunnerOptions.correlationCompilation = CompilationType.DontCompile;
+				return testRunnerOptions;
+			} 
+		} 
+
+		const result = await this.askTheUser();
 		
 		switch(result) {
 			case this.CURRENT_PACKAGE: {
@@ -139,6 +146,19 @@ export class RunIntegrationTestDialog {
 		}
 
 		return testRunnerOptions;
+	}
+
+	private async askTheUser(): Promise<string> {
+		const result = await DialogHelper.showInfo(
+			"Правило обогащения может обогащать как нормализованные события, так и корреляционные. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",
+			this.CURRENT_PACKAGE,
+			this.ALL_PACKAGES);
+
+		if(!result) {
+			throw new OperationCanceledException("Операция отменена");
+		}
+
+		return result;
 	}
 
 	public ALL_PACKAGES = "Все пакеты";

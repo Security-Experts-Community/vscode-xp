@@ -36,6 +36,9 @@ export class RegExpHelper {
 		let curResult: RegExpExecArray | null;
 		while ((curResult = regExp.exec(inputText))) {
 			
+			if(curResult.length !== 2) {
+				continue;
+			}
 			const curValue = curResult[2];
 			strings.push(curValue);
 		}

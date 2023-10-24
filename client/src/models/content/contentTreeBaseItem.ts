@@ -165,5 +165,5 @@ export abstract class ContentTreeBaseItem extends vscode.TreeItem {
 
 	private _fileName : string;
 	private _metaInfo: MetaInfo = new MetaInfo();
-	private _children: ContentTreeBaseItem [];
+	private _children: ContentTreeBaseItem [] = [];
 }
