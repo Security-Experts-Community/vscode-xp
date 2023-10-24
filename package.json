@@ -301,6 +301,11 @@
 					"group": "create@3"
 				},
 				{
+					"command": "xp.contentTree.verifyFolder",
+					"when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
+					"group": "verify@1"
+				},
+				{
 					"command": "IntegrationTestEditorView.showEditor",
 					"when": "view == KnowledgebaseTree && viewItem == Correlation",
 					"group": "Correlation@1"
@@ -388,10 +393,6 @@
 				"command": "SiemContentEditor.refreshKbTree",
 				"title": "Обновить дерево контента",
 				"icon": "$(refresh)"
-			},
-			{
-				"command": "xp.contentTree.refreshItem",
-				"title": "Обновить элемент дерева"
 			},
 			{
 				"command": "SiemContentEditor.сreatePackageCommand",
@@ -523,6 +524,10 @@
 				"command": "NativeEditorContextMenu.compressTest",
 				"title": "Сжать документ",
 				"category": "Редактор XP"
+			},
+			{
+				"command": "xp.contentTree.verifyFolder",
+				"title": "Проверить"
 			}
 		],
 		"keybindings": [

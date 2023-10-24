@@ -105,6 +105,7 @@ export class LocalizationEditorViewProvider {
 	/**
 	 * Обновляем состояние правила и его визуализацию, если оно изменилось. Нельзя обновить одно правило другим, проверяется совпадение имён правил.
 	 * @param newRule новое состояние правила
+	 * @returns было ли обновлено правило
 	 */
 	public async updateRule(newRule: RuleBaseItem): Promise<boolean> {
 		if(this._rule && this._rule.getName() === newRule.getName()) {
@@ -117,7 +118,9 @@ export class LocalizationEditorViewProvider {
 			newRule.setLocalizationExamples(localizationExamples);
 
 			this._rule = newRule;
-			this.updateView();
+			if(this._view) {
+				this.updateView();
+			}
 			return true;
 		}
 
@@ -377,6 +380,6 @@ export class LocalizationEditorViewProvider {
 
 	private _integrationTestTmpFilesPath: string
 
-	private static readonly USE_OLD_TESTS_RESULT = "Использовать";
-	private static readonly RESTART_TESTS = "Повторить";
+	public static readonly USE_OLD_TESTS_RESULT = "Использовать";
+	public static readonly RESTART_TESTS = "Повторить";
 }

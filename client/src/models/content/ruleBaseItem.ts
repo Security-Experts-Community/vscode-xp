@@ -221,7 +221,7 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 	
 	public setLocalizationTemplates(localizations: Localization[]) : void {
 		this._localizations = [];
-		this._metaInfo.setEventDescriptions([]);
+		this.getMetaInfo().setEventDescriptions([]);
 		localizations.forEach((loc) => {
 			this.addLocalization(loc);
 		});

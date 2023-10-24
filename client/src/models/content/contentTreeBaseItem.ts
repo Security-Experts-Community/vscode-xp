@@ -155,7 +155,15 @@ export abstract class ContentTreeBaseItem extends vscode.TreeItem {
 		return path.join(Configuration.get().getExtensionPath(), 'resources');
 	}
 
-	private _fileName : string;
+	public getChildren() : ContentTreeBaseItem [] {
+		return this._children;
+	}
 
-	protected _metaInfo: MetaInfo = new MetaInfo();
+	public setChildren(children: ContentTreeBaseItem []) : void {
+		this._children = children;
+	}
+
+	private _fileName : string;
+	private _metaInfo: MetaInfo = new MetaInfo();
+	private _children: ContentTreeBaseItem [];
 }
