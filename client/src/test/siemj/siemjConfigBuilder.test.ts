@@ -29,7 +29,8 @@ suite('SiemjConfigBuilder', () => {
 	test('Собрать локализации с заданным путём', async () => {
 		const configBuilder = new SiemjConfBuilder(Configuration.get(), "packages");
 		configBuilder.addLocalizationsBuilding({
-			rulesSrcPath: "C:\\Content\\knowledgebase\\packages"
+			rulesSrcPath: "C:\\Content\\knowledgebase\\packages",
+			force: true
 		});
 		const result = configBuilder.build();
 

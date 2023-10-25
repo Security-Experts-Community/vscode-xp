@@ -8,7 +8,7 @@ import { XpException } from '../xpException';
 
 export class LocalizationsBuildingOptions {
 	rulesSrcPath?: string;
-	force? = true;
+	force = true;
 }
 
 /**
@@ -197,7 +197,7 @@ out=${output}`;
 
 	public addLocalizationsBuilding(options? : LocalizationsBuildingOptions) : void {
 
-		if(!options?.force) {
+		if(!options.force) {
 			const enLangFilePath = this._config.getRuLangFilePath(this._contentRootFolder);
 			const ruLangFilePath = this._config.getEnLangFilePath(this._contentRootFolder);
 			if(fs.existsSync(enLangFilePath) && fs.existsSync(ruLangFilePath)) {

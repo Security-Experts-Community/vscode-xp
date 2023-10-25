@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as path from 'path';
 
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { Correlation } from '../../../models/content/correlation';
@@ -74,9 +75,15 @@ export class ContentVerifierCommand {
 
 	private async testRule(rule: RuleBaseItem, progress: any, cancellationToken: vscode.CancellationToken) {
 
+		// В отдельную директорию положим все временные файлы, чтобы не путаться.
+		const ruleTmpFilesRuleName = path.join(this._integrationTestTmpFilesPath, rule.getName());
+		if(!fs.existsSync(ruleTmpFilesRuleName)) {
+			await fs.promises.mkdir(ruleTmpFilesRuleName, {recursive: true});
+		}
+
 		if(rule instanceof Correlation || rule instanceof Enrichment) {
 			progress.report({ message: `Получение зависимостей правила ${rule.getName()} для корректной сборки графа корреляций` });
-			const ritd = new RunIntegrationTestDialog(this._config, this._integrationTestTmpFilesPath);
+			const ritd = new RunIntegrationTestDialog(this._config, ruleTmpFilesRuleName);
 			const options = await ritd.getIntegrationTestRunOptions(rule);
 			options.cancellationToken = cancellationToken;
 	
@@ -97,8 +104,9 @@ export class ContentVerifierCommand {
 
 		if(rule instanceof Correlation) {
 			progress.report({ message: `Проверка локализаций правила ${rule.getName()}`});
+			
 			const siemjManager = new SiemjManager(this._config);
-			const locExamples = await siemjManager.buildLocalizationExamples(rule, this._integrationTestTmpFilesPath);
+			const locExamples = await siemjManager.buildLocalizationExamples(rule, ruleTmpFilesRuleName);
 
 			if (locExamples.length === 0) {
 				rule.setStatus(ContentItemStatus.Unverified, "Локализации не были получены");

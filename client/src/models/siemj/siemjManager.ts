@@ -215,13 +215,11 @@ export class SiemjManager {
 			}
 		}
 
-		// Собираем все скоррелированые события вместе.
+		// Собираем все коррелированые события вместе.
 		const correlateEventsContent = correlateEvents.join(os.EOL);
-		const localizationTmpPath = this._config.getRandTmpSubDirectoryPath(contentRootFolder);
-		await fs.promises.mkdir(localizationTmpPath);
 		
 		// Записываем их в файл.
-		const allCorrelateEventsFilePath = path.join(localizationTmpPath, this.ALL_CORR_EVENTS_FILENAME);
+		const allCorrelateEventsFilePath = path.join(integrationTestsTmpDirPath, this.ALL_CORR_EVENTS_FILENAME);
 		await FileSystemHelper.writeContentFile(allCorrelateEventsFilePath, correlateEventsContent);
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
@@ -244,7 +242,8 @@ export class SiemjManager {
 
 		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
 		configBuilder.addLocalizationsBuilding({
-				rulesSrcPath: rule.getDirectoryPath()
+				rulesSrcPath: rule.getDirectoryPath(),
+				force: true
 			}
 		);
 		configBuilder.addLocalizationForCorrelatedEvents(allCorrelateEventsFilePath);
@@ -253,7 +252,7 @@ export class SiemjManager {
 		const siemjOutput = await this.executeSiemjConfig(rule, siemjConfContent);
 		this.processOutput(siemjOutput.output);
 
-		const locExamples = this.readCurrentLocalizationExample(contentRootFolder, rule.getName());
+		const locExamples = await this.readCurrentLocalizationExample(contentRootFolder, rule.getName());
 		return locExamples;
 	}
 
