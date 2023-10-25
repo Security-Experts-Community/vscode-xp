@@ -10,6 +10,8 @@ $(function () {
 	addOnClickEventListenerToAllRemoveRowButtons();
 	makeRowsSortableTakingIntoDynamicallyAddedRows();
 	addOnChangeEventListenerToAllIdCheckboxes();
-	enableValidation();
 	enableSelectingTypeOnDropdown();
+
+	// валидация должна включаться самой последней, после подгрузки всех нужных полей
+	enableValidation();
 });

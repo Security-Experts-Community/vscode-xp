@@ -34,14 +34,14 @@ export const tableRowHTML = `
 
 export const jqDropdownRulesTleRows = `
 	<div class="tle__row jqDropdownRulesTleRow jqDropdownRemoveBeforeInsert">
-		<vscode-text-field type="text" class="jqSizeInput jqInput">
+		<vscode-text-field type="text" class="jqRecordSizeInput jqInput">
 			Типичный размер
 			<span class="span_input-required">*</span>
 		</vscode-text-field>
 		<span class="tle__row__input__helper">Количество записей, которое нежелательно превышать.</span>
 	</div>
 	<div class="tle__row jqDropdownRulesTleRow jqDropdownRemoveBeforeInsert">
-		<vscode-text-field type="text" class="jqSizeInput jqInput">
+		<vscode-text-field type="text" class="jqRecordSizeInput jqInput">
 			Максимальный размер
 			<span class="span_input-required">*</span>
 		</vscode-text-field>
@@ -57,15 +57,15 @@ export const jqDropdownRulesTleRows = `
   				<span class="slider round"></span>
 			</label>
 			<div class="time-input-group">
-				<vscode-text-field type="text" class="jqTimeInput jqInput time-input"></vscode-text-field>
+				<vscode-text-field type="text" class="jqTimeDayInput jqTimeInput time-input"></vscode-text-field>
 				<span>дн.</span>
 			</div>
 			<div class="time-input-group">
-				<vscode-text-field type="text" class="jqTimeInput jqInput time-input"></vscode-text-field>
+				<vscode-text-field type="text" class="jqTimeHourInput jqTimeInput time-input"></vscode-text-field>
 				<span>ч.</span>
 			</div>
 			<div class="time-input-group">
-				<vscode-text-field type="text" class="jqTimeInput jqInput time-input"></vscode-text-field>
+				<vscode-text-field type="text" class="jqTimeMinuteInput jqTimeInput time-input"></vscode-text-field>
 				<span>мин.</span>
 			</div>
 		</div>
@@ -86,7 +86,7 @@ export const jqDropdownListTleRows = `
 		</vscode-dropdown>
 	</div>
 	<div class="tle__row jqDropdownListTleRow jqDropdownRemoveBeforeInsert">
-		<vscode-text-field type="text" class="jqSizeInput jqInput">
+		<vscode-text-field type="text" class="jqScoreInput jqInput">
 			Минимальный score
 		</vscode-text-field>
 		<span class="tle__row__input__helper">Целое число от 0 до 100. Можно не заполнять, тогда будут импортироваться все объекты.</span>

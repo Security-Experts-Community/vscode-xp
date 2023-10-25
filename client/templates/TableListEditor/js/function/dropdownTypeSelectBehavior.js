@@ -1,6 +1,6 @@
 import { addEventListenerOnChangeToToggleSwitch } from "../../../shared/ui/toggleSwitch/js/toggleSwitch.js";
 import { jqDropdownRulesTleRows, jqDropdownListTleRows } from "../store/htmlStore.js";
-import { checkIfInvalidInputsExist } from "./validation.js";
+import { checkIfInvalidInputsExist, validateAllInputs } from "./validation.js";
 
 const _directoryTypeString = 'Справочник';
 const _rulesCorrelationTypeString = 'Заполняется правилами корреляции';
@@ -16,25 +16,32 @@ const _timeSwitchIdSelector = '#jqTimeSwitch'
 
 let _lastSelectedType;
 
-const _enableTimeInputs = () => {
+const _enableTimeInputsAndAddValidationClass = () => {
 	$(_timeInputClassSelector)
 		.removeAttr('disabled')
-		.removeClass('disabled');
+		.removeClass('disabled')
+		.addClass('jqInput');
 }
 
-const _disableTimeInputsAndRemoveInsertedValues = () => {
+const _disableTimeInputsAndRemoveValidationClassAndRemoveInsertedValues = () => {
 	$(_timeInputClassSelector)
 		.attr({ 'disabled': 'true', 'aria-disabled': 'true' })
 		.val('')
+		.removeClass('jqInput')
+		.removeClass('jqInput_invalid')
 }
 
 const _enableOrDisableTimeInputs = (isSwitchChecked) => {
-	isSwitchChecked ? _enableTimeInputs() : _disableTimeInputsAndRemoveInsertedValues();
+	if (isSwitchChecked) {
+		_enableTimeInputsAndAddValidationClass()
+	} else {
+		_disableTimeInputsAndRemoveValidationClassAndRemoveInsertedValues()
+	}
+	validateAllInputs();
 }
 
 const _addOnChangeEventListenerToTTimeSwitcher = () => {
 	$(_timeSwitchIdSelector)[0].addEventListener("change", function () {
-		console.log(this);
 		_enableOrDisableTimeInputs(this.hasAttribute('checked'));
 	})
 }
@@ -50,6 +57,8 @@ const _removeTleRowsAndInsertNewIfNeeded = (elementToInsert) => {
 	if (elementToInsert || 0) $(_rowAfterWhichElementsAreInsertedClassSelector).after(elementToInsert);
 }
 
+
+
 const _insertTleRows = (currentTypeString) => {
 	if (currentTypeString === _directoryTypeString) {
 		_removeTleRowsAndInsertNewIfNeeded();
@@ -61,8 +70,8 @@ const _insertTleRows = (currentTypeString) => {
 		_removeTleRowsAndInsertNewIfNeeded(jqDropdownListTleRows);
 	}
 
+	validateAllInputs();
 	_lastSelectedType = currentTypeString;
-	checkIfInvalidInputsExist();
 }
 
 const _addOnChangeEventListenerToTypeDropdown = () => {
