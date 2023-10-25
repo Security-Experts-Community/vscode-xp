@@ -254,6 +254,10 @@
 					"group": "navigation@4"
 				},
 				{
+					"command": "xp.retroCorrelationShow",
+					"when": "view == KnowledgebaseTree"
+				},
+				{
 					"command": "ModularTestsListView.addTest",
 					"when": "view == ModularTestsListView",
 					"group": "navigation@1"
@@ -378,6 +382,11 @@
 			]
 		},
 		"commands": [
+			{
+				"command": "xp.retroCorrelationShow",
+				"title": "Ретро коррелятор",
+				"category": "Редактор XP"
+			},
 			{
 				"command": "xpContentEditor.setContentType",
 				"title": "Выбрать целевой продукт: SIEM или XDR",
@@ -599,6 +608,7 @@
 		"mocha": "^9.2.2"
 	},
 	"dependencies": {
+		"@supercharge/promise-pool": "^3.1.0",
 		"@types/diff": "^5.0.3",
 		"@types/fs-extra": "^9.0.12",
 		"@types/mustache": "^4.1.2",
@@ -611,12 +621,15 @@
 		"iconv-lite": "^0.6.3",
 		"js-yaml": "^4.1.0",
 		"lru-cache": "^6.0.0",
+		"moment": "^2.29.4",
 		"mustache": "^4.2.0",
 		"prettier": "2.8.7",
 		"rimraf": "^2.6.2",
 		"typescript": "^4.2.3",
 		"util": "^0.12.4",
 		"uuid": "^8.3.2",
+		"workerpool": "^6.5.0",
+		"xml-serializer-ts": "^1.0.2",
 		"xml2json-light": "^1.0.6",
 		"yaml": "^1.10.2",
 		"zlib": "^1.0.5"

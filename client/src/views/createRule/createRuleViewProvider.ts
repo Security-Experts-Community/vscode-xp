@@ -235,11 +235,9 @@ export class CreateRuleViewProvider {
         this._view.dispose();
     }
 
-
-
     private parseMessageFromFrontEnd(message: any) : [string, string, string]  {
         // Проверка имени корреляции.
-        let ruleName = message.classifier.Name as string;
+        let ruleName = message.rule.Name as string;
 
         ruleName = ruleName.trim();
 
@@ -249,10 +247,10 @@ export class CreateRuleViewProvider {
         }
 
         // Проверка пути родительской директории и директории корреляции.
-        const ruleParentPath = message.classifier.Path;
+        const ruleParentPath = message.rule.Path;
 
         // Имя шаблона.
-        const templateType = message.classifier.TemplateType;
+        const templateType = message.rule.TemplateType;
 
         return [ruleName, templateType, ruleParentPath];
     }

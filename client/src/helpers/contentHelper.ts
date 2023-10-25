@@ -103,6 +103,21 @@ export class ContentHelper {
         return templateNames;
     }
 
+    public static comparerEventsByCorrelationType(a: any, b: any ): number {
+        // a < b
+        // Сдвигаем событие а назад, относительно b.
+        if (a.correlation_type === "event" && b.correlation_type === "incident") {
+          return -1;
+        }
+
+        // a > b
+        if (a.correlation_type === "incident" && b.correlation_type === "event") {
+          return 1;
+        }
+        
+        return 0;
+      }
+
     public static async createCorrelationFromTemplate(
         ruleName : string,
         templateName : string,

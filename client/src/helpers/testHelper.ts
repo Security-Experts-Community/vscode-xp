@@ -234,7 +234,7 @@ export class TestHelper {
 				compressedRawEvents = compressedRawEvents.replace(jsonRawEvent, compressedEventString);
 			}
 			catch (error) {
-				throw new XpException("Неудалось распарсить сырое JSON-событие", error);
+				throw new XpException("Не удалось распарсить сырое JSON-событие", error);
 			}
 		}
 

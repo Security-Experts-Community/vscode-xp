@@ -34,6 +34,7 @@ import { ExceptionHelper } from './helpers/exceptionHelper';
 import { FileSystemHelper } from './helpers/fileSystemHelper';
 import { XpEnumValuesCompletionItemProvider } from './providers/xpEnumValuesCompletionItemProvider';
 import { LogLevel, Logger } from './logger';
+import { RetroCorrelationViewController } from './views/retroCorrelation/retroCorrelationViewProvider';
 
 export let Log : Logger;
 let client: LanguageClient;
@@ -123,6 +124,7 @@ export async function activate(context: ExtensionContext) {
 		TableListsEditorViewProvider.init(config);
 		SetContentTypeCommand.init(config);
 		InitKBRootCommand.init(config);
+		RetroCorrelationViewController.init(config);
 
 		siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(XPPackingTaskProvider.Type, new XPPackingTaskProvider(config));
 

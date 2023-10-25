@@ -629,7 +629,4 @@ export class IntegrationTestEditorViewProvider {
 	private _testsTmpFilesPath: string;
 
 	public static TEXTAREA_END_OF_LINE = "\n";
-
-	public ALL_PACKAGES = "Все пакеты";
-	public CURRENT_PACKAGE = "Текущий пакет"
 }

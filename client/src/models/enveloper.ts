@@ -1,5 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as xml2json_light from 'xml2json-light';
+import * as fs from 'fs';
+import * as os from 'os';
 
 import { EventMimeType, TestHelper } from '../helpers/testHelper';
 import { XpException } from './xpException';
@@ -9,7 +11,7 @@ export class Enveloper {
 	/**
 	 * Оборачивает события без конверта в конверт с соответствующим mimeType и раскладывает их в одну строку.
 	 * @param rawEvents сырые события
-	 * @param mimeType тип конверта для необертнутых событий
+	 * @param mimeType тип конверта для не обертнутых событий
 	 * @returns события без конверта обёрнуты в конверт и разложены в одну строку каждое
 	 */
 	public static async addEnvelope(rawEvents: string, mimeType : EventMimeType) {
@@ -39,6 +41,16 @@ export class Enveloper {
 		// Добавляем каждому конверт
 		const envelopedRawEvents = this.addEventsToEnvelope(compressedRawEvents, mimeType);
 		return envelopedRawEvents;
+	}
+
+	public static async streamEnvelopeForXmlEvents(rawEventsFilePath: string, envelopedEventsFilePath: string): Promise<number> {
+		
+		if(!rawEventsFilePath) {
+			throw new XpException("В тест не добавлены сырые события. Добавьте их и повторите действие.");
+		}
+
+		// Проверяем, если исходное событие в формате xml (EventViewer)
+		return this.streamConvertXmlRawEventsToJson(rawEventsFilePath, envelopedEventsFilePath);
 	}
 
 	public static isRawEventXml(rawEvent : string) : any {
@@ -130,7 +142,7 @@ export class Enveloper {
 				continue;
 			}
 
-			// Убираем пустое поле в начале при копироваине из SIEM-а группы (одного) события
+			// Убираем пустое поле в начале при копирование из SIEM-а группы (одного) события
 			// importance = low и info добавляет пустое поле
 			// importance = medium добавляет поле medium
 			const regCorrection = /^"(?:medium)?","(.*?)"$/;
@@ -175,8 +187,8 @@ export class Enveloper {
         const allXmlEvents = xmlRawEventCorrected.match(xmlEventsRegex);
         for (const xmlEvent of allXmlEvents) {
             
-			const xmlEventsRegex = /<Data>[\s\S]*?<\/Data>/g;
-			const dataResult = xmlEvent.match(xmlEventsRegex);
+			// const xmlEventsRegex = /<Data>[\s\S]*?<\/Data>/g;
+			// const dataResult = xmlEvent.match(xmlEventsRegex);
 
 			let jsonEventString = "";
 			// TODO: возможность не потерять символы новых строк для событий MSSQL
@@ -199,6 +211,47 @@ export class Enveloper {
             xmlRawEventCorrected = xmlRawEventCorrected.replace(xmlEvent, resultXmlRawEvent);
         }
         return xmlRawEventCorrected;
+	}
+
+	public static async streamConvertXmlRawEventsToJson(xmlFilePath : string, envelopedJsonEventsFilePath: string) : Promise<number> {
+
+		const xmlEvents = (await fs.promises.readFile(xmlFilePath)).toString();
+        const xmlEventsRegex = /<Event [\s\S]*?<\/Event>/g;
+        
+        const allXmlEvents = xmlEvents.match(xmlEventsRegex);
+		let eventsCounter = 0;
+        for (const xmlEvent of allXmlEvents) {
+            
+			// Переводим в json-строку
+			const jsonEventObject = xml2json_light.xml2json(xmlEvent);
+			const jsonEventString = JSON.stringify(jsonEventObject);
+
+            // Убираем артефакты, добавляем конверт и добавляем в файл
+            const resultJsonRawEvent = jsonEventString.replace(/_@ttribute/gm, "text");
+			const envelopedRawEvent = this.addEventsToEnvelope([resultJsonRawEvent], "application/x-pt-eventlog");
+			await fs.promises.appendFile(envelopedJsonEventsFilePath, envelopedRawEvent[0] + os.EOL);
+
+			eventsCounter++;
+        }
+
+		return eventsCounter;
+	}
+
+	public static async streamEnvelopeJsonlEvents(jsonlFilePath : string, envelopedJsonEventsFilePath: string, encoding: BufferEncoding) : Promise<number> {
+
+		const jsonEventsContent = (await fs.promises.readFile(jsonlFilePath, encoding)).toString();
+        
+		let eventsCounter = 0;
+        const jsonEvents = jsonEventsContent.split(os.EOL);
+        for (const jsonEvent of jsonEvents) {
+            
+			const envelopedRawEvent = this.addEventsToEnvelope([jsonEvent], "application/x-pt-eventlog");
+			await fs.promises.appendFile(envelopedJsonEventsFilePath, envelopedRawEvent[0] + os.EOL, encoding);
+
+			eventsCounter++;
+        }
+
+		return eventsCounter;
 	}
 
 	// TODO: решить вопрос с визуализацией и кроссплатформенностью.

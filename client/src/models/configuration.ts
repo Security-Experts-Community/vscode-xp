@@ -13,7 +13,7 @@ import { OsType, PathLocator } from './locator/pathLocator';
 import { SIEMPathHelper } from './locator/SIEMPathLocator';
 import { FileDiagnostics } from './siemj/siemJOutputParser';
 
-export type EncodingType = "windows-1251" | "utf-8"
+export type EncodingType = "windows-1251" | "utf-8" | "utf-16"
 
 export class Configuration {
 
@@ -311,6 +311,11 @@ export class Configuration {
 		return fullPath;
 	}
 
+	public getEvtxToJsonToolFullPath() : string {
+		const fullPath = path.join(this.getExtensionPath(), "tools", "rustevtx.exe");
+		return fullPath;
+	}
+
 	public getEcatestFullPath() : string {
 		let appName = "";
 		switch(this.getOsType()) {
@@ -380,16 +385,24 @@ export class Configuration {
 		return path.join(this.getOutputDirectoryPath(rootFolder), this.getCorrelatedEventsFileName());
 	}
 
-	public getRuLocalizationFilePath(rootFolder: string) : string {
+	public getRuRuleLocalizationFilePath(rootFolder: string) : string {
 		return path.join(this.getOutputDirectoryPath(rootFolder), "ru_events.json");
 	}
 
-	public getEnLocalizationFilePath(rootFolder: string) : string {
+	public getEnRuleLocalizationFilePath(rootFolder: string) : string {
 		return path.join(this.getOutputDirectoryPath(rootFolder), "en_events.json");
 	}
 
 	public getLangsDirName() : string {
 		return "langs";
+	}
+
+	public getRuLangFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getLangsDirName(), "ru.lang");
+	}
+
+	public getEnLangFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getLangsDirName(), "en.lang");
 	}
 
 	// Пути к файлам зависят от текущего режима работы
@@ -448,7 +461,7 @@ export class Configuration {
 	}
 
 	public getTmpSiemjConfigPath(rootFolder: string) : string {
-		return path.join(this.getRandTmpSubDirectoryPath(rootFolder), "siemj.conf");
+		return path.join(this.getRandTmpSubDirectoryPath(rootFolder), Configuration.SIEMJ_CONFIG_FILENAME);
 	}
 
 	public getRandTmpSubDirectoryPath(rootFolder?: string) : string {
@@ -625,4 +638,6 @@ export class Configuration {
 	private _diagnosticCollection: vscode.DiagnosticCollection;
 
 	private BUILD_TOOLS_DIR_NAME = "build-tools";
+
+	public static readonly SIEMJ_CONFIG_FILENAME = "siemj.conf";	
 }

@@ -170,7 +170,7 @@ export class SiemjManager {
 			{	
 				encoding: this._config.getSiemjOutputEncoding(),
 				outputChannel: this._config.getOutputChannel(),
-				token: this._token
+				cancellationToken: this._token
 			}
 		);
 		return result;
@@ -232,18 +232,21 @@ export class SiemjManager {
 		}
 
 		// Удаляем файлы предыдущих локализаций.
-		const ruLocalizationFilePath = this._config.getRuLocalizationFilePath(contentRootFolder);
+		const ruLocalizationFilePath = this._config.getRuRuleLocalizationFilePath(contentRootFolder);
 		if(fs.existsSync(ruLocalizationFilePath)) {
 			await fs.promises.unlink(ruLocalizationFilePath);
 		}
 
-		const enLocalizationFilePath = this._config.getEnLocalizationFilePath(contentRootFolder);
+		const enLocalizationFilePath = this._config.getEnRuleLocalizationFilePath(contentRootFolder);
 		if(fs.existsSync(enLocalizationFilePath)) {
 			await fs.promises.unlink(enLocalizationFilePath);
 		}
 
 		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
-		configBuilder.addLocalizationsBuilding(rule.getDirectoryPath());
+		configBuilder.addLocalizationsBuilding({
+				rulesSrcPath: rule.getDirectoryPath()
+			}
+		);
 		configBuilder.addLocalizationForCorrelatedEvents(allCorrelateEventsFilePath);
 		const siemjConfContent = configBuilder.build();
 		
@@ -257,14 +260,14 @@ export class SiemjManager {
 	private async readCurrentLocalizationExample(contentRootFolder : string, correlationName : string) : Promise<LocalizationExample[]> {
 
 		// Читаем события с русской локализацией.
-		const ruLocalizationFilePath = this._config.getRuLocalizationFilePath(contentRootFolder);
+		const ruLocalizationFilePath = this._config.getRuRuleLocalizationFilePath(contentRootFolder);
 		if(!fs.existsSync(ruLocalizationFilePath)) {
 			return [];
 		}
 		const ruLocalizationEvents = await FileSystemHelper.readContentFile(ruLocalizationFilePath);
 
 		// Читаем события с английской локализацией.
-		const enLocalizationFilePath = this._config.getEnLocalizationFilePath(contentRootFolder);
+		const enLocalizationFilePath = this._config.getEnRuleLocalizationFilePath(contentRootFolder);
 		if(!fs.existsSync(enLocalizationFilePath)) {
 			return [];
 		}

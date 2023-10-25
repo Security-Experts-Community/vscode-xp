@@ -7,7 +7,7 @@ export class DialogHelper {
 		if(params.length !== 0) {
 			returnValue = await vscode.window.showInformationMessage(message, ...params);	
 		} else {
-			return vscode.window.showInformationMessage(message);
+			vscode.window.showInformationMessage(message);
 		}
 		
 		// Пишем в лог
@@ -16,7 +16,7 @@ export class DialogHelper {
 			const paramsString = params.filter(p => p).map(p => `"${p}"`).join(", ");
 			showInfoMessage = `"${returnValue}" = vscode.window.showInformationMessage("${message}", ${paramsString})`;
 		} else {
-			showInfoMessage = `vscode.window.showInformationMessage("${message}")`;
+			showInfoMessage = `showInformationMessage("${message}")`;
 		}
 		Log.info(showInfoMessage);
 
@@ -24,13 +24,13 @@ export class DialogHelper {
 	}
 
 	static showWarning(message: string): Thenable<string> {
-		const showWarningMessage = `vscode.window.showWarningMessage("${message}")`;
+		const showWarningMessage = `showWarningMessage("${message}")`;
 		Log.warn(showWarningMessage);
 		return vscode.window.showWarningMessage(message);
 	}
 
 	static showError(message: string, error?: Error) : Thenable<string> {
-		const showErrorMessage = `vscode.window.showErrorMessage("${message}")`;
+		const showErrorMessage = `showErrorMessage("${message}")`;
 
 		if(error) {
 			Log.error(showErrorMessage, error);

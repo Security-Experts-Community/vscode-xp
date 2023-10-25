@@ -28,7 +28,7 @@ export class RunIntegrationTestDialog {
 				return this.getEnrichmentOptions(rule);
 			}
 
-			throw new XpException('Для заданного типа контента не поддерживается получение настроек интеграционных тестов.');
+			throw new XpException('Для заданного типа контента не поддерживается получение настроек интеграционных тестов');
 		}
 		catch(error) {
 			throw new XpException('Ошибка анализа правила на зависимые корреляции');

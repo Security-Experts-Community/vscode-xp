@@ -15,12 +15,18 @@ export class ExceptionHelper {
 		switch(errorType)  {
 			case XpException.name: 
 			case FileSystemException.name: 
-			case IncorrectFieldFillingException.name: 
-			case OperationCanceledException.name: {
+			case IncorrectFieldFillingException.name: {
 				const typedError = error as XpException;
 
 				vscode.window.showErrorMessage(typedError.message);
 				ExceptionHelper.recursiveWriteXpExceptionToOutput(typedError, outputChannel);
+				break;
+			}
+			case OperationCanceledException.name: {
+				const typedError = error as XpException;
+
+				Log.info(null, typedError);
+				vscode.window.showInformationMessage(typedError.message);
 				break;
 			}
 			default: {
