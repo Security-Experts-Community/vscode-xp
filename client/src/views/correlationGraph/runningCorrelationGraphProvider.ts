@@ -145,7 +145,7 @@ export class RunningCorrelationGraphProvider {
                     }
                     
                     // Извлекаем имена сработавших корреляций.
-                    const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /("correlation_name"\s*:\s*"(.*?)")/g);
+                    const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /"correlation_name"\s*:\s*"(.*?)"/g);
                     if(!correlationNames) {
                         DialogHelper.showError(`Не удалось скоррелировать нормализованные события с использованием графа для директории ${path.basename(rootPath)}.`);
                         return;

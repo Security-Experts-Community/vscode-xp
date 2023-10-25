@@ -30,6 +30,12 @@ export class RegExpHelper {
 		return jsons;
 	}
 
+	/**
+	 * Выделяет из текста все вхождения первой группы
+	 * @param inputText входной текст
+	 * @param regExp регулярное выражение с захватом одной группы
+	 * @returns список выделенных подстрок
+	 */
 	public static getAllStrings(inputText : string, regExp: RegExp) : string[] {
 
 		const strings : string[] = [];
@@ -39,7 +45,7 @@ export class RegExpHelper {
 			if(curResult.length !== 2) {
 				continue;
 			}
-			const curValue = curResult[2];
+			const curValue = curResult[1];
 			strings.push(curValue);
 		}
 
