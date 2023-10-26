@@ -4,43 +4,49 @@ import * as path from 'path';
 
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
-import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
+import { Table } from '../../models/content/table';
+import { FileSystemHelper } from '../../helpers/fileSystemHelper';
+import { YamlHelper } from '../../helpers/yamlHelper';
 
+export class TableListMessage {
+	command: string;
+	data?: string;
+}
 export class TableListsEditorViewProvider {
 
 	public static readonly viewId = 'TableListsEditorView';
 
-	private _view?: vscode.WebviewPanel;
-	private _rule: RuleBaseItem;
-
 	constructor(
-		private readonly _templatePath: string
+		private readonly _templatePath: string,
+		private readonly _config: Configuration
 	) { }
 
-	public static init(context: Configuration) {
+	public static init(config: Configuration): void {
 
 		const templateFilePath = path.join(
-			Configuration.get().getExtensionPath(), "client", "templates", "TableListEditor", "html", "TableListEditor.html");
+			config.getExtensionPath(), "client", "templates", "TableListEditor", "html", "TableListEditor.html");
 
-		const provider = new TableListsEditorViewProvider(templateFilePath);
+		const provider = new TableListsEditorViewProvider(templateFilePath, config);
 
-		context.getContext().subscriptions.push(
+		config.getContext().subscriptions.push(
 			vscode.commands.registerCommand(
 				TableListsEditorViewProvider.showView,
-				async (parentItem: RuleBaseItem) => provider.showView()
+				async (tableItem: Table) => provider.showView(tableItem)
 			)
 		);
 	}
 
 	public static showView = "TableListsEditorView.showView";
-	public showView() {
+	public async showView(table: Table): Promise<void> {
 
 		// Если открыта еще одна локализация, то закрываем её перед открытием новой.
 		if (this._view) {
 			this._view.dispose();
 			this._view = undefined;
 		}
+
+		this._table = table;
 
 		try {
 			// Создать и показать панель.
@@ -59,11 +65,10 @@ export class TableListsEditorViewProvider {
 				this
 			);
 
-			const config = Configuration.get();
-			const resoucesUri = config.getExtensionUri();
-			const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
+			const resourcesUri = this._config.getExtensionUri();
+			const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
 
-			const webviewUri = this.getUri(this._view.webview, resoucesUri, ["client", "out", "ui.js"]);
+			const webviewUri = this.getUri(this._view.webview, resourcesUri, ["client", "out", "ui.js"]);
 
 			const templatePlainObject = {
 				"ExtensionBaseUri": extensionBaseUri,
@@ -71,26 +76,48 @@ export class TableListsEditorViewProvider {
 			};
 
 			// Подгружаем шаблон и шаблонизируем данные.
-			const template = fs.readFileSync(this._templatePath).toString();
+			const template = await FileSystemHelper.readContentFile(this._templatePath);
 			const formatter = new MustacheFormatter(template);
 			const htmlContent = formatter.format(templatePlainObject);
 
 			this._view.webview.html = htmlContent;
+
+			setTimeout( () => this.receiveMessageFromWebView({command:"domIsLoaded"}), 1000,);
 		}
 		catch (error) {
 			DialogHelper.showError(`Не удалось открыть правила локализации.`, error);
 		}
 	}
 
-	async receiveMessageFromWebView(message: any) {
+	private async receiveMessageFromWebView(message: TableListMessage): Promise<boolean> {
 		switch (message.command) {
-			case 'qwerty': {
-				break;
+			case 'domIsLoaded': {
+				const result = await this.domIsLoaded();
+				return result;
 			}
 		}
+	}
+
+	private async domIsLoaded(): Promise<boolean> {
+		const tableFullPath = this._table.getFilePath();
+		const tableContent = await FileSystemHelper.readContentFile(tableFullPath);
+		const tableObject = YamlHelper.parse(tableContent);
+		const tableJson = JSON.stringify(tableObject);
+
+		return this.postMessage({
+			command: "update",
+			data: tableJson
+		});
+	}
+
+	private postMessage(message: TableListMessage) : Thenable<boolean> {
+		return this._view.webview.postMessage(message);
 	}
 
 	private getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]) {
 		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
 	}
+
+	private _table: Table;
+	private _view?: vscode.WebviewPanel;
 }

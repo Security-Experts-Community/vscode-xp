@@ -417,8 +417,8 @@
 			},
 			{
 				"command": "TableListsEditorView.showView",
-				"title": "Редактировать табличный список",
-				"shortTitle": "Редактировать табличный список",
+				"title": "Редактировать",
+				"shortTitle": "Редактировать",
 				"category": "Редактор XP"
 			},
 			{
