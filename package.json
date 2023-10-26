@@ -580,7 +580,7 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run package",
-  		"compile": "node ./esbuild.js",
+		"compile": "node ./esbuild.js",
 		"package": "NODE_ENV=production node ./esbuild.js",
 		"watch": "node ./esbuild.js --watch",
 		"tswatch": "tsc -b -w",
@@ -609,6 +609,8 @@
 		"fs-extra": "^10.0.0",
 		"guid-typescript": "^1.0.9",
 		"iconv-lite": "^0.6.3",
+		"jquery": "^3.7.1",
+		"jquery-ui": "^1.13.2",
 		"js-yaml": "^4.1.0",
 		"lru-cache": "^6.0.0",
 		"mustache": "4.1.0",
