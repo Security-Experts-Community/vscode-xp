@@ -151,11 +151,28 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 		return "utf-8";
 	}
 
-	protected getResourcesPath(){
+	protected getResourcesPath(): string{
 		return path.join(Configuration.get().getExtensionPath(), 'resources');
 	}
 
-	private _fileName : string;
+	public setRuDescription(description: string) : void {
+		this._ruDescription = description;
+	}
 
-	protected _metaInfo: MetaInfo = new MetaInfo();
+	public setEnDescription(description: string) : void {
+		this._enDescription = description;
+	}
+
+	public getRuDescription() : string {
+		return this._ruDescription;
+	}
+
+	public getEnDescription() : string {
+		return this._enDescription;
+	}
+
+	private _fileName : string;
+	private _ruDescription : string;
+	private _enDescription : string;
+	private _metaInfo: MetaInfo = new MetaInfo();
 }

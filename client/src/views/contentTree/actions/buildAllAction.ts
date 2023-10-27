@@ -9,7 +9,6 @@ import { Configuration } from '../../../models/configuration';
 import { SiemjConfBuilder } from '../../../models/siemj/siemjConfigBuilder';
 import { XpException } from '../../../models/xpException';
 import { DialogHelper } from '../../../helpers/dialogHelper';
-import { Dictionary } from 'lodash';
 
 export class BuildAllAction {
 	constructor(private _config: Configuration, private _outputParser: SiemJOutputParser) {
@@ -96,7 +95,7 @@ export class BuildAllAction {
 		});
 	}
 
-	private getBuildAllGraphs(config : Configuration ) : Dictionary<string>[] {
+	private getBuildAllGraphs(config : Configuration ) : any {
 		const rootPaths = config.getContentRoots();
 
 		return rootPaths.map(rootPath => { 

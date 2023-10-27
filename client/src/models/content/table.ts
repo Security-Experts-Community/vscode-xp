@@ -6,6 +6,8 @@ import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider
 import { KbTreeBaseItem } from './kbTreeBaseItem';
 import { XpException } from '../xpException';
 import { XPObjectType } from './xpObjectType';
+import { MetaInfo } from '../metaInfo/metaInfo';
+import { Localization } from './localization';
 
 export class Table extends KbTreeBaseItem {
 
@@ -43,6 +45,17 @@ export class Table extends KbTreeBaseItem {
 		if (fileName) {
 			table.setFileName(fileName);
 		}
+
+		// Парсим основные метаданные.
+		const metaInfo = MetaInfo.fromFile(directoryPath);
+		table.setMetaInfo(metaInfo);
+
+		// // Парсим описания на разных языках.
+		const ruDescription = await Localization.parseRuDescription(directoryPath);
+		table.setRuDescription(ruDescription);
+
+		const enDescription = await Localization.parseEnDescription(directoryPath);
+		table.setEnDescription(enDescription);
 
 		// Добавляем команду на открытие.
 		table.setCommand({

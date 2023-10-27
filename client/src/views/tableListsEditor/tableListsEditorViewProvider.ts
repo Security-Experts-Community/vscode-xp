@@ -82,7 +82,7 @@ export class TableListsEditorViewProvider {
 
 			this._view.webview.html = htmlContent;
 
-			// setTimeout(() => this.receiveMessageFromWebView({ command: "documentIsReady" }), 1000,);
+			setTimeout(() => this.receiveMessageFromWebView({ command: "documentIsReady" }), 1000,);
 		}
 		catch (error) {
 			DialogHelper.showError(`Не удалось открыть правила локализации.`, error);
@@ -99,11 +99,8 @@ export class TableListsEditorViewProvider {
 	}
 
 	private async documentIsReady(): Promise<boolean> {
-		const tableFullPath = this._table.getFilePath();
-		const tableContent = await FileSystemHelper.readContentFile(tableFullPath);
-		const tableObject = YamlHelper.parse(tableContent);
-		const tableJson = JSON.stringify(tableObject);
 
+		const tableJson = await this.tableToViewJson();
 		return this.postMessage({
 			command: "setViewContent",
 			data: tableJson
@@ -116,6 +113,23 @@ export class TableListsEditorViewProvider {
 
 	private getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]) {
 		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
+	}
+
+	private async tableToViewJson() : Promise<string> {
+		// TODO: переделать иерархию контента для внесения данный функциональности внутрь Table
+		const tableFullPath = this._table.getFilePath();
+		const tableContent = await FileSystemHelper.readContentFile(tableFullPath);
+		const tableObject = YamlHelper.parse(tableContent);
+
+		tableObject["metainfo"] = {
+			"ruDescription": this._table.getRuDescription(),
+			"enDescription": this._table.getEnDescription(),
+			"objectId": this._table.getMetaInfo().getObjectId()
+		};
+
+		// Добавляем описание
+		const tableJson = JSON.stringify(tableObject);
+		return tableJson;
 	}
 
 	private _table: Table;
