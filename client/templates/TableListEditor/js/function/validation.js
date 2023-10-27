@@ -18,12 +18,12 @@ const _timeMinuteInputUpperLimit = 59;
 const _scoreInputUpperLimit = 100;
 const _dgitalInputsLowerLimit = 0;
 
-const _nameInputRegExp = new RegExp("[A-Z][a-zA-Z0-9_]+");
-const _rowNameInputRegExp = new RegExp("[A-Z][a-zA-Z0-9_.]+");
-const _onlyDigitalRegExp = new RegExp("0|[1-9][0-9]*")
+const _nameInputRegExp = new RegExp("[a-zA-Z]|[a-zA-Z][a-zA-Z0-9_]+");
+const _rowNameInputRegExp = new RegExp("[a-zA-Z]|[a-zA-Z][a-zA-Z0-9_.]+");
+const _onlyDigitalRegExp = new RegExp("0|[1-9][0-9]*");
 
-const _nameInputErrorMessageString = "Должно начинаться с заглавной латинской буквы, может содержать латинские буквы, цифры и символ подчеркивания.";
-const _rowNameInputErrorMessageString = "Должно начинаться с заглавной латинской буквы, может содержать латинские буквы, цифры,символ подчеркивания и точку.";
+const _nameInputErrorMessageString = "Должно начинаться с латинской буквы, может содержать латинские буквы, цифры и символ подчеркивания.";
+const _rowNameInputErrorMessageString = "Должно начинаться с латинской буквы, может содержать латинские буквы, цифры,символ подчеркивания и точку.";
 const _recordSizeInputErrorMessageString = "Должно содержать только числа в диапазоне от 0 до 2147483647 включительно";
 const _timeDayInputErrorMessageString = "Должно содержать только числа в диапазоне от 0 до 90 включительно";
 const _timeHourInputErrorMessageString = "Должно содержать только числа в диапазоне от 0 до 23 включительно";

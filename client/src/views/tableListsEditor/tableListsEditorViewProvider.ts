@@ -82,7 +82,7 @@ export class TableListsEditorViewProvider {
 
 			this._view.webview.html = htmlContent;
 
-			setTimeout( () => this.receiveMessageFromWebView({command:"domIsLoaded"}), 1000,);
+			// setTimeout(() => this.receiveMessageFromWebView({ command: "documentIsReady" }), 1000,);
 		}
 		catch (error) {
 			DialogHelper.showError(`Не удалось открыть правила локализации.`, error);
@@ -91,26 +91,26 @@ export class TableListsEditorViewProvider {
 
 	private async receiveMessageFromWebView(message: TableListMessage): Promise<boolean> {
 		switch (message.command) {
-			case 'domIsLoaded': {
-				const result = await this.domIsLoaded();
+			case 'documentIsReady': {
+				const result = await this.documentIsReady();
 				return result;
 			}
 		}
 	}
 
-	private async domIsLoaded(): Promise<boolean> {
+	private async documentIsReady(): Promise<boolean> {
 		const tableFullPath = this._table.getFilePath();
 		const tableContent = await FileSystemHelper.readContentFile(tableFullPath);
 		const tableObject = YamlHelper.parse(tableContent);
 		const tableJson = JSON.stringify(tableObject);
 
 		return this.postMessage({
-			command: "update",
+			command: "setViewContent",
 			data: tableJson
 		});
 	}
 
-	private postMessage(message: TableListMessage) : Thenable<boolean> {
+	private postMessage(message: TableListMessage): Thenable<boolean> {
 		return this._view.webview.postMessage(message);
 	}
 
