@@ -31,6 +31,18 @@ export class YamlHelper {
 		);
 	}
 
+	public static tableStringify(object: any): string {
+		const yamlContent = js_yaml.dump(object, this.dumpOptions);
+
+		return prettier.format(
+			yamlContent,
+			{
+				'parser': 'yaml',
+				'tabWidth': 0,
+			}
+		);
+	}
+
 	public static stringify(object: any): string {
 		const yamlContent = js_yaml.dump(object, this.dumpOptions);
 

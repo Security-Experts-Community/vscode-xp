@@ -193,7 +193,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	
 	public setLocalizationTemplates(localizations: Localization[]) : void {
 		this._localizations = [];
-		this._metaInfo.setEventDescriptions([]);
+		this.getMetaInfo().setEventDescriptions([]);
 		localizations.forEach((loc) => {
 			this.addLocalization(loc);
 		});
