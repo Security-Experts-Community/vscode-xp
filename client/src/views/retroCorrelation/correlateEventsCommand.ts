@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as os from 'os';
 import * as fs from 'fs';
 import * as path from 'path';
-import moment = require('moment');
+import * as moment from 'moment';
 
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { Configuration } from '../../models/configuration';

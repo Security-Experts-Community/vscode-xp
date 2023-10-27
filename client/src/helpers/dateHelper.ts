@@ -1,4 +1,4 @@
-import moment = require('moment');
+import * as moment from 'moment';
 
 export class DateHelper {
 	public static dateToString(date: Date): string {
