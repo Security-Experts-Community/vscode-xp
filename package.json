@@ -371,9 +371,14 @@
 					"group": "ZCommonItems@4"
 				},
 				{
+					"command": "MetaInfoView.showMetaInfoEditor",
+					"when": "view == KnowledgebaseTree && viewItem == Table",
+					"group": "Table@1"
+				},
+				{
 					"command": "TableListsEditorView.showView",
-					"when": "view == KnowledgebaseTree && (viewItem == Table)",
-					"group": "ZCommonItems@4"
+					"when": "view == KnowledgebaseTree && viewItem == Table",
+					"group": "Table@2"
 				}
 			]
 		},

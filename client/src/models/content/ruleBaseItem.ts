@@ -187,23 +187,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		}
 	}
 
-	public setRuDescription(description: string) : void {
-		this._ruDescription = description;
-	}
-
-	/// Описания правила.
-	public setEnDescription(description: string) : void {
-		this._enDescription = description;
-	}
-
-	public getRuDescription() : string {
-		return this._ruDescription;
-	}
-
-	public getEnDescription() : string {
-		return this._enDescription;
-	}
-
 	public getLocalizations() : Localization[] {
 		return this._localizations;
 	}
@@ -458,9 +441,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	protected _unitTests: BaseUnitTest [] = [];
 	protected _integrationTests : IntegrationTest [] = [];
 	
-	private _ruDescription : string;
-	private _enDescription : string;
-
 	private _ruleCode = "";
 
 	contextValue = "BaseRule";
