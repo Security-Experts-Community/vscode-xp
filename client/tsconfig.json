@@ -5,7 +5,8 @@
 		"lib": ["ES2019", "DOM"],
 		"outDir": "out",
 		"rootDir": "src",
-		"sourceMap": true
+		"sourceMap": true,
+		"skipLibCheck": true
 	},
 	"include": ["src", "src/commands/.ts", "../server/ValidationRegEx.ts"],
 	"exclude": ["node_modules", ".vscode-test"]

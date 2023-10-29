@@ -589,17 +589,21 @@
 		"package": "NODE_ENV=production node ./esbuild.js",
 		"watch": "node ./esbuild.js --watch",
 		"tswatch": "tsc -b -w",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd .."
+		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+		"pretest": "tsc -b"
 	},
 	"devDependencies": {
 		"@types/glob": "^8.0.0",
 		"@types/iconv": "^3.0.1",
+		"@types/jest": "^29.5.6",
 		"@types/js-yaml": "^4.0.5",
 		"@types/mocha": "^8.2.2",
+		"@types/prettier": "^3.0.0",
 		"@typescript-eslint/eslint-plugin": "^4.21.0",
 		"@typescript-eslint/parser": "^4.21.0",
 		"esbuild": "^0.16.17",
 		"eslint": "^7.23.0",
+		"jest": "^29.7.0",
 		"mocha": "^9.2.2"
 	},
 	"dependencies": {
@@ -621,7 +625,7 @@
 		"mustache": "4.1.0",
 		"prettier": "2.8.7",
 		"rimraf": "^2.6.2",
-		"typescript": "^4.2.3",
+		"typescript": "5.2.2",
 		"util": "^0.12.4",
 		"uuid": "^8.3.2",
 		"xml-serializer-ts": "^1.0.2",

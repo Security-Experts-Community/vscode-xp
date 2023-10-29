@@ -27,6 +27,10 @@
 			"name": "Language Server E2E Test",
 			"type": "extensionHost",
 			"request": "launch",
+			"preLaunchTask": {
+				"type": "npm",
+				"script": "pretest"
+			},
 			"runtimeExecutable": "${execPath}",
 			"args": [
 				"--extensionDevelopmentPath=${workspaceRoot}",

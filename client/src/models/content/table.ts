@@ -8,18 +8,90 @@ import { XpException } from '../xpException';
 import { XPObjectType } from './xpObjectType';
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { Localization } from './localization';
+import { RuleBaseItem } from './ruleBaseItem';
+import { BaseUnitTest } from '../tests/baseUnitTest';
+import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
+import { UnitTestRunner } from '../tests/unitTestsRunner';
+import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 
-export class Table extends KbTreeBaseItem {
+export class Table extends RuleBaseItem {
+	public convertUnitTestFromObject(object: any): BaseUnitTest {
+		throw new Error('Method not implemented.');
+	}
+	public createNewUnitTest(): BaseUnitTest {
+		throw new Error('Method not implemented.');
+	}
+	public clearUnitTests(): void {
+		throw new Error('Method not implemented.');
+	}
+	public getUnitTestRunner(): UnitTestRunner {
+		throw new Error('Method not implemented.');
+	}
+	public getUnitTestOutputParser(): UnitTestOutputParser {
+		throw new Error('Method not implemented.');
+	}
+	protected getLocalizationPrefix(): string {
+		throw new Error('Method not implemented.');
+	}
+	public reloadUnitTests(): void {
+		throw new Error('Method not implemented.');
+	}
 
 	public async rename(newName: string): Promise<void> {
 		throw new XpException('Method not implemented.');
 	}
 
-	public async save(fullPath: string): Promise<void> {
-		throw new XpException('Method not implemented.');
+	/**
+	 * Возвращает код правила из файла с диска или из памяти.
+	 * @returns код правила.
+	 */
+	public async getRuleCode(): Promise<string> {
+		const rulePath = this.getRuleFilePath();
+
+		// Порядок не такой как в других правилах, сохраненное состояние в памяти имеет приоритет при пересохранении ТС
+		if(this._ruleCode) {
+			return this._ruleCode;
+		}
+
+		if(fs.existsSync(rulePath)) {
+			this._ruleCode = await fs.promises.readFile(rulePath, this.getRuleEncoding());
+			return this._ruleCode;
+		}
+
+		return "";
 	}
 
-	private constructor(name: string, parentDirectoryPath?: string) {
+	public async save(parentFullPath?: string): Promise<void> {
+
+		// Путь либо передан как параметр, либо он уже задан в правиле.
+		let tableDirPath = "";
+		if (parentFullPath) {
+			tableDirPath = path.join(parentFullPath, this._name);
+			this.setParentPath(parentFullPath);
+		} else {
+			const parentPath = this.getParentPath();
+			if (!parentPath) {
+				throw new XpException("Не задан путь для сохранения корреляции.");
+			}
+
+			tableDirPath = this.getDirectoryPath();
+		}
+
+		if (!fs.existsSync(tableDirPath)) {
+			await fs.promises.mkdir(tableDirPath, {recursive: true});
+		}
+
+		const ruleFullPath = this.getRuleFilePath();
+		const ruleCode = await this.getRuleCode();
+		await FileSystemHelper.writeContentFileIfChanged(ruleFullPath, ruleCode);
+
+		// Параллельно сохраняем все данные правила.
+		const metainfoPromise = this.getMetaInfo().save(tableDirPath);
+		const localizationPromise = this.saveLocalizationsImpl(tableDirPath);
+		await Promise.all([metainfoPromise, localizationPromise]);
+	}
+
+	constructor(name: string, parentDirectoryPath?: string) {
 		super(name, parentDirectoryPath);
 		this.setFileName("table.tl");
 	}
