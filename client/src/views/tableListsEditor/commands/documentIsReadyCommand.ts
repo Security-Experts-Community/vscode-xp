@@ -57,7 +57,7 @@ export class DocumentIsReadyCommand implements TableListCommand {
 			}
 		}
 
-		// Проставляем свойство ключевого столбца.
+		// Проставляем свойство ключевого столбца из complex_key
 		tableObject.fields.forEach( (field, index) => {
 			const fieldName = TableHelper.getFieldName(field);
 			if(fieldNames.includes(fieldName)) {

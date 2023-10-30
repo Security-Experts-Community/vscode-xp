@@ -18,21 +18,22 @@
 				</vscode-text-field>
 			</div>
 			<div class="tle__row">
-				<vscode-text-area resize="vertical">Описание (русский)</vscode-text-area>
+				<vscode-text-area resize="vertical" class="jqRuDescription">Описание (русский)</vscode-text-area>
 			</div>
 			<div class="tle__row">
-				<vscode-text-area resize="vertical" type="text">Описание (английский)</vscode-text-area>
+				<vscode-text-area resize="vertical" class="jqEnDescription">Описание (английский)</vscode-text-area>
 			</div>
 			<div class="tle__row jqDropdownInserter">
 				<label for="jqTypeDropdown">
 					Назначение
 					<span class="span_input-required">*</span>
 				</label>
-				<vscode-dropdown id="jqTypeDropdown">
-  					<vscode-option>Справочник</vscode-option>
-  					<vscode-option>Заполняется правилами корреляции</vscode-option>
-  					<vscode-option>Заполняется правилами обогащения</vscode-option>
-					<vscode-option>Репутационный список</vscode-option>
+				<vscode-dropdown id="jqTypeDropdown" >
+  					<vscode-option value="Registry">Справочник</vscode-option>
+					<!-- раскомментить, когда будет добавляться функционал для табличных списков других типов -->
+					<!-- <vscode-option value="CorrelationRule">Заполняется правилами корреляции</vscode-option>
+  					<vscode-option value="EnrichmentRule">Заполняется правилами обогащения</vscode-option>
+					<vscode-option value="AssetGrid">Репутационный список</vscode-option> -->
 				</vscode-dropdown>
 			</div>
 			<div class="tle__row">
@@ -54,31 +55,6 @@
 						<vscode-data-grid-cell cell-type="columnheader" grid-column="6">Может содержать null</vscode-data-grid-cell>
 						<vscode-data-grid-cell cell-type="columnheader" grid-column="7"></vscode-data-grid-cell>
 					</vscode-data-grid-row>
-					<vscode-data-grid-row class="draggable-row">
-    					<vscode-data-grid-cell grid-column="1" class="tle__row__table__cell-icon move-row-button">::::</vscode-data-grid-cell>
-    					<vscode-data-grid-cell grid-column="2" class="jqRowNameInputParent">
-							<vscode-text-field type="text" class="jqRowNameInput jqInput"></vscode-text-field>
-						</vscode-data-grid-cell>
-    					<vscode-data-grid-cell grid-column="3">
-							<vscode-dropdown>
-  					            <vscode-option value="String">Строка</vscode-option>
-                      			<vscode-option value="Number">Число</vscode-option>
-                      			<vscode-option value="DataTime">Дата и Время</vscode-option>
-                      			<vscode-option value="DataTime">Регулярное выражение</vscode-option>
-							</vscode-dropdown>
-						</vscode-data-grid-cell>
-    					<vscode-data-grid-cell grid-column="4" class="jqIdCheckboxParent">
-							<vscode-checkbox class="jqIdCheckbox"></vscode-checkbox>
-						</vscode-data-grid-cell>
-						<vscode-data-grid-cell grid-column="5" class="jqIndexCheckboxParent">
-							<vscode-checkbox class="jqIndexCheckbox"></vscode-checkbox>
-						</vscode-data-grid-cell>
-    					<vscode-data-grid-cell grid-column="6">
-							<vscode-checkbox></vscode-checkbox>
-						</vscode-data-grid-cell>
-						<vscode-data-grid-cell grid-column="7" class="tle__row__table__cell-icon remove-row-button">🗑️</vscode-data-grid-cell>
-					</vscode-data-grid-row>
-					
 				</vscode-data-grid>
 			</div>
 			<div class=".tle__buttons">

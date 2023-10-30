@@ -26,7 +26,7 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 	public static init(config: Configuration): void {
 
 		const templateFilePath = path.join(
-			config.getExtensionPath(), 
+			config.getExtensionPath(),
 			"client", "templates", "TableListEditor", "html", "TableListEditor.html"
 		);
 
@@ -38,9 +38,17 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 				async (tableItem: Table) => provider.showView(tableItem)
 			)
 		);
+		config.getContext().subscriptions.push(
+			vscode.commands.registerCommand(
+				TableListsEditorViewProvider.createTableList,
+				async (tableItem: Table) => provider.showView(tableItem)
+			)
+		);
 	}
 
 	public static showView = "TableListsEditorView.showView";
+	public static createTableList = "TableListsEditorView.createTableList";
+	
 	public async showView(table: Table): Promise<void> {
 
 		// Если открыта еще одна локализация, то закрываем её перед открытием новой.
@@ -120,6 +128,7 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 			// 	}
 			// }`
 			// }), 1000);
+
 		}
 		catch (error) {
 			DialogHelper.showError(`Не удалось открыть табличный список`, error);
@@ -143,6 +152,27 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 
 	public postMessage(message: TableListMessage): Thenable<boolean> {
 		return this._view.webview.postMessage(message);
+	}
+
+	private getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]) {
+		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
+	}
+
+	private async tableToViewJson(): Promise<string> {
+		// TODO: переделать иерархию контента для внесения данный функциональности внутрь Table
+		const tableFullPath = this._table.getFilePath();
+		const tableContent = await FileSystemHelper.readContentFile(tableFullPath);
+		const tableObject = YamlHelper.parse(tableContent);
+
+		tableObject["metainfo"] = {
+			"ruDescription": this._table.getRuDescription(),
+			"enDescription": this._table.getEnDescription(),
+			"objectId": this._table.getMetaInfo().getObjectId()
+		};
+
+		// Добавляем описание
+		const tableJson = JSON.stringify(tableObject);
+		return tableJson;
 	}
 
 	private _table: Table;
