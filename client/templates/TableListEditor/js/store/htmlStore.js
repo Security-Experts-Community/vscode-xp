@@ -11,8 +11,8 @@ export const tableRowHTML = `
     	<vscode-data-grid-cell grid-column="2" class="jqRowNameInputParent">
 			<vscode-text-field type="text" class="jqRowNameInput jqInput jqInput_invalid"></vscode-text-field>
 		</vscode-data-grid-cell>
-    	<vscode-data-grid-cell grid-column="3">
-			<vscode-dropdown>
+    	<vscode-data-grid-cell grid-column="3" class="jqRowDropdownParent">
+			<vscode-dropdown class="jqRowDropdown">
   				<vscode-option value="String">Строка</vscode-option>
                 <vscode-option value="Number">Число</vscode-option>
                 <vscode-option value="DataTime">Дата и Время</vscode-option>
@@ -25,8 +25,8 @@ export const tableRowHTML = `
 		<vscode-data-grid-cell grid-column="5" class="jqIndexCheckboxParent">
 			<vscode-checkbox class="jqIndexCheckbox"></vscode-checkbox>
 		</vscode-data-grid-cell>
-    	<vscode-data-grid-cell grid-column="6">
-			<vscode-checkbox></vscode-checkbox>
+    	<vscode-data-grid-cell grid-column="6" class="jqNullableCheckboxParent">
+			<vscode-checkbox class="jqNullableCheckbox"></vscode-checkbox>
 		</vscode-data-grid-cell>
 		<vscode-data-grid-cell grid-column="7" class="tle__row__table__cell-icon remove-row-button">🗑️</vscode-data-grid-cell>
 	</vscode-data-grid-row>

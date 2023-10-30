@@ -4,12 +4,9 @@ import { addOnClickEventListenerToAllRemoveRowButtons } from './function/removeR
 import { addOnChangeEventListenerToAllIdCheckboxes } from './function/checkboxesBehavior.js';
 import { enableValidation } from './function/validation.js';
 import { enableSelectingTypeOnDropdown } from './function/dropdownTypeSelectBehavior.js';
-import { enableMessagesControllerAndSetDataToHTML } from './controller/messagesBehavior.js';
+import { enableMessagesController } from './controller/messagesBehavior.js';
 
 $(function () {
-	// подгружаем данные с бекенда и устанавливаем в html
-	enableMessagesControllerAndSetDataToHTML();
-
 	// наполняем содержимое логикой
 	addOnClickEventListenerToAddRowButton();
 	addOnClickEventListenerToAllRemoveRowButtons();
@@ -17,6 +14,6 @@ $(function () {
 	addOnChangeEventListenerToAllIdCheckboxes();
 	enableSelectingTypeOnDropdown();
 
-	// валидация должна включаться самой последней, после подгрузки всех нужных полей
-	enableValidation();
+	// подгружаем данные с бекенда и устанавливаем в html и после вставки включаем валидацию
+	enableMessagesController();
 });

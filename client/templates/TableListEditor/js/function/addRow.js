@@ -6,7 +6,7 @@ import { validateInput } from './validation.js';
 /** 
  * Функция добавляющая строку в data-grid vscode-webview-ui-toolkit в TableListEditor.html
  */
-const _addRow = () => {
+export const addRow = () => {
 	$('vscode-data-grid').append(tableRowHTML);
 
 	const removeButtonElement = $('vscode-data-grid').children().last().children('.remove-row-button')[0]
@@ -28,6 +28,6 @@ const _addRow = () => {
 export const addOnClickEventListenerToAddRowButton = () => {
 	$('#addRowButton')[0].addEventListener("click", (e) => {
 		e.stopPropagation();
-		_addRow();
+		addRow();
 	});
 }

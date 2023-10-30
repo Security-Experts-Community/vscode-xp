@@ -81,8 +81,6 @@ export class TableListsEditorViewProvider {
 			const htmlContent = formatter.format(templatePlainObject);
 
 			this._view.webview.html = htmlContent;
-
-			setTimeout(() => this.receiveMessageFromWebView({ command: "documentIsReady" }), 1000,);
 		}
 		catch (error) {
 			DialogHelper.showError(`Не удалось открыть правила локализации.`, error);
@@ -115,7 +113,7 @@ export class TableListsEditorViewProvider {
 		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
 	}
 
-	private async tableToViewJson() : Promise<string> {
+	private async tableToViewJson(): Promise<string> {
 		// TODO: переделать иерархию контента для внесения данный функциональности внутрь Table
 		const tableFullPath = this._table.getFilePath();
 		const tableContent = await FileSystemHelper.readContentFile(tableFullPath);

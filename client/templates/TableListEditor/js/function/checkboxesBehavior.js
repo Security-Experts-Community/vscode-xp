@@ -5,6 +5,7 @@
  * Эту функцию нужно использовать только когда у чекбокса "Ключевое поле 🔑" состояние
  * меняется с "не выбран" на "выбран", в функции в addOnChangeEventListenerToIdCheckbox().
  * @param {JQuery<HTMLElement>} idCheckboxElement - чекбокс "Ключевое поле 🔑" 
+ * @deprecated с момента, когда логику переопределения ключевых полей отдали на бекенд
  */
 const _makeAnotherIdCheckboxesDisabledWhenIdCheckboxIsChecked = (idCheckboxElement) => {
 	$(".jqIdCheckbox")
@@ -19,6 +20,7 @@ const _makeAnotherIdCheckboxesDisabledWhenIdCheckboxIsChecked = (idCheckboxEleme
  * Эту функцию нужно использовать только когда у чекбокса "Ключевое поле 🔑" состояние
  * меняется с "не выбран" на "выбран", в функции в addOnChangeEventListenerToIdCheckbox().
  * @param {JQuery<HTMLElement>} idCheckboxElement - чекбокс "Ключевое поле 🔑" 
+ * @deprecated с момента, когда логику переопределения ключевых полей отдали на бекенд
  */
 const _makeAnotherIdCheckboxesEnabledWhenIdCheckboxIsNotChecked = (idCheckboxElement) => {
 	$('.jqIdCheckbox')
@@ -117,10 +119,10 @@ export const addOnChangeEventListenerToIdCheckbox = (idCheckboxElement) => {
 	$(idCheckboxElement)[0].addEventListener("change", () => {
 		if (idCheckboxElement.checked) {
 			_makeSameRowIndexCheckboxCheckedAndDisabledWhenIdCheckboxIsChecked(idCheckboxElement);
-			_makeAnotherIdCheckboxesDisabledWhenIdCheckboxIsChecked(idCheckboxElement);
+			// _makeAnotherIdCheckboxesDisabledWhenIdCheckboxIsChecked(idCheckboxElement);
 		} else {
 			_makeSameRowIndexCheckboxEnabledWhenIdCheckboxIsNotChecked(idCheckboxElement);
-			_makeAnotherIdCheckboxesEnabledWhenIdCheckboxIsNotChecked(idCheckboxElement);
+			// _makeAnotherIdCheckboxesEnabledWhenIdCheckboxIsNotChecked(idCheckboxElement);
 		}
 	})
 }
