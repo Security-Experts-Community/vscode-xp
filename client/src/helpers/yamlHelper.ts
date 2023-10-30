@@ -26,7 +26,19 @@ export class YamlHelper {
 				'parser': 'yaml',
 				'tabWidth': this.dumpOptions.indent,
 				//'aliasDuplicateObjects': false,
-				'singleQuote': true,
+				'singleQuote': true
+			}
+		);
+	}
+
+	public static tableStringify(object: any): string {
+		const yamlContent = js_yaml.dump(object, this.dumpOptions);
+
+		return prettier.format(
+			yamlContent,
+			{
+				'parser': 'yaml',
+				'tabWidth': 2,
 			}
 		);
 	}

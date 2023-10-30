@@ -193,7 +193,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	
 	public setLocalizationTemplates(localizations: Localization[]) : void {
 		this._localizations = [];
-		this._metaInfo.setEventDescriptions([]);
+		this.getMetaInfo().setEventDescriptions([]);
 		localizations.forEach((loc) => {
 			this.addLocalization(loc);
 		});
@@ -284,7 +284,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			});
 		}
 
-		await FileSystemHelper.writeContentFile(localizationFullPath, localizationYamlContent);
+		await FileSystemHelper.writeContentFileIfChanged(localizationFullPath, localizationYamlContent);
 	}
 
 	protected getLocalizationPath(localizationLanguage: LocalizationLanguage, fullPath : string) : string {
@@ -441,7 +441,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	protected _unitTests: BaseUnitTest [] = [];
 	protected _integrationTests : IntegrationTest [] = [];
 	
-	private _ruleCode = "";
+	protected _ruleCode = "";
 
 	contextValue = "BaseRule";
 

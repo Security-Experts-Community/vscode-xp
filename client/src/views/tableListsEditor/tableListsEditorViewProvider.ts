@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
 
@@ -7,25 +6,29 @@ import { MustacheFormatter } from '../mustacheFormatter';
 import { Configuration } from '../../models/configuration';
 import { Table } from '../../models/content/table';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { YamlHelper } from '../../helpers/yamlHelper';
+import { DocumentIsReadyCommand } from './commands/documentIsReadyCommand';
+import { WebViewProviderBase } from './webViewProviderBase';
+import { SaveTableListCommand } from './commands/saveTableListCommand';
+import { TableListMessage } from './commands/tableListCommandBase';
 
-export class TableListMessage {
-	command: string;
-	data?: string;
-}
-export class TableListsEditorViewProvider {
+
+export class TableListsEditorViewProvider extends WebViewProviderBase {
 
 	public static readonly viewId = 'TableListsEditorView';
 
 	constructor(
 		private readonly _templatePath: string,
 		private readonly _config: Configuration
-	) { }
+	) {
+		super();
+	}
 
 	public static init(config: Configuration): void {
 
 		const templateFilePath = path.join(
-			config.getExtensionPath(), "client", "templates", "TableListEditor", "html", "TableListEditor.html");
+			config.getExtensionPath(),
+			"client", "templates", "TableListEditor", "html", "TableListEditor.html"
+		);
 
 		const provider = new TableListsEditorViewProvider(templateFilePath, config);
 
@@ -81,31 +84,65 @@ export class TableListsEditorViewProvider {
 			const htmlContent = formatter.format(templatePlainObject);
 
 			this._view.webview.html = htmlContent;
+
+			// TODO: отладочный код
+			// setTimeout(() => this.receiveMessageFromWebView({ command: "documentIsReady" }), 1000);
+			// setTimeout(() => this.receiveMessageFromWebView({ command: "saveTableList", data:
+			// `{
+			// 	"name": "RolesAndCorrelation",
+			// 	"fillType": "Registry",
+			// 	"type": 1,
+			// 	"userCanEditContent": true,
+			// 	"fields": [
+			// 		{
+			// 			"role": {
+			// 				"index": false,
+			// 				"nullable": false,
+			// 				"primaryKey": true,
+			// 				"type": "String",
+			// 				"unique": false
+			// 			}
+			// 		},
+			// 		{
+			// 			"correlation": {
+			// 				"index": true,
+			// 				"nullable": false,
+			// 				"primaryKey": true,
+			// 				"type": "String",
+			// 				"unique": false
+			// 			}
+			// 		}
+			// 	],
+			// 	"metainfo": {
+			// 		"ruDescription": "Описание на русском языке",
+			// 		"enDescription": "English description",
+			// 		"objectId": "LOC-TL-1234"
+			// 	}
+			// }`
+			// }), 1000);
+
 		}
 		catch (error) {
-			DialogHelper.showError(`Не удалось открыть правила локализации.`, error);
+			DialogHelper.showError(`Не удалось открыть табличный список`, error);
 		}
 	}
 
 	private async receiveMessageFromWebView(message: TableListMessage): Promise<boolean> {
 		switch (message.command) {
-			case 'documentIsReady': {
-				const result = await this.documentIsReady();
-				return result;
+			case DocumentIsReadyCommand.commandName: {
+				const command = new DocumentIsReadyCommand(this._table);
+				command.processMessage(message);
+				return command.execute(this);
+			}
+			case SaveTableListCommand.commandName: {
+				const command = new SaveTableListCommand(this._table);
+				command.processMessage(message);
+				return command.execute(this);
 			}
 		}
 	}
 
-	private async documentIsReady(): Promise<boolean> {
-
-		const tableJson = await this.tableToViewJson();
-		return this.postMessage({
-			command: "setViewContent",
-			data: tableJson
-		});
-	}
-
-	private postMessage(message: TableListMessage): Thenable<boolean> {
+	public postMessage(message: TableListMessage): Thenable<boolean> {
 		return this._view.webview.postMessage(message);
 	}
 
