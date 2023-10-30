@@ -5,6 +5,7 @@ import { addOnChangeEventListenerToAllIdCheckboxes } from './function/checkboxes
 import { enableValidation } from './function/validation.js';
 import { enableSelectingTypeOnDropdown } from './function/dropdownTypeSelectBehavior.js';
 import { enableMessagesController } from './controller/messagesBehavior.js';
+import { addOnClickEventListenerToSaveButton } from './function/saveTableList.js';
 
 $(function () {
 	// наполняем содержимое логикой
@@ -13,6 +14,7 @@ $(function () {
 	makeRowsSortableTakingIntoDynamicallyAddedRows();
 	addOnChangeEventListenerToAllIdCheckboxes();
 	enableSelectingTypeOnDropdown();
+	addOnClickEventListenerToSaveButton();
 
 	// подгружаем данные с бекенда и устанавливаем в html и после вставки включаем валидацию
 	enableMessagesController();

@@ -16,7 +16,7 @@ export const tableRowHTML = `
   				<vscode-option value="String">Строка</vscode-option>
                 <vscode-option value="Number">Число</vscode-option>
                 <vscode-option value="DataTime">Дата и Время</vscode-option>
-                <vscode-option value="DataTime">Регулярное выражение</vscode-option>
+                <vscode-option value="Regex">Регулярное выражение</vscode-option>
 			</vscode-dropdown>
 		</vscode-data-grid-cell>
     	<vscode-data-grid-cell grid-column="4" class="jqIdCheckboxParent">

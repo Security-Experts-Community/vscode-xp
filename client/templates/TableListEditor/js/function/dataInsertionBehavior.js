@@ -14,8 +14,6 @@ const idCheckboxClassSelector = '.jqIdCheckbox'
 const nullableCheckboxParentClassSelector = '.jqNullableCheckboxParent';
 const nullableCheckboxClassSelector = '.jqNullableCheckbox';
 
-export const defaultType = 1;
-export const defaultUserCanEditContent = true;
 export let currentObjectId;
 
 const _insertDataFromBackend = (data) => {
@@ -76,7 +74,6 @@ const _insertDataFromBackend = (data) => {
 
 const _insertDefaultValues = () => {
 	// вставка стандартных данных
-
 	currentObjectId = '';
 
 	// вставка строки с таблицу с ключевым и индексируемым полями
