@@ -61,7 +61,7 @@ export class Correlation extends RuleBaseItem {
 		return Object.assign(CorrelationUnitTest.create(this), object) as CorrelationUnitTest;
 	}
 
-	private constructor(name: string, parentDirectoryPath?: string) {
+	constructor(name: string, parentDirectoryPath?: string) {
 		super(name, parentDirectoryPath);
 		this.setFileName("rule.co");
 	}

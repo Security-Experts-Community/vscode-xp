@@ -74,7 +74,7 @@ export class RegExpHelper {
 	 * Парсит элементы по регулярному выражение и собирает их в единый список.
 	 * Регулярное выражение собирает значение первой группы и только они попадают в массив.
 	 * @param text строка
-	 * @param regExp регулярное выражение с заполненой второй группой
+	 * @param regExp регулярное выражение с заполненной второй группой
 	 * @returns 
 	 */
 	public static parseValues(text : string, reg : string|RegExp, flags : string) : string[] {
@@ -148,7 +148,7 @@ export class RegExpHelper {
 				continue;
 			}
 
-			// Расчитываем позицию вызова функции в коде.
+			// Рассчитываем позицию вызова функции в коде.
 			const beginIndex = text.indexOf(functionCall + "(", prevFunctionNameIndex);
 			const endIndex = beginIndex + functionCall.length;
 

@@ -17,7 +17,7 @@ filter {
     ], correlation_name)
 `;
 
-        const subRuleNames = TestHelper.parseSubRuleNames(ruleCode);
+        const subRuleNames = TestHelper.parseSubRuleNamesFromKnownOperation(ruleCode);
 
         assert.deepStrictEqual(subRuleNames, ["Super_Duper_SubRule"]);
     });
@@ -34,7 +34,7 @@ filter {
     and filter::CheckWL_Process_Creation("ESC_Cobalt_Strike_Powershell_Payload_Delivery", lower(alert.key))
 }`;
 
-        const subRuleNames = TestHelper.parseSubRuleNames(ruleCode);
+        const subRuleNames = TestHelper.parseSubRuleNamesFromKnownOperation(ruleCode);
 
         assert.deepStrictEqual(subRuleNames, ["execute_encoded_powershell"]);
     });
@@ -47,7 +47,7 @@ filter {
     and filter::CheckWL_Specific_Only("Groups_And_Users_Enumeration", lower(object.process.cmdline))
 }`;
 
-        const subRuleNames = TestHelper.parseSubRuleNames(ruleCode);
+        const subRuleNames = TestHelper.parseSubRuleNamesFromKnownOperation(ruleCode);
         
         assert.deepStrictEqual(subRuleNames, ["Potential_Users_Or_Groups_Enumeration_Process"]);
     });
@@ -76,7 +76,7 @@ filter {
     and filter::CheckWL_Specific_Only("ESC_Unix_Malicious_Activity_from_Webserver", lower(object.account.name) + "|" + lower(alert.key))
 }`;
 
-        const subRuleNames = TestHelper.parseSubRuleNames(ruleCode);
+        const subRuleNames = TestHelper.parseSubRuleNamesFromKnownOperation(ruleCode);
 
         assert.deepStrictEqual(subRuleNames, 
             ["esc_unix_suspicious_command",
@@ -106,7 +106,7 @@ filter {
     and filter::CheckWL_Specific_Only("ESC_Unix_Malicious_Activity_from_Webserver", lower(object.account.name) + "|" + lower(alert.key))
 }`;
 
-        const subRuleNames = TestHelper.parseSubRuleNames(ruleCode);
+        const subRuleNames = TestHelper.parseSubRuleNamesFromKnownOperation(ruleCode);
 
         assert.deepStrictEqual(subRuleNames, ["Subrule_Windows_Host_Abnormal_Access", "Subrule_Unix_Server_Abnormal_Access"]);
     });

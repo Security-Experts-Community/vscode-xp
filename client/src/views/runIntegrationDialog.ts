@@ -41,12 +41,20 @@ export class RunIntegrationTestDialog {
 
 		// Получение сабрулей из кода.
 		const ruleCode = await rule.getRuleCode();
-		const subRuleNames = TestHelper.parseSubRuleNames(ruleCode).map(srn => srn.toLocaleLowerCase());
+		const subRuleNames = TestHelper.parseSubRuleNamesFromKnownOperation(ruleCode).map(srn => srn.toLocaleLowerCase());
 		const uniqueSubRuleNames = [...new Set(subRuleNames)];
 
-		// У правила нет зависимых корреляций, собираем только его.
+		// У правила нет типичных сабрулей корреляций, собираем только его.
 		if(uniqueSubRuleNames.length == 0) {
-			testRunnerOptions.correlationCompilation = CompilationType.CurrentRule;
+			// Если есть еще другие операции с полем correlation_name, тогда собираем текущий пакет.
+			// Если нет, тогда только правило.
+			if(TestHelper.isCorrelationNameUsedInFilter(ruleCode)) {
+				testRunnerOptions.correlationCompilation = CompilationType.CurrentPackage;	
+			}
+			else {
+				testRunnerOptions.correlationCompilation = CompilationType.CurrentRule;
+			}
+			
 			return testRunnerOptions;
 		}
 

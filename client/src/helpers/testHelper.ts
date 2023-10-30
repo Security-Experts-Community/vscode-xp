@@ -122,13 +122,15 @@ export class TestHelper {
 	public static getTestActualEventsFilePath(integrationTestsTmpDirPath: string, testNumber: number): string {
 		// c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
 		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
+		// TODO: для обогащений может отсутствовать корреляционное событие, а присутствовать обогащенное нормализованное 
+		// raw_events_2_norm_enr.json
 		const resultEvents = files.filter(fp => {
 			const fileName = path.basename(fp).toLocaleLowerCase();
 			return RegExpHelper.getTmpActualResultEventFile().test(fileName);
 		});
 
 		if(resultEvents.length < testNumber) {
-			throw new Error("Нужного файла фактического корреляционного событий не найдено");
+			throw new XpException("Нужного файла фактического корреляционного событий не найдено. Вероятно фактическое событие отсутствует.");
 		}
 
 		const testIndex = testNumber - 1;
@@ -192,7 +194,7 @@ export class TestHelper {
 			const errorLine = lines[lineNumber];
 			const firstNonWhitespaceCharacterIndex = errorLine.search(/[^\s]/);
 
-			// Если не удалось скорректировать, тогда возвращем как ест.
+			// Если не удалось скорректировать, тогда возвращаем как ест.
 			if (firstNonWhitespaceCharacterIndex === -1) {
 				return d;
 			}
@@ -509,7 +511,7 @@ export class TestHelper {
 		return false;
 	}
 
-	public static parseSubRuleNames(ruleCode: string): string[] {
+	public static parseSubRuleNamesFromKnownOperation(ruleCode: string): string[] {
 		// const correlationNameCompareRegex = /correlation_name\s*==\s*"(\w+)"/gm;
 		const correlationNameCompareRegexResult = RegExpHelper.parseValues(ruleCode, this.CORRELATION_NAME_COMPARE_REGEX, "gm");
 
@@ -525,6 +527,10 @@ export class TestHelper {
 			.concat(correlationNameWithLowerCompareRegexResult)
 			.concat(correlationNameWithLowerInListRegexResult)
 			.concat(correlationNameInListRegexResult);
+	}
+
+	public static isCorrelationNameUsedInFilter(ruleCode: string): boolean {
+		return /filter\s+{[\s\S]+?correlation_name[\s\S]+?}/gm.test(ruleCode);
 	}
 
 	/**

@@ -20,6 +20,7 @@ import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 import { Enrichment } from '../../../models/content/enrichment';
 import { Log } from '../../../extension';
+import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 
 /**
  * Проверяет контент по требованиям. В настоящий момент реализована только проверка интеграционных тестов и локализаций.
@@ -76,6 +77,8 @@ export class ContentVerifierCommand {
 	private async testRule(rule: RuleBaseItem, progress: any, cancellationToken: vscode.CancellationToken) {
 
 		// В отдельную директорию положим все временные файлы, чтобы не путаться.
+		await FileSystemHelper.deleteAllSubDirectoriesAndFiles(this._integrationTestTmpFilesPath);
+		
 		const ruleTmpFilesRuleName = path.join(this._integrationTestTmpFilesPath, rule.getName());
 		if(!fs.existsSync(ruleTmpFilesRuleName)) {
 			await fs.promises.mkdir(ruleTmpFilesRuleName, {recursive: true});

@@ -36,7 +36,7 @@ export class RunIntegrationTestsCommand extends Command {
 			const ruleCode = await this.params.rule.getRuleCode();
 			if (TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
 				progress.report({
-					message: `Интеграционные тесты для правила с сабрулями '${this.params.rule.getName()}'`
+					message: `Интеграционные тесты для правила с подправилами (subrule) '${this.params.rule.getName()}'`
 				});
 			} else {
 				progress.report({

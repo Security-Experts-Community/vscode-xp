@@ -15,11 +15,11 @@ import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 
 export enum CompilationType {
-	DontCompile = 0,
-	CurrentRule,
-	CurrentPackage,
-	AllPackages,
-	Auto
+	DontCompile = 'DontCompile',
+	CurrentRule = 'CurrentRule',
+	CurrentPackage = 'CurrentPackage',
+	AllPackages = 'AllPackages',
+	Auto = 'Auto'
 }
 
 export class IntegrationTestRunnerOptions {
