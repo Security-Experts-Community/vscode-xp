@@ -10,6 +10,7 @@ import { DocumentIsReadyCommand } from './commands/documentIsReadyCommand';
 import { WebViewProviderBase } from './webViewProviderBase';
 import { SaveTableListCommand } from './commands/saveTableListCommand';
 import { TableListMessage } from './commands/tableListCommandBase';
+import { YamlHelper } from '../../helpers/yamlHelper';
 
 
 export class TableListsEditorViewProvider extends WebViewProviderBase {
@@ -152,10 +153,6 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 
 	public postMessage(message: TableListMessage): Thenable<boolean> {
 		return this._view.webview.postMessage(message);
-	}
-
-	private getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]) {
-		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
 	}
 
 	private async tableToViewJson(): Promise<string> {

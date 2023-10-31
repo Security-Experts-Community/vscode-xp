@@ -271,7 +271,7 @@
 			],
 			"view/item/context": [
 				{
-					"command": "SiemContentEditor.сreatePackageCommand",
+					"command": "SiemContentEditor.createPackageCommand",
 					"when": "view == KnowledgebaseTree && viewItem == ContentRoot",
 					"group": "ContentRoot@1"
 				},
@@ -299,6 +299,11 @@
 					"command": "KnowledgebaseTree.showCreateNormalizationView",
 					"when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
 					"group": "create@3"
+				},
+				{
+					"command": "TableListsEditorView.createTableList",
+					"when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
+					"group": "create@4"
 				},
 				{
 					"command": "IntegrationTestEditorView.showEditor",
@@ -400,7 +405,7 @@
 				"icon": "$(refresh)"
 			},
 			{
-				"command": "SiemContentEditor.сreatePackageCommand",
+				"command": "SiemContentEditor.createPackageCommand",
 				"title": "Создать новый пакет",
 				"category": "Редактор XP"
 			},
@@ -424,6 +429,12 @@
 				"command": "TableListsEditorView.showView",
 				"title": "Редактировать",
 				"shortTitle": "Редактировать",
+				"category": "Редактор XP"
+			},
+			{
+				"command": "TableListsEditorView.createTableList",
+				"title": "Создать табличный список",
+				"shortTitle": "Создать табличный список",
 				"category": "Редактор XP"
 			},
 			{
@@ -625,7 +636,7 @@
 		"mustache": "4.1.0",
 		"prettier": "2.8.7",
 		"rimraf": "^2.6.2",
-		"typescript": "5.2.2",
+		"typescript": "^4.2.3",
 		"util": "^0.12.4",
 		"uuid": "^8.3.2",
 		"xml-serializer-ts": "^1.0.2",
