@@ -49,7 +49,7 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 
 	public static showView = "TableListsEditorView.showView";
 	public static createTableList = "TableListsEditorView.createTableList";
-	
+
 	public async showView(table: Table): Promise<void> {
 
 		// Если открыта еще одна локализация, то закрываем её перед открытием новой.
@@ -155,13 +155,10 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 		return this._view.webview.postMessage(message);
 	}
 
-<<<<<<< HEAD
 	private getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]) {
 		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
 	}
 
-=======
->>>>>>> 21b504f6757f0ff7c678ad1c5c98a9caf2dbe0e5
 	private async tableToViewJson(): Promise<string> {
 		// TODO: переделать иерархию контента для внесения данный функциональности внутрь Table
 		const tableFullPath = this._table.getFilePath();

@@ -46,13 +46,13 @@ const _saveTableList = () => {
 		rowObjectNameValues.type = $(this).children(rowDropdownParentClassSelector).children(rowDropdownClassSelector).val()
 
 		//парсим ключевое поле
-		rowObjectNameValues.primaryKey = $(this).children(idCheckboxParentClassSelector).children(idCheckboxClassSelector).attr("current-checked");
+		rowObjectNameValues.primaryKey = $(this).children(idCheckboxParentClassSelector).children(idCheckboxClassSelector).attr("current-checked") == 'true' ? true : false;
 
 		//парсим индексируемое
-		rowObjectNameValues.index = $(this).children(indexCheckboxParentClassSelector).children(indexCheckboxClassSelector).attr("current-checked");
+		rowObjectNameValues.index = $(this).children(indexCheckboxParentClassSelector).children(indexCheckboxClassSelector).attr("current-checked") == 'true' ? true : false;
 
 		//парсим nullable
-		rowObjectNameValues.nullable = $(this).children(nullableCheckboxParentClassSelector).children(nullableCheckboxClassSelector).attr("current-checked");
+		rowObjectNameValues.nullable = $(this).children(nullableCheckboxParentClassSelector).children(nullableCheckboxClassSelector).attr("current-checked") == 'true' ? true : false;
 
 		// формируем итоговый объект для строки
 		rowObject[rowObjectNameKey] = rowObjectNameValues;

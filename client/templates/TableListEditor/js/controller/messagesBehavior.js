@@ -2,7 +2,6 @@ import { insertDataToWebview } from "../function/dataInsertionBehavior.js";
 import { enableValidation } from "../function/validation.js";
 
 const vscode = acquireVsCodeApi();
-console.log(vscode)
 
 const _messagesController = () => {
 	window.addEventListener(
@@ -11,6 +10,7 @@ const _messagesController = () => {
 			const message = e.data;
 			switch (message.command) {
 				case 'setViewContent': {
+					console.log(message.data)
 					insertDataToWebview(message.data)
 
 					// валидация должна включаться самой последней, после подгрузки всех нужных полей
@@ -28,6 +28,7 @@ const _sendMessageToBackendOnDocumentReady = () => {
 }
 
 export const sendMessageToBackendOnSaveTableList = (tableList) => {
+	console.log(tableList)
 	vscode.postMessage({
 		command: 'saveTableList',
 		data: tableList
