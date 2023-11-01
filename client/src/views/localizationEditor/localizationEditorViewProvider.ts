@@ -17,6 +17,7 @@ import { SiemJOutputParser, SiemjExecutionResult } from '../../models/siemj/siem
 import { IntegrationTestRunner, IntegrationTestRunnerOptions } from '../../models/tests/integrationTestRunner';
 import { RunIntegrationTestDialog } from '../runIntegrationDialog';
 import { Enrichment } from '../../models/content/enrichment';
+import { JsHelper } from '../../helpers/jsHelper';
 
 export class LocalizationEditorViewProvider {
 
@@ -214,7 +215,7 @@ export class LocalizationEditorViewProvider {
 		const enLocalizations = (localization.EnLocalizations as string[]).map(c => StringHelper.textToOneLineAndTrim(c));
 		const localizationIds = (localization.LocalizationIds as string[]).map(c => c.trim());
 
-		const firstDuplicate = this.findDuplicates(criteria);
+		const firstDuplicate = JsHelper.findDuplicates(criteria);
 		if (firstDuplicate != null) {
 			DialogHelper.showError(`Критерий '${firstDuplicate}' дублируется в нескольких правилах локализации`);
 			return;
@@ -290,15 +291,7 @@ export class LocalizationEditorViewProvider {
 		});
 	}
 
-	private findDuplicates(arr): string {
-		const sorted_arr = arr.slice().sort();
-		for (let i = 0; i < sorted_arr.length - 1; i++) {
-			if (sorted_arr[i + 1] == sorted_arr[i]) {
-				return sorted_arr[i];
-			}
-		}
-		return null;
-	}
+
 
 	private _integrationTestTmpFilesPath: string
 

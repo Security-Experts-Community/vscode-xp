@@ -1,3 +1,5 @@
+import { TableListsEditorViewProvider } from '../tableListsEditorViewProvider';
+
 export class TableListMessage {
 	command: string;
 	data?: string;
@@ -28,4 +30,5 @@ export interface TableView {
 
 export interface TableListCommand {
 	processMessage(message: any): void;
+	execute(webView: TableListsEditorViewProvider): Promise<boolean>;
 }
