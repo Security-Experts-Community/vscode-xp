@@ -12,7 +12,7 @@ import { MetaInfo } from '../../../models/metaInfo/metaInfo';
 
 export class CreatePackageCommand {
 
-	static CommandName = "SiemContentEditor.сreatePackageCommand";
+	static CommandName = "SiemContentEditor.createPackageCommand";
 
 	public async execute(selectedItem: RuleBaseItem) {
 
