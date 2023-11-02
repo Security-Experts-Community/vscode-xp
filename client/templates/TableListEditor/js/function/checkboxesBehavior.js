@@ -1,3 +1,5 @@
+import { validateInput } from "./validation.js";
+
 /** 
  * Функция, выбирающая все чекбоксы "Ключевое поле 🔑" кроме переданного checkboxElement и 
  * отключающая возможность изменения их состояния.
@@ -121,10 +123,8 @@ export const addOnChangeEventListenerToIdCheckbox = (idCheckboxElement) => {
 	$(idCheckboxElement)[0].addEventListener("change", () => {
 		if (idCheckboxElement.checked) {
 			_makeSameRowIndexCheckboxCheckedAndDisabledWhenIdCheckboxIsChecked(idCheckboxElement);
-			// _makeAnotherIdCheckboxesDisabledWhenIdCheckboxIsChecked(idCheckboxElement);
 		} else {
 			_makeSameRowIndexCheckboxEnabledWhenIdCheckboxIsNotChecked(idCheckboxElement);
-			// _makeAnotherIdCheckboxesEnabledWhenIdCheckboxIsNotChecked(idCheckboxElement);
 		}
 	})
 }

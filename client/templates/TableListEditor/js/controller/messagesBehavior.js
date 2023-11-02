@@ -10,7 +10,6 @@ const _messagesController = () => {
 			const message = e.data;
 			switch (message.command) {
 				case 'setViewContent': {
-					console.log(message.data)
 					insertDataToWebview(message.data)
 
 					// валидация должна включаться самой последней, после подгрузки всех нужных полей

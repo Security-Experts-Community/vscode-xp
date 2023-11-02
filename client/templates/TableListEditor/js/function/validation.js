@@ -2,6 +2,9 @@ const _inputSelector = '.jqInput';
 const _inputInvalidSelector = '.jqInput_invalid';
 const _inputInvalidClass = 'jqInput_invalid';
 const _timeInputClassSelector = ".jqTimeInput"
+const _jqIdCheckboxClassSelector = ".jqIdCheckbox"
+const _jqIdCheckboxClass = "jqIdCheckbox"
+const _jqPrimaryFieldId = "#jqPrimaryField"
 
 const _nameInputClass = 'jqNameInput';
 const _rowNameInputClass = 'jqRowNameInput';
@@ -30,6 +33,7 @@ const _timeHourInputErrorMessageString = "Должно содержать тол
 const _timeMinuteInputErrorMessageString = "Должно содержать только числа в диапазоне от 0 до 59 включительно";
 const _scoreInputErrorMessageString = "Должно содержать только числа в диапазоне от 0 до 100 включительно";
 const _timeInputsErrorMessageString = "Три поля не могут одновременно быть равны нулю";
+const _notSelectedIdCheckboxErrorMessageString = "Должно быть выбрано хотя бы одно ключевое поле";
 
 
 const _enableSaveButton = () => {
@@ -61,6 +65,30 @@ const _removeInvalidInputClass = (inputElement) => {
 	}
 }
 
+const _addValidCheckboxClass = (inputElement) => {
+	if (!_checkIfElementHasClass(inputElement, 'jqIdCheckboxTrue')) {
+		$(inputElement).addClass('jqIdCheckboxTrue')
+	}
+}
+
+const _removeValidCheckboxClass = (inputElement) => {
+	if (_checkIfElementHasClass(inputElement, 'jqIdCheckboxTrue')) {
+		$(inputElement).removeClass('jqIdCheckboxTrue')
+	}
+}
+
+const _addInvalidCheckboxClassForHighlight = (inputElement) => {
+	if (!_checkIfElementHasClass(inputElement, 'jqIdCheckboxErrorHighlight')) {
+		$(inputElement).addClass('jqIdCheckboxErrorHighlight')
+	}
+}
+
+const _removeInvalidCheckboxClassForHighlight = (inputElement) => {
+	if (_checkIfElementHasClass(inputElement, 'jqIdCheckboxErrorHighlight')) {
+		$(inputElement).removeClass('jqIdCheckboxErrorHighlight')
+	}
+}
+
 const _enableTooltipForInvalidElement = (inputElement, tooltipMessage) => {
 	$(inputElement).tooltip({
 		items: "vscode-text-field",
@@ -72,27 +100,19 @@ const _enableTooltipForInvalidElement = (inputElement, tooltipMessage) => {
 
 }
 
-const _disableTooltipForInvalidElement = (inputElement) => {
-	$(inputElement).tooltip("disable");
+const _enableTooltipForIdCheckboxes = (checkboxElements, tooltipMessage) => {
+	$(checkboxElements).tooltip({
+		items: _jqPrimaryFieldId,
+		content: tooltipMessage,
+		show: false,
+		hide: false,
+		track: true
+	}).tooltip("enable");
 
 }
 
-const _checkIfTimeInputsNotZeroAtTheSameTime = () => {
-	let _sumOfTimeInputsValues = 0;
-	$(_timeInputClassSelector).each(function () {
-		_sumOfTimeInputsValues += Number($(this).val());
-	});
-	if (_sumOfTimeInputsValues) {
-		$(_timeInputClassSelector).each(function () {
-			_removeInvalidInputClass(this);
-			_disableTooltipForInvalidElement(this);
-		})
-	} else {
-		$(_timeInputClassSelector).each(function () {
-			_addInvalidInputClass(this);
-			_enableTooltipForInvalidElement(this, _timeInputsErrorMessageString);
-		})
-	}
+const _disableTooltipForInvalidElement = (inputElement) => {
+	$(inputElement).tooltip("disable");
 }
 
 const _checkIfNumberInputValid = (inputElement, regExp, errorMessage, lowerLimit, upperLimit) => {
@@ -129,8 +149,23 @@ const _checkIfTextInputValid = (inputElement, regExp, errorMessage) => {
 	};
 }
 
+const _checkIfCheckboxValid = (inputElement, errorMessage) => {
+	if ($(inputElement)[0].checked) _addValidCheckboxClass(inputElement);
+	else _removeValidCheckboxClass(inputElement);
+
+	if (!($('.jqIdCheckboxTrue').length)) {
+		_addInvalidCheckboxClassForHighlight(_jqPrimaryFieldId)
+		_enableTooltipForIdCheckboxes(_jqPrimaryFieldId, errorMessage);
+	}
+	else {
+		_removeInvalidCheckboxClassForHighlight(_jqPrimaryFieldId)
+		_disableTooltipForInvalidElement(_jqPrimaryFieldId);
+	}
+	;
+}
+
 export const checkIfInvalidInputsExist = () => {
-	if ($(_inputInvalidSelector).length) _switchSaveButton(false);
+	if ($(_inputInvalidSelector).length || !($('.jqIdCheckboxTrue').length)) _switchSaveButton(false);
 	else _switchSaveButton(true);
 }
 
@@ -144,24 +179,27 @@ const _validateInputWithCheckingOfInputType = (inputElement) => {
 	else if (_checkIfElementHasClass(inputElement, _recordSizeInputClass)) {
 		_checkIfNumberInputValid(inputElement, _onlyDigitalRegExp, _recordSizeInputErrorMessageString, _dgitalInputsLowerLimit, _recordSizeInputUpperLimit);
 	} else if (_checkIfElementHasClass(inputElement, _timeDayInputClass)) {
-		// _checkIfTimeInputsNotZeroAtTheSameTime()
 		_checkIfNumberInputValid(inputElement, _onlyDigitalRegExp, _timeDayInputErrorMessageString, _dgitalInputsLowerLimit, _timeDayInputUpperLimit);
 	}
 	else if (_checkIfElementHasClass(inputElement, _timeHourInputClass)) {
-		// _checkIfTimeInputsNotZeroAtTheSameTime()
 		_checkIfNumberInputValid(inputElement, _onlyDigitalRegExp, _timeHourInputErrorMessageString, _dgitalInputsLowerLimit, _timeHourInputUpperLimit);
 	}
 	else if (_checkIfElementHasClass(inputElement, _timeMinuteInputClass)) {
-		// _checkIfTimeInputsNotZeroAtTheSameTime()
 		_checkIfNumberInputValid(inputElement, _onlyDigitalRegExp, _timeMinuteInputErrorMessageString, _dgitalInputsLowerLimit, _timeMinuteInputUpperLimit);
 	}
 	else if (_checkIfElementHasClass(inputElement, _scoreInputClass)) {
 		_checkIfNumberInputValid(inputElement, _onlyDigitalRegExp, _scoreInputErrorMessageString, _dgitalInputsLowerLimit, _scoreInputUpperLimit);
 	}
+	else if (_checkIfElementHasClass(inputElement, _jqIdCheckboxClass)) {
+		_checkIfCheckboxValid(inputElement, _notSelectedIdCheckboxErrorMessageString);
+	}
 }
 
 export const validateAllInputs = () => {
 	$.each($(_inputSelector), function () {
+		_validateInputWithCheckingOfInputType(this)
+	})
+	$.each($(_jqIdCheckboxClassSelector), function () {
 		_validateInputWithCheckingOfInputType(this)
 	})
 	checkIfInvalidInputsExist()
@@ -189,4 +227,3 @@ export const enableValidation = () => {
 	_addOnChangeEventListenerToForm();
 	validateAllInputs();
 }
-

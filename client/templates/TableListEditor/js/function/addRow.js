@@ -16,6 +16,7 @@ export const addRow = () => {
 	addOnClickEventListenerToRemoveRowButton(removeButtonElement);
 	addOnChangeEventListenerToIdCheckbox(idCheckboxElement);
 	validateInput(rowInputElement);
+	validateInput(idCheckboxElement);
 }
 
 /**  
