@@ -100,6 +100,27 @@ export class Table extends RuleBaseItem {
 		return XPObjectType.Table;
 	}
 
+	public static create(name: string, parentPath?: string): Table {
+		const table = new Table(name, parentPath);
+
+		const metainfo = table.getMetaInfo();
+		metainfo.setName(name);
+
+		const objectId = table.generateObjectId();
+		if(objectId) {
+			metainfo.setObjectId(objectId);
+		}
+
+		// Добавляем команду на открытие.
+		table.setCommand({
+			command: ContentTreeProvider.onRuleClickCommand,
+			title: "Open File",
+			arguments: [table]
+		});
+
+		return table;
+	}
+
 	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Table> {
 
 		if (!fs.existsSync(directoryPath)) {

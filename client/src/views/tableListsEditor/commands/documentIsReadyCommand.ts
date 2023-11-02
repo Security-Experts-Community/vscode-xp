@@ -4,20 +4,18 @@ import { YamlHelper } from '../../../helpers/yamlHelper';
 import { Table } from '../../../models/content/table';
 import { XpException } from '../../../models/xpException';
 import { TableFieldView, TableListCommand, TableListMessage, TableView } from './tableListCommandBase';
-import { WebViewProviderBase } from '../webViewProviderBase';
-import { SaveTableListCommand } from './saveTableListCommand';
+import { TableListsEditorViewProvider } from '../tableListsEditorViewProvider';
 
 export class DocumentIsReadyCommand implements TableListCommand {
-	constructor(private _table: Table) {}
-
 	public processMessage(message: TableListMessage): void {
 		if(message.command !== DocumentIsReadyCommand.commandName) {
 			throw new XpException(`Вызвана некорректная команда ${message.command}`);
 		}
 	}
 
-	async execute(webView: WebViewProviderBase): Promise<boolean> {
-		const tableJson = await this.tableToEditorJsonView(this._table);
+	async execute(webView: TableListsEditorViewProvider): Promise<boolean> {
+		const table = webView.getTable();
+		const tableJson = await this.tableToEditorJsonView(table);
 
 		return webView.postMessage({
 			command: "setViewContent",

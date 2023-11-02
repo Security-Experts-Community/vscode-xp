@@ -11,6 +11,8 @@ import { WebViewProviderBase } from './webViewProviderBase';
 import { SaveTableListCommand } from './commands/saveTableListCommand';
 import { TableListMessage } from './commands/tableListCommandBase';
 import { YamlHelper } from '../../helpers/yamlHelper';
+import { ContentFolder } from '../../models/content/contentFolder';
+import { ExceptionHelper } from '../../helpers/exceptionHelper';
 
 
 export class TableListsEditorViewProvider extends WebViewProviderBase {
@@ -42,7 +44,7 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 		config.getContext().subscriptions.push(
 			vscode.commands.registerCommand(
 				TableListsEditorViewProvider.createTableList,
-				async (tableItem: Table) => provider.showView(tableItem)
+				async (parentItem: ContentFolder) => provider.createTableList(parentItem)
 			)
 		);
 	}
@@ -50,49 +52,26 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 	public static showView = "TableListsEditorView.showView";
 	public static createTableList = "TableListsEditorView.createTableList";
 
-	public async showView(table: Table): Promise<void> {
+	public async createTableList(parentFolder: ContentFolder): Promise<void> {
+		// Сбрасываем состояние вьюшки.
+		this._parentItem = parentFolder;
+		this._table = undefined;
 
-		// Если открыта еще одна локализация, то закрываем её перед открытием новой.
-		if (this._view) {
-			this._view.dispose();
-			this._view = undefined;
+		try {
+			await this.createView();
 		}
+		catch (error) {
+			DialogHelper.showError(`Не удалось открыть табличный список`, error);
+		}
+	}
 
+	public async showView(table: Table): Promise<void> {
+		// Сбрасываем состояние вьюшки.
+		this._parentItem = undefined;
 		this._table = table;
 
 		try {
-			// Создать и показать панель.
-			this._view = vscode.window.createWebviewPanel(
-				TableListsEditorViewProvider.viewId,
-				'Редактирование табличного списка',
-				vscode.ViewColumn.One,
-				{ retainContextWhenHidden: true });
-
-			this._view.webview.options = {
-				enableScripts: true
-			};
-
-			this._view.webview.onDidReceiveMessage(
-				this.receiveMessageFromWebView,
-				this
-			);
-
-			const resourcesUri = this._config.getExtensionUri();
-			const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
-
-			const webviewUri = this.getUri(this._view.webview, resourcesUri, ["client", "out", "ui.js"]);
-
-			const templatePlainObject = {
-				"ExtensionBaseUri": extensionBaseUri,
-				"WebviewUri": webviewUri
-			};
-
-			// Подгружаем шаблон и шаблонизируем данные.
-			const template = await FileSystemHelper.readContentFile(this._templatePath);
-			const formatter = new MustacheFormatter(template);
-			const htmlContent = formatter.format(templatePlainObject);
-
-			this._view.webview.html = htmlContent;
+			await this.createView();
 
 			// TODO: отладочный код
 			// setTimeout(() => this.receiveMessageFromWebView({ command: "documentIsReady" }), 1000);
@@ -136,15 +115,65 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 		}
 	}
 
+	private async createView() {
+		if (this._view) {
+			this._view.dispose();
+			this._view = undefined;
+		}
+
+		this._view = vscode.window.createWebviewPanel(
+			TableListsEditorViewProvider.viewId,
+			'Редактирование табличного списка',
+			vscode.ViewColumn.One,
+			{ retainContextWhenHidden: true });
+
+		this._view.webview.options = {
+			enableScripts: true
+		};
+
+		this._view.webview.onDidReceiveMessage(
+			this.receiveMessageFromWebView,
+			this
+		);
+
+		const resourcesUri = this._config.getExtensionUri();
+		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
+
+		const webviewUri = this.getUri(this._view.webview, resourcesUri, ["client", "out", "ui.js"]);
+
+		const templatePlainObject = {
+			"ExtensionBaseUri": extensionBaseUri,
+			"WebviewUri": webviewUri
+		};
+
+		// Подгружаем шаблон и шаблонизируем данные.
+		const template = await FileSystemHelper.readContentFile(this._templatePath);
+		const formatter = new MustacheFormatter(template);
+		const htmlContent = formatter.format(templatePlainObject);
+
+		this._view.webview.html = htmlContent;
+	}
+
 	private async receiveMessageFromWebView(message: TableListMessage): Promise<boolean> {
+		try {
+			await this.executeCommand(message);
+			return true;
+		}
+		catch (error) {
+			ExceptionHelper.show(error);
+			return false;
+		}
+	}
+
+	private async executeCommand(message: TableListMessage) {
 		switch (message.command) {
 			case DocumentIsReadyCommand.commandName: {
-				const command = new DocumentIsReadyCommand(this._table);
+				const command = new DocumentIsReadyCommand();
 				command.processMessage(message);
 				return command.execute(this);
 			}
 			case SaveTableListCommand.commandName: {
-				const command = new SaveTableListCommand(this._table);
+				const command = new SaveTableListCommand();
 				command.processMessage(message);
 				return command.execute(this);
 			}
@@ -155,8 +184,12 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 		return this._view.webview.postMessage(message);
 	}
 
-	private getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]) {
-		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
+	public getTable(): Table {
+		return this._table;
+	}
+
+	public getParentItem(): ContentFolder {
+		return this._parentItem;
 	}
 
 	private async tableToViewJson(): Promise<string> {
@@ -176,6 +209,8 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 		return tableJson;
 	}
 
+
 	private _table: Table;
+	private _parentItem: ContentFolder;
 	private _view?: vscode.WebviewPanel;
 }

@@ -3,16 +3,16 @@ import * as fs from 'fs';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { TableHelper } from '../../../helpers/tableHelper';
 import { YamlHelper } from '../../../helpers/yamlHelper';
-import { Table } from '../../../models/content/table';
 import { XpException } from '../../../models/xpException';
 import { TableFieldView, TableListCommand, TableListMessage, TableView } from './tableListCommandBase';
-import { WebViewProviderBase } from '../webViewProviderBase';
 import { DialogHelper } from '../../../helpers/dialogHelper';
+import { TableListsEditorViewProvider } from '../tableListsEditorViewProvider';
+import { Table } from '../../../models/content/table';
+import { ContentTreeProvider } from '../../contentTree/contentTreeProvider';
+import { JsHelper } from '../../../helpers/jsHelper';
 
 
 export class SaveTableListCommand implements TableListCommand {
-	constructor(private _table: Table) {}
-
 	public processMessage(message: TableListMessage): void {
 		if(message.command !== SaveTableListCommand.commandName) {
 			throw new XpException(`Вызвана некорректная команда ${message.command}`);
@@ -25,23 +25,48 @@ export class SaveTableListCommand implements TableListCommand {
 		this._message = message;
 	}
 
-	async execute(webView: WebViewProviderBase): Promise<boolean> {
+	async execute(webView: TableListsEditorViewProvider): Promise<boolean> {
+
 		const jsonTableView = this._message.data;
 		const tableObject = JSON.parse(jsonTableView) as TableView;
 
-		const tableFilePath = this._table.getFilePath();
-		// Для редактирования существующих вьюшек, будем использовать некоторые значения из них.
+		// TODO: добавить валидацию обязательных данных, полученных с FE.
+		if(!tableObject.name) {
+			throw new XpException(`Не задано имя табличного списка. Задайте его и повторите`);
+		}
+
+		if(!tableObject.metainfo.ruDescription && !tableObject.metainfo.enDescription) {
+			throw new XpException(`Не заданы описания табличного списка. Задайте их и повторите`);
+		}
+
+		// Проверяем уникальность полей
+		const columnNames = tableObject.fields.map(f => {
+			return  TableHelper.getFieldName(f);
+		});
+
+		const duplicateColumnName = JsHelper.findDuplicates(columnNames);
+		if(duplicateColumnName) {
+			throw new XpException(`Имена колонок должны быть уникальными в рамках табличного списка. Колонка ${duplicateColumnName} дублируется`);
+		}
+
 		let oldTable: TableView;
-		if(fs.existsSync(tableFilePath)) {
-			const tableContent = await FileSystemHelper.readContentFile(tableFilePath);
-			oldTable = YamlHelper.parse(tableContent) as TableView;
+		if(webView.getTable()) {
+			const tableFilePath = webView.getTable().getFilePath();
+			// Для редактирования существующих вьюшек, будем использовать некоторые значения из них.
+			if(fs.existsSync(tableFilePath)) {
+				const tableContent = await FileSystemHelper.readContentFile(tableFilePath);
+				oldTable = YamlHelper.parse(tableContent) as TableView;
+			}
 		}
 
 		// Если только одно поле, то complex_key не добавляем.
 		let primaryKeyCount = 0;
 		for(const field of tableObject.fields) {
 			const fieldName = TableHelper.getFieldName(field);
-			if(field[fieldName].primaryKey) {
+
+			const primaryKey = field[fieldName].primaryKey;
+			// TODO: string должна превратиться в boolean
+			if(primaryKey === "true") {
 				primaryKeyCount++;
 			}
 		}
@@ -51,7 +76,10 @@ export class SaveTableListCommand implements TableListCommand {
 			const compositeFields: string[] = [];
 			tableObject.fields.forEach((field, fieldIndex: number) => {
 				const fieldName = TableHelper.getFieldName(field);
-				if(field[fieldName].primaryKey) {
+
+				// TODO: string должна превратиться в boolean
+				const primaryKey = field[fieldName].primaryKey;
+				if(primaryKey === "true") {
 					compositeFields.push(fieldName);
 	
 					const fieldView = (field[fieldName] as TableFieldView);
@@ -66,7 +94,7 @@ export class SaveTableListCommand implements TableListCommand {
 				}
 			});
 
-			const firstField = oldTable.fields?.[0];
+			const firstField = tableObject.fields?.[0];
 			let prevIndex = false;
 			if(firstField) {
 				const firstFieldName = TableHelper.getFieldName(firstField);
@@ -107,7 +135,7 @@ export class SaveTableListCommand implements TableListCommand {
 
 		// Если есть дефолтные значения их сохраняем, либо заполняем пустым списком.
 		let defaultsManualCorrection = false;
-		if(JSON.stringify(oldTable.defaults) !== "{}") {
+		if(oldTable && JSON.stringify(oldTable.defaults) !== "{}") {
 			// Количество столбцов изменилось, значит пользователь должен скорректировать дефолтное заполнение.
 			// TODO: реализовать процедуру миграции.
 			tableObject.defaults = oldTable.defaults;
@@ -136,23 +164,30 @@ export class SaveTableListCommand implements TableListCommand {
 			tableObject.defaults = this.getDefaultsValue(tableObject.fillType);
 		}
 
-		if(tableObject.metainfo) {
-			// Сохраняем метаданные и удаляем их из запроса.
-			this._table.setRuDescription(tableObject.metainfo.ruDescription);
-			this._table.setEnDescription(tableObject.metainfo.enDescription);
-
-			// Удаляем то, чего не должно быть в результирующем файле
-			delete tableObject.metainfo;
+		// Либо редактируем существующий табличный список, либо создаём новый.
+		let table: Table;
+		if(webView.getTable()) {
+			table = webView.getTable();
+			table.setName(tableObject.name);
+		} else {
+			const parentItem = webView.getParentItem();
+			table = Table.create(tableObject.name, parentItem.getDirectoryPath());
 		}
 
-		if(tableObject.name) {
-			this._table.setName(tableObject.name);
-		}
+		// Сохраняем метаданные и удаляем их из запроса.
+		table.setRuDescription(tableObject.metainfo.ruDescription);
+		table.setEnDescription(tableObject.metainfo.enDescription);
+
+		// Удаляем то, чего не должно быть в результирующем файле
+		delete tableObject.metainfo;
 
 		// Сохраняем в YAML
 		const resultYamlTable = YamlHelper.tableStringify(tableObject);
-		this._table.setRuleCode(resultYamlTable);
-		this._table.save();
+		table.setRuleCode(resultYamlTable);
+		await table.save();
+
+		// TODO: добавить обновление только родительского элемента созданного ТС.
+		ContentTreeProvider.refresh();
 
 		if(oldTable && defaultsManualCorrection) {
 			DialogHelper.showWarning("Табличный список сохранен, но необходимо вручную скорректировать заполнения по умолчанию (defaults) так как количество колонок изменилось");
