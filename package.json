@@ -446,14 +446,14 @@
 			},
 			{
 				"command": "KnowledgebaseTree.unpackKbPackage",
-				"title": "Импортировать пакеты из KB-файла",
+				"title": "Импортировать пакеты из kb-файла",
 				"shortTitle": "Загрузить пакеты",
 				"category": "Редактор XP",
 				"icon": "$(package)"
 			},
 			{
 				"command": "KnowledgebaseTree.buildKbPackage",
-				"title": "Экспортировать пакет в KB-файл",
+				"title": "Экспортировать пакет в kb-файл",
 				"shortTitle": "Собрать пакет",
 				"category": "Редактор XP",
 				"icon": "$(debug-start)"

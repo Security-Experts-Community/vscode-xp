@@ -18,6 +18,9 @@ export abstract class ContentTreeBaseItem extends vscode.TreeItem {
 	}
 
 	public abstract getObjectType() : string;
+	public isFolder(): boolean {
+		return false;
+	}
 
 	public generateObjectId() : string {
 		const ruleName = this.getName();

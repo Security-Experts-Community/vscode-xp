@@ -77,7 +77,9 @@ export class ContentVerifierCommand {
 	private async testRule(rule: RuleBaseItem, progress: any, cancellationToken: vscode.CancellationToken) {
 
 		// В отдельную директорию положим все временные файлы, чтобы не путаться.
-		await FileSystemHelper.deleteAllSubDirectoriesAndFiles(this._integrationTestTmpFilesPath);
+		if(fs.existsSync(this._integrationTestTmpFilesPath)) {
+			await FileSystemHelper.deleteAllSubDirectoriesAndFiles(this._integrationTestTmpFilesPath);
+		}
 		
 		const ruleTmpFilesRuleName = path.join(this._integrationTestTmpFilesPath, rule.getName());
 		if(!fs.existsSync(ruleTmpFilesRuleName)) {

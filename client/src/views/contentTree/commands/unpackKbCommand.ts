@@ -9,15 +9,14 @@ import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
 import { Configuration } from '../../../models/configuration';
 import { ContentTreeProvider } from '../contentTreeProvider';
 import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
-import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 import { ContentHelper } from '../../../helpers/contentHelper';
 import { XpException } from '../../../models/xpException';
 
-export class UnpackKbAction {
+export class UnpackKbCommand {
 	constructor(private _config: Configuration) {
 	}
 
-	public async run(selectedPackage : ContentTreeBaseItem) : Promise<void> {
+	public async execute(selectedPackage : ContentTreeBaseItem) : Promise<void> {
 
 		// Проверка наличия утилиты сборки kb-файлов.
 		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();
@@ -111,12 +110,19 @@ export class UnpackKbAction {
 				await fse.copy(packagesPackagePath, exportDirPath, { overwrite: true });
 			}
 			
-			// Если внутри один пакет.
+			// Пользовательские правила и директории, которые просто лежат в корне KB.
 			const objectsPackagePath = path.join(outputDirPath, "objects");
-			if(!fs.existsSync(packagesPackagePath) && fs.existsSync(objectsPackagePath)) {
-				const onePackagePath = path.join(exportDirPath, kbFileName);
-				await fse.copy(objectsPackagePath, onePackagePath, { overwrite: true });
+			if(fs.existsSync(objectsPackagePath)) {
+				await fse.copy(objectsPackagePath, exportDirPath, { overwrite: true });
 			}
+
+			// TODO: 
+			// Если внутри один пакет.
+			// const objectsPackagePath = path.join(outputDirPath, "objects");
+			// if(!fs.existsSync(packagesPackagePath) && fs.existsSync(objectsPackagePath)) {
+			// 	const onePackagePath = path.join(exportDirPath, kbFileName);
+			// 	await fse.copy(objectsPackagePath, onePackagePath, { overwrite: true });
+			// }
 
 			// Копируем макросы
 			const macroPackagePath = path.join(outputDirPath, "common");

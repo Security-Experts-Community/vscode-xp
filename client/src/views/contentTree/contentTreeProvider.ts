@@ -25,7 +25,7 @@ import { CreatePackageCommand } from './commands/createPackageCommand';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { BuildAllAction } from './actions/buildAllAction';
 import { PackKbAction } from './actions/packSIEMAllPackagesAction';
-import { UnpackKbAction } from './actions/unpackKbAction';
+import { UnpackKbCommand } from './commands/unpackKbCommand';
 import { ContentType } from '../../contentType/contentType';
 import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';
 import { GitHooks } from './gitHooks';
@@ -205,9 +205,9 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 						return DialogHelper.showInfo("Для распаковки KB-пакета нужно открыть базу знаний");
 					}
 					
-					const action = new UnpackKbAction(config);
+					const action = new UnpackKbCommand(config);
 					try {
-						await action.run(selectedItem);
+						await action.execute(selectedItem);
 						return DialogHelper.showInfo(`Пакет успешно распакован`);
 					}
 					catch(error) {
@@ -385,11 +385,11 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		{
 			// .git, .vscode и т.д.
 			// _meta штатная директория в каждом пакете
-			if(dirName.startsWith(".") || dirName.toLocaleLowerCase() == "_meta") 
+			if(dirName.startsWith(".") || dirName.toLocaleLowerCase() === ContentFolder.PACKAGE_METAINFO_DIRNAME) 
 				continue;
 
 			// В случае штатной директории пакетов будет возможности создавать и собирать пакеты.
-			// packages может встречаться не в корне открытого контета.
+			// packages может встречаться не в корне открытого контента.
 			if(this.isContentRoot(dirName)) {
 				const packagesDirPath = path.join(subFolderPath, dirName);
 				const packagesFolder = await ContentFolder.create(packagesDirPath, ContentFolderType.ContentRoot);
@@ -400,12 +400,13 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			// Пакеты.
 			const parentFolder = path.basename(subFolderPath).toLocaleLowerCase();
 			const directoryPath = path.join(subFolderPath, dirName);
-			
-			if(this.isContentRoot(parentFolder)) {
-				const packageFolderItem = await ContentFolder.create(directoryPath, ContentFolderType.PackageFolder);
-				childrenItems.push(packageFolderItem);
-				continue;
-			}
+
+			// В packages не только пакеты, но и правила и директории могу быть
+			// if(this.isContentRoot(parentFolder)) {
+			// 	const packageFolderItem = await ContentFolder.create(directoryPath, ContentFolderType.PackageFolder);
+			// 	childrenItems.push(packageFolderItem);
+			// 	continue;
+			// }
 
 			// Если ошибка в текущем элементе, продолжаем парсить остальные
 			try {
@@ -423,6 +424,30 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			}
 		}
 
+		// Сначала директории, потом файлы
+		childrenItems.sort(
+			(l, r) => {
+				// Сначала идут потом отдельные item-ы.
+				if(l.isFolder() && !r.isFolder()) {
+					return -1;
+				}
+
+				// Сначала идут системные пакеты, потом пользовательские.
+				const lObjectId = l.getMetaInfo().getObjectId();
+				const rObjectId = r.getMetaInfo().getObjectId();
+				if(
+					lObjectId &&
+					lObjectId.startsWith("PT") &&
+					// Либо это обычная директория, либо пользовательский пакет
+					(!rObjectId || !rObjectId.startsWith("PT"))
+					) {
+					return -1;
+				}
+
+				return l.getName().localeCompare(r.getName());
+			}
+		);
+
 		element.setChildren(childrenItems);
 
 		// Подсвечиваем правила, у которых есть хотя бы один измененный файл.
@@ -439,7 +464,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 	}
 
 	private async initializeRootIfNeeded(subDirectories: string[]) : Promise<void> {
-		// Проверяем тип контента фактический и выбранный и увеломляем если что-то не так.
+		// Проверяем тип контента фактический и выбранный и уведомляем если что-то не так.
 		const actualContentType = Configuration.getContentTypeBySubDirectories(subDirectories);
 		const configContentType = this._config.getContentType();
 		

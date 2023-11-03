@@ -86,6 +86,11 @@ export class LocalizationEditorViewProvider {
 					enableFindWidget: true
 				});
 
+			this._view.onDidDispose(async (e: void) => {
+				this._view = undefined;
+			},
+			this);
+
 			this._view.webview.options = {
 				enableScripts: true
 			};
@@ -108,7 +113,7 @@ export class LocalizationEditorViewProvider {
 	 * @returns было ли обновлено правило
 	 */
 	public async updateRule(newRule: RuleBaseItem): Promise<boolean> {
-		if(this._rule && this._rule.getName() === newRule.getName()) {
+		if(this._view && this._rule && this._rule.getName() === newRule.getName()) {
 			// Сохраняем текущий статус правила
 			const prevIcon = this._rule.iconPath;
 			newRule.iconPath = prevIcon;
