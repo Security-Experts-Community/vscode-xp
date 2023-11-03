@@ -1,3 +1,5 @@
+import { validateInput } from "./validation.js";
+
 /** 
  * Функция, выбирающая все чекбоксы "Ключевое поле 🔑" кроме переданного checkboxElement и 
  * отключающая возможность изменения их состояния.
@@ -68,7 +70,8 @@ const _makeSameRowIndexCheckboxEnabledWhenIdCheckboxIsNotChecked = (idCheckboxEl
  * всех остальных строк отключена возможность изменения состояния чекбокса "Ключевое поле 🔑".
  * 
  * Эту функцию нужно использовать только при добавлении строки в _addRow().
- * @param {JQuery<HTMLElement>} idCheckboxElement - чекбокс "Ключевое поле 🔑" 
+ * @param {JQuery<HTMLElement>} idCheckboxElement - чекбокс "Ключевое поле 🔑"
+ * @deprecated с момента, когда логику переопределения ключевых полей отдали на бекенд 
  */
 export const makeNewRowIdCheckboxDisabledIfAnyIdCheckboxIsChecked = (idCheckboxElement) => {
 	if ($('.jqIdCheckbox.checked').length) {
@@ -82,7 +85,8 @@ export const makeNewRowIdCheckboxDisabledIfAnyIdCheckboxIsChecked = (idCheckboxE
  * тогда и только тогда когда мы удаляем строку с выбранным чекбоксом "Ключевое поле 🔑".
  * 
  * Эту функцию нужно использовать только при удалении строки в _removeRow().
- * @param {JQuery<HTMLElement>} idCheckboxElement - чекбокс "Ключевое поле 🔑" 
+ * @param {JQuery<HTMLElement>} idCheckboxElement - чекбокс "Ключевое поле 🔑"
+ * @deprecated с момента, когда логику переопределения ключевых полей отдали на бекенд
  */
 export const makeDisabledIdCheckboxesEnabledWhenRemoveRowWithCheckedIdCheckbox = (idCheckboxElement) => {
 	if ($(idCheckboxElement).hasClass('checked')) {
@@ -119,10 +123,8 @@ export const addOnChangeEventListenerToIdCheckbox = (idCheckboxElement) => {
 	$(idCheckboxElement)[0].addEventListener("change", () => {
 		if (idCheckboxElement.checked) {
 			_makeSameRowIndexCheckboxCheckedAndDisabledWhenIdCheckboxIsChecked(idCheckboxElement);
-			// _makeAnotherIdCheckboxesDisabledWhenIdCheckboxIsChecked(idCheckboxElement);
 		} else {
 			_makeSameRowIndexCheckboxEnabledWhenIdCheckboxIsNotChecked(idCheckboxElement);
-			// _makeAnotherIdCheckboxesEnabledWhenIdCheckboxIsNotChecked(idCheckboxElement);
 		}
 	})
 }

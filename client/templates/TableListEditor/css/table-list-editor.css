@@ -117,7 +117,7 @@ vscode-data-grid-cell:focus-within {
 	cursor: grab;
 }
 
-.jqInput_invalid::part(root) {
+.jqInput_invalid::part(root), .jqIdCheckboxErrorHighlight {
   border: 1px solid var(--vscode-inputValidation-errorBorder);
 }
 

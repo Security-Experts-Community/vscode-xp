@@ -1,6 +1,6 @@
 import { tableRowHTML } from '../store/htmlStore.js';
 import { addOnClickEventListenerToRemoveRowButton } from './removeRow.js'
-import { addOnChangeEventListenerToIdCheckbox, makeNewRowIdCheckboxDisabledIfAnyIdCheckboxIsChecked } from './checkboxesBehavior.js'
+import { addOnChangeEventListenerToIdCheckbox } from './checkboxesBehavior.js'
 import { validateInput } from './validation.js';
 
 /** 
@@ -15,8 +15,8 @@ export const addRow = () => {
 
 	addOnClickEventListenerToRemoveRowButton(removeButtonElement);
 	addOnChangeEventListenerToIdCheckbox(idCheckboxElement);
-	makeNewRowIdCheckboxDisabledIfAnyIdCheckboxIsChecked(idCheckboxElement);
 	validateInput(rowInputElement);
+	validateInput(idCheckboxElement);
 }
 
 /**  

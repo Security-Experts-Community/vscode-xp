@@ -51,7 +51,7 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 
 	public static showView = "TableListsEditorView.showView";
 	public static createTableList = "TableListsEditorView.createTableList";
-	
+
 	public async createTableList(parentFolder: ContentFolder): Promise<void> {
 		// Сбрасываем состояние вьюшки.
 		this._parentItem = parentFolder;
@@ -159,7 +159,7 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 			await this.executeCommand(message);
 			return true;
 		}
-		catch(error) {
+		catch (error) {
 			ExceptionHelper.show(error);
 			return false;
 		}

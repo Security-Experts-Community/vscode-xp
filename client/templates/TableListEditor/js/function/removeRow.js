@@ -1,4 +1,3 @@
-import { makeDisabledIdCheckboxesEnabledWhenRemoveRowWithCheckedIdCheckbox } from "./checkboxesBehavior.js";
 import { checkIfInvalidInputsExist } from "./validation.js";
 
 /** 
@@ -14,7 +13,6 @@ const _removeRow = (buttonElement) => {
 	const rowToRemove = $(buttonElement).parent();
 	const idCheckbox = rowToRemove.children('.jqIdCheckboxParent').children('.jqIdCheckbox')[0];
 
-	makeDisabledIdCheckboxesEnabledWhenRemoveRowWithCheckedIdCheckbox(idCheckbox);
 	rowToRemove.remove();
 	checkIfInvalidInputsExist();
 }

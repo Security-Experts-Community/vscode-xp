@@ -2,7 +2,6 @@ import { insertDataToWebview } from "../function/dataInsertionBehavior.js";
 import { enableValidation } from "../function/validation.js";
 
 const vscode = acquireVsCodeApi();
-console.log(vscode)
 
 const _messagesController = () => {
 	window.addEventListener(
@@ -28,6 +27,7 @@ const _sendMessageToBackendOnDocumentReady = () => {
 }
 
 export const sendMessageToBackendOnSaveTableList = (tableList) => {
+	console.log(tableList)
 	vscode.postMessage({
 		command: 'saveTableList',
 		data: tableList
