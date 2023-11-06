@@ -12,14 +12,14 @@ import { ContentTreeProvider } from '../../contentTree/contentTreeProvider';
 import { JsHelper } from '../../../helpers/jsHelper';
 
 
-export class SaveTableListCommand implements TableListCommand {
+export class SaveRegistryCommand implements TableListCommand {
 	public processMessage(message: TableListMessage): void {
-		if(message.command !== SaveTableListCommand.commandName) {
+		if(message.command !== SaveRegistryCommand.commandName) {
 			throw new XpException(`Вызвана некорректная команда ${message.command}`);
 		}
 
 		if(!message.data) {
-			throw new XpException(`В команду ${SaveTableListCommand.commandName} не было передано поле 'data'`);
+			throw new XpException(`В команду ${SaveRegistryCommand.commandName} не было передано поле 'data'`);
 		}
 
 		this._message = message;
@@ -70,6 +70,7 @@ export class SaveTableListCommand implements TableListCommand {
 			const fieldName = TableHelper.getFieldName(field);
 
 			const primaryKey = field[fieldName].primaryKey as boolean;
+			// TODO: string должна превратиться в boolean
 			if(primaryKey) {
 				primaryKeyCount++;
 			}
@@ -81,6 +82,7 @@ export class SaveTableListCommand implements TableListCommand {
 			tableObject.fields.forEach((field, fieldIndex: number) => {
 				const fieldName = TableHelper.getFieldName(field);
 
+				// TODO: string должна превратиться в boolean
 				const primaryKey = field[fieldName].primaryKey as boolean;
 				if(primaryKey) {
 					compositeFields.push(fieldName);
