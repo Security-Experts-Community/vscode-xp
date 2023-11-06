@@ -11,7 +11,7 @@ import { Configuration } from '../../models/configuration';
 
 suite('CorrelationHelper', async () => {
 
-	test('Переименоваине множества строк для вайтлистинга', async () => {
+	test('Переименование множества строк для вайтлистинга', async () => {
 
 		const ruleCode =
 `event AddType_Pipeline:
@@ -83,8 +83,8 @@ emit {
 		const ruleCode = `rule Active_Directory_Snapshot : Event {`;
 		const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode("Super_Duper_Correlation", ruleCode);
 
-		const exptectedRuleCode = "rule Super_Duper_Correlation: Event {";
-		assert.strictEqual(newRuleCode, exptectedRuleCode);
+		const expectedRuleCode = "rule Super_Duper_Correlation: Event {";
+		assert.strictEqual(newRuleCode, expectedRuleCode);
 	});
 
 	test('Переименование имени корреляции без пробельного символом перед : ', async () => {
@@ -93,7 +93,7 @@ emit {
 
 		const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode("Super_Duper_Correlation", ruleCode);
 
-		const exptectedRuleCode = "rule Super_Duper_Correlation: create_elevation_service and start_elevation within 1m";
-		assert.strictEqual(newRuleCode, exptectedRuleCode);
+		const expectedRuleCode = "rule Super_Duper_Correlation: create_elevation_service and start_elevation within 1m";
+		assert.strictEqual(newRuleCode, expectedRuleCode);
 	});
 });
