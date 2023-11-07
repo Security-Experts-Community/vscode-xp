@@ -47,10 +47,15 @@ export class DocumentIsReadyCommand implements TableListCommand {
 		// Убираем complex_key и сохраняем имена ключевых столбцов
 		const fieldNames: string [] = [];
 		if(columnName === "complex_key") {
+			const columnProperties = tableObject.fields[0][columnName];
+			const compositeFields = columnProperties.compositeFields as string [];
 			tableObject.fields.shift();
 
 			for(const field of tableObject.fields) {
 				const fieldName = TableHelper.getFieldName(field);
+				if(!compositeFields.includes(fieldName))
+					continue;
+
 				fieldNames.push(fieldName);
 			}
 		}
@@ -72,14 +77,6 @@ export class DocumentIsReadyCommand implements TableListCommand {
 		};
 		
 		const tableJson = JSON.stringify(tableObject);
-
-		// TODO: отладочный код для сохранения текущего ТС поверх
-		// const command = new SaveTableListCommand(this._table);
-		// const message = {command: "saveTableList", data: tableJson };
-		// command.processMessage(message);
-		// command.execute(undefined);
-		//
-		
 		return tableJson;
 	}
 

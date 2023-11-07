@@ -4,12 +4,12 @@ import * as path from 'path';
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
 import { Configuration } from '../../models/configuration';
-import { Table } from '../../models/content/table';
+import { Table, TableListType } from '../../models/content/table';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { DocumentIsReadyCommand } from './commands/documentIsReadyCommand';
 import { WebViewProviderBase } from './webViewProviderBase';
 import { SaveTableListCommand } from './commands/saveTableListCommand';
-import { TableListMessage } from './commands/tableListCommandBase';
+import { TableListMessage, TableView } from './commands/tableListCommandBase';
 import { YamlHelper } from '../../helpers/yamlHelper';
 import { ContentFolder } from '../../models/content/contentFolder';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
@@ -177,6 +177,9 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 				command.processMessage(message);
 				return command.execute(this);
 			}
+			default: {
+				DialogHelper.showInfo("Поддерживается только тип справочник. Отлеживать задачи по расширению поддержки можно [тут](https://github.com/Security-Experts-Community/vscode-xp/issues/)");
+			}
 		}
 	}
 
@@ -191,24 +194,6 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 	public getParentItem(): ContentFolder {
 		return this._parentItem;
 	}
-
-	private async tableToViewJson(): Promise<string> {
-		// TODO: переделать иерархию контента для внесения данный функциональности внутрь Table
-		const tableFullPath = this._table.getFilePath();
-		const tableContent = await FileSystemHelper.readContentFile(tableFullPath);
-		const tableObject = YamlHelper.parse(tableContent);
-
-		tableObject["metainfo"] = {
-			"ruDescription": this._table.getRuDescription(),
-			"enDescription": this._table.getEnDescription(),
-			"objectId": this._table.getMetaInfo().getObjectId()
-		};
-
-		// Добавляем описание
-		const tableJson = JSON.stringify(tableObject);
-		return tableJson;
-	}
-
 
 	private _table: Table;
 	private _parentItem: ContentFolder;

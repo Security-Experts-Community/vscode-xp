@@ -14,6 +14,13 @@ import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 
+export enum TableListType {
+	Registry =  		'Registry',
+	CorrelationRule =	'CorrelationRule',
+	EnrichmentRule = 	'EnrichmentRule',
+	AssetGrid =  		'AssetGrid',
+}
+
 export class Table extends RuleBaseItem {
 	public convertUnitTestFromObject(object: any): BaseUnitTest {
 		throw new Error('Method not implemented.');

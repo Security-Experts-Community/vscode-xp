@@ -1,3 +1,4 @@
+import { TableListType } from '../../../models/content/table';
 import { TableListsEditorViewProvider } from '../tableListsEditorViewProvider';
 
 export class TableListMessage {
@@ -16,7 +17,7 @@ export interface TableFieldView {
 
 export interface TableView {
 	name: string;
-	fillType: string;
+	fillType: TableListType;
 	type: number;
 	userCanEditContent: boolean;
 	fields: any [];
