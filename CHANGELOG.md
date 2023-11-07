@@ -2,7 +2,8 @@
 
 ## 3.9.6 (Pre-Release)
 
-- исправлен баг [#160](https://github.com/Security-Experts-Community/vscode-xp/issues/160) - пользовательский контент игнорируется при распаковке kb-файла.
+- исправлен баг [#160](https://github.com/Security-Experts-Community/vscode-xp/issues/160) - пользовательский контент игнорируется при распаковке kb-файла (thanks to the community comrad);
+- повышена стабильность.
 
 ## 3.9.5 (Pre-Release)
 
