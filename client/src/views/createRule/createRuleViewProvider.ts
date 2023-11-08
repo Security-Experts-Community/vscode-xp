@@ -29,11 +29,11 @@ export class CreateRuleViewProvider {
         // Форма создания корреляции.
         const createCorrelationTemplateFilePath = path.join(
             config.getExtensionPath(), "client", "templates", "CreateRule.html");
-        const reateCorrelationTemplateContent = await FileSystemHelper.readContentFile(createCorrelationTemplateFilePath);
+        const createCorrelationTemplateContent = await FileSystemHelper.readContentFile(createCorrelationTemplateFilePath);
 
         const createCorrelationViewProvider = new CreateRuleViewProvider(
             config,
-            new MustacheFormatter(reateCorrelationTemplateContent));
+            new MustacheFormatter(createCorrelationTemplateContent));
 
         config.getContext().subscriptions.push(
             vscode.commands.registerCommand(
@@ -130,8 +130,8 @@ export class CreateRuleViewProvider {
             this
         );
 
-        const resoucesUri = this._config.getExtensionUri();
-		const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
+        const resourcesUri = this._config.getExtensionUri();
+		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
         try {
             const templateDefaultContent = {
                 "ruleFullPath" : ruleFullPath,
@@ -180,6 +180,13 @@ export class CreateRuleViewProvider {
 
         if(!fs.existsSync(ruleParentPath)) {
             DialogHelper.showError("Путь для создания правила корреляции не найден. Возможно репозиторий поврежден.");
+            return;
+        }
+
+        // Валидация на допустимые символы.
+        const validationResult = ContentHelper.validateContentItemName(ruleName);
+        if(validationResult) {
+            DialogHelper.showError(validationResult);
             return;
         }
 

@@ -9,10 +9,36 @@ import { XpException } from '../models/xpException';
 import { FileSystemHelper } from './fileSystemHelper';
 import { Normalization } from '../models/content/normalization';
 import { YamlHelper } from './yamlHelper';
+import { KbHelper } from './kbHelper';
 
 
 export class ContentHelper {
 
+    /**
+     * Проверяет единицу контента на удовлетворение ограничением по именованию и возвращает ошибку в виде строки.
+     * @param name имя item-а
+     * @returns описание ошибки
+     */
+    public static validateContentItemName(name: string) : string {
+        const trimmed = name.trim();
+        // Корректность имени директории с точки зрения ОС.
+        if(trimmed.includes(">") || trimmed.includes("<") || trimmed.includes(":") || trimmed.includes("\"") || trimmed.includes("/") || trimmed.includes("|") || trimmed.includes("?") || trimmed.includes("*"))
+            return "Имя содержит недопустимые символы";
+
+        if(trimmed === '')
+            return "Имя должно содержать хотя бы один символ";
+
+        // Не используем штатные директории контента.
+        const contentSubDirectories = KbHelper.getContentSubDirectories();
+        if(contentSubDirectories.includes(trimmed))
+            return "Это имя папки зарезервировано и не может быть использовано";
+
+        // Английский язык
+        const englishAlphabet = /^[A-Za-z0-9_]*$/;
+        if(!englishAlphabet.test(trimmed)) {
+            return "Используйте только английские буквы, цифры и символ подчеркивания";
+        }
+    }
     private static getStringColumns(parsedFields: any){
         return parsedFields.reduce((acc, currentColumn) => {
             const name = Object.getOwnPropertyNames(currentColumn)[0];

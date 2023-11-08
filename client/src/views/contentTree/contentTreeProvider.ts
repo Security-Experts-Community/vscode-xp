@@ -401,13 +401,6 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			const parentFolder = path.basename(subFolderPath).toLocaleLowerCase();
 			const directoryPath = path.join(subFolderPath, dirName);
 
-			// В packages не только пакеты, но и правила и директории могу быть
-			// if(this.isContentRoot(parentFolder)) {
-			// 	const packageFolderItem = await ContentFolder.create(directoryPath, ContentFolderType.PackageFolder);
-			// 	childrenItems.push(packageFolderItem);
-			// 	continue;
-			// }
-
 			// Если ошибка в текущем элементе, продолжаем парсить остальные
 			try {
 				const contentItem = await ContentTreeProvider.createContentElement(directoryPath);
@@ -580,6 +573,12 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			if (entityFile) {				
 				return createEntityFunction(elementDirectoryPath, entityFile);
 			}
+		}
+
+		// У пакетов есть поддиректория _meta для метаинформации.
+		const packageMetainfoDirPath = path.join(elementDirectoryPath, ContentFolder.PACKAGE_METAINFO_DIRNAME);
+		if(fs.existsSync(packageMetainfoDirPath)) {
+			return ContentFolder.create(elementDirectoryPath, ContentFolderType.PackageFolder);	
 		}
 
 		return ContentFolder.create(elementDirectoryPath, ContentFolderType.AnotherFolder);

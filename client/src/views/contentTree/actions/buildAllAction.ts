@@ -40,8 +40,7 @@ export class BuildAllAction {
 						throw new XpException("Не удалось сгенерировать siemj.conf для заданного правила и тестов.");
 					}
 
-
-					// Cохраняем конфигурационный файл для siemj.
+					// Сохраняем конфигурационный файл для siemj.
 					const siemjConfigPath = this._config.getTmpSiemjConfigPath(rootFolder);
 					await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 
@@ -65,19 +64,18 @@ export class BuildAllAction {
 
 					// Разбираем вывод siemJ и корректируем начало строки с диагностикой (исключаем пробельные символы)
 					const result = await this._outputParser.parse(siemJOutput.output);
-					const fileDiagnostics = result.fileDiagnostics; 
 
 					// Выводим ошибки и замечания для тестируемого правила.
-					for (const rfd of fileDiagnostics) {
+					for (const rfd of result.fileDiagnostics) {
 						this._config.getDiagnosticCollection().set(rfd.uri, rfd.diagnostics);
 					}
 
-					if(!siemJOutput.output.includes(this.SUCCESS_EXIT_CODE_SUBSTRING)) {
-						DialogHelper.showInfo(`Компиляция пакетов успешно завершена`);
+					if(result.statusMessage) {
+						DialogHelper.showError(result.statusMessage);
+						return;
 					}
-					else {
-						DialogHelper.showError(this.COMPILATION_ERROR);
-					}
+
+					DialogHelper.showInfo(`Компиляция пакетов успешно завершена`);
 				}
 				finally {
 					const tmpPath = this._config.getTmpDirectoryPath(rootFolder);

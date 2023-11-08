@@ -11,6 +11,8 @@ export class FileDiagnostics {
 
 export class SiemjExecutionResult {
 	public testsStatus : boolean;
+	public statusMessage : string;
+
 	public fileDiagnostics : FileDiagnostics[] = [];
 	public failedTestNumbers : number[] = [];
 	public tmpDirectoryPath: string;
@@ -26,12 +28,41 @@ export class SiemJOutputParser {
 	public async parse(siemjOutput : string) : Promise<SiemjExecutionResult> {
 		
 		const result = new SiemjExecutionResult();
+		this.processSectionsExitCode(siemjOutput, result);
+		if(!result.testsStatus) {
+			return result;
+		}
+
 		this.processBuildRules(siemjOutput, result);
 		this.processTestRules(siemjOutput, result);
 
 		// Корректировка диагностиков (выделение конкретных токенов) по анализу файлов с ошибками
 		result.fileDiagnostics = await this.correctDiagnosticBeginCharRanges(result.fileDiagnostics);
 		return result;
+	}
+
+	/**
+	 * Проверяет возвращаемое значение от всех утилит SDK и Build Tools
+	 * @param siemjOutput 
+	 * @param result 
+	 */
+	private processSectionsExitCode(siemjOutput: string, result: SiemjExecutionResult) {
+		// SIEMJ :: -------------------- SUBPROCESS EXIT CODE: 3221225477 --------------------
+		const pattern = /SIEMJ :: -------------------- SUBPROCESS EXIT CODE: (\d+) --------------------/gm;
+		let m: RegExpExecArray | null;
+		while ((m = pattern.exec(siemjOutput))) {
+			if(m.length != 2) {
+				continue;
+			}
+			const exitCode = parseInt(m[1]);
+			if(exitCode !== 0) {
+				result.testsStatus = false;
+				result.statusMessage = `Ошибка компиляции, так как одна из утилит вернула код ошибки ${exitCode}, отличный от нуля. Смотри Output.`;
+				return;
+			}
+		}
+
+		result.testsStatus = true;
 	}
 
 	private processBuildRules(siemjOutput: string, result: SiemjExecutionResult) {

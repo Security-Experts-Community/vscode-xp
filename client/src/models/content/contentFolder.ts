@@ -15,7 +15,7 @@ export enum ContentFolderType {
 	AggregationsFolder = 	"AggregationsFolder", 		// Директория, с базовой директорией aggregation_rules
 	NormalizationsFolder = 	"NormalizationsFolder", 	// Директория, с базовой директорией normalization_formulas
 	TabularListsFolder = 	"TabularListsFolder",		// Директория, с базовой директорией tabular_lists
-	AnotherFolder = 		"TabularListsFolder"
+	AnotherFolder = 		"AnotherFolder"
 }
 
 export class ContentFolder extends ContentTreeBaseItem {

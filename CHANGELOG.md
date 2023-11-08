@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.9.7 (Pre-Release)
+
+- исправлена ошибка невозможности создания kb-файла для пакета;
+- добавлена проверка на допустимые имена правил при создании их из шаблона (special thanks to @bobyboba18 за кейс);
+- добавлена проверка на возвращаемое значение утилит из KBT.
+
 ## 3.9.6 (Pre-Release)
 
 - исправлен баг [#160](https://github.com/Security-Experts-Community/vscode-xp/issues/160) - пользовательский контент игнорируется при распаковке kb-файла (thanks to the community comrad);
