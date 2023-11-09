@@ -7,7 +7,7 @@ import { XpException } from '../../../models/xpException';
 import { TableFieldView, TableListCommand, TableListMessage, TableView } from './tableListCommandBase';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { TableListsEditorViewProvider } from '../tableListsEditorViewProvider';
-import { Table } from '../../../models/content/table';
+import { Table, TableListType } from '../../../models/content/table';
 import { ContentTreeProvider } from '../../contentTree/contentTreeProvider';
 import { JsHelper } from '../../../helpers/jsHelper';
 
@@ -22,26 +22,24 @@ export class SaveTableListCommand implements TableListCommand {
 			throw new XpException(`В команду ${SaveTableListCommand.commandName} не было передано поле 'data'`);
 		}
 
-		this._message = message;
-	}
-
-	async execute(webView: TableListsEditorViewProvider): Promise<boolean> {
-
-		const jsonTableView = this._message.data;
+		const jsonTableView = message.data;
 		const tableObject = JSON.parse(jsonTableView) as TableView;
 
-		// TODO: добавить валидацию обязательных данных, полученных с FE.
+		if(tableObject.fillType !== TableListType.Registry) {
+			throw new XpException(`На текущий момент поддерживается только тип Справочник. Отслеживать поддержку других типов табличных списков можно [тут](https://github.com/Security-Experts-Community/vscode-xp/issues)`);
+		}
+
 		if(!tableObject.name) {
 			throw new XpException(`Не задано имя табличного списка. Задайте его и повторите`);
 		}
 
 		if(!tableObject.metainfo.ruDescription && !tableObject.metainfo.enDescription) {
-			throw new XpException(`Не заданы описания табличного списка. Задайте их и повторите`);
+			throw new XpException(`Не заданы описания табличного списка. Задайте хотя бы одно описание и повторите`);
 		}
 
 		// Проверяем уникальность полей
 		const columnNames = tableObject.fields.map(f => {
-			return  TableHelper.getFieldName(f);
+			return TableHelper.getFieldName(f);
 		});
 
 		const duplicateColumnName = JsHelper.findDuplicates(columnNames);
@@ -49,37 +47,80 @@ export class SaveTableListCommand implements TableListCommand {
 			throw new XpException(`Имена колонок должны быть уникальными в рамках табличного списка. Колонка ${duplicateColumnName} дублируется`);
 		}
 
-		let oldTable: TableView;
+		this._message = message;
+	}
+
+	async execute(webView: TableListsEditorViewProvider): Promise<boolean> {
+
+		// Либо редактируем существующий табличный список, либо создаём новый.
+		const tableObject = JSON.parse(this._message.data) as TableView;
 		if(webView.getTable()) {
-			const tableFilePath = webView.getTable().getFilePath();
-			// Для редактирования существующих вьюшек, будем использовать некоторые значения из них.
-			if(fs.existsSync(tableFilePath)) {
-				const tableContent = await FileSystemHelper.readContentFile(tableFilePath);
-				oldTable = YamlHelper.parse(tableContent) as TableView;
+			// Редактируем существующий
+			this._newTable = webView.getTable();
+
+			// Имя табличного списка изменилось
+			const prevTableName = tableObject.name;
+			if(this._newTable.getName() !== prevTableName) {
+				this._newTable.setName(tableObject.name);
+
+				const tableDirPath = this._newTable.getDirectoryPath();
+				if(fs.existsSync(tableDirPath)) {
+					await fs.promises.rmdir(tableDirPath, {recursive: true});
+				}
 			}
+		} else {
+			// Создаем табличный список с нуля
+			const parentItem = webView.getParentItem();
+			this._newTable = Table.create(tableObject.name, parentItem.getDirectoryPath());
 		}
 
-		// Если только одно поле, то complex_key не добавляем.
+		// Сохраняем метаданные и удаляем их из данных FE.
+		this._newTable.setRuDescription(tableObject.metainfo.ruDescription);
+		this._newTable.setEnDescription(tableObject.metainfo.enDescription);
+		delete tableObject.metainfo;
+
+		this.convertKeysToYamlFormat(tableObject);
+		await this.fillDefaultValues(webView, tableObject);
+		await this.saveTableList(webView, tableObject);
+
+		// TODO: добавить обновление только родительского элемента созданного ТС.
+		ContentTreeProvider.refresh();
+
+		if(webView.getTable()) {
+			DialogHelper.showWarning("Табличный список сохранен. При изменении структуры табличного списка проверьте корректность заполнения по умолчанию (defaults)");
+			return true;
+		}
+
+		DialogHelper.showInfo("Табличный список сохранен");
+		return true;
+	}
+
+	private getPrimaryKeysCount(tableObject: TableView) {
 		let primaryKeyCount = 0;
 		for(const field of tableObject.fields) {
 			const fieldName = TableHelper.getFieldName(field);
 
-			const primaryKey = field[fieldName].primaryKey;
-			// TODO: string должна превратиться в boolean
-			if(primaryKey === "true") {
+			const primaryKey = field[fieldName].primaryKey as boolean;
+			if(primaryKey) {
 				primaryKeyCount++;
 			}
 		}
 
-		let commonColumnCount = 0;
+		return primaryKeyCount;
+	}
+
+	protected convertKeysToYamlFormat(tableObject: TableView) : void {
+		// Если только одно поле, то complex_key не добавляем.
+		const primaryKeyCount = this.getPrimaryKeysCount(tableObject);
+
+		// Если ключевых полей больше 1го, то они должны быть занесены в complex_key, а свойство primaryKey у них должно быть сброшено.
 		if(primaryKeyCount > 1) {
 			const compositeFields: string[] = [];
 			tableObject.fields.forEach((field, fieldIndex: number) => {
 				const fieldName = TableHelper.getFieldName(field);
 
-				// TODO: string должна превратиться в boolean
-				const primaryKey = field[fieldName].primaryKey;
-				if(primaryKey === "true") {
+				const primaryKey = field[fieldName].primaryKey as boolean;
+				if(primaryKey) {
 					compositeFields.push(fieldName);
 	
 					const fieldView = (field[fieldName] as TableFieldView);
@@ -104,7 +145,6 @@ export class SaveTableListCommand implements TableListCommand {
 					prevIndex = firstField[firstFieldName].index;
 				}
 			}
-
 	
 			// Собираем ключевые поля complex_key если в таблице больше одного ключевого поля.
 			const complexKey = {
@@ -129,81 +169,64 @@ export class SaveTableListCommand implements TableListCommand {
 				const fieldName = TableHelper.getFieldName(fieldsCopy[fieldIndex]);
 				fieldsCopy[fieldIndex][fieldName].unique = false;
 				tableObject.fields.push(fieldsCopy[fieldIndex]);
-				commonColumnCount++;
+			}
+		}
+	}
+
+	protected async fillDefaultValues(webView : TableListsEditorViewProvider, tableObject: TableView) : Promise<void> {
+
+		let prevTableData: TableView;
+		if(webView.getTable()) {
+			const prevTable = webView.getTable();
+			const tableFilePath = prevTable.getFilePath();
+			// Для редактирования существующих вьюшек, будем использовать некоторые значения из них.
+			if(fs.existsSync(tableFilePath)) {
+				const tableContent = await FileSystemHelper.readContentFile(tableFilePath);
+				prevTableData = YamlHelper.parse(tableContent) as TableView;
+
+				// Удаляем предыдущее файловое представление таблицы
+				const tableDirPath = prevTable.getDirectoryPath();
+				await fs.promises.rmdir(tableDirPath, {recursive: true});
 			}
 		}
 
-		// Если есть дефолтные значения их сохраняем, либо заполняем пустым списком.
-		let defaultsManualCorrection = false;
-		if(oldTable && JSON.stringify(oldTable.defaults) !== "{}") {
+		if(prevTableData && JSON.stringify(prevTableData.defaults) !== "{}") {
 			// Количество столбцов изменилось, значит пользователь должен скорректировать дефолтное заполнение.
-			// TODO: реализовать процедуру миграции.
-			tableObject.defaults = oldTable.defaults;
+			tableObject.defaults = prevTableData.defaults;
 
-			let defaultsColumnCount = 0;
-			const ptDefaults = oldTable.defaults?.["PT"];
-			const userDefaults = oldTable.defaults?.["LOC"];
-			if(ptDefaults) {
-				const firstElement = ptDefaults?.[0];
-				if(firstElement) {
-					defaultsColumnCount = Object.keys(firstElement).length;
-				}
-			} 
+			// let defaultsColumnCount = 0;
+			// const ptDefaults = prevTableData.defaults?.["PT"];
+			// const userDefaults = prevTableData.defaults?.["LOC"];
+			// if(ptDefaults) {
+			// 	const firstElement = ptDefaults?.[0];
+			// 	if(firstElement) {
+			// 		defaultsColumnCount = Object.keys(firstElement).length;
+			// 	}
+			// } 
 
-			if(userDefaults) {
-				const firstElement = userDefaults?.[0];
-				if(firstElement) {
-					defaultsColumnCount = Object.keys(firstElement).length;
-				}
-			}
-
-			if(defaultsColumnCount != commonColumnCount) {
-				defaultsManualCorrection = true;
-			}
+			// if(userDefaults) {
+			// 	const firstElement = userDefaults?.[0];
+			// 	if(firstElement) {
+			// 		defaultsColumnCount = Object.keys(firstElement).length;
+			// 	}
+			// }
 		} else {
 			tableObject.defaults = this.getDefaultsValue(tableObject.fillType);
 		}
+	}
 
-		// Либо редактируем существующий табличный список, либо создаём новый.
-		let table: Table;
-		if(webView.getTable()) {
-			table = webView.getTable();
-			table.setName(tableObject.name);
-		} else {
-			const parentItem = webView.getParentItem();
-			table = Table.create(tableObject.name, parentItem.getDirectoryPath());
-		}
+	protected async saveTableList(webView : TableListsEditorViewProvider, tableObject: TableView) : Promise<void> {
 
-		// Сохраняем метаданные и удаляем их из запроса.
-		table.setRuDescription(tableObject.metainfo.ruDescription);
-		table.setEnDescription(tableObject.metainfo.enDescription);
 
-		// Удаляем то, чего не должно быть в результирующем файле
-		delete tableObject.metainfo;
+
 
 		// Сохраняем в YAML
 		const resultYamlTable = YamlHelper.tableStringify(tableObject);
-		table.setRuleCode(resultYamlTable);
-		await table.save();
-
-		// TODO: добавить обновление только родительского элемента созданного ТС.
-		ContentTreeProvider.refresh();
-
-		if(oldTable && defaultsManualCorrection) {
-			DialogHelper.showWarning("Табличный список сохранен, но необходимо вручную скорректировать заполнения по умолчанию (defaults) так как количество колонок изменилось");
-			return true;
-		}
-
-		if(oldTable && !defaultsManualCorrection && JSON.stringify(oldTable.defaults) !== "{}") { 
-			DialogHelper.showWarning("Табличный список сохранен, проверьте корректность заполнения по умолчанию (defaults)");
-			return true;
-		}
-
-		DialogHelper.showInfo("Табличный список сохранен");
-		return true;
+		this._newTable.setRuleCode(resultYamlTable);
+		await this._newTable.save();
 	}
 
-	private getDefaultsValue(fillType: string) : any {
+	protected getDefaultsValue(fillType: string) : any {
 		switch(fillType) {
 			case 'Registry':  {
 				return {};
@@ -219,9 +242,12 @@ export class SaveTableListCommand implements TableListCommand {
 		}
 	}
 
-
+	protected getMessage(): TableListMessage {
+		return this._message;
+	}
 
 	private _message: TableListMessage;
+	private _newTable: Table;
 
 	static get commandName(): string {
 		return "saveTableList";
