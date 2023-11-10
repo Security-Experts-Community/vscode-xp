@@ -26,8 +26,6 @@ export class BuildLocalizationsCommand {
 			// Если в правиле используются сабрули, тогда собираем весь граф корреляций.
 			const siemjConfContents = this.getParamsForAllRoots(this._config);
 			
-			// Очищаем и показываем окно Output.
-			this._config.getOutputChannel().clear();
 			this._config.getDiagnosticCollection().clear();
 			
 			for (const siemjConfContentEntity of siemjConfContents) {
