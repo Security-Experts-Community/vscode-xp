@@ -239,7 +239,7 @@
 					"group": "navigation@1"
 				},
 				{
-					"command": "KnowledgebaseTree.buildAll",
+					"command": "xp.contentTree.buildAll",
 					"when": "view == KnowledgebaseTree",
 					"group": "navigation@2"
 				},
@@ -254,8 +254,19 @@
 					"group": "navigation@4"
 				},
 				{
+					"command": "xp.contentTree.buildLocalizations",
+					"when": "view == KnowledgebaseTree",
+					"group": "dots@1"
+				},
+				{
+					"command": "xp.contentTree.buildWld",
+					"when": "view == KnowledgebaseTree",
+					"group": "dots@2"
+				},
+				{
 					"command": "xp.retroCorrelationShow",
-					"when": "view == KnowledgebaseTree"
+					"when": "view == KnowledgebaseTree",
+					"group": "dots@3"
 				},
 				{
 					"command": "ModularTestsListView.addTest",
@@ -438,11 +449,21 @@
 				"icon": "$(outline-view-icon)"
 			},
 			{
-				"command": "KnowledgebaseTree.buildAll",
-				"title": "Собрать всё (графы, табличные списки, локализации)",
-				"shortTitle": "Собрать всё",
+				"command": "xp.contentTree.buildAll",
+				"title": "Скомпилировать все графы",
+				"shortTitle": "Собрать все графы",
 				"category": "Редактор XP",
 				"icon": "$(debug-start)"
+			},
+			{
+				"command": "xp.contentTree.buildLocalizations",
+				"title": "Скомпилировать все локализации",
+				"category": "Редактор XP"
+			},
+			{
+				"command": "xp.contentTree.buildWld",
+				"title": "Скомпилировать wld-файлы",
+				"category": "Редактор XP"
 			},
 			{
 				"command": "KnowledgebaseTree.unpackKbPackage",

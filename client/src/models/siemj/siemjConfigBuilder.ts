@@ -64,6 +64,42 @@ out=${output}`;
 	}
 
 	/**
+	 * Добавить сборку графа агрегации
+	 * @param force пересобирать ли ранее собранный	граф
+	 */
+	public addAggregationGraphBuilding(force = true) : void {
+
+		if(this._scenarios.includes(SiemjConfBuilder.MAKE_ARGRAPH_SCENARIO)) {
+			throw new XpException(`Дублирование сценария ${SiemjConfBuilder.MAKE_ARGRAPH_SCENARIO} при генерации конфигурационного файла siemj.conf`);
+		}
+
+		if (!force){
+			const arGraphFilePath = this._config.getAggregationsGraphFilePath(this._contentRootFolder);
+			if(fs.existsSync(arGraphFilePath)) {
+				return;
+			}
+		}
+
+		const output = path.join('${output_folder}', this._config.getAggregationGraphFileName());
+		const argraphBuildingSection = 
+`
+[make-argraph]
+type=BUILD_RULES
+rcc_lang=a
+rules_src=${this._contentRootPath}
+out=${output}`;
+
+		this._siemjConfigSection += argraphBuildingSection;
+		this._scenarios.push(SiemjConfBuilder.MAKE_ARGRAPH_SCENARIO);
+	}
+
+// `[make-argraph]
+// type=BUILD_RULES
+// rcc_lang=a
+// rules_src=C:\Work\-=SIEM=-\Content\knowledgebase\packages
+// out=${output_folder}\aggfilters.json`;
+
+	/**
 	 * Рекурсивная проверка по регулярному выражению наличия файлов в директории 
 	 * @param startPath начальная директория для рекурсивного поиска
 	 * @param fileNameRegexPattern регулярное выражение для поиска
@@ -389,5 +425,7 @@ scenario=${this._scenarios.join(" ")}
 	private _scenarios : string[] = [];
 
 	private static MAKE_NFGRAPH_SCENARIO = "make-nfgraph";
+
+	private static MAKE_ARGRAPH_SCENARIO = "make-argraph";
 }
 

@@ -357,6 +357,14 @@ export class Configuration {
 		return path.join(this.getOutputDirectoryPath(rootFolder), this.getSchemaFileName());
 	}
 
+	public getWhitelistingPath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getWhitelistingFileName());
+	}
+
+	public getWhitelistingFileName() : string {
+		return "whitelisting_graph.json ";
+	}
+
 	public getNormalizedEventsFileName() : string {
 		return "norm_events.json";
 	}
@@ -411,6 +419,10 @@ export class Configuration {
 	public getNormalizationsGraphFileName() : string {
 		return this._pathHelper.getNormalizationsGraphFileName();
 	}
+
+	public getAggregationGraphFileName() : string {
+		return this._pathHelper.getAggregationsGraphFileName();
+	}
 	
 	public getEnrichmentsGraphFileName() : string {
 		return this._pathHelper.getEnrichmentsGraphFileName();
@@ -420,12 +432,8 @@ export class Configuration {
 		return this._pathHelper.getCorrelationsGraphFileName();
 	}
 
-	public getAgregationsGraphFileName() : string {
-		return this._pathHelper.getAgregationsGraphFileName();
-	}
-
 	public getNormalizationsGraphFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder),this._pathHelper.getNormalizationsGraphFileName());
+		return path.join(this.getOutputDirectoryPath(rootFolder), this._pathHelper.getNormalizationsGraphFileName());
 	}
 	
 	public getEnrichmentsGraphFilePath(rootFolder: string) : string {
@@ -436,8 +444,8 @@ export class Configuration {
 		return path.join(this.getOutputDirectoryPath(rootFolder), this.getCorrelationsGraphFileName());
 	}
 
-	public getAgregationsGraphFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), this.getAgregationsGraphFileName());
+	public getAggregationsGraphFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getAggregationGraphFileName());
 	}
 
 	public getLocalizationsFolder() : string {

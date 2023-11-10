@@ -23,7 +23,7 @@ import { RenameTreeItemCommand } from './commands/renameTreeItemCommand';
 import { DeleteContentItemCommand } from './commands/deleteContentItemCommand';
 import { CreatePackageCommand } from './commands/createPackageCommand';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
-import { BuildAllAction } from './actions/buildAllAction';
+import { BuildAllCommand } from './commands/buildAllCommand';
 import { PackKbAction } from './actions/packSIEMAllPackagesAction';
 import { UnpackKbCommand } from './commands/unpackKbCommand';
 import { ContentType } from '../../contentType/contentType';
@@ -34,6 +34,8 @@ import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { ContentTreeBaseItem } from '../../models/content/contentTreeBaseItem';
 import { LocalizationEditorViewProvider } from '../localizationEditor/localizationEditorViewProvider';
 import { ContentVerifierCommand } from './commands/ruleVerifierCommand';
+import { BuildLocalizationsCommand } from './commands/buildLocalizationsCommand';
+import { BuildWldCommand } from './commands/buildWldCommand';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeBaseItem> {
 
@@ -221,10 +223,31 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			vscode.commands.registerCommand(
 				ContentTreeProvider.buildAllCommand,
 				async (selectedItem: RuleBaseItem) => {
-	
 					const parser = new SiemJOutputParser();
-					const bag = new BuildAllAction(config, parser);
-					await bag.run();
+					const buildCommand = new BuildAllCommand(config, parser);
+					await buildCommand.execute();
+				}
+			)
+		);
+
+		context.subscriptions.push(
+			vscode.commands.registerCommand(
+				ContentTreeProvider.buildLocalizationsCommand,
+				async (selectedItem: RuleBaseItem) => {
+					const parser = new SiemJOutputParser();
+					const buildCommand = new BuildLocalizationsCommand(config, parser);
+					await buildCommand.execute();
+				}
+			)
+		);
+
+		context.subscriptions.push(
+			vscode.commands.registerCommand(
+				ContentTreeProvider.buildWldCommand,
+				async (selectedItem: RuleBaseItem) => {
+					const parser = new SiemJOutputParser();
+					const buildCommand = new BuildWldCommand(config, parser);
+					await buildCommand.execute();
 				}
 			)
 		);
@@ -610,7 +633,9 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 	public static readonly KnowledgebaseTreeId = 'KnowledgebaseTree';
 	
 	public static readonly onRuleClickCommand = 'KnowledgebaseTree.onElementSelectionChange';
-	public static readonly buildAllCommand = 'KnowledgebaseTree.buildAll';
+	public static readonly buildAllCommand = 'xp.contentTree.buildAll';
+	public static readonly buildLocalizationsCommand = 'xp.contentTree.buildLocalizations';
+	public static readonly buildWldCommand = 'xp.contentTree.buildWld';
 	public static readonly buildKbPackageCommand = 'KnowledgebaseTree.buildKbPackage';
 	public static readonly unpackKbPackageCommand = 'KnowledgebaseTree.unpackKbPackage';
 	public static readonly verifyFolderCommand = 'xp.contentTree.verifyFolder';

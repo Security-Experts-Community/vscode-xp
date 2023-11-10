@@ -6,7 +6,6 @@ import { PathLocator } from './pathLocator';
 
 export class SIEMPathHelper extends PathLocator {
 
-
 	private constructor(kbFullPath: string) {
 		super(kbFullPath);
 	}
@@ -67,8 +66,8 @@ export class SIEMPathHelper extends PathLocator {
 		return "corrules_graph.json";
 	}
 
-	public getAgregationsGraphFileName() : string {
-		return "aggrules_graph.json";
+	public getAggregationsGraphFileName() : string {
+		return "aggfilters.json";
 	}
 
 	public getLocalizationsFolder() : string {

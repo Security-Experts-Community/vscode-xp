@@ -65,7 +65,7 @@ export class EDRPathHelper extends PathLocator {
 		return "rules_graph.json";
 	}
 
-	public getAgregationsGraphFileName() : string {
+	public getAggregationsGraphFileName() : string {
 		return "aggrules_graph.json";
 	}
 

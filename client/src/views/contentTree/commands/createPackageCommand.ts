@@ -22,6 +22,8 @@ export class CreatePackageCommand {
 				ignoreFocusOut: true,
 				placeHolder: 'Название пакета',
 				prompt: 'Название пакета',
+				// TODO: убрать дублирование кода валидации
+				// Учесть отличие локализации
 				validateInput: (v) => {
 					const trimmed = v.trim();
 					// Корректность имени директории с точки зрения ОС.

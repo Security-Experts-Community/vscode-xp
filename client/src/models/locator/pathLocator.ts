@@ -18,7 +18,7 @@ export abstract class PathLocator {
 	public abstract getNormalizationsGraphFileName() : string
 	public abstract getEnrichmentsGraphFileName() : string
 	public abstract getCorrelationsGraphFileName() : string
-	public abstract getAgregationsGraphFileName() : string
+	public abstract getAggregationsGraphFileName() : string
 
 	public abstract getLocalizationsFolder() : string
 
