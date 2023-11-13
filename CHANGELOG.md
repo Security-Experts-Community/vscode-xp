@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.9.8 (Pre-Release)
+
+- PoC фичи [#133](https://github.com/Security-Experts-Community/vscode-xp/issues/133) для генерации ожидаемого события для правил на основе подправил (subrules).
+
+
 ## 3.9.7 (Pre-Release)
 
 - добавлена проверка на допустимые имена правил при создании их из шаблона (special thanks to @bobyboba18 за кейс);

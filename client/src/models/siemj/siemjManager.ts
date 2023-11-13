@@ -196,7 +196,7 @@ export class SiemjManager {
 		// raw_events_1_norm_enr_cor(r)?_enr.json
 		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
 		const correlatedEventFilePaths = files.filter(fp => {
-			return RegExpHelper.getTmpActualResultEventFile().test(path.basename(fp));
+			return RegExpHelper.getEnrichedCorrTestResultFileName(rule.getName()).test(fp);
 		});
 
 		if(correlatedEventFilePaths.length === 0) {

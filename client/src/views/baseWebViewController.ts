@@ -24,8 +24,6 @@ export class WebViewMessage {
 	params?: unknown;
 }
 
-
-
 export abstract class BaseWebViewController {
 
 	constructor(protected _descriptor : WebViewDescriptor) { }

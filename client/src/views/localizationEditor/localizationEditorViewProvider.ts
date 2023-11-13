@@ -383,7 +383,7 @@ export class LocalizationEditorViewProvider {
 		return null;
 	}
 
-	private _integrationTestTmpFilesPath: string
+	private _integrationTestTmpFilesPath: string;
 
 	public static readonly USE_OLD_TESTS_RESULT = "Использовать";
 	public static readonly RESTART_TESTS = "Повторить";

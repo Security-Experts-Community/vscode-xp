@@ -29,10 +29,6 @@ export class SiemJOutputParser {
 		
 		const result = new SiemjExecutionResult();
 		this.processSectionsExitCode(siemjOutput, result);
-		if(!result.testsStatus) {
-			return result;
-		}
-
 		this.processBuildRules(siemjOutput, result);
 		this.processTestRules(siemjOutput, result);
 
@@ -57,7 +53,7 @@ export class SiemJOutputParser {
 			const exitCode = parseInt(m[1]);
 			if(exitCode !== 0) {
 				result.testsStatus = false;
-				result.statusMessage = `Ошибка компиляции, так как одна из утилит вернула код ошибки ${exitCode}, отличный от нуля. Смотри Output.`;
+				result.statusMessage = `Ошибка выполнения, так как одна из утилит вернула код ошибки ${exitCode}, отличный от нуля. Смотри Output`;
 				return;
 			}
 		}

@@ -24,7 +24,7 @@ export class RunIntegrationTestsCommand extends Command {
 			cancellable: true,
 		}, async (progress, cancellationToken: vscode.CancellationToken) => {
 
-			Log.info(`Запущены интеграционные тесты для правила '${this.params.rule.getName()}'`);
+			Log.info(`Запущены интеграционные тесты для правила ${this.params.rule.getName()}`);
 
 			const tests = this.params.rule.getIntegrationTests();
 			if (tests.length == 0) {
@@ -36,11 +36,11 @@ export class RunIntegrationTestsCommand extends Command {
 			const ruleCode = await this.params.rule.getRuleCode();
 			if (TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
 				progress.report({
-					message: `Интеграционные тесты для правила с подправилами (subrule) '${this.params.rule.getName()}'`
+					message: `Интеграционные тесты для правила ${this.params.rule.getName()} с подправилами (subrules)`
 				});
 			} else {
 				progress.report({
-					message: `Интеграционные тесты для правила '${this.params.rule.getName()}'`
+					message: `Интеграционные тесты для правила ${this.params.rule.getName()}`
 				});
 			}
 
@@ -56,28 +56,25 @@ export class RunIntegrationTestsCommand extends Command {
 
 			const executedIntegrationTests = this.params.rule.getIntegrationTests();
 			if(executedIntegrationTests.every(it => it.getStatus() === TestStatus.Success)) {
-				DialogHelper.showInfo(`Интеграционные тесты правила '${this.params.rule.getName()}' прошли успешно`);
-				// Если тесты прошли, значит временные файлы не нужны.
-				await FileSystemHelper.recursivelyDeleteDirectory(this.params.tmpDirPath);
-
 				// Задаём и обновляем статус элемента дерева
 				this.params.rule.setStatus(ContentItemStatus.Verified, "Интеграционные тесты пройдены");
-				await ContentTreeProvider.refresh(this.params.rule);
 
+				DialogHelper.showInfo(`Интеграционные тесты правила '${this.params.rule.getName()}' прошли успешно`);
+				await ContentTreeProvider.refresh(this.params.rule);
 				return true;
 			} 
 
 			if(executedIntegrationTests.some(it => it.getStatus() === TestStatus.Success)) {
-				DialogHelper.showInfo(`Не все тесты правила '${this.params.rule.getName()}' прошли успешно`);
-
 				this.params.rule.setStatus(ContentItemStatus.Unverified, "Интеграционные тесты не пройдены");
-				await ContentTreeProvider.refresh(this.params.rule);
 
+				DialogHelper.showInfo(`Не все тесты правила '${this.params.rule.getName()}' прошли успешно`);
+				await ContentTreeProvider.refresh(this.params.rule);
 				return true;
 			} 
 
-			vscode.window.showErrorMessage(`Все тесты не были пройдены. Проверьте наличие синтаксических ошибок в коде правила или его зависимостях`);
 			this.params.rule.setStatus(ContentItemStatus.Default);
+
+			vscode.window.showErrorMessage(`Все тесты не были пройдены. Также возможно наличие синтаксических ошибок в коде правила или его зависимостях`);
 			ContentTreeProvider.refresh(this.params.rule);
 			return true;
 		});

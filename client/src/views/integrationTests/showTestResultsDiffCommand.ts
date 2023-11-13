@@ -22,12 +22,18 @@ export class ShowTestResultsDiffCommand extends Command {
 	}
 	
 	public async execute() : Promise<boolean> {
-		Log.info(`Запрошено сравнение фактического и ожидаемого события правила ${this.params.rule.getName()} теста №${this.params.testNumber}`);
+		const ruleName = this.params.rule.getName();
+		Log.info(`Запрошено сравнение фактического и ожидаемого события правила ${ruleName} теста №${this.params.testNumber}`);
 
 		// Получаем ожидаемое событие.
 		const tests = this.params.rule.getIntegrationTests();
 		if(tests.length < this.params.testNumber) {
-			DialogHelper.showError(`Запрашиваемый интеграционный тест №${this.params.testNumber} правила ${this.params.rule.getName()} не найден`);
+			DialogHelper.showError(`Запрашиваемый интеграционный тест №${this.params.testNumber} правила ${ruleName} не найден`);
+			return;
+		}
+
+		if(!fs.existsSync(this.params.tmpDirPath)) {
+			DialogHelper.showError(`Директория результатов интеграционных тестов не найдена. Запустите интеграционные тесты еще раз`);
 			return;
 		}
 
@@ -39,7 +45,7 @@ export class ShowTestResultsDiffCommand extends Command {
 			const testCode = currTest.getTestCode();
 			expectedEvent = RegExpHelper.getSingleExpectEvent(testCode);
 			if(!expectedEvent) {
-				DialogHelper.showError(`Ожидаемое событий интеграционного теста №${this.params.testNumber} правила ${this.params.rule.getName()} пусто`);
+				DialogHelper.showError(`Ожидаемое событий интеграционного теста №${this.params.testNumber} правила ${ruleName} пусто`);
 				return;
 			}
 		} else {
@@ -62,11 +68,10 @@ export class ShowTestResultsDiffCommand extends Command {
 		const expectedEventTestFilePath = path.join(this.params.tmpDirPath, `expectedEvents_${this.params.testNumber}.json`);
 		await FileSystemHelper.writeContentFile(expectedEventTestFilePath, formattedExpectedEvent);
 
-
 		// Получаем фактическое событие.
-		const actualEventsFilePath = TestHelper.getTestActualEventsFilePath(this.params.tmpDirPath, this.params.testNumber);
+		const actualEventsFilePath = TestHelper.getTestActualEventFilePath(this.params.tmpDirPath, ruleName, this.params.testNumber);
 		if(!actualEventsFilePath) {
-			throw new XpException(`Результаты интеграционного теста №${this.params.testNumber} правила ${this.params.rule.getName()} не найдены`);
+			throw new XpException(`Результаты интеграционного теста №${this.params.testNumber} правила ${ruleName} не найдены`);
 		}
 
 		if(!fs.existsSync(actualEventsFilePath)) {
@@ -76,12 +81,12 @@ export class ShowTestResultsDiffCommand extends Command {
 		// Событие может прилетать не одно
 		const actualEventsString = await FileSystemHelper.readContentFile(actualEventsFilePath);
 		if(!actualEventsString) {
-			throw new XpException(`Фактическое событий интеграционного теста №${this.params.testNumber} правила ${this.params.rule.getName()} пусто`);
+			throw new XpException(`Фактическое событий интеграционного теста №${this.params.testNumber} правила ${ruleName} пусто`);
 		}
 
 		const actualEvents = actualEventsString.split(os.EOL).filter(l => l);
 		// Отбираем ожидаемое событие по имени правила
-		const actualFilteredEvents = TestHelper.filterCorrelationEvents(actualEvents, this.params.rule.getName());
+		const actualFilteredEvents = TestHelper.filterCorrelationEvents(actualEvents, ruleName);
 
 		// Если мы не получили сработки нашей корреляции, тогда покажем те события, который отработали.
 		let formattedActualEvent = "";

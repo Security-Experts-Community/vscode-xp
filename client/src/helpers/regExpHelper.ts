@@ -4,8 +4,27 @@ export class RegExpHelper {
 		return /expect\s*(\d+|not)\s*{(.*)}/gm;
 	}
 
-	public static getTmpActualResultEventFile() : RegExp { 
-		return /raw_events_\d+_norm_enr_cor(r)?_enr\.json/gm;
+	public static getEnrichedCorrTestResultFileName(ruleName: string, testNumber?: number) : RegExp { 
+		let regExpTemplate: string;
+		if(testNumber) {
+			regExpTemplate = `.+?${ruleName}.+?raw_events_${testNumber}_norm_enr_cor(r)?_enr\.json`;
+		} else {
+			regExpTemplate = `.+?${ruleName}.+?raw_events_\d+_norm_enr_cor(r)?_enr\.json`;
+		}
+		
+		return RegExp(regExpTemplate, "i");
+	}
+
+	public static getCorrTestResultFileName(ruleName: string, testNumber?: number) : RegExp { 
+
+		let regExpTemplate: string;
+		if(testNumber) {
+			regExpTemplate = `.+?${ruleName}.+?raw_events_${testNumber}_norm_enr_cor(r)\.json`;
+		} else {
+			regExpTemplate = `.+?${ruleName}.+?raw_events_\d+_norm_enr_cor(r)?\.json`;
+		}
+		
+		return RegExp(regExpTemplate, "i");
 	}
 
 	public static getSingleExpectEvent(text: string) : string {

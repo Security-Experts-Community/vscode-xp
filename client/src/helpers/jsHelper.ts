@@ -16,4 +16,25 @@ export class JsHelper {
 
 		return obj;
 	}
+
+	public static formatJsonObject(object: any) : string {
+		return JSON.stringify(object, null, 4);
+	}
+
+	public static sortObjectKeys(object: any) {
+		if (typeof object != "object") { return object; }
+		if (object instanceof Array) {
+			return object.map((obj) => { return this.sortObjectKeys(obj); });
+		}
+		const keys = Object.keys(object);
+		if (!keys) { return object; }
+		return keys.sort().reduce((obj, key) => {
+			if (object[key] instanceof Array) {
+				obj[key] = this.sortObjectKeys(object[key]);
+			} else {
+				obj[key] = object[key];
+			}
+			return obj;
+		}, {});
+	}
 }

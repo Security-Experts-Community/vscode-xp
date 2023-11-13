@@ -14,6 +14,7 @@ import { Log } from '../extension';
 import { FileSystemHelper } from './fileSystemHelper';
 import { CorrelationEvent } from '../models/content/correlation';
 import { ArgumentException } from '../models/argumentException';
+import { JsHelper } from './jsHelper';
 
 export type EventMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
@@ -115,28 +116,81 @@ export class TestHelper {
 	}
 
 	/**
+	 * Очищает, сортирует и форматирует json ожидаемого события
+	 * @param testCode строка с ожидаемым событием в json
+	 * @returns результирующее ожидаемое событие в json
+	 */
+	public static cleanSortFormatExpectedEventTestCode(expectedEvent: string): string {
+
+		try {
+			let object = JSON.parse(expectedEvent);
+			object = TestHelper.removeKeys(object, [
+					"_subjects",
+					"_objects",
+					"_rule",
+
+					"time",
+
+					"generator.version",
+					"generator.type",
+
+					"uuid",
+					"incident.name",
+
+					"primary_siem_app_id",
+					"siem_id",
+					"origin_app_id",
+
+					"normalized",
+					"labels",
+
+					"subevents",
+					"subevents.time"
+				]
+			);
+			object = JsHelper.sortObjectKeys(object);
+			return JsHelper.formatJsonObject(object);
+		}
+		catch(error) {
+			throw new XpException("Полученные данные не являются событием формата json", error);
+		}
+	}
+
+	/**
 	 * Возвращает путь к результату интеграционных тестов. Данный путь существует только тогда, когда включено сохранение временных файлов. В противном случае директория очищается.
 	 * @param integrationTestsTmpDirPath 
 	 * @param testNumber 
 	 */
-	public static getTestActualEventsFilePath(integrationTestsTmpDirPath: string, testNumber: number): string {
+	public static getTestActualEventFilePath(integrationTestsTmpDirPath: string, ruleName: string, testNumber: number): string {
 		// c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
 		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
 		// TODO: для обогащений может отсутствовать корреляционное событие, а присутствовать обогащенное нормализованное 
 		// raw_events_2_norm_enr.json
 		const resultEvents = files.filter(fp => {
-			const fileName = path.basename(fp).toLocaleLowerCase();
-			return RegExpHelper.getTmpActualResultEventFile().test(fileName);
+			return RegExpHelper.getEnrichedCorrTestResultFileName(ruleName, testNumber).test(fp);
 		});
 
-		if(resultEvents.length < testNumber) {
-			throw new XpException("Нужного файла фактического корреляционного событий не найдено. Вероятно фактическое событие отсутствует.");
+		if(resultEvents.length !== 1) {
+			throw new XpException("Нужного файла фактического корреляционного событий не найдено. Вероятно, фактическое событие отсутствует.");
 		}
 
-		const testIndex = testNumber - 1;
-		const testFilePath = resultEvents[testIndex];
+		return resultEvents[0];
+	}
 
-		return testFilePath;
+	public static getExpectedEventEventFilePath(integrationTestsTmpDirPath: string, ruleName: string, testNumber: number): string {
+		// c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
+		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
+		// TODO: для обогащений может отсутствовать корреляционное событие, а присутствовать обогащенное нормализованное 
+		// raw_events_2_norm_enr.json
+		const resultEvents = files.filter(fp => {
+			return RegExpHelper.getCorrTestResultFileName(ruleName, testNumber).test(fp);
+		});
+
+		if(resultEvents.length !== 1) {
+			throw new XpException("Нужного файла фактического корреляционного событий не найдено. Вероятно, фактическое событие отсутствует.");
+		}
+
+		return resultEvents[0];
 	}
 
 	public static cleanModularTestResult(testCode: string) : string {
@@ -340,29 +394,12 @@ export class TestHelper {
 			}
 			catch (error) {
 				// Если не удалось отформатировать, пропускаем и пишем в лог.
-				Log.error(error, `Не удалось отформатировать событие ${compressedEvent}.`, );
+				Log.error(error, `Не удалось отформатировать событие ${compressedEvent}`, );
 				continue;
 			}
 		}
 
 		return formattedTestCode;
-	}
-
-	public static sortObjectKeys(object: any) {
-		if (typeof object != "object") { return object; }
-		if (object instanceof Array) {
-			return object.map((obj) => { return this.sortObjectKeys(obj); });
-		}
-		const keys = Object.keys(object);
-		if (!keys) { return object; }
-		return keys.sort().reduce((obj, key) => {
-			if (object[key] instanceof Array) {
-				obj[key] = this.sortObjectKeys(object[key]);
-			} else {
-				obj[key] = object[key];
-			}
-			return obj;
-		}, {});
 	}
 
 	// Пока не используется, может пригодиться в дальнейшем. 
@@ -377,19 +414,19 @@ export class TestHelper {
 				continue;
 			}
 
-			const compessedEvent = comNormEventResult[0];
-			const escapedCompessedEvent = TestHelper.escapeRawEvent(compessedEvent);
+			const compressedEvent = comNormEventResult[0];
+			const escapedCompressedEvent = TestHelper.escapeRawEvent(compressedEvent);
 
 			// Форматируем событие и сортируем поля объекта, чтобы поля групп типа subject.* были рядом.
 			try {
-				const compressEventJson = JSON.parse(escapedCompessedEvent);
-				const orderedCompressEventJson = this.sortObjectKeys(compressEventJson);
-				const formatedEvent = JSON.stringify(orderedCompressEventJson);
-				formattedTestCode = formattedTestCode.replace(compessedEvent, formatedEvent);
+				const compressEventJson = JSON.parse(escapedCompressedEvent);
+				const orderedCompressEventJson = JsHelper.sortObjectKeys(compressEventJson);
+				const formattedEvent = JSON.stringify(orderedCompressEventJson);
+				formattedTestCode = formattedTestCode.replace(compressedEvent, formattedEvent);
 			}
 			catch (error) {
 				// Если не удалось отформатировать, пропускаем и пишем в лог.
-				console.warn(`Ошибка сжатия события ${compessedEvent}.`);
+				console.warn(`Ошибка сжатия события ${compressedEvent}.`);
 				continue;
 			}
 		}
@@ -495,6 +532,12 @@ export class TestHelper {
 	 */
 	public static isRuleCodeContainsSubrules(ruleCode: string): boolean {
 
+		// Сбрасываем состояние после предыдущего выполнения.
+		this.CORRELATION_NAME_COMPARE_REGEX.lastIndex = 0;
+		this.LOWER_CORRELATION_NAME_COMPARE_REGEX.lastIndex = 0;
+		this.INLIST_LOWER_CORRELATION_NAME_REGEX.lastIndex = 0;
+		this.INLIST_CORRELATION_NAME_REGEX.lastIndex = 0;
+
 		if (
 			this.CORRELATION_NAME_COMPARE_REGEX.test(ruleCode) ||
 			this.LOWER_CORRELATION_NAME_COMPARE_REGEX.test(ruleCode) ||
@@ -512,6 +555,12 @@ export class TestHelper {
 	}
 
 	public static parseSubRuleNamesFromKnownOperation(ruleCode: string): string[] {
+		// Сбрасываем состояние после предыдущего выполнения.
+		this.CORRELATION_NAME_COMPARE_REGEX.lastIndex = 0;
+		this.LOWER_CORRELATION_NAME_COMPARE_REGEX.lastIndex = 0;
+		this.INLIST_LOWER_CORRELATION_NAME_REGEX.lastIndex = 0;
+		this.INLIST_CORRELATION_NAME_REGEX.lastIndex = 0;
+
 		// const correlationNameCompareRegex = /correlation_name\s*==\s*"(\w+)"/gm;
 		const correlationNameCompareRegexResult = RegExpHelper.parseValues(ruleCode, this.CORRELATION_NAME_COMPARE_REGEX, "gm");
 

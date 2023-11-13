@@ -115,9 +115,9 @@
 				</div>
 				<div class="manage_buttons">
 					<!-- Получить ожидаемое событие можно только при наличии нормализованных событий -->
-					{{#NormEvents.0}}
+					{{#CanGetExpectedEvent}}
 						<input name="fast_test" type="button" value="&#9654;   Получить ожидаемое событие  ">
-					{{/NormEvents.0}}
+					{{/CanGetExpectedEvent}}
 					<!-- Сравнить полученные результаты можно только если тест прошёл неуспешно -->
 					{{#IsFailed}}
 						<input id="open_result_diff" type="button" value="Сравнить полученные результаты">
@@ -567,9 +567,11 @@
 
 					// Передает тест как параметр запроса.
 					const test = baseTestElement.data("test");
+					const rawEvents = baseTestElement.find('[name="raw_events"]').text();
 					vscode.postMessage({
 						activeTestNumber : activeTestNumber,
-						command: 'fastTest',
+						command: 'GetExpectedEventCommand',
+						rawEvents : rawEvents,
 						test: test
 					});
 				});
