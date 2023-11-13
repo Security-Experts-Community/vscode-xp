@@ -79,9 +79,16 @@ export class BuildAllCommand {
 					const tmpPath = this._config.getTmpDirectoryPath(rootFolder);
 					try {
 						// Очищаем временные файлы.
-						await fs.promises.access(tmpPath).then(
-							() => { return fs.promises.unlink(tmpPath); }
-						);
+						if (fs.lstatSync(tmpPath).isDirectory())
+						{
+							await fs.promises.rmdir(tmpPath, {recursive: true})
+						}
+						else
+						{
+							await fs.promises.access(tmpPath).then(
+								() => { return fs.promises.unlink(tmpPath); }
+							);
+						}
 					}
 					catch(e){
 						Log.warn("Очистка временных файлов", e);
