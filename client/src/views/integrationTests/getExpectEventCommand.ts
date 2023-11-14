@@ -47,22 +47,25 @@ export class GetExpectedEventCommand  {
 		const ruleCode = await this.params.rule.getRuleCode();
 
 		let newExpectedEvent: string;
-		if (TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
+		if (TestHelper.isRuleCodeContainsSubrules(ruleCode) || !this.params.test.getNormalizedEvents()) {
 			newExpectedEvent = await this.getExpectedEventForRuleWithSubrules();
 		} else {
 			newExpectedEvent = await this.getExpectedEventForRuleWithoutSubrules();
 		}
 
-		// Очищаем код от технических полей, форматируем и заменяем код теста на новый.
+		// Очищаем код от технических полей, форматируем и заменяем код теста на новый с сохранением комментариев.
 		newExpectedEvent = TestHelper.cleanSortFormatExpectedEventTestCode(newExpectedEvent);
 		const newTestCode = `expect 1 ${newExpectedEvent}`;
 		const currentTestCode = this.params.test.getTestCode();
 		const resultTestCode = currentTestCode.replace(
 			RegExpHelper.getExpectSectionRegExp(),
-			newTestCode);
+			// Фикс того, что из newTestCode пропадают доллары
+			// https://stackoverflow.com/questions/9423722/string-replace-weird-behavior-when-using-dollar-sign-as-replacement
+			function () {return newTestCode;}
+		);
 
 		this.params.test.setTestCode(resultTestCode);
-		return newExpectedEvent;
+		return resultTestCode;
 	}
 
 	private async getExpectedEventForRuleWithoutSubrules() {
@@ -71,8 +74,7 @@ export class GetExpectedEventCommand  {
 		try {
 			normalizedEvents = this.params.test.getNormalizedEvents();
 			if(!normalizedEvents) {
-				DialogHelper.showError("Для запуска быстрого теста нужно хотя бы одно нормализованное событие. Нормализуйте сырые события и повторите действие.");
-				return;
+				throw new XpException("Для запуска быстрого теста нужно хотя бы одно нормализованное событие. Нормализуйте сырые события и повторите действие.");
 			}
 
 			// Временно создать модульный тест путём добавления к интеграционному нормализованного события в конец файла.
@@ -82,8 +84,7 @@ export class GetExpectedEventCommand  {
 
 			// Проверку на наличие expect not {} в тесте, в этом случае невозможно получить ожидаемое событие.
 			if(TestHelper.isNegativeTest(integrationTestContent)) {
-				DialogHelper.showWarning("Невозможно получить ожидаемого события для теста с кодом expect not {}. Скорректируйте код теста если это необходимо, сохраните его и повторите.");
-				return;
+				throw new XpException("Невозможно получить ожидаемого события для теста с кодом expect not {}. Скорректируйте код теста если это необходимо, сохраните его и повторите.");
 			}
 			integrationTestSimplifiedContent = integrationTestContent.replace(
 				RegExpHelper.getExpectSectionRegExp(),
@@ -158,7 +159,7 @@ export class GetExpectedEventCommand  {
 		const ruleName = this.params.rule.getName();
 		
 		// Получаем ожидаемое событие до обогащения
-		const actualEventsFilePath = TestHelper.getExpectedEventEventFilePath(
+		const actualEventsFilePath = TestHelper.getEnrichedCorrEventFilePath(
 			this.params.tmpDirPath,
 			ruleName,
 			this.params.test.getNumber());

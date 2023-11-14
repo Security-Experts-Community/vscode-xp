@@ -27,7 +27,9 @@
 		"XDR",
 		"EDR",
 		"XP",
-		"xplang"
+		"xplang",
+		"MaxPatrol 10",
+		"MP 10"
 	],
 	"engines": {
 		"vscode": "^1.75.0"
@@ -198,7 +200,7 @@
 			},
 			{
 				"view": "ModularTestsListView",
-				"contents": "Модульные тесты отсутствуют."
+				"contents": "Модульные тесты отсутствуют"
 			}
 		],
 		"viewsContainers": {

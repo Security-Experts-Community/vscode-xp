@@ -69,7 +69,7 @@ export class ShowTestResultsDiffCommand extends Command {
 		await FileSystemHelper.writeContentFile(expectedEventTestFilePath, formattedExpectedEvent);
 
 		// Получаем фактическое событие.
-		const actualEventsFilePath = TestHelper.getTestActualEventFilePath(this.params.tmpDirPath, ruleName, this.params.testNumber);
+		const actualEventsFilePath = TestHelper.getEnrichedCorrEventFilePath(this.params.tmpDirPath, ruleName, this.params.testNumber);
 		if(!actualEventsFilePath) {
 			throw new XpException(`Результаты интеграционного теста №${this.params.testNumber} правила ${ruleName} не найдены`);
 		}

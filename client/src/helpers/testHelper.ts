@@ -161,7 +161,7 @@ export class TestHelper {
 	 * @param integrationTestsTmpDirPath 
 	 * @param testNumber 
 	 */
-	public static getTestActualEventFilePath(integrationTestsTmpDirPath: string, ruleName: string, testNumber: number): string {
+	public static getEnrichedCorrEventFilePath(integrationTestsTmpDirPath: string, ruleName: string, testNumber: number): string {
 		// c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
 		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
 		// TODO: для обогащений может отсутствовать корреляционное событие, а присутствовать обогащенное нормализованное 

@@ -172,7 +172,6 @@
 					const testCode = $(this).find('[name="expect"]').text();
 					const normEvents = $(this).find('[name="norm_event"]').text();
 
-
 					tests.push({
 						"number" : id,
 						"rawEvents" : rawEvents,
@@ -426,7 +425,6 @@
 			window.addEventListener(
 				'message', 
 				(event) => {
-					console.log('команда от расширения')
 					const message = event.data; 
 					switch (message.command) {
 						case 'updateRawEvents': {
@@ -685,7 +683,7 @@
 					() => {return xpTestCode;}
 				);
 
-				// Добавляем автоподстветку для каждого из полей кода тестов.
+				// Добавляем автоподсветку для каждого из полей кода тестов.
 				addEditorEvents(redos, undos);
 			});
 
