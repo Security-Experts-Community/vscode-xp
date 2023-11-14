@@ -49,10 +49,14 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 		let expectation = JSON.parse(unitTest.getTestExpectation());
 		expectation = this.clearIrrelevantFields(expectation);
 
-		let actual = JSON.parse(normalizedEvent);
-		actual = this.clearIrrelevantFields(actual);
+		let actualEventObject = JSON.parse(normalizedEvent);
+		actualEventObject = this.clearIrrelevantFields(actualEventObject);
+
+		// Сохраняем фактическое события для последующего обновления ожидаемого.
+		const actualEventString = JSON.stringify(actualEventObject);
+		unitTest.setActualEvent(actualEventString);
 		
-		const difference = diffJson(expectation, actual);
+		const difference = diffJson(expectation, actualEventObject);
 		
 		let eventsDiff = "";
 		for (const part of difference) {

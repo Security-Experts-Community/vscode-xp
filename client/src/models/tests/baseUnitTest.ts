@@ -54,6 +54,14 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 		return this._testExpectation;
 	}
 
+	public getActualEvent() : string {
+		return this._actualEvent;
+	}
+
+	public setActualEvent(actualEvent: string) : void {
+		this._actualEvent = actualEvent;
+	}
+
 	public setStatus(status: TestStatus) : void {
 
 		this._status = status;
@@ -113,6 +121,8 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 	private _number: number;
 
 	private _testExpectation : string;
+	private _actualEvent : string;
+
 	private _inputData : string;
 
 	private _output : string;

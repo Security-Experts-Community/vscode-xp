@@ -171,6 +171,22 @@ export class UnitTestContentEditorViewProvider {
 				return;
 			}
 
+			case 'updateExpectEvent': {
+				const actualEvent = this._test.getActualEvent();
+				if(!actualEvent) {
+					DialogHelper.showWarning("Фактическое событие не получено. Запустите тест для получения фактического события, после чего можно заменить ожидаемое событие фактическим");
+					return;
+				}
+				
+				// Обновляем ожидаемое событие на диске и во вьюшке.
+				this._test.setTestExpectation(actualEvent);
+				await this._test.save();
+				this.updateView();
+
+				DialogHelper.showWarning("Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти.");
+				return;
+			}
+
 			default: {
 				DialogHelper.showError("Переданная команда не поддерживается");
 			}
