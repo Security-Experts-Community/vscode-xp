@@ -12,6 +12,9 @@ import { DialogHelper } from '../../helpers/dialogHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { UnitTestsListViewProvider } from './unitTestsListViewProvider';
 import { XpException } from '../../models/xpException';
+import { RegExpHelper } from '../../helpers/regExpHelper';
+import { Correlation } from '../../models/content/correlation';
+import { Normalization } from '../../models/content/normalization';
 
 export class UnitTestContentEditorViewProvider {
 
@@ -177,13 +180,33 @@ export class UnitTestContentEditorViewProvider {
 					DialogHelper.showWarning("Фактическое событие не получено. Запустите тест для получения фактического события, после чего можно заменить ожидаемое событие фактическим");
 					return;
 				}
+
+				const rule = this._test.getRule();
+				let resultTestCode: string;
+
+				// В модульных тестах корреляций есть expect и возможны комментарии, поэтому надо заменить события, сохранив остальное.
+				if(rule instanceof Correlation) {
+					const newTestCode = `expect 1 ${actualEvent}`;
+					const currentTestCode = this._test.getTestExpectation();
+					resultTestCode = currentTestCode.replace(
+						RegExpHelper.getExpectSectionRegExp(),
+						// Фикс того, что из newTestCode пропадают доллары
+						// https://stackoverflow.com/questions/9423722/string-replace-weird-behavior-when-using-dollar-sign-as-replacement
+						function () {return newTestCode;}
+					);
+				}
+
+				// Для нормализации просто сохраняем фактическое событие без дополнительных преобразований.
+				if(rule instanceof Normalization) {
+					resultTestCode = actualEvent;
+				}
 				
 				// Обновляем ожидаемое событие на диске и во вьюшке.
-				this._test.setTestExpectation(actualEvent);
+				this._test.setTestExpectation(resultTestCode);
 				await this._test.save();
 				this.updateView();
 
-				DialogHelper.showWarning("Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти.");
+				DialogHelper.showInfo("Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти.");
 				return;
 			}
 
@@ -224,6 +247,13 @@ export class UnitTestContentEditorViewProvider {
 			DialogHelper.showError("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
 			return;
 		}
+
+		// TODO: если тест еще не сохранён, то он падает так как в объекте дефолтный комментарий, а не значения из вьюшки.
+		// const expectation = message.test.expectation;
+		// this._test.setTestExpectation(expectation);
+
+		// const rawEvent = message.test.rawEvent;
+		// this._test.setTestInputData(rawEvent);
 
 		const rule = this._test.getRule();
 		return vscode.window.withProgress({

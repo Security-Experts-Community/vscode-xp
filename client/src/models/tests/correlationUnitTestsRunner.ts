@@ -117,6 +117,9 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 				// Так как тест успешный, то можно сохранить отформатированный результат.
 				test.setOutput(clearedResult);
 
+				// Сохраняем фактическое события для последующего обновления ожидаемого.
+				test.setActualEvent(clearedResult);
+
 				// Добавляем отформатированный результат в окно вывода.				
 				this._config.getOutputChannel().append("\n\nFormatted result:\n" + clearedResult);
 
