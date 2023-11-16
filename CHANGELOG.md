@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.9.9 (Pre-Release)
+
+- исправлена ошибка генерации тестовых локализаций (special thanks to @bobyboba18 за кейс).
+
 ## 3.9.8 (Pre-Release)
 
 - PoC фичи [#133](https://github.com/Security-Experts-Community/vscode-xp/issues/133) для генерации ожидаемого события для правил на основе подправил (subrules);

@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+
 export class RegExpHelper {
 	public static getExpectSectionRegExp() : RegExp {
 		return /expect\s*(\d+|not)\s*{(.*)}/gm;
@@ -9,7 +11,7 @@ export class RegExpHelper {
 		if(testNumber) {
 			regExpTemplate = `.+?${ruleName}.+?raw_events_${testNumber}_norm_enr_cor(r)?_enr\.json`;
 		} else {
-			regExpTemplate = `.+?${ruleName}.+?raw_events_\d+_norm_enr_cor(r)?_enr\.json`;
+			regExpTemplate = `.+?${ruleName}.+?raw_events_\\d+_norm_enr_cor(r)?_enr\.json`;
 		}
 		
 		return RegExp(regExpTemplate, "i");
@@ -21,7 +23,7 @@ export class RegExpHelper {
 		if(testNumber) {
 			regExpTemplate = `.+?${ruleName}.+?raw_events_${testNumber}_norm_enr_cor(r)\.json`;
 		} else {
-			regExpTemplate = `.+?${ruleName}.+?raw_events_\d+_norm_enr_cor(r)?\.json`;
+			regExpTemplate = `.+?${ruleName}.+?raw_events_\\d+_norm_enr_cor(r)?\.json`;
 		}
 		
 		return RegExp(regExpTemplate, "i");
