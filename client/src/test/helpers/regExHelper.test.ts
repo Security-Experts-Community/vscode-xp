@@ -6,10 +6,21 @@ suite('RegExpHelper', async () => {
 
 	test('Успешный поиск файла с обогащенными корреляционными событиями из директории с временными файлами', async () => {
 		const corrEventsFilePath = 
+			"c:\\Users\\userName\\AppData\\Local\\Temp\\eXtraction and Processing\\823b1962-c75c-536b-6b49-68f2943936a5\\2043-01-26_22-07-09_unknown_sdk_yrgriogu\\RuleName\\tests\\raw_events_1_norm_enr.json"
+
+		const result = RegExpHelper
+			.getEnrichedNormTestEventsFileName("RuleName")
+			.test(corrEventsFilePath);
+
+		assert.ok(result);
+	});
+
+	test('Успешный поиск файла с обогащенными корреляционными событиями из директории с временными файлами', async () => {
+		const corrEventsFilePath = 
 			"c:\\Users\\userName\\AppData\\Local\\Temp\\eXtraction and Processing\\823b1962-c75c-536b-6b49-68f2943936a5\\2043-01-26_22-07-09_unknown_sdk_yrgriogu\\RuleName\\tests\\raw_events_2_norm_enr_corr_enr.json"
 
 		const result = RegExpHelper
-			.getEnrichedCorrTestResultFileName("RuleName")
+			.getEnrichedCorrTestEventsFileName("RuleName")
 			.test(corrEventsFilePath);
 
 		assert.ok(result);
@@ -20,7 +31,7 @@ suite('RegExpHelper', async () => {
 			"c:\\Users\\userName\\AppData\\Local\\Temp\\eXtraction and Processing\\823b1962-c75c-536b-6b49-68f2943936a5\\2043-01-26_22-07-09_unknown_sdk_yrgriogu\\RuleName\\tests\\raw_events_2_norm_enr_corr_enr.json"
 
 		const result = RegExpHelper
-			.getEnrichedCorrTestResultFileName("RuleName", 2)
+			.getEnrichedCorrTestEventsFileName("RuleName", 2)
 			.test(corrEventsFilePath);
 
 		assert.ok(result);
@@ -31,7 +42,7 @@ suite('RegExpHelper', async () => {
 			"c:\\Users\\userName\\AppData\\Local\\Temp\\eXtraction and Processing\\823b1962-c75c-536b-6b49-68f2943936a5\\2043-01-26_22-07-09_unknown_sdk_yrgriogu\\RuleName\\tests\\raw_events_2_norm_enr_corr.json"
 
 		const result = RegExpHelper
-			.getCorrTestResultFileName("RuleName")
+			.getCorrTestEventsFileName("RuleName")
 			.test(corrEventsFilePath);
 
 		assert.ok(result);
@@ -42,7 +53,7 @@ suite('RegExpHelper', async () => {
 			"c:\\Users\\userName\\AppData\\Local\\Temp\\eXtraction and Processing\\823b1962-c75c-536b-6b49-68f2943936a5\\2043-01-26_22-07-09_unknown_sdk_yrgriogu\\RuleName\\tests\\raw_events_2_norm_enr_corr.json"
 
 		const result = RegExpHelper
-			.getCorrTestResultFileName("RuleName", 2)
+			.getCorrTestEventsFileName("RuleName", 2)
 			.test(corrEventsFilePath);
 			
 		assert.ok(result);

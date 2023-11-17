@@ -5,7 +5,7 @@
 	"author": "Dmitry Fedosov (@DmitryOffsec)",
 	"icon": "resources/xp.png",
 	"license": "MIT",
-	"version": "3.9.9",
+	"version": "3.9.10",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -452,19 +452,19 @@
 			},
 			{
 				"command": "xp.contentTree.buildAll",
-				"title": "Скомпилировать все графы",
+				"title": "Компилировать все графы",
 				"shortTitle": "Собрать все графы",
 				"category": "Редактор XP",
 				"icon": "$(debug-start)"
 			},
 			{
 				"command": "xp.contentTree.buildLocalizations",
-				"title": "Скомпилировать все локализации",
+				"title": "Компилировать все локализации",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "xp.contentTree.buildWld",
-				"title": "Скомпилировать wld-файлы",
+				"title": "Компилировать wld-файлы",
 				"category": "Редактор XP"
 			},
 			{

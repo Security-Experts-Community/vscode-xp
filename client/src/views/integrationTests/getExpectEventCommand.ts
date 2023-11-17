@@ -17,6 +17,9 @@ import { IntegrationTest } from '../../models/tests/integrationTest';
 import { TestStatus } from '../../models/tests/testStatus';
 import { IntegrationTestEditorViewProvider } from './integrationTestEditorViewProvider';
 import { JsHelper } from '../../helpers/jsHelper';
+import { Test } from 'mocha';
+import { Correlation } from '../../models/content/correlation';
+import { Enrichment } from '../../models/content/enrichment';
 
 export interface GetExpectedEventParams extends CommandParams {
 	test: IntegrationTest;
@@ -31,7 +34,8 @@ export class GetExpectedEventCommand  {
 
 		if(testWithNewTestCode) {
 			await viewProvider.updateTestCode(
-				this.params.test.getTestCode(),
+				this.params.test.getTestCode() 
+				// ,
 				// TODO: добавить конкретный тест для обновления, иначе может быть обновлён не тот тест.
 				// testWithNewTestCode.getNumber()
 			);
@@ -42,15 +46,18 @@ export class GetExpectedEventCommand  {
 	}
 
 	private async generateTestCode(): Promise<string> {
+		if(this.params.test.getStatus() === TestStatus.Failed) {
+			throw new XpException("Невозможно получить ожидаемое событие для теста, который завершился неуспешно");
+		}
 
 		// Если правило содержит сабрули, то мы сейчас не сможем просто получить ожидаемое событие.
 		const ruleCode = await this.params.rule.getRuleCode();
 
 		let newExpectedEvent: string;
 		if (TestHelper.isRuleCodeContainsSubrules(ruleCode) || !this.params.test.getNormalizedEvents()) {
-			newExpectedEvent = await this.getExpectedEventForRuleWithSubrules();
+			newExpectedEvent = await this.getExpectedEventForIntegrationTestResult();
 		} else {
-			newExpectedEvent = await this.getExpectedEventForRuleWithoutSubrules();
+			newExpectedEvent = await this.getExpectedEventFromEcatest();
 		}
 
 		// Очищаем код от технических полей, форматируем и заменяем код теста на новый с сохранением комментариев.
@@ -68,7 +75,11 @@ export class GetExpectedEventCommand  {
 		return resultTestCode;
 	}
 
-	private async getExpectedEventForRuleWithoutSubrules() {
+	/**
+	 * Получает ожидаемое событие из результатов ecatest. Работает с простыми правилами без subrules. Требует наличия нормализованных событий.
+	 * @returns ожидаемое событие
+	 */
+	private async getExpectedEventFromEcatest() {
 		let integrationTestSimplifiedContent = "";
 		let normalizedEvents = "";
 		try {
@@ -101,71 +112,70 @@ export class GetExpectedEventCommand  {
 			title: `Получение ожидаемого события для теста №${this.params.test.getNumber()}`
 		}, async (progress) => {
 
+			const modularTestContent = `${integrationTestSimplifiedContent}\n\n${normalizedEvents}`;
+
+			// Сохраняем модульный тест во временный файл.
+			const rootPath = this.params.config.getRootByPath(this.params.test.getRuleDirectoryPath());
+			const rootFolder = path.basename(rootPath);
+			const randTmpPath = this.params.config.getRandTmpSubDirectoryPath(rootFolder);
+			await fs.promises.mkdir(randTmpPath, { recursive: true });
+
+			const fastTestFilePath = path.join(randTmpPath, GetExpectedEventCommand.EXPECT_EVENT_FILENAME);
+			await FileSystemHelper.writeContentFile(fastTestFilePath, modularTestContent);
+
+			// Создаем временный модульный тест для быстрого тестирования.
+			const fastTest = new FastTest(this.params.test.getNumber());
+			fastTest.setTestExpectationPath(fastTestFilePath);
+			fastTest.setRule(this.params.rule);
+
+			// Специальный тест быстрого теста.
+			const testRunner = this.params.rule.getUnitTestRunner();
+			const resultTest = await testRunner.run(fastTest);
+
+			if (resultTest.getStatus() === TestStatus.Failed) {
+				throw new XpException(
+					`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено неуспешно. Возможно интеграционный тест не проходит. Сначала добейтесь того чтобы данный тест проходил и повторите.`);
+			}
+
+			// Проверка, что не было ошибки и нам вернулся json, исключение поля time и форматируем.
+			let testOutput = resultTest.getOutput();
 			try {
-				const modularTestContent = `${integrationTestSimplifiedContent}\n\n${normalizedEvents}`;
-
-				// Сохраняем модульный тест во временный файл.
-				const rootPath = this.params.config.getRootByPath(this.params.test.getRuleDirectoryPath());
-				const rootFolder = path.basename(rootPath);
-				const randTmpPath = this.params.config.getRandTmpSubDirectoryPath(rootFolder);
-				await fs.promises.mkdir(randTmpPath, { recursive: true });
-
-				const fastTestFilePath = path.join(randTmpPath, GetExpectedEventCommand.EXPECT_EVENT_FILENAME);
-				await FileSystemHelper.writeContentFile(fastTestFilePath, modularTestContent);
-
-				// Создаем временный модульный тест для быстрого тестирования.
-				const fastTest = new FastTest(this.params.test.getNumber());
-				fastTest.setTestExpectationPath(fastTestFilePath);
-				fastTest.setRule(this.params.rule);
-
-				// Специальный тест быстрого теста.
-				const testRunner = this.params.rule.getUnitTestRunner();
-				const resultTest = await testRunner.run(fastTest);
-
-				if (resultTest.getStatus() === TestStatus.Failed) {
-					throw new XpException(
-						`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено неуспешно. Возможно интеграционный тест не проходит с условием expect 1 {"correlation_name": "${this.params.rule.getName()}"}. Добейтесь того чтобы данный тест проходил и повторите.`);
-				}
-
-				// Проверка, что не было ошибки и нам вернулся json, исключение поля time и форматируем.
-				let testOutput = resultTest.getOutput();
-				try {
-					let testObject = JSON.parse(testOutput);
-					testObject = TestHelper.removeKeys(testObject, ["time"]);
-					testOutput = JSON.stringify(testObject, null, 4);
-				}
-				catch(error) {
-					throw new XpException("Полученные данные не являются событием формата json", error);
-				}
-
-				// Получаем имеющийся код теста и заменяем секцию expect {}
-				const tests = this.params.rule.getIntegrationTests();
-				const ruleTestIndex = tests.findIndex(it => it.getNumber() == resultTest.getNumber());
-				if (ruleTestIndex == -1) {
-					throw new XpException("Не удалось получить интеграционный тест");
-				}
-
-				// Удаляем временные файлы.
-				await fs.promises.rmdir(randTmpPath, { recursive: true });
-				return testOutput;
+				let testObject = JSON.parse(testOutput);
+				testObject = TestHelper.removeKeys(testObject, ["time"]);
+				testOutput = JSON.stringify(testObject, null, 4);
 			}
-			catch (error) {
-				ExceptionHelper.show(error, 'Не удалось получить ожидаемое событие');
+			catch(error) {
+				throw new XpException("Полученные от теста данные не являются событием формата json. Возможно, интеграционный тест не проходит", error);
 			}
+
+			// Получаем имеющийся код теста и заменяем секцию expect {}
+			const tests = this.params.rule.getIntegrationTests();
+			const ruleTestIndex = tests.findIndex(it => it.getNumber() == resultTest.getNumber());
+			if (ruleTestIndex == -1) {
+				throw new XpException("Не удалось получить интеграционный тест");
+			}
+
+			// Удаляем временные файлы.
+			await fs.promises.rmdir(randTmpPath, { recursive: true });
+			return testOutput;
 		});
 	}
 
-	private async getExpectedEventForRuleWithSubrules(): Promise<string> {
-		const ruleName = this.params.rule.getName();
-		
-		// Получаем ожидаемое событие до обогащения
-		const actualEventsFilePath = TestHelper.getEnrichedCorrEventFilePath(
-			this.params.tmpDirPath,
-			ruleName,
-			this.params.test.getNumber());
-			
+	/**
+	 * Получает ожидаемое событие из результатов успешного интеграционного теста. Работает с любыми правилами в том числе с использованием subrules. Необходимо успешное завершение теста.
+	 * @returns ожидаемое событие
+	 */
+	private async getExpectedEventForIntegrationTestResult(): Promise<string> {
+
+		const rule = this.params.rule;
+		const ruleName = rule.getName();
+		if(!fs.existsSync(this.params.tmpDirPath)) {
+			throw new XpException(`Результаты интеграционного теста №${this.params.test.getNumber()} правила ${ruleName} не найдены. Получение ожидаемого события возможно только для успешно прошедших интеграционных тестов`);
+		}
+
+		const actualEventsFilePath = await this.getActualEventsFilePath()
 		if(!actualEventsFilePath) {
-			throw new XpException(`Результаты интеграционного теста №${this.params.test.getNumber()} правила ${ruleName} не найдены`);
+			throw new XpException(`Результаты интеграционного теста №${this.params.test.getNumber()} правила ${ruleName} не найдены. Получение ожидаемого события возможно только для успешно прошедших интеграционных тестов`);
 		}
 
 		if(!fs.existsSync(actualEventsFilePath)) {
@@ -180,19 +190,79 @@ export class GetExpectedEventCommand  {
 
 		const actualEvents = actualEventsString.split(os.EOL).filter(l => l);
 
-		// Отбираем ожидаемое событие по имени правила, так как сюда могут попасть сабрули.
-		const expectedFilteredEvents = TestHelper.filterCorrelationEvents(actualEvents, ruleName);
+		let expectedFilteredEvents: string[];
+		if(rule instanceof Correlation) {
+			// Отбираем ожидаемое событие по имени правила, так как сюда могут попасть сабрули.
+			expectedFilteredEvents = TestHelper.filterCorrelationEvents(actualEvents, ruleName);
+		} 
+	
+		if(rule instanceof Enrichment) {
+			// Отбираем ожидаемое событие по имени правила, так как сюда могут попасть сабрули.
+			expectedFilteredEvents = actualEvents;
+		} 
+
+		if(!expectedFilteredEvents) {
+			throw new XpException(`Ожидаемые события для правила ${ruleName} не были получены`);
+		}
+
 		if(expectedFilteredEvents.length === 0) {
-			DialogHelper.showError("Не найдено результирующих событий после интеграционного теста. Возможно тест не прошёл или он не подразумевание получение результирующего события")
-			return;
+			throw new XpException(`Не найдено результирующих событий после интеграционного теста правила ${ruleName}. Возможно тест не прошёл или он не подразумевание получение результирующего события`);
 		}
 
 		if(expectedFilteredEvents.length != 1) {
-			DialogHelper.showError(`Предполагается одно ожидаемое событие, но было получено ${expectedFilteredEvents.length}`)
-			return;
+			throw new XpException(`Предполагается одно ожидаемое событие, но было получено ${expectedFilteredEvents.length}`)
 		}
 
 		return expectedFilteredEvents[0];
+	}
+
+	private async getActualEventsFilePath() : Promise<string> {
+		const rule = this.params.rule;
+		const ruleName = this.params.rule.getName();
+
+		if(rule instanceof Correlation) {
+			return TestHelper.getEnrichedCorrEventFilePath(
+				this.params.tmpDirPath,
+				ruleName,
+				this.params.test.getNumber());
+		}
+
+		if(rule instanceof Enrichment) {
+			// Проверяем сначала нормализованное обогащённое событие
+			const enrichedNormFilePath = TestHelper.getEnrichedNormEventFilePath(
+				this.params.tmpDirPath,
+				ruleName,
+				this.params.test.getNumber());
+
+			// В любом случае должно быть нормализованное обогащённое событие.
+			if(!fs.existsSync(enrichedNormFilePath)) {
+				throw new XpException(`Результирующее обогащённое нормализованное событие не найдено`);
+			}
+
+			// Может быть обогащено нормализованное событие, либо корреляция
+			const enrichedCorrFilePath = TestHelper.getEnrichedCorrEventFilePath(
+				this.params.tmpDirPath,
+				ruleName,
+				this.params.test.getNumber());
+
+			if(!enrichedCorrFilePath) {
+				return enrichedNormFilePath;
+			}
+
+			// Если обогащённое корреляции нет, тогда будет обогащённое нормализованное событие.
+			if(!fs.existsSync(enrichedCorrFilePath)) {
+				return enrichedNormFilePath;
+			}
+
+			const enrichedCorrEvent = await FileSystemHelper.readContentFile(enrichedCorrFilePath);
+			if(!enrichedCorrEvent) {
+				return enrichedCorrEvent;
+			}
+
+			return enrichedCorrEvent;
+		}
+
+		throw new XpException(`Правило ${ruleName} не поддерживает получение ожидаемого события`);
 	}
 
 	public static EXPECT_EVENT_FILENAME = "expected_event_test.sc";

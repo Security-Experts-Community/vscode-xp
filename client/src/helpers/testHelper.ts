@@ -125,6 +125,8 @@ export class TestHelper {
 		try {
 			let object = JSON.parse(expectedEvent);
 			object = TestHelper.removeKeys(object, [
+					"body", // Встречается в нормализованных (обогащенных) событиях
+					
 					"_subjects",
 					"_objects",
 					"_rule",
@@ -161,36 +163,63 @@ export class TestHelper {
 	 * @param integrationTestsTmpDirPath 
 	 * @param testNumber 
 	 */
+	public static getEnrichedNormEventFilePath(integrationTestsTmpDirPath: string, ruleName: string, testNumber: number): string {
+		// c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
+		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
+		const resultEvents = files.filter(fp => {
+			return RegExpHelper.getEnrichedNormTestEventsFileName(ruleName, testNumber).test(fp);
+		});
+
+		if(resultEvents.length === 1) {
+			return resultEvents[0];
+		}
+
+		if(resultEvents.length > 1) {
+			throw new XpException("Найдено больше одного файла обогащенного нормализованного события, перезапустите VSCode и попробуйте еще раз");
+		}
+
+		return undefined;
+	}
+
+	/**
+	 * Возвращает путь к результату интеграционных тестов. Данный путь существует только тогда, когда включено сохранение временных файлов. В противном случае директория очищается.
+	 * @param integrationTestsTmpDirPath 
+	 * @param testNumber 
+	 */
 	public static getEnrichedCorrEventFilePath(integrationTestsTmpDirPath: string, ruleName: string, testNumber: number): string {
 		// c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
 		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
-		// TODO: для обогащений может отсутствовать корреляционное событие, а присутствовать обогащенное нормализованное 
-		// raw_events_2_norm_enr.json
 		const resultEvents = files.filter(fp => {
-			return RegExpHelper.getEnrichedCorrTestResultFileName(ruleName, testNumber).test(fp);
+			return RegExpHelper.getEnrichedCorrTestEventsFileName(ruleName, testNumber).test(fp);
 		});
 
-		if(resultEvents.length !== 1) {
-			throw new XpException("Нужного файла фактического корреляционного событий не найдено. Вероятно, фактическое событие отсутствует.");
+		if(resultEvents.length === 1) {
+			return resultEvents[0];
 		}
 
-		return resultEvents[0];
+		if(resultEvents.length > 1) {
+			throw new XpException("Найдено больше одного файла обогащенного корреляционного события, перезапустите VSCode и попробуйте еще раз");
+		}
+
+		return undefined;
 	}
 
-	public static getExpectedEventEventFilePath(integrationTestsTmpDirPath: string, ruleName: string, testNumber: number): string {
+	public static getCorrEventEventFilePath(integrationTestsTmpDirPath: string, ruleName: string, testNumber: number): string {
 		// c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
 		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
-		// TODO: для обогащений может отсутствовать корреляционное событие, а присутствовать обогащенное нормализованное 
-		// raw_events_2_norm_enr.json
 		const resultEvents = files.filter(fp => {
-			return RegExpHelper.getCorrTestResultFileName(ruleName, testNumber).test(fp);
+			return RegExpHelper.getCorrTestEventsFileName(ruleName, testNumber).test(fp);
 		});
 
-		if(resultEvents.length !== 1) {
-			throw new XpException("Нужного файла фактического корреляционного событий не найдено. Вероятно, фактическое событие отсутствует.");
+		if(resultEvents.length === 1) {
+			return resultEvents[0];
 		}
 
-		return resultEvents[0];
+		if(resultEvents.length > 1) {
+			throw new XpException("Найдено больше одного файла корреляционного события, перезапустите VSCode и попробуйте еще раз");
+		}
+
+		return undefined;
 	}
 
 	public static cleanModularTestResult(testCode: string) : string {
