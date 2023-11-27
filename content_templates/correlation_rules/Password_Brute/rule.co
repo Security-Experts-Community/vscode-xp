@@ -25,7 +25,7 @@ event Login_Success:
     }
 
 # TODO: при необходимости, скорректировать логику выявления брутфорса
-rule Password_Brute: (Login_Failure[9,] and Login_Success?) timer 11m
+rule Password_Brute: (Login_Failure[9,] -> Login_Success?) timer 11m
 
     init {
         $labels = "CheckWL_Password_Guessing"

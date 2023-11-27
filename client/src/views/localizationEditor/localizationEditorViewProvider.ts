@@ -239,7 +239,7 @@ export class LocalizationEditorViewProvider {
 						DialogHelper.showError("Обнаружена локализация по умолчанию. Исправьте/добавьте нужные критерии локализаций и повторите");
 						this._rule.setStatus(ContentItemStatus.Unverified, "Локализации не прошли проверку");
 					} else {
-						this._rule.setStatus(ContentItemStatus.Verified, "Локализации прошли проверку");
+						this._rule.setStatus(ContentItemStatus.Verified, "Интеграционные тесты и локализации прошли проверку");
 					}
 
 					await ContentTreeProvider.refresh(this._rule);
