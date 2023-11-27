@@ -153,7 +153,9 @@
 		<script type="module" src="{{WebviewUri}}"></script>
 
 		<script>
-			// Глобальное определение функций.
+			// Глобальное определение переменных.
+			const redos = [];
+			const undos = [];
 
 			// Сохраняем все тесты.
 			function saveAllTests() {					
@@ -248,9 +250,12 @@
 						undos.push(el.innerHTML)
 					})
 
-					// Обработка символа табуляции
+					// Особая обработка специальных клавиш
 					el.addEventListener('keydown', e => {
+						// Обработка символа табуляции
 						if (e.which === 9) {
+							console.log('Tab pressed');
+
 							undos.push(el.innerHTML)
 							const pos = caret() + tab.length;
 							const range = window.getSelection().getRangeAt(0);
@@ -259,7 +264,24 @@
 							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
 							setCaret(pos);
 							e.preventDefault();
+							return;
 						}
+
+						// Обработка enter, так как новая строка не формируется в html
+						if (e.which === 13) {
+							console.log('Enter pressed');
+
+							const newLine = '\n\n';
+							undos.push(el.innerHTML)
+							const pos = caret() + newLine.length;
+							const range = window.getSelection().getRangeAt(0);
+							range.deleteContents();
+							document.execCommand("InsertHTML", false, newLine);
+							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
+							setCaret(pos);
+							e.preventDefault();
+							return;
+    					}
 					});
 
 					// Обработка вставки символа с поддержкой выделения на Ctrl+A.
@@ -493,8 +515,7 @@
 
 			$(document).ready(function() {
 
-				const redos = []
-				const undos = []
+
 
 				addEventListenerOnClickForStopPropaginationAndDeleteTest()
 
