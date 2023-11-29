@@ -210,10 +210,9 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 					const action = new UnpackKbCommand(config);
 					try {
 						await action.execute(selectedItem);
-						return DialogHelper.showInfo(`Пакет успешно распакован`);
 					}
 					catch(error) {
-						ExceptionHelper.show(error, `Неожиданная ошибка распаковки KB-пакета`);
+						ExceptionHelper.show(error, `Неожиданная ошибка распаковки kb-пакета`);
 					}
 				}
 			)

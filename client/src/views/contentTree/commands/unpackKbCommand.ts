@@ -11,6 +11,7 @@ import { ContentTreeProvider } from '../contentTreeProvider';
 import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
 import { ContentHelper } from '../../../helpers/contentHelper';
 import { XpException } from '../../../models/xpException';
+import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 
 export class UnpackKbCommand {
 	constructor(private _config: Configuration) {
@@ -45,9 +46,9 @@ export class UnpackKbCommand {
 
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
+			cancellable: true,
 			title: "Распаковка пакета"
-		}, async (progress) => {
+		}, async (progress, cancellationToken) => {
 
 			const kbFilePath = kbUris[0].fsPath; 
 
@@ -89,17 +90,20 @@ export class UnpackKbCommand {
 					{	
 						encoding: 'utf-8',
 						outputChannel: this._config.getOutputChannel(),
-						checkCommandBeforeExecution: true
+						checkCommandBeforeExecution: true,
+						cancellationToken: cancellationToken
 					}
 				);
 			} 
 			catch(error) {
-				throw new XpException(`Ошибка выполнения команды ${cmd}. Возможно, не был установлены [.NET Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) или не добавлен путь к нему в переменную PATH.`, error);
+				ExceptionHelper.show(error, `Ошибка выполнения команды ${cmd}. Возможно, не был установлены [.NET Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) или не добавлен путь к нему в переменную PATH.`);
+				return;
 			}
 				
 
 			if(!executeResult.output.includes(this.SUCCESS_SUBSTRING)) {
-				throw new XpException(`Не удалось распаковать пакет. Подробности приведены в панели Output.`);
+				DialogHelper.showError(`Не удалось распаковать пакет. Подробности приведены в панели Output.`);
+				return;
 			} 
 
 			// TODO: Убрать этот фикс, когда починят экспорт из PTKB
@@ -132,6 +136,7 @@ export class UnpackKbCommand {
 			}
 
 			await ContentTreeProvider.refresh();
+			DialogHelper.showInfo(`Пакет успешно распакован`);
 		});
 	}
 
