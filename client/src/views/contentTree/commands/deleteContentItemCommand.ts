@@ -12,7 +12,13 @@ export class DeleteContentItemCommand {
 		const folderToDeletePath = selectedItem.getDirectoryPath();
 
 		try {
-			await fse.remove(folderToDeletePath);
+			await vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				cancellable: false,
+				title: `Удаление`
+			}, async (progress) => {
+				await fse.remove(folderToDeletePath);
+			});
 		}
 		catch(error) {
 			DialogHelper.showError("Ошибка удаления файла", error);

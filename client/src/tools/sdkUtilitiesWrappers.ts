@@ -64,11 +64,10 @@ export class SDKUtilitiesWrappers {
 		}
 
 		const rawEventPath = unitTest.getTestInputDataPath();
-
 		process.env.PTSIEM_SDK_ROOT = this._config.getSiemSdkDirectoryPath();
 
 		// Запускаем утилиту с параметрами
-		const output = await ProcessHelper.execute(
+		const executeResult = await ProcessHelper.execute(
 			normalizeExePath,
 			[
 				"--sdk", sdkPath,
@@ -86,12 +85,16 @@ export class SDKUtilitiesWrappers {
 			}
 		);
 
-		if(!output.output) {
+		if(!executeResult.output) {
 			throw new XpException(`Нормализатор вернул пустую строку`);
 		}
 
-		Log.info(`Нормализация тестового события завершена c кодом ${output.exitCode}`);
-		return output.output;
+		Log.debug(`Нормализация тестового события завершена c кодом ${executeResult.exitCode}`);
+		if(executeResult.exitCode !== 0) {
+			Log.error(`Нормализация тестового события завершена c кодом ${executeResult.exitCode}`);
+		}
+		
+		return executeResult.output;
 	}
 }
 // 	/** Функция проверки отсутствия ошибок в диагностических сообщениях

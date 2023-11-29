@@ -52,9 +52,10 @@ export class UnpackKbCommand {
 			const kbFilePath = kbUris[0].fsPath; 
 
 			// Получаем путь к директории пакетов.
-			const exportDirPath = selectedPackage.getContentRootPath(Configuration.get());
+			const packageDirPath = selectedPackage.getContentRootPath(Configuration.get());
+			const rootContentDirPath = path.dirname(packageDirPath);
 
-			if(!fs.existsSync(exportDirPath)) {
+			if(!fs.existsSync(packageDirPath)) {
 				DialogHelper.showError(`Не существует такой папки для пакетов.`);
 				return;
 			}
@@ -105,48 +106,29 @@ export class UnpackKbCommand {
 			ContentHelper.fixTables(outputDirPath);
 
 			// Если внутри несколько пакетов.
-			const packagesPackagePath = path.join(outputDirPath, "packages");
+			const packagesPackagePath = path.join(outputDirPath, ContentTreeProvider.PACKAGES_DIRNAME);
 			if(fs.existsSync(packagesPackagePath)) {
-				await fse.copy(packagesPackagePath, exportDirPath, { overwrite: true });
+				await fse.copy(packagesPackagePath, packageDirPath, { overwrite: true });
 			}
 			
 			// Пользовательские правила и директории, которые просто лежат в корне KB.
-			const objectsPackagePath = path.join(outputDirPath, "objects");
+			const objectsPackagePath = path.join(outputDirPath, this.ROOT_USERS_CONTENT_UNPACKED_DIRNAME);
 			if(fs.existsSync(objectsPackagePath)) {
-				await fse.copy(objectsPackagePath, exportDirPath, { overwrite: true });
+				await fse.copy(objectsPackagePath, packageDirPath, { overwrite: true });
 			}
 
-			// TODO: 
-			// Если внутри один пакет.
-			// const objectsPackagePath = path.join(outputDirPath, "objects");
-			// if(!fs.existsSync(packagesPackagePath) && fs.existsSync(objectsPackagePath)) {
-			// 	const onePackagePath = path.join(exportDirPath, kbFileName);
-			// 	await fse.copy(objectsPackagePath, onePackagePath, { overwrite: true });
+			// Распаковка контрактов, для пользователя не требуется.
+			// const contractsTmpPath = path.join(outputDirPath, this.CONTRACTS_UNPACKED_DIRNAME);
+			// const contractsPackagePath = path.join(rootContentDirPath, this.CONTRACTS_UNPACKED_DIRNAME);
+			// if(fs.existsSync(contractsTmpPath)) {
+			// 	await fse.copy(contractsTmpPath, contractsPackagePath, { overwrite: true });
 			// }
 
-			// Копируем макросы
-			const macroPackagePath = path.join(outputDirPath, "common");
+			// Обновляем макросы
+			const macroPackagePath = path.join(outputDirPath, this.MACRO_DIRNAME);
 			if(fs.existsSync(macroPackagePath)) {
-				const rootPath =
-				(vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
-					? vscode.workspace.workspaceFolders[0].uri.fsPath
-					: undefined;
-				if(rootPath){
-					const outPath = path.join(rootPath, "common");
-					await fse.copy(macroPackagePath, outPath);
-
-					// Убираем BOM-метки из файлов
-					const files = ContentHelper.getFilesByPattern(outPath, /metainfo\.yaml/);
-					files.forEach(file => {
-						let content = fs.readFileSync(file, 'utf8');
-						if (typeof content === 'string') {
-							if (content.charCodeAt(0) === 0xFEFF) {
-								content = content.slice(1);
-							}
-							fs.writeFileSync(file, content, 'utf8');
-						}
-					});
-				}
+				const marcoDirPath = path.join(rootContentDirPath, this.MACRO_DIRNAME);
+				await fse.copy(macroPackagePath, marcoDirPath);
 			}
 
 			await ContentTreeProvider.refresh();
@@ -154,4 +136,9 @@ export class UnpackKbCommand {
 	}
 
 	private readonly SUCCESS_SUBSTRING = "Knowledge base unpacking completed successfully";
+
+	private readonly ROOT_USERS_CONTENT_UNPACKED_DIRNAME = "objects";
+	private readonly CONTRACTS_UNPACKED_DIRNAME = "contracts";
+	private readonly MACRO_DIRNAME = "common";
 }
+
