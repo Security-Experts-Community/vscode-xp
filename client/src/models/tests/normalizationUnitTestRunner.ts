@@ -82,9 +82,9 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 			delete eventObject['recv_time'];
 		}
 
-		if(eventObject['time']) {
-			delete eventObject['time'];
-		}
+		// if(eventObject['time']) {
+		// 	delete eventObject['time'];
+		// }
 
 		// Костыль. Нивелируем appendix.xp
 		// event_src.host = coalesce(event_src.fqdn, event_src.hostname, event_src.ip, recv_ipv4, recv_ipv6, recv_host)
