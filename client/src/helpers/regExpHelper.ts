@@ -53,7 +53,7 @@ export class RegExpHelper {
 	public static parseJsonsFromMultilineString(str: string) : string[] {
 		const jsons : string[] = [];
 		let currResult: RegExpExecArray | null;
-		const regExp = /^\{[\s\S]+?\}/gm;
+		const regExp = /^\{[\s\S]+\}/gm;
 		while ((currResult = regExp.exec(str))) {
 			const curValue = currResult[0];
 			jsons.push(curValue);

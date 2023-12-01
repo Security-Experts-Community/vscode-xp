@@ -1,5 +1,14 @@
 # Change Log
 
+## 3.11.0 (Pre-Release)
+
+- актуализирован шаблон Password_Brute правила корреляции.
+
+## 3.10.1 (Release)
+
+- исправлена ошибка при генерации ожидаемого события, исключалось необходимое поле `time` (special thanks @g4n8g);
+- повышена стабильность.
+
 ## 3.10.0 (Release)
 
 - реализована фичa [#133](https://github.com/Security-Experts-Community/vscode-xp/issues/133) для генерации ожидаемого события для правил на основе подправил (subrules);

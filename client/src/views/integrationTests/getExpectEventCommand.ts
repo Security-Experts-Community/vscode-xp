@@ -173,7 +173,7 @@ export class GetExpectedEventCommand  {
 			throw new XpException(`Результаты интеграционного теста №${this.params.test.getNumber()} правила ${ruleName} не найдены. Получение ожидаемого события возможно только для успешно прошедших интеграционных тестов`);
 		}
 
-		const actualEventsFilePath = await this.getActualEventsFilePath()
+		const actualEventsFilePath = await this.getActualEventsFilePath();
 		if(!actualEventsFilePath) {
 			throw new XpException(`Результаты интеграционного теста №${this.params.test.getNumber()} правила ${ruleName} не найдены. Получение ожидаемого события возможно только для успешно прошедших интеграционных тестов`);
 		}
@@ -210,7 +210,7 @@ export class GetExpectedEventCommand  {
 		}
 
 		if(expectedFilteredEvents.length != 1) {
-			throw new XpException(`Предполагается одно ожидаемое событие, но было получено ${expectedFilteredEvents.length}`)
+			throw new XpException(`Предполагается одно ожидаемое событие, но было получено ${expectedFilteredEvents.length}`);
 		}
 
 		return expectedFilteredEvents[0];

@@ -136,6 +136,8 @@ export class TestHelper {
 					"generator.version",
 					"generator.type",
 
+					"count",		// Количество агрегированных инцидентов
+
 					"uuid",
 					"incident.name",
 
@@ -258,20 +260,25 @@ export class TestHelper {
 
 	/**
 	 * Убираем пробельные символы из ошибки.
-	 * @param ruleContent код правила.
+	 * @param fileContent код правила.
 	 * @param diagnostics список ошибок, полученный из разбора лога.
-	 * @returns список ошибок, в котором задан начальный символ строки первым непробельным символом.
+	 * @returns список ошибок, в котором задан начальный символ строки первым не пробельным символом.
 	 */
-	public static correctWhitespaceCharacterFromErrorLines(ruleContent: string, diagnostics: vscode.Diagnostic[]): vscode.Diagnostic[] {
-		if (!ruleContent) { return []; }
-		const fixedContent = ruleContent.replace(/(\r\n)/gm, "\n");
+	public static correctWhitespaceCharacterFromErrorLines(fileContent: string, diagnostics: vscode.Diagnostic[]): vscode.Diagnostic[] {
+		if (!fileContent) { 
+			return []; 
+		}
+		
+		const fixedContent = fileContent.replace(/(\r\n)/gm, "\n");
 		const lines = fixedContent.split('\n');
 
 		return diagnostics.map(d => {
 			const lineNumber = d.range.start.line;
 
+			// Ссылка на строку, которой нет файле
 			if (lineNumber >= lines.length) {
-				throw new ParseException(`Не удалось разобрать сообщения об ошибках в коде правила: ${ruleContent}`);
+				Log.warn(`В файле ${d.source} не удалось скорректировать ссылку на ошибку, так как указанная строка больше фактического количества строк в файле`);
+				return d;
 			}
 
 			const errorLine = lines[lineNumber];

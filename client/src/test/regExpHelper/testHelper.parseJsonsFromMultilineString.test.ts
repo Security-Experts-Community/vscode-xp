@@ -7,6 +7,20 @@ suite('regExpHelper.parseJsonsFromMultilineString', async () => {
 	test('Одностроковый json', async () => {
 
 		const json =
+`{"object.value": "/sources/identify.php,POST,[{value : user_not_exists, text:}]<...>",\r\n` +
+`"object.vendor": "Windows"}`;
+
+		const jsons = RegExpHelper.parseJsonsFromMultilineString(json);
+
+		assert.strictEqual(jsons.length, 1);
+		assert.strictEqual(
+			jsons[0], 
+			`{"object.value": "/sources/identify.php,POST,[{value : user_not_exists, text:}]<...>",\r\n"object.vendor": "Windows"}`);
+	});
+
+	test('Одностроковый json', async () => {
+
+		const json =
 `{"object.value": "name,objectClass,objectGUID", "src.host": "::1", "src.ip": "::1", "src.port": 1198}`;
 
 		const jsons = RegExpHelper.parseJsonsFromMultilineString(json);
