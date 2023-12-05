@@ -2,10 +2,10 @@ import { addEventListenerOnChangeToToggleSwitch } from "../../../shared/ui/toggl
 import { jqDropdownRulesTleRows, jqDropdownListTleRows } from "../store/htmlStore.js";
 import { checkIfInvalidInputsExist, validateAllInputs } from "./validation.js";
 
-const _directoryTypeString = 'Справочник';
-const _rulesCorrelationTypeString = 'Заполняется правилами корреляции';
-const _rulesEnrichmentTypeString = 'Заполняется правилами обогащения';
-const _listTypeString = 'Репутационный список';
+const _registryTypeString = 'Registry';
+const _correlationRuleTypeString = 'CorrelationRule';
+const _enrichmentRuleTypeString = 'EnrichmentRule';
+const _assetGridTypeString = 'AssetGrid';
 
 const _rowsToRemoveBeforeInsertNewClassSelector = '.jqDropdownRemoveBeforeInsert'
 const _rowAfterWhichElementsAreInsertedClassSelector = '.jqDropdownInserter'
@@ -60,13 +60,13 @@ const _removeTleRowsAndInsertNewIfNeeded = (elementToInsert) => {
 
 
 const _insertTleRows = (currentTypeString) => {
-	if (currentTypeString === _directoryTypeString) {
+	if (currentTypeString === _registryTypeString) {
 		_removeTleRowsAndInsertNewIfNeeded();
 	}
-	else if ((currentTypeString == _rulesCorrelationTypeString && _lastSelectedType != _rulesEnrichmentTypeString) || (currentTypeString == _rulesEnrichmentTypeString && _lastSelectedType != _rulesCorrelationTypeString)) {
+	else if ((currentTypeString == _correlationRuleTypeString && _lastSelectedType != _enrichmentRuleTypeString) || (currentTypeString == _enrichmentRuleTypeString && _lastSelectedType != _correlationRuleTypeString)) {
 		_removeTleRowsAndInsertNewIfNeeded(jqDropdownRulesTleRows);
 		_enableTimeSwitchAndTimeInputsBehavior();
-	} else if (currentTypeString == _listTypeString) {
+	} else if (currentTypeString == _assetGridTypeString) {
 		_removeTleRowsAndInsertNewIfNeeded(jqDropdownListTleRows);
 	}
 
@@ -76,12 +76,14 @@ const _insertTleRows = (currentTypeString) => {
 
 const _addOnChangeEventListenerToTypeDropdown = () => {
 	$(_typeDropdownIdSelector)[0].addEventListener("change", function () {
+		console.log(this.value)
 		_insertTleRows(this.value);
 	})
 }
 
 export const enableSelectingTypeOnDropdown = () => {
 	_lastSelectedType = $('#jqTypeDropdown').val()
+	console.log(_lastSelectedType);
 	_insertTleRows(_lastSelectedType);
 	_addOnChangeEventListenerToTypeDropdown();
 }
