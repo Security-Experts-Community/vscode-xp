@@ -34,17 +34,19 @@ export const tableRowHTML = `
 
 export const jqDropdownRulesTleRows = `
 	<div class="tle__row jqDropdownRulesTleRow jqDropdownRemoveBeforeInsert">
-		<vscode-text-field type="text" class="jqRecordSizeInput jqInput">
+		<label for="jqRecordSizeTypicalInput">
 			Типичный размер
 			<span class="span_input-required">*</span>
-		</vscode-text-field>
+		</label>
+		<vscode-text-field id="jqRecordSizeTypicalInput" type="text" class="jqRecordSizeInput jqInput"></vscode-text-field>
 		<span class="tle__row__input__helper">Количество записей, которое нежелательно превышать.</span>
 	</div>
 	<div class="tle__row jqDropdownRulesTleRow jqDropdownRemoveBeforeInsert">
-		<vscode-text-field type="text" class="jqRecordSizeInput jqInput">
+		<label for="jqRecordSizeMaxInput">
 			Максимальный размер
 			<span class="span_input-required">*</span>
-		</vscode-text-field>
+		</label>
+		<vscode-text-field id="jqRecordSizeMaxInput" type="text" class="jqRecordSizeInput jqInput"></vscode-text-field>
 		<span class="tle__row__input__helper">При превышении этого размера табличный список будет сокращен до типичного размера. Будут удалены самые старые записи.</span>
 	</div>
 	<div class="tle__row jqDropdownRulesTleRow jqDropdownRemoveBeforeInsert">
@@ -72,7 +74,7 @@ export const jqDropdownRulesTleRows = `
 	</div>
 `
 
-export const jqDropdownListTleRows = `
+export const jqDropdownAssetGridTleRows = `
 	<div class="tle__row jqDropdownListTleRow jqDropdownRemoveBeforeInsert">
 		<label for="jqTypeDropdown">
 			Тип объектов
@@ -86,9 +88,10 @@ export const jqDropdownListTleRows = `
 		</vscode-dropdown>
 	</div>
 	<div class="tle__row jqDropdownListTleRow jqDropdownRemoveBeforeInsert">
-		<vscode-text-field type="text" class="jqScoreInput jqInput">
+		<label for="jqScoreInput">
 			Минимальный score
-		</vscode-text-field>
+		</label>
+		<vscode-text-field id="jqScoreInput" type="text" class="jqScoreInput jqInput"></vscode-text-field>
 		<span class="tle__row__input__helper">Целое число от 0 до 100. Можно не заполнять, тогда будут импортироваться все объекты.</span>
 	</div>
 `
