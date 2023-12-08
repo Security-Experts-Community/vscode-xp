@@ -124,7 +124,7 @@ export class SiemJOutputParser {
 		// Количество тестов не собрали.
 		// TEST_RULES [Err] :: Collected 5 tests.
 		// TEST_RULES :: Collected 6 tests.
-		const runningTestRegExp = /TEST_RULES (?:\[Err\] )?:: Collected (\d+) tests./gm;
+		const runningTestRegExp = /Collected (\d+) tests./gm;
 		if(!siemjOutput.match(runningTestRegExp)) {
 			result.testsStatus = false;
 			return;

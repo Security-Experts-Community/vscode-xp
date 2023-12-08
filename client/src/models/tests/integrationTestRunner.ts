@@ -84,8 +84,8 @@ export class IntegrationTestRunner {
 			// Есть хоть одна измененная нормализация, пересобираем все.
 			if(VsCodeApiHelper.isWorkDirectoryUsingGit(gitApi, rootPath)) {
 				const changePaths = VsCodeApiHelper.gitWorkingTreeChanges(gitApi, rootPath);
-				const isNormalizationsСhanged = changePaths.some(cp => cp.endsWith(".xp"));
-				if(isNormalizationsСhanged) {
+				const isNormalizationsChanged = changePaths.some(cp => cp.endsWith(".xp"));
+				if(isNormalizationsChanged) {
 					configBuilder.addNormalizationsGraphBuilding(true);
 				} else {
 					configBuilder.addNormalizationsGraphBuilding(false);
