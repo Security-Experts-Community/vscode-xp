@@ -24,7 +24,7 @@ export class XpDocumentHighlightProvider implements vscode.DocumentSemanticToken
 		return new XpDocumentHighlightProvider(functionNames, legend);
 	}	
 
-	constructor(private _fuctionNames: string[], private _legend: vscode.SemanticTokensLegend) {
+	constructor(private _functionNames: string[], private _legend: vscode.SemanticTokensLegend) {
 	}
 
 	provideDocumentSemanticTokens(
@@ -36,7 +36,7 @@ export class XpDocumentHighlightProvider implements vscode.DocumentSemanticToken
 
 		for(let currLine = 0; currLine < document.lineCount ; currLine++) {
 			const line = document.lineAt(currLine);
-			const functionCalls = RegExpHelper.parseFunctionCalls(line.text, currLine, this._fuctionNames);
+			const functionCalls = RegExpHelper.parseFunctionCalls(line.text, currLine, this._functionNames);
 
 			// Проходимся по каждой строке для того чтобы получить нужные Position в документе.
 			for(const functionCallRange of functionCalls) {

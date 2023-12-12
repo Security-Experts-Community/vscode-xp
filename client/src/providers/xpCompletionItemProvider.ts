@@ -118,17 +118,17 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 		}
 
 		const unendedToken = parseResult[1];
-		const filtredItems = this._completionItems.filter(ci => ci.label.startsWith(unendedToken));
+		const filteredItems = this._completionItems.filter(ci => ci.label.startsWith(unendedToken));
 
 		// Вставлять будем только окончание, вместо полного item-а.
 		// const wordRange = document.getWordRangeAtPosition(position);
 		// const word = document.getText(wordRange);
 		
-		for (const filtredItem of filtredItems) {
+		for (const filteredItem of filteredItems) {
 			const unendedTokenWithoutLastChar = unendedToken.slice(0, -1);
-			filtredItem.insertText = filtredItem.label.replace(unendedTokenWithoutLastChar, "");
+			filteredItem.insertText = filteredItem.label.replace(unendedTokenWithoutLastChar, "");
 		}
 
-		return filtredItems;
+		return filteredItems;
 	}
 }

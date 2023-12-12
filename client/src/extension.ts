@@ -24,7 +24,7 @@ import { XpCompletionItemProvider } from './providers/xpCompletionItemProvider';
 import { ContentTreeProvider } from './views/contentTree/contentTreeProvider';
 import { RunningCorrelationGraphProvider } from './views/correlationGraph/runningCorrelationGraphProvider';
 import { TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
-import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvier';
+import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvider';
 import { TestsFormatContentMenuExtension } from './ext/contextMenuExtension';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
 import { YamlHelper } from './helpers/yamlHelper';
@@ -35,6 +35,7 @@ import { FileSystemHelper } from './helpers/fileSystemHelper';
 import { XpEnumValuesCompletionItemProvider } from './providers/xpEnumValuesCompletionItemProvider';
 import { LogLevel, Logger } from './logger';
 import { RetroCorrelationViewController } from './views/retroCorrelation/retroCorrelationViewProvider';
+import { XpHoverProvider } from './providers/xpHoverProvider';
 
 export let Log : Logger;
 let client: LanguageClient;
@@ -212,6 +213,22 @@ export async function activate(context: ExtensionContext) {
 					language: 'co'
 				},
 				new XpRenameProvide()
+			)
+		);
+
+		// Показывает общую информацию по наведению на конструкцию.
+		const xpHoverProvider = await XpHoverProvider.init(config);
+		context.subscriptions.push(
+			vscode.languages.registerHoverProvider([
+				{
+					scheme: 'file',
+					language: 'co'
+				},
+				{
+					scheme: 'file',
+					language: 'xp'					
+				}], 
+				xpHoverProvider
 			)
 		);
 
