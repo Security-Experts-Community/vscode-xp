@@ -152,7 +152,9 @@ export class SiemJOutputParser {
 		// Не все прошли, значит есть ошибки.
 		// TEST_RULES :: Test Started: tests\\raw_events_1.json
 		// TEST_RULES :: Expected results are not obtained.
-		const failedTestRegExp = /TEST_RULES :: Test Started: tests\\raw_events_(\d+).json\s+TEST_RULES :: Expected results are not obtained./gm;
+		const failedTestRegExp = 
+			/Test Started: tests\\raw_events_(\d+).json\s+TEST_RULES :: Expected results are not obtained./gm;
+
 		let t: RegExpExecArray | null;
 		while ((t = failedTestRegExp.exec(siemjOutput))) {
 
