@@ -47,12 +47,8 @@ const _insertDataFromBackend = (data) => {
 
 		// включения свитчера времени и вставка времени
 		if (table.ttl !== 0) {
-			// $(timeSwitchIdSelector).prop( "checked", true );
 			$(timeSwitchIdSelector).trigger('change');
 			enableOrDisableTimeInputs(true)
-			// $('#checkbox1').change(function() {
-            // 	$(this).prop("checked", returnVal);
-        	// });
 
 			const days = Math.floor(table.ttl / (3600*24));
 			const hours = Math.floor(table.ttl % (3600*24) / 3600);
@@ -68,40 +64,52 @@ const _insertDataFromBackend = (data) => {
 		// insertTleRows(table.fillType);
 	}
 
-	for (const tableFieldId in table.fields) {
-		addRow()
+	if (!table.fields) {
+		// вставка строки с таблицу с ключевым и индексируемым полями
+		addRow();
 		const addedRow = $(vsCodeDataGridRowTagSelector).last();
-		const tableRowDataObject = table.fields[tableFieldId]
-
-		const rowName = Object.keys(tableRowDataObject)[0];
-		const rowPropsObject = Object.values(tableRowDataObject)[0];
-		const rowNullable = rowPropsObject.nullable;
-		const rowPrimaryKey = rowPropsObject.primaryKey;
-		const rowType = rowPropsObject.type;
-
-		// вставка названия
-		$(addedRow)
-			.children(rowNameInputParentClassSelector)
-			.children(rowNameInputClassSelector)
-			.val(rowName ?? '')
-
-		// вставка типа данных
-		$(addedRow)
-			.children(rowDropdownParentClassSelector)
-			.children(rowDropdownClassSelector)
-			.val(rowType ?? 'String')
 
 		// вставка ключевого поля, тригерит обработку поля "индексируемое", поэтому мы не устанавливаем его из пришедших данных
 		$(addedRow)
 			.children(idCheckboxParentClassSelector)
 			.children(idCheckboxClassSelector)
-			.attr({ 'current-checked': rowPrimaryKey ?? false })
+			.attr({ 'current-checked': "true" })
+	} else {
+		for (const tableFieldId in table.fields) {
+			addRow()
+			const addedRow = $(vsCodeDataGridRowTagSelector).last();
+			const tableRowDataObject = table.fields[tableFieldId]
 
-		// вставка nullable
-		$(addedRow)
-			.children(nullableCheckboxParentClassSelector)
-			.children(nullableCheckboxClassSelector)
-			.attr({ 'current-checked': rowNullable ?? false })
+			const rowName = Object.keys(tableRowDataObject)[0];
+			const rowPropsObject = Object.values(tableRowDataObject)[0];
+			const rowNullable = rowPropsObject.nullable;
+			const rowPrimaryKey = rowPropsObject.primaryKey;
+			const rowType = rowPropsObject.type;
+
+			// вставка названия
+			$(addedRow)
+				.children(rowNameInputParentClassSelector)
+				.children(rowNameInputClassSelector)
+				.val(rowName ?? '')
+
+			// вставка типа данных
+			$(addedRow)
+				.children(rowDropdownParentClassSelector)
+				.children(rowDropdownClassSelector)
+				.val(rowType ?? 'String')
+
+			// вставка ключевого поля, тригерит обработку поля "индексируемое", поэтому мы не устанавливаем его из пришедших данных
+			$(addedRow)
+				.children(idCheckboxParentClassSelector)
+				.children(idCheckboxClassSelector)
+				.attr({ 'current-checked': rowPrimaryKey ?? false })
+
+			// вставка nullable
+			$(addedRow)
+				.children(nullableCheckboxParentClassSelector)
+				.children(nullableCheckboxClassSelector)
+				.attr({ 'current-checked': rowNullable ?? false })
+	}
 	}
 
 }

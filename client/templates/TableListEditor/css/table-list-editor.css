@@ -138,3 +138,29 @@ vscode-data-grid-cell:focus-within {
 .ui-helper-hidden-accessible {
     display: none;
 }
+
+.ui-widget-content {
+    border: none !important;
+    background: transparent !important;
+    color: #333333;
+}
+
+.ui-spinner-input {
+    border: none !important;
+    background: none !important;
+    color: inherit !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    vertical-align: middle !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.ui-button {
+    border: none !important;
+    background: transparent !important;
+}
+
+.ui-corner-all {
+	border-radius: 0 !important;
+}
