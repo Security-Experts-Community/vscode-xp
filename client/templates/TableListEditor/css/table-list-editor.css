@@ -124,15 +124,16 @@ vscode-data-grid-cell:focus-within {
 
 /* Тултипы и прочее поведение jquery ui*/
 .ui-tooltip, .arrow:after {
-    background: var(--vscode-inputValidation-errorBorder);
+    background: var(--vscode-inputValidation-errorBorder) !important;
   }
   
 .ui-tooltip {
-	max-width: 70%;
-    padding: 10px 20px;
-	color: white;
+	max-width: 70% !important;
+    padding: 10px 20px !important;
+	color: white !important;
 	/* костыль, без которого тултип плохо обрабатывает коллизии и прыгает по экрану*/
-	position: absolute;
+	position: absolute !important;
+	box-shadow: none !important;
 }
 
 .ui-helper-hidden-accessible {
@@ -141,8 +142,8 @@ vscode-data-grid-cell:focus-within {
 
 .ui-widget-content {
     border: none !important;
-    background: transparent !important;
-    color: #333333;
+    /* background: transparent !important; */
+    /* color: #333333; */
 }
 
 .ui-spinner-input {
