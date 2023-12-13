@@ -17,6 +17,13 @@ const nullableCheckboxClassSelector = '.jqNullableCheckbox';
 const indexCheckboxParentClassSelector = '.jqIndexCheckboxParent';
 const indexCheckboxClassSelector = '.jqIndexCheckbox';
 
+const idRecordSizeTypicalInputIdSelector = '#jqRecordSizeTypicalInput';
+const idRecordSizeMaxInputIdSelector = '#jqRecordSizeMaxInput';
+const timeDayInputClassSelector = '.jqTimeDayInput';
+const timeHourInputClassSelector = '.jqTimeHourInput';
+const timeMinuteInputClassSelector = '.jqTimeMinuteInput';
+const timeSwitchIdSelector = '#jqTimeSwitch';
+
 const _saveTableList = () => {
 	const defaultType = 1;
 	const defaultUserCanEditContent = true;
@@ -32,6 +39,21 @@ const _saveTableList = () => {
 	data.metainfo.objectId = currentObjectId;
 	data.metainfo.ruDescription = $(ruDescriptionClassSelector).val();
 	data.metainfo.enDescription = $(enDescriptionClassSelector).val();
+
+	if (data.fillType == 'CorrelationRule' || data.fillType == 'EnrichmentRule') {
+		if ($(timeSwitchIdSelector)[0].hasAttribute('checked')) {
+			const daysInSeconds = Number($(timeDayInputClassSelector).val()) ? (Number($(timeDayInputClassSelector).val()) * 24 * 3600) : 0;
+			const hoursInSeconds = Number($(timeHourInputClassSelector).val()) ? (Number($(timeHourInputClassSelector).val()) * 3600) : 0;
+			const minutesInSeconds = Number($(timeMinuteInputClassSelector).val()) ? (Number($(timeMinuteInputClassSelector).val()) * 60) : 0;
+
+			data.ttl = daysInSeconds + hoursInSeconds + minutesInSeconds;
+		} else {
+			data.ttl = 0;
+		}
+
+		data.maxSize = Number($(idRecordSizeMaxInputIdSelector).val());
+		data.typicalSize = Number($(idRecordSizeTypicalInputIdSelector).val());
+	}
 
 	data.fields = [];
 	$(draggableRowClassSelector).each(function () {

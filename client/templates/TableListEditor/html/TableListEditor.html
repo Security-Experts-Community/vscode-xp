@@ -8,7 +8,8 @@
 
 		<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/TableListEditor/css/table-list-editor.css">
 		<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/shared/ui/toggleSwitch/css/toggle-switch.css">
-    </head>
+		<link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+	</head>
     <body>
 		<form class="tle">
 			<div class="tle__row">
@@ -30,10 +31,10 @@
 				</label>
 				<vscode-dropdown id="jqTypeDropdown" >
   					<vscode-option value="Registry">Справочник</vscode-option>
-					<!-- раскомментить, когда будет добавляться функционал для табличных списков других типов -->
-					<!-- <vscode-option value="CorrelationRule">Заполняется правилами корреляции</vscode-option>
+					<vscode-option value="CorrelationRule">Заполняется правилами корреляции</vscode-option>
   					<vscode-option value="EnrichmentRule">Заполняется правилами обогащения</vscode-option>
-					<vscode-option value="AssetGrid">Репутационный список</vscode-option> -->
+					<!-- раскомментить, когда будет добавляться функционал для табличных списков других типов -->
+					<!-- <vscode-option value="AssetGrid">Репутационный список</vscode-option> -->
 				</vscode-dropdown>
 			</div>
 			<div class="tle__row">

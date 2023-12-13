@@ -1,11 +1,12 @@
 import { addEventListenerOnChangeToToggleSwitch } from "../../../shared/ui/toggleSwitch/js/toggleSwitch.js";
-import { jqDropdownRulesTleRows, jqDropdownListTleRows } from "../store/htmlStore.js";
+import { jqDropdownRulesTleRows, jqDropdownAssetGridTleRows } from "../store/htmlStore.js";
+import { addSpinersToAssetGridFields, addSpinersToRulesFields, disableRulesFieldsSpiners, enableRulesFieldsSpiners } from "./spinnerBehavior.js";
 import { checkIfInvalidInputsExist, validateAllInputs } from "./validation.js";
 
-const _directoryTypeString = 'Справочник';
-const _rulesCorrelationTypeString = 'Заполняется правилами корреляции';
-const _rulesEnrichmentTypeString = 'Заполняется правилами обогащения';
-const _listTypeString = 'Репутационный список';
+const _registryTypeString = 'Registry';
+const _correlationRuleTypeString = 'CorrelationRule';
+const _enrichmentRuleTypeString = 'EnrichmentRule';
+const _assetGridTypeString = 'AssetGrid';
 
 const _rowsToRemoveBeforeInsertNewClassSelector = '.jqDropdownRemoveBeforeInsert'
 const _rowAfterWhichElementsAreInsertedClassSelector = '.jqDropdownInserter'
@@ -31,24 +32,26 @@ const _disableTimeInputsAndRemoveValidationClassAndRemoveInsertedValues = () => 
 		.removeClass('jqInput_invalid')
 }
 
-const _enableOrDisableTimeInputs = (isSwitchChecked) => {
+export const enableOrDisableTimeInputs = (isSwitchChecked) => {
 	if (isSwitchChecked) {
 		_enableTimeInputsAndAddValidationClass()
+		enableRulesFieldsSpiners();
 	} else {
-		_disableTimeInputsAndRemoveValidationClassAndRemoveInsertedValues()
+		_disableTimeInputsAndRemoveValidationClassAndRemoveInsertedValues();
+		disableRulesFieldsSpiners();
 	}
 	validateAllInputs();
 }
 
 const _addOnChangeEventListenerToTTimeSwitcher = () => {
 	$(_timeSwitchIdSelector)[0].addEventListener("change", function () {
-		_enableOrDisableTimeInputs(this.hasAttribute('checked'));
+		enableOrDisableTimeInputs(this.hasAttribute('checked'));
 	})
 }
 
 const _enableTimeSwitchAndTimeInputsBehavior = () => {
 	addEventListenerOnChangeToToggleSwitch();
-	_enableOrDisableTimeInputs($(_timeSwitchIdSelector)[0].hasAttribute('checked'));
+	enableOrDisableTimeInputs($(_timeSwitchIdSelector)[0].hasAttribute('checked'));
 	_addOnChangeEventListenerToTTimeSwitcher();
 }
 
@@ -59,15 +62,17 @@ const _removeTleRowsAndInsertNewIfNeeded = (elementToInsert) => {
 
 
 
-const _insertTleRows = (currentTypeString) => {
-	if (currentTypeString === _directoryTypeString) {
+export const insertTleRows = (currentTypeString) => {
+	if (currentTypeString === _registryTypeString) {
 		_removeTleRowsAndInsertNewIfNeeded();
 	}
-	else if ((currentTypeString == _rulesCorrelationTypeString && _lastSelectedType != _rulesEnrichmentTypeString) || (currentTypeString == _rulesEnrichmentTypeString && _lastSelectedType != _rulesCorrelationTypeString)) {
+	else if ((currentTypeString == _correlationRuleTypeString && _lastSelectedType != _enrichmentRuleTypeString) || (currentTypeString == _enrichmentRuleTypeString && _lastSelectedType != _correlationRuleTypeString)) {
 		_removeTleRowsAndInsertNewIfNeeded(jqDropdownRulesTleRows);
+		addSpinersToRulesFields();
 		_enableTimeSwitchAndTimeInputsBehavior();
-	} else if (currentTypeString == _listTypeString) {
-		_removeTleRowsAndInsertNewIfNeeded(jqDropdownListTleRows);
+	} else if (currentTypeString == _assetGridTypeString) {
+		_removeTleRowsAndInsertNewIfNeeded(jqDropdownAssetGridTleRows);
+		addSpinersToAssetGridFields();
 	}
 
 	validateAllInputs();
@@ -76,12 +81,14 @@ const _insertTleRows = (currentTypeString) => {
 
 const _addOnChangeEventListenerToTypeDropdown = () => {
 	$(_typeDropdownIdSelector)[0].addEventListener("change", function () {
-		_insertTleRows(this.value);
+		console.log(this.value)
+		insertTleRows(this.value);
 	})
 }
 
 export const enableSelectingTypeOnDropdown = () => {
 	_lastSelectedType = $('#jqTypeDropdown').val()
-	_insertTleRows(_lastSelectedType);
+	console.log(_lastSelectedType);
+	insertTleRows(_lastSelectedType);
 	_addOnChangeEventListenerToTypeDropdown();
 }
