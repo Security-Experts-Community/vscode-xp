@@ -6,6 +6,7 @@ import { BaseUnitTest } from './baseUnitTest';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Normalization } from '../content/normalization';
 import { XpException } from '../xpException';
+import { Log } from '../../extension';
 
 export class NormalizationUnitTest extends BaseUnitTest {
 	public getDefaultExpectation(): string {
@@ -39,7 +40,7 @@ export class NormalizationUnitTest extends BaseUnitTest {
 					const rawEventFileName = `raw_${index}.txt`;
 					const rawEventFilePath = path.join(unitTest.getTestsDirPath(), rawEventFileName);
 					if(!fs.existsSync(rawEventFilePath)) {
-						console.error(`Повреждены файлы тестов, не найден файл '${rawEventFilePath}'`);
+						Log.error(`Повреждены файлы тестов, не найден файл '${rawEventFilePath}'`);
 						return;
 					}
 
