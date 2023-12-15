@@ -87,12 +87,8 @@ export class Localization {
 		const ruLocContent = await FileSystemHelper.readContentFile(ruLocFilePath);
 		const ruLocObject = YamlHelper.parse(ruLocContent);
 
-		if(!ruLocObject?.Description) {
-			throw new XpException(`В файле локализации ${ruLocFilePath} отсутствуют необходимые поля Description и EventDescriptions. Добавьте их и повторите`);
-		}
-		
 		const ruEventDescriptionsObject = ruLocObject?.EventDescriptions ?? [] as any[];
-		const ruDescription = ruLocObject.Description as string;
+		const ruDescription = ruLocObject?.Description ?? "" as string;
 
 		// Читаем английские локализации, если такие есть.
 		const enLocFilePath = path.join(ruleDirectoryPath, Localization.LOCALIZATIONS_DIRNAME, Localization.EN_LOCALIZATION_FILENAME);
@@ -103,12 +99,8 @@ export class Localization {
 			const enLocContent = await FileSystemHelper.readContentFile(enLocFilePath);
 			const enLocObject = YamlHelper.parse(enLocContent);
 
-			if(!enLocObject?.Description) {
-				throw new XpException(`В файле локализации ${ruLocFilePath} отсутствуют необходимые поля Description и EventDescriptions. Добавьте их и повторите`);
-			}
-
 			enEventDescriptionsObject = enLocObject?.EventDescriptions ?? [] as any[];
-			enDescription = enLocObject.Description as string;
+			enDescription = enLocObject?.Description ?? "" as string;
 		}
 
 		// Читаем метаданные для извлечения критериев локализаций.

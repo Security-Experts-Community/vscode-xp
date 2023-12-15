@@ -8,8 +8,7 @@
 
 ## 3.11.1 (Pre-Release)
 
-- актуализирована метаинформация для шаблонов правил обогащения (special thanks @DuckDarkwing);
-- добавлена поддержка KBT версии [26.1.4380](https://github.com/vxcontrol/xp-kbt/releases/tag/26.1.4380).
+- актуализирована метаинформация для шаблонов правил обогащения (special thanks @DuckDarkwing).
 
 ## 3.11.0 (Pre-Release)
 
