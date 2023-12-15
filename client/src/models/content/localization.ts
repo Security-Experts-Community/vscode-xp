@@ -8,6 +8,7 @@ import { MetaInfo } from '../metaInfo/metaInfo';
 import { XpException } from '../xpException';
 import { IncorrectFieldFillingException } from '../../views/incorrectFieldFillingException';
 import { ContentFolder } from './contentFolder';
+import { Log } from '../../extension';
 
 export enum LocalizationLanguage{
 	Ru = 1,
@@ -77,6 +78,7 @@ export class Localization {
 	public static async parseFromDirectory(ruleDirectoryPath: string) : Promise<Localization[]> {
 
 		// Читаем русские локализации.
+		// TODO: Если будет только английская локализация, то оно будет проигнорирована. 
 		const ruLocFilePath = path.join(ruleDirectoryPath, Localization.LOCALIZATIONS_DIRNAME, Localization.RU_LOCALIZATION_FILENAME);
 		if(!fs.existsSync(ruLocFilePath)) {
 			return [];
@@ -84,7 +86,12 @@ export class Localization {
 
 		const ruLocContent = await FileSystemHelper.readContentFile(ruLocFilePath);
 		const ruLocObject = YamlHelper.parse(ruLocContent);
-		const ruEventDescriptionsObject = ruLocObject.EventDescriptions as any[];
+
+		if(!ruLocObject?.Description) {
+			throw new XpException(`В файле локализации ${ruLocFilePath} отсутствуют необходимые поля Description и EventDescriptions. Добавьте их и повторите`);
+		}
+		
+		const ruEventDescriptionsObject = ruLocObject?.EventDescriptions ?? [] as any[];
 		const ruDescription = ruLocObject.Description as string;
 
 		// Читаем английские локализации, если такие есть.
@@ -95,7 +102,12 @@ export class Localization {
 		if(fs.existsSync(enLocFilePath)) {
 			const enLocContent = await FileSystemHelper.readContentFile(enLocFilePath);
 			const enLocObject = YamlHelper.parse(enLocContent);
-			enEventDescriptionsObject = enLocObject.EventDescriptions as any[];
+
+			if(!enLocObject?.Description) {
+				throw new XpException(`В файле локализации ${ruLocFilePath} отсутствуют необходимые поля Description и EventDescriptions. Добавьте их и повторите`);
+			}
+
+			enEventDescriptionsObject = enLocObject?.EventDescriptions ?? [] as any[];
 			enDescription = enLocObject.Description as string;
 		}
 
@@ -108,13 +120,13 @@ export class Localization {
 				const localization = new Localization();
 
 				if(!ruEdp.LocalizationId) {
-					console.warn("Не задан LocalizationId в метаинформации правила.");
+					Log.warn("Не задан LocalizationId в метаинформации правила");
 				}
 
 				localization.setLocalizationId(ruEdp.LocalizationId);
 
 				if(!ruEdp.EventDescription) {
-					console.warn("Не задан EventDescription в метаинформации.");
+					Log.warn("Не задан EventDescription в метаинформации");
 				}
 				localization.setRuLocalizationText(ruEdp.EventDescription);
 				localization.setRuDescription(ruDescription);
