@@ -9,7 +9,7 @@ import { KbHelper } from '../../../helpers/kbHelper';
 import { ProcessHelper } from '../../../helpers/processHelper';
 import { Configuration } from '../../../models/configuration';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
-import { KbTreeBaseItem } from '../../../models/content/kbTreeBaseItem';
+import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
 
 export class PackSIEMAllPackagesAction {
 	constructor(private config: Configuration) {}
@@ -120,7 +120,7 @@ export class PackKbAction {
 	constructor(private _config: Configuration) {
 	}
 
-	public async run(selectedPackage : KbTreeBaseItem, unpackKbFilePath : string) : Promise<void> {
+	public async run(selectedPackage : ContentTreeBaseItem, unpackKbFilePath : string) : Promise<void> {
 
 		if(fs.existsSync(unpackKbFilePath)) {
 			await fs.promises.unlink(unpackKbFilePath);

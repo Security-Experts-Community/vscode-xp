@@ -6,6 +6,7 @@ import { ContentTreeProvider } from '../contentTreeProvider';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { KbHelper } from '../../../helpers/kbHelper';
 import { DialogHelper } from '../../../helpers/dialogHelper';
+import { ContentHelper } from '../../../helpers/contentHelper';
 
 export class RenameTreeItemCommand {
 
@@ -39,24 +40,7 @@ export class RenameTreeItemCommand {
 				placeHolder: 'Новое название правила',
 				prompt: 'Новое название правила',
 				validateInput: (v) => {
-					const trimed = v.trim();
-					// Корректность имени директории с точки зрения ОС.
-					if(trimed.includes(">") || trimed.includes("<") || trimed.includes(":") || trimed.includes("\"") || trimed.includes("/") || trimed.includes("|") || trimed.includes("?") || trimed.includes("*"))
-						return "Имя название содержит недопустимые символы";
-
-					if(trimed === '')
-						return "Имя название должно содержать хотя бы один символ";
-
-					// Не используем штатные директории контента.
-					const contentSubDirectories = KbHelper.getContentSubDirectories();
-					if(contentSubDirectories.includes(trimed))
-						return "Это имя папки зарезервировано и не может быть использовано";
-
-					// Английский язык
-					const englishAlphabet = /^[A-Za-z0-9_]*$/;
-					if(!englishAlphabet.test(trimed)) {
-						return "Используйте только английские буквы, цифры и символ подчеркивания";
-					}
+					return ContentHelper.validateContentItemName(v);
 				}
 			}
 		);

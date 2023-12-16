@@ -131,6 +131,12 @@ function saveTest() {
 	});
 }
 
+function updateExpectEvent() {
+	vscode.postMessage({
+		command: 'updateExpectEvent',
+	});
+}
+
 $(document).ready(function() {
 	raws = $('[name=word-wrap]');
 	for (i = 0; i < raws.length; i++) {
@@ -166,5 +172,10 @@ $(document).ready(function() {
 	// Сохраняем тест
 	$(document).on("click",'#save_test', function () {
 		saveTest();
+	});
+
+	// Сохраняем тест
+	$(document).on("click",'#update_expect_event', function () {
+		updateExpectEvent();
 	});
 });

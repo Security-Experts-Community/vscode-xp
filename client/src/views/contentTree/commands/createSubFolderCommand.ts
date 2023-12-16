@@ -17,28 +17,30 @@ export class CreateSubFolderCommand {
 				ignoreFocusOut: true,
 				placeHolder: 'Имя папки',
 				prompt: 'Имя папки',
+				// TODO: убрать дублирование кода валидации
+				// Учесть отличие локализации
 				validateInput: (v) => {
-					const trimed = v.trim();
+					const trimmed = v.trim();
 					// Корректность имени директории с точки зрения ОС.
-					if(trimed.includes(">") || trimed.includes("<") || trimed.includes(":") || trimed.includes("\"") || trimed.includes("/") || trimed.includes("|") || trimed.includes("?") || trimed.includes("*"))
+					if(trimmed.includes(">") || trimmed.includes("<") || trimmed.includes(":") || trimmed.includes("\"") || trimmed.includes("/") || trimmed.includes("|") || trimmed.includes("?") || trimmed.includes("*"))
 						return "Имя папки содержит недопустимые символы";
 
-					if(trimed === '')
+					if(trimmed === '')
 						return "Имя папки должно содержать хотя бы один символ";
 
 					// Не используем штатные директории контента.
 					const contentSubDirectories = KbHelper.getContentSubDirectories();
-					if(contentSubDirectories.includes(trimed))
+					if(contentSubDirectories.includes(trimmed))
 						return "Это имя папки зарезервировано и не может быть использовано";
 
 					// Английский язык
 					const englishAlphabet = /^[A-Za-z0-9_]*$/;
-					if(!englishAlphabet.test(trimed)) {
+					if(!englishAlphabet.test(trimmed)) {
 						return "Используйте только английские буквы, цифры и символ подчеркивания";
 					}
 
 					// Невозможность создать уже созданную директорию.
-					const newFolderPath = path.join(selectedItem.getParentPath(), trimed);
+					const newFolderPath = path.join(selectedItem.getParentPath(), trimmed);
 					if(fs.existsSync(newFolderPath))
 						return "Такая папка уже существует";
 				}

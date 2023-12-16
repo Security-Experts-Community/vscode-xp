@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as os from 'os';
 import { TestHelper } from '../../helpers/testHelper';
 
 suite('testHelper.removeFieldsFromJsonl', async () => {
@@ -13,7 +14,9 @@ suite('testHelper.removeFieldsFromJsonl', async () => {
 		const actual = TestHelper.removeFieldsFromJsonl(jsonl, 'body');
 		assert.strictEqual(
 			actual, 
-`{"src.host":"::1","src.ip":"::1"}\r\n{"src.host":"::1","src.ip":"::1"}\r\n{"src.host":"::1","src.ip":"::1"}`);
+`{"src.host":"::1","src.ip":"::1"}` + os.EOL +
+`{"src.host":"::1","src.ip":"::1"}` + os.EOL +
+`{"src.host":"::1","src.ip":"::1"}`);
 	});
 
 	test('Удаление поля двух полей из одного события', async () => {

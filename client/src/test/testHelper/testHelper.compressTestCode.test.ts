@@ -3,6 +3,20 @@ import { TestHelper } from '../../helpers/testHelper';
 
 suite('TestHelper.compressTestCode', async () => {
 
+	test('Табуляция после события', async () => {
+
+		const formatted =
+`expect 1 {
+	"correlation_name": null, 
+	"object.process.cmdline": "c:\\windows\\whoami.exe"
+}\t`;
+			
+		const compressed = `expect 1 {"correlation_name": null, "object.process.cmdline": "c:\\windows\\whoami.exe"}\t`;
+
+		const actual = TestHelper.compressTestCode(formatted);
+		assert.strictEqual(actual, compressed);
+	});
+
 	test('Пробельные символы перед символом новой строки', async () => {
 
 		const formatted =

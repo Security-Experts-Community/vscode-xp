@@ -9,10 +9,36 @@ import { XpException } from '../models/xpException';
 import { FileSystemHelper } from './fileSystemHelper';
 import { Normalization } from '../models/content/normalization';
 import { YamlHelper } from './yamlHelper';
+import { KbHelper } from './kbHelper';
 
 
 export class ContentHelper {
 
+    /**
+     * Проверяет единицу контента на удовлетворение ограничением по именованию и возвращает ошибку в виде строки.
+     * @param name имя item-а
+     * @returns описание ошибки
+     */
+    public static validateContentItemName(name: string) : string {
+        const trimmed = name.trim();
+        // Корректность имени директории с точки зрения ОС.
+        if(trimmed.includes(">") || trimmed.includes("<") || trimmed.includes(":") || trimmed.includes("\"") || trimmed.includes("/") || trimmed.includes("|") || trimmed.includes("?") || trimmed.includes("*"))
+            return "Имя содержит недопустимые символы";
+
+        if(trimmed === '')
+            return "Имя должно содержать хотя бы один символ";
+
+        // Не используем штатные директории контента.
+        const contentSubDirectories = KbHelper.getContentSubDirectories();
+        if(contentSubDirectories.includes(trimmed))
+            return "Это имя папки зарезервировано и не может быть использовано";
+
+        // Английский язык
+        const englishAlphabet = /^[A-Za-z0-9_]*$/;
+        if(!englishAlphabet.test(trimmed)) {
+            return "Используйте только английские буквы, цифры и символ подчеркивания";
+        }
+    }
     private static getStringColumns(parsedFields: any){
         return parsedFields.reduce((acc, currentColumn) => {
             const name = Object.getOwnPropertyNames(currentColumn)[0];
@@ -103,6 +129,21 @@ export class ContentHelper {
         return templateNames;
     }
 
+    public static comparerEventsByCorrelationType(a: any, b: any ): number {
+        // a < b
+        // Сдвигаем событие а назад, относительно b.
+        if (a.correlation_type === "event" && b.correlation_type === "incident") {
+          return -1;
+        }
+
+        // a > b
+        if (a.correlation_type === "incident" && b.correlation_type === "event") {
+          return 1;
+        }
+        
+        return 0;
+      }
+
     public static async createCorrelationFromTemplate(
         ruleName : string,
         templateName : string,
@@ -189,7 +230,7 @@ export class ContentHelper {
         await fse.copy(templateDirPath, templateTmpDirPath, {recursive: true}); 
     }
 
-    public static replaceAllCorrelantionNameWithinCode(newRuleName : string, ruleCode : string): string {
+    public static replaceAllCorrelationNameWithinCode(newRuleName : string, ruleCode : string): string {
         if (!ruleCode) { return ""; }
 
         const parseRuleNameReg = /rule\s+(\S+?)\s*:/gm;

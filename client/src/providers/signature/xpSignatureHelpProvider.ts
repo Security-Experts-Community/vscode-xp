@@ -5,6 +5,7 @@ import * as classTransformer from 'class-transformer';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { CompleteSignature } from './completeSignature';
 import { FunctionNameParser } from './functionNameParser';
+import { Log } from '../../extension';
 
 export class XpSignatureHelpProvider implements vscode.SignatureHelpProvider {
 
@@ -19,7 +20,7 @@ export class XpSignatureHelpProvider implements vscode.SignatureHelpProvider {
 		const parser = new FunctionNameParser();
 		const signaturesPlain = JSON.parse(signaturesFileContent);
 		if(!signaturesPlain) {
-			console.warn("Не было считано ни одного описания функций.");
+			Log.warn("Не было считано ни одного описания функций.");
 			return new XpSignatureHelpProvider(parser, []);
 		}
 

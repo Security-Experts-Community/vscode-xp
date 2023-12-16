@@ -4,7 +4,7 @@ import { ContentHelper } from '../../helpers/contentHelper';
 
 suite('EnrichmentHelper', async () => {
 
-	test('Переименоваине простого обогащения', async () => {
+	test('Переименование простого обогащения', async () => {
 
 		const ruleCode =
 `event Sandbox_event:
@@ -42,6 +42,6 @@ enrich Sandbox_event:
 
 		const newRuleCode = ContentHelper.replaceAllEnrichmentNameWithinCode("Super_Duper_Enrichment", ruleCode);
 
-		assert.strictEqual(newRuleCode,expectedRuleCode );
+		assert.strictEqual(newRuleCode, expectedRuleCode);
 	});
 });

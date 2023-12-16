@@ -16,7 +16,7 @@ export class SiemjConfigHelper {
 	}
 
 	/**
-	 * Очищаем артефакты запуска siemj. Неоходимо для невозможности получения неактуальных данных из них.
+	 * Очищаем артефакты запуска siemj. Необходимо для невозможности получения неактуальных данных из них.
 	 */
 	public static async clearArtifacts(config : Configuration) : Promise<void> {
 		const roots = config.getContentRoots();

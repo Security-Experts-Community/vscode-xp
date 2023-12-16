@@ -23,30 +23,34 @@ import { RenameTreeItemCommand } from './commands/renameTreeItemCommand';
 import { DeleteContentItemCommand } from './commands/deleteContentItemCommand';
 import { CreatePackageCommand } from './commands/createPackageCommand';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
-import { BuildAllAction } from './actions/buildAllAction';
+import { BuildAllCommand } from './commands/buildAllCommand';
 import { PackKbAction } from './actions/packSIEMAllPackagesAction';
-import { UnpackKbAction } from './actions/unpackKbAction';
+import { UnpackKbCommand } from './commands/unpackKbCommand';
 import { ContentType } from '../../contentType/contentType';
 import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';
 import { GitHooks } from './gitHooks';
 import { InitKBRootCommand } from './commands/initKnowledgebaseRootCommand';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
-import { KbTreeBaseItem } from '../../models/content/kbTreeBaseItem';
+import { ContentTreeBaseItem } from '../../models/content/contentTreeBaseItem';
+import { LocalizationEditorViewProvider } from '../localizationEditor/localizationEditorViewProvider';
+import { ContentVerifierCommand } from './commands/ruleVerifierCommand';
+import { BuildLocalizationsCommand } from './commands/buildLocalizationsCommand';
+import { BuildWldCommand } from './commands/buildWldCommand';
 
-export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseItem> {
+export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeBaseItem> {
 
 	static async init(
 		config: Configuration,
 		knowledgebaseDirectoryPath: string) {
 
 		const context = config.getContext();
-		const gitApi = await VsCodeApiHelper.getScmGitApiCore();
+		const gitApi = await VsCodeApiHelper.getGitExtension();
 
-		const kbTreeProvider = new ContentTreeProvider(knowledgebaseDirectoryPath, gitApi, config);
+		const contentTreeProvider = new ContentTreeProvider(knowledgebaseDirectoryPath, gitApi, config);
 
 		const contentTree = vscode.window.createTreeView(
 			ContentTreeProvider.KnowledgebaseTreeId, {
-				treeDataProvider: kbTreeProvider,
+				treeDataProvider: contentTreeProvider,
 			}
 		);
 
@@ -56,14 +60,14 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 			gitApi.onDidOpenRepository( (r) => {
 				r.state.onDidChange( (e) => {
 					gitHooks.update();
-					kbTreeProvider.refresh();
 				});
 			});
 
-			// gitApi.onDidChangeState( (e: APIState) => {
-			// 	gitHooks.update();
-			// 	kbTreeProvider.refresh();
-			// });
+			gitApi.onDidChangeState( (e: APIState) => {
+				gitHooks.update();
+			});
+		} else {
+			DialogHelper.showWarning(`Наличие системы контроля версии [git](https://git-scm.com/) необходимо для эффективной работы расширения. Требования можно посмотреть [здесь](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#id3)`);
 		}
 
 
@@ -71,17 +75,38 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		vscode.commands.registerCommand(
 			ContentTreeProvider.refreshTreeCommand,
 			async () => {
-				kbTreeProvider.refresh();
+				contentTreeProvider.refresh();
 			}
 		);
+
+		vscode.commands.registerCommand(
+			ContentTreeProvider.refreshItemCommand,
+			async (item: ContentTreeBaseItem) => {
+				contentTreeProvider.refresh(item);
+			}
+		);
+
+		context.subscriptions.push(
+			vscode.commands.registerCommand(
+				ContentTreeProvider.verifyFolderCommand,
+				async (item: ContentTreeBaseItem) => {
+					const lt = new ContentVerifierCommand(config);
+					await lt.execute(item);
+				}
+			)
+		);
 	
-		const openKnowledgebaseCommand = new OpenKnowledgebaseCommand();
+		
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
 				OpenKnowledgebaseCommand.openKnowledgebaseCommand,
-				() => { openKnowledgebaseCommand.execute(); }
+				() => {
+					const openKnowledgebaseCommand = new OpenKnowledgebaseCommand();
+					openKnowledgebaseCommand.execute(); 
+				}
 			)
 		);
+		
 
 		// Изменение выбора правила с открытием визуализации нужных данных.
 		vscode.commands.registerCommand(
@@ -93,12 +118,12 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 					const ruleFilePath = item.getFilePath();
 	
 					if (ruleFilePath && !fs.existsSync(ruleFilePath)) {
-						// Попытка открыть несуществующее правило. 
+						// Попытка открыть несуществующий item
 						// Возможно при переключении веток репозитория или ручной модификации репозитория.
 						ContentTreeProvider.setSelectedItem(null);
 						await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
 	
-						kbTreeProvider.refresh();
+						contentTreeProvider.refresh();
 						return false;
 					} 
 	
@@ -125,11 +150,11 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		await CreateRuleViewProvider.init(config);
 		
 		// Создание поддиректории.
-		const createSubFolderCommand = new CreateSubFolderCommand();
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
 				CreateSubFolderCommand.CommandName,
 				async (item: RuleBaseItem) => {
+					const createSubFolderCommand = new CreateSubFolderCommand();
 					createSubFolderCommand.execute(item);
 				},
 				this
@@ -137,11 +162,11 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		);
 	
 		// Переименование правила.
-		const renameRuleCommand = new RenameTreeItemCommand();
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
 				RenameTreeItemCommand.CommandName,
 				async (item: RuleBaseItem) => {
+					const renameRuleCommand = new RenameTreeItemCommand();
 					renameRuleCommand.execute(item);
 				},
 				this
@@ -149,22 +174,23 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		);
 	
 		// Удаление сущности.
-		const deleteSubFolderCommand = new DeleteContentItemCommand();
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
 				DeleteContentItemCommand.CommandName,
 				async (item: RuleBaseItem) => {
+					const deleteSubFolderCommand = new DeleteContentItemCommand();
 					deleteSubFolderCommand.execute(item);
 				},
 				this
 			)
 		);
 	
-		const createPackageCommand = new CreatePackageCommand();
+		// Удаление пакета.
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
 				CreatePackageCommand.CommandName,
 				async (item: RuleBaseItem) => {
+					const createPackageCommand = new CreatePackageCommand();
 					createPackageCommand.execute(item);
 				},
 				this
@@ -181,13 +207,12 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 						return DialogHelper.showInfo("Для распаковки KB-пакета нужно открыть базу знаний");
 					}
 					
-					const action = new UnpackKbAction(config);
+					const action = new UnpackKbCommand(config);
 					try {
-						await action.run(selectedItem);
-						return DialogHelper.showInfo(`Пакет успешно распакован`);
+						await action.execute(selectedItem);
 					}
 					catch(error) {
-						ExceptionHelper.show(error, `Неожиданная ошибка распаковки KB-пакета`);
+						ExceptionHelper.show(error, `Неожиданная ошибка распаковки kb-пакета`);
 					}
 				}
 			)
@@ -197,14 +222,35 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 			vscode.commands.registerCommand(
 				ContentTreeProvider.buildAllCommand,
 				async (selectedItem: RuleBaseItem) => {
-	
 					const parser = new SiemJOutputParser();
-					const bag = new BuildAllAction(config, parser);
-					await bag.run();
+					const buildCommand = new BuildAllCommand(config, parser);
+					await buildCommand.execute();
 				}
 			)
 		);
-	
+
+		context.subscriptions.push(
+			vscode.commands.registerCommand(
+				ContentTreeProvider.buildLocalizationsCommand,
+				async (selectedItem: RuleBaseItem) => {
+					const parser = new SiemJOutputParser();
+					const buildCommand = new BuildLocalizationsCommand(config, parser);
+					await buildCommand.execute();
+				}
+			)
+		);
+
+		context.subscriptions.push(
+			vscode.commands.registerCommand(
+				ContentTreeProvider.buildWldCommand,
+				async (selectedItem: RuleBaseItem) => {
+					const parser = new SiemJOutputParser();
+					const buildCommand = new BuildWldCommand(config, parser);
+					await buildCommand.execute();
+				}
+			)
+		);
+		
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
 				ContentTreeProvider.buildKbPackageCommand,
@@ -275,7 +321,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 		context.subscriptions.push(
 			contentTree.onDidChangeSelection(
-				async (e: vscode.TreeViewSelectionChangeEvent<KbTreeBaseItem>) => {
+				async (e: vscode.TreeViewSelectionChangeEvent<ContentTreeBaseItem>) => {
 					if(e.selection && e.selection.length == 1) {
 						const selectedItem = e.selection[0];
 						return ContentTreeProvider.selectItem(selectedItem);
@@ -288,7 +334,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 	public static selectedFilePath: string;
 
-	private static async showRuleTreeItem(kbTree: vscode.TreeView<KbTreeBaseItem>, filePath: string) : Promise<void>{
+	private static async showRuleTreeItem(kbTree: vscode.TreeView<ContentTreeBaseItem>, filePath: string) : Promise<void>{
 		if(!filePath) {
 			return;
 		}
@@ -311,15 +357,19 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		this._gitAPI = _gitAPI;
 	}
 
-	refresh(): void {
-		this._onDidChangeTreeData.fire();
+	refresh(item?: ContentTreeBaseItem): void {
+		if(item) {
+			this._onDidChangeTreeData.fire(item);
+		} else {
+			this._onDidChangeTreeData.fire(undefined);
+		}
 	}
 
-	getTreeItem(element: ContentFolder|RuleBaseItem): vscode.TreeItem {
+	getTreeItem(element: ContentTreeBaseItem|RuleBaseItem): vscode.TreeItem {
 		return element;
 	}
 
-	async getChildren(element?: ContentFolder|RuleBaseItem): Promise<KbTreeBaseItem[]> {
+	async getChildren(element?: ContentTreeBaseItem|RuleBaseItem): Promise<ContentTreeBaseItem[]> {
 
 		if (!this._knowledgebaseDirectoryPath) {
 			return Promise.resolve([]);
@@ -335,7 +385,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 			const subDirectories = FileSystemHelper.readSubDirectoryNames(this._knowledgebaseDirectoryPath);
 			this.initializeRootIfNeeded(subDirectories);
 
-			// В случане штатной директории пакетов будет возможности создавать и собирать пакеты.
+			// В случае штатной директории пакетов будет возможности создавать и собирать пакеты.
 			const dirName = path.basename(this._knowledgebaseDirectoryPath);
 			if (this.isContentRoot(dirName)){
 				const packagesFolder = await ContentFolder.create(this._knowledgebaseDirectoryPath, ContentFolderType.ContentRoot);
@@ -348,7 +398,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 
 		// Получаем список поддиректорий.
 		const subFolderPath = element.getDirectoryPath();
-		const kbItems : (KbTreeBaseItem)[]= [];
+		const childrenItems : (ContentTreeBaseItem)[]= [];
 
 		const subDirectories = FileSystemHelper.readSubDirectoryNames(subFolderPath);
 		this.notifyIfContentTypeIsSelectedIncorrectly(subDirectories);
@@ -357,44 +407,70 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		{
 			// .git, .vscode и т.д.
 			// _meta штатная директория в каждом пакете
-			if(dirName.startsWith(".") || dirName.toLocaleLowerCase() == "_meta") 
+			if(dirName.startsWith(".") || dirName.toLocaleLowerCase() === ContentFolder.PACKAGE_METAINFO_DIRNAME) 
 				continue;
 
-			// В случане штатной директории пакетов будет возможности создавать и собирать пакеты.
-			// packages может встречаться не в корне открытого контета.
+			// В случае штатной директории пакетов будет возможности создавать и собирать пакеты.
+			// packages может встречаться не в корне открытого контента.
 			if(this.isContentRoot(dirName)) {
 				const packagesDirPath = path.join(subFolderPath, dirName);
 				const packagesFolder = await ContentFolder.create(packagesDirPath, ContentFolderType.ContentRoot);
-				kbItems.push(packagesFolder);
+				childrenItems.push(packagesFolder);
 				continue;
 			}
 
 			// Пакеты.
 			const parentFolder = path.basename(subFolderPath).toLocaleLowerCase();
 			const directoryPath = path.join(subFolderPath, dirName);
-			
-			if(this.isContentRoot(parentFolder)) {
-				const packageFolderItem = await ContentFolder.create(directoryPath, ContentFolderType.PackageFolder);
-				kbItems.push(packageFolderItem);
-				continue;
-			}
 
 			// Если ошибка в текущем элементе, продолжаем парсить остальные
 			try {
-				const kbItem = await ContentTreeProvider.createContentElement(directoryPath);
-				kbItems.push(kbItem);
+				const contentItem = await ContentTreeProvider.createContentElement(directoryPath);
+				if(contentItem instanceof RuleBaseItem) {
+					if(await LocalizationEditorViewProvider.provider.updateRule(contentItem)) {
+						DialogHelper.showInfo(`Правило ${contentItem.getName()} было обновлено в редакторе локализаций`);
+					}
+				}
+
+				childrenItems.push(contentItem);
 			}
 			catch (error) {
 				ExceptionHelper.show(error, `Ошибка парсинга директории ${directoryPath}`);
 			}
 		}
 
+		// Сначала директории, потом файлы
+		childrenItems.sort(
+			(l, r) => {
+				// Сначала идут потом отдельные item-ы.
+				if(l.isFolder() && !r.isFolder()) {
+					return -1;
+				}
+
+				// Сначала идут системные пакеты, потом пользовательские.
+				const lObjectId = l.getMetaInfo().getObjectId();
+				const rObjectId = r.getMetaInfo().getObjectId();
+				if(
+					lObjectId &&
+					lObjectId.startsWith("PT") &&
+					// Либо это обычная директория, либо пользовательский пакет
+					(!rObjectId || !rObjectId.startsWith("PT"))
+					) {
+					return -1;
+				}
+
+				return l.getName().localeCompare(r.getName());
+			}
+		);
+
+		element.setChildren(childrenItems);
+
 		// Подсвечиваем правила, у которых есть хотя бы один измененный файл.
 		if(this._gitAPI) { 
-			this.highlightsLabelForNewOrEditRules(kbItems);
+			this.highlightsLabelForNewOrEditRules(childrenItems);
 		}
 		
-		return kbItems;
+		return childrenItems;
 	}
 
 	private isContentRoot(dirName: string) {
@@ -403,7 +479,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 	}
 
 	private async initializeRootIfNeeded(subDirectories: string[]) : Promise<void> {
-		// Проверяем тип контента фактический и выбранный и увеломляем если что-то не так.
+		// Проверяем тип контента фактический и выбранный и уведомляем если что-то не так.
 		const actualContentType = Configuration.getContentTypeBySubDirectories(subDirectories);
 		const configContentType = this._config.getContentType();
 		
@@ -420,7 +496,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 	}
 
 	private async notifyIfContentTypeIsSelectedIncorrectly(subDirectories: string[]) : Promise<void> {
-		// Проверяем тип контента фактический и выбранный и увеломляем если что-то не так.
+		// Проверяем тип контента фактический и выбранный и уведомляем если что-то не так.
 		const actualContentType = Configuration.getContentTypeBySubDirectories(subDirectories);
 		const configContentType = this._config.getContentType();
 
@@ -447,7 +523,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		}
 	}
 
-	private highlightsLabelForNewOrEditRules(items: KbTreeBaseItem[]) : void {
+	private highlightsLabelForNewOrEditRules(items: ContentTreeBaseItem[]) : void {
 		const kbUri = vscode.Uri.file(this._knowledgebaseDirectoryPath);
 		if(!this._gitAPI) {
 			return;
@@ -475,7 +551,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		}
 	}
 
-	public async getParent(element: RuleBaseItem) : Promise<KbTreeBaseItem> {
+	public async getParent(element: RuleBaseItem) : Promise<ContentTreeBaseItem> {
 
 		// Дошли до корня контента, заканчиваем обход.
 		const contentRoot = ContentFolderType[ContentFolderType.ContentRoot];
@@ -498,7 +574,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		return Promise.resolve(parentFolder);
 	}
 
-	public static async createContentElement(elementDirectoryPath: string) : Promise<Correlation|Normalization|ContentFolder|Enrichment|Table|Aggregation|Macros> {
+	public static async createContentElement(elementDirectoryPath: string) : Promise<RuleBaseItem|ContentFolder|Table|Aggregation|Macros> {
 
 		// Маппинг типов файлов на функции создания экземпляра
 		const entityCreators = { 
@@ -521,6 +597,12 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 			}
 		}
 
+		// У пакетов есть поддиректория _meta для метаинформации.
+		const packageMetainfoDirPath = path.join(elementDirectoryPath, ContentFolder.PACKAGE_METAINFO_DIRNAME);
+		if(fs.existsSync(packageMetainfoDirPath)) {
+			return ContentFolder.create(elementDirectoryPath, ContentFolderType.PackageFolder);	
+		}
+
 		return ContentFolder.create(elementDirectoryPath, ContentFolderType.AnotherFolder);
 	}
 
@@ -532,11 +614,14 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 		return this._selectedItem;
 	}
 
-	public static async refresh() : Promise<void> {
+	public static async refresh(item?: ContentTreeBaseItem) : Promise<void> {
+		if(item) {
+			return vscode.commands.executeCommand(ContentTreeProvider.refreshItemCommand, item);
+		}
 		return vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
 	}
 
-	public static async selectItem(item: KbTreeBaseItem) : Promise<boolean> {
+	public static async selectItem(item: ContentTreeBaseItem) : Promise<boolean> {
 		return vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, item);
 	}
 
@@ -547,16 +632,20 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<KbTreeBaseIt
 	public static readonly KnowledgebaseTreeId = 'KnowledgebaseTree';
 	
 	public static readonly onRuleClickCommand = 'KnowledgebaseTree.onElementSelectionChange';
-	public static readonly buildAllCommand = 'KnowledgebaseTree.buildAll';
+	public static readonly buildAllCommand = 'xp.contentTree.buildAll';
+	public static readonly buildLocalizationsCommand = 'xp.contentTree.buildLocalizations';
+	public static readonly buildWldCommand = 'xp.contentTree.buildWld';
 	public static readonly buildKbPackageCommand = 'KnowledgebaseTree.buildKbPackage';
 	public static readonly unpackKbPackageCommand = 'KnowledgebaseTree.unpackKbPackage';
-
+	public static readonly verifyFolderCommand = 'xp.contentTree.verifyFolder';
+	
 	private static _selectedItem : RuleBaseItem | Table | Macros;
 
 	public static readonly refreshTreeCommand = 'SiemContentEditor.refreshKbTree';
+	public static readonly refreshItemCommand = 'xp.contentTree.refreshItem';
 
-	private _onDidChangeTreeData: vscode.EventEmitter<ContentFolder|RuleBaseItem|undefined|void> = new vscode.EventEmitter<ContentFolder|RuleBaseItem|undefined|void>();
-	readonly onDidChangeTreeData: vscode.Event<ContentFolder|RuleBaseItem|undefined|void> = this._onDidChangeTreeData.event;
+	private _onDidChangeTreeData: vscode.EventEmitter<ContentTreeBaseItem|undefined> = new vscode.EventEmitter<ContentTreeBaseItem|undefined>();
+	readonly onDidChangeTreeData: vscode.Event<ContentTreeBaseItem|undefined> = this._onDidChangeTreeData.event;
 }
 
 

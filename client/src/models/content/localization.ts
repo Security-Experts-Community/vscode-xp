@@ -8,6 +8,7 @@ import { MetaInfo } from '../metaInfo/metaInfo';
 import { XpException } from '../xpException';
 import { IncorrectFieldFillingException } from '../../views/incorrectFieldFillingException';
 import { ContentFolder } from './contentFolder';
+import { Log } from '../../extension';
 
 export enum LocalizationLanguage{
 	Ru = 1,
@@ -77,15 +78,17 @@ export class Localization {
 	public static async parseFromDirectory(ruleDirectoryPath: string) : Promise<Localization[]> {
 
 		// Читаем русские локализации.
+		// TODO: Если будет только английская локализация, то оно будет проигнорирована. 
 		const ruLocFilePath = path.join(ruleDirectoryPath, Localization.LOCALIZATIONS_DIRNAME, Localization.RU_LOCALIZATION_FILENAME);
 		if(!fs.existsSync(ruLocFilePath)) {
 			return [];
 		}
 
-		const ruLocContant = await FileSystemHelper.readContentFile(ruLocFilePath);
-		const ruLocObject = YamlHelper.parse(ruLocContant);
-		const ruEventDescriptionsObject = ruLocObject.EventDescriptions as any[];
-		const ruDescription = ruLocObject.Description as string;
+		const ruLocContent = await FileSystemHelper.readContentFile(ruLocFilePath);
+		const ruLocObject = YamlHelper.parse(ruLocContent);
+
+		const ruEventDescriptionsObject = ruLocObject?.EventDescriptions ?? [] as any[];
+		const ruDescription = ruLocObject?.Description ?? "" as string;
 
 		// Читаем английские локализации, если такие есть.
 		const enLocFilePath = path.join(ruleDirectoryPath, Localization.LOCALIZATIONS_DIRNAME, Localization.EN_LOCALIZATION_FILENAME);
@@ -93,13 +96,14 @@ export class Localization {
 		let enEventDescriptionsObject : any[] = [];
 		let enDescription : string;
 		if(fs.existsSync(enLocFilePath)) {
-			const enLocContant = await FileSystemHelper.readContentFile(enLocFilePath);
-			const enLocObject = YamlHelper.parse(enLocContant);
-			enEventDescriptionsObject = enLocObject.EventDescriptions as any[];
-			enDescription = enLocObject.Description as string;
+			const enLocContent = await FileSystemHelper.readContentFile(enLocFilePath);
+			const enLocObject = YamlHelper.parse(enLocContent);
+
+			enEventDescriptionsObject = enLocObject?.EventDescriptions ?? [] as any[];
+			enDescription = enLocObject?.Description ?? "" as string;
 		}
 
-		// Читаем метаданные для извелечения критериев локализаций.
+		// Читаем метаданные для извлечения критериев локализаций.
 		const eventDescriptions = this.parseEventDescriptions(ruleDirectoryPath);
 
 		const localizations : Localization[] = []; 
@@ -108,13 +112,13 @@ export class Localization {
 				const localization = new Localization();
 
 				if(!ruEdp.LocalizationId) {
-					console.warn("Не задан LocalizationId в метаинформации правила.");
+					Log.warn("Не задан LocalizationId в метаинформации правила");
 				}
 
 				localization.setLocalizationId(ruEdp.LocalizationId);
 
 				if(!ruEdp.EventDescription) {
-					console.warn("Не задан EventDescription в метаинформации.");
+					Log.warn("Не задан EventDescription в метаинформации");
 				}
 				localization.setRuLocalizationText(ruEdp.EventDescription);
 				localization.setRuDescription(ruDescription);
@@ -185,8 +189,8 @@ export class Localization {
 			return null;
 		}
 		
-		const ruLocContant = await FileSystemHelper.readContentFile(ruLocFilePath);
-		const ruLocObject = YamlHelper.parse(ruLocContant);
+		const ruLocContent = await FileSystemHelper.readContentFile(ruLocFilePath);
+		const ruLocObject = YamlHelper.parse(ruLocContent);
 
 		return ruLocObject.Description;
 	}
@@ -197,8 +201,8 @@ export class Localization {
 			return null;
 		}
 		
-		const enLocContant = await FileSystemHelper.readContentFile(enLocFilePath);
-		const enLocObject = YamlHelper.parse(enLocContant);
+		const enLocContent = await FileSystemHelper.readContentFile(enLocFilePath);
+		const enLocObject = YamlHelper.parse(enLocContent);
 
 		return enLocObject.Description;
 	}

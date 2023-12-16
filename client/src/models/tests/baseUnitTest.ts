@@ -54,11 +54,19 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 		return this._testExpectation;
 	}
 
+	public getActualEvent() : string {
+		return this._actualEvent;
+	}
+
+	public setActualEvent(actualEvent: string) : void {
+		this._actualEvent = actualEvent;
+	}
+
 	public setStatus(status: TestStatus) : void {
 
 		this._status = status;
 		const config = Configuration.get();
-		const extenstionResources = path.join(config.getExtensionPath(), 'resources');
+		const extensionResources = path.join(config.getExtensionPath(), 'resources');
 
 		switch (this._status) {
 			case TestStatus.Unknown: {
@@ -67,13 +75,13 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 			}
 
 			case TestStatus.Success: {
-				const iconPath = path.join(extenstionResources, 'test-passed.svg');
+				const iconPath = path.join(extensionResources, 'test-passed.svg');
 				this.iconPath = { light: iconPath, dark: iconPath };
 				return;
 			}
 
 			case TestStatus.Failed: {
-				const iconPath = path.join(extenstionResources, 'test-failed.svg');
+				const iconPath = path.join(extensionResources, 'test-failed.svg');
 				this.iconPath = { light: iconPath, dark: iconPath };
 				return;
 			}
@@ -113,6 +121,8 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 	private _number: number;
 
 	private _testExpectation : string;
+	private _actualEvent : string;
+
 	private _inputData : string;
 
 	private _output : string;

@@ -24,7 +24,7 @@ import { XpCompletionItemProvider } from './providers/xpCompletionItemProvider';
 import { ContentTreeProvider } from './views/contentTree/contentTreeProvider';
 import { RunningCorrelationGraphProvider } from './views/correlationGraph/runningCorrelationGraphProvider';
 import { TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
-import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvier';
+import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvider';
 import { TestsFormatContentMenuExtension } from './ext/contextMenuExtension';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
 import { YamlHelper } from './helpers/yamlHelper';
@@ -34,18 +34,23 @@ import { ExceptionHelper } from './helpers/exceptionHelper';
 import { FileSystemHelper } from './helpers/fileSystemHelper';
 import { XpEnumValuesCompletionItemProvider } from './providers/xpEnumValuesCompletionItemProvider';
 import { LogLevel, Logger } from './logger';
+import { RetroCorrelationViewController } from './views/retroCorrelation/retroCorrelationViewProvider';
+import { XpHoverProvider } from './providers/xpHoverProvider';
 
 export let Log: Logger;
 let client: LanguageClient;
 let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
 
-export async function activate(context: ExtensionContext) {
-
+export async function activate(context: ExtensionContext): Promise<void> {
 	try {
 		// Инициализация реестр глобальных параметров.
 		const config = await Configuration.init(context);
 		Log = new Logger(config);
-		Log.setLogLevel(LogLevel.Debug);
+		if(config.getExtensionMode() === vscode.ExtensionMode.Development) {
+			Log.setLogLevel(LogLevel.Debug);
+		} else {
+			Log.setLogLevel(LogLevel.Info);
+		}
 
 		Log.info(`Начата активация расширения '${Configuration.getExtensionDisplayName()}'`);
 
@@ -120,11 +125,12 @@ export async function activate(context: ExtensionContext) {
 		TableListsEditorViewProvider.init(config);
 		SetContentTypeCommand.init(config);
 		InitKBRootCommand.init(config);
+		RetroCorrelationViewController.init(config);
 
 		siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(XPPackingTaskProvider.Type, new XPPackingTaskProvider(config));
 
-
-		// Расширение нативного контекстого меню.
+		
+		// Расширение нативного контекстного меню.
 		TestsFormatContentMenuExtension.init(context);
 
 		// Подпись функций.
@@ -210,6 +216,22 @@ export async function activate(context: ExtensionContext) {
 			)
 		);
 
+		// Показывает общую информацию по наведению на конструкцию.
+		const xpHoverProvider = await XpHoverProvider.init(config);
+		context.subscriptions.push(
+			vscode.languages.registerHoverProvider([
+				{
+					scheme: 'file',
+					language: 'co'
+				},
+				{
+					scheme: 'file',
+					language: 'xp'					
+				}], 
+				xpHoverProvider
+			)
+		);
+
 		// Не очень понятно как тут сделать разумно.
 		const tokenModifiers = ['declaration', 'documentation'];
 		const tokenTypes = ['function', 'variable'];
@@ -244,9 +266,22 @@ export async function activate(context: ExtensionContext) {
 		if (fs.existsSync(tmpDirectory)) {
 			try {
 				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
+				Log.info(`Директория временных файлов '${tmpDirectory}' была успешно очищена`);
 			}
 			catch (error) {
 				Log.warn('Ошибка очистки файлов из временной директории', error);
+			}
+		}
+
+		// Очистка директории выходных файлов. Нужна для сохранения консистентности нормализаций.
+		const baseOutputDirectory = config.getBaseOutputDirectoryPath();
+		if(fs.existsSync(baseOutputDirectory)) {
+			try {
+				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(baseOutputDirectory);
+				Log.info(`Директория выходных файлов '${baseOutputDirectory}' была успешно очищена`);
+			}
+			catch (error) {
+				Log.warn('Ошибка очистки файлов из выходной директории', error);
 			}
 		}
 

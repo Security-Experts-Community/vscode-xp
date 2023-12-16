@@ -65,7 +65,7 @@ export class EDRPathHelper extends PathLocator {
 		return "rules_graph.json";
 	}
 
-	public getAgregationsGraphFileName() : string {
+	public getAggregationsGraphFileName() : string {
 		return "aggrules_graph.json";
 	}
 
@@ -93,7 +93,7 @@ export class EDRPathHelper extends PathLocator {
 		const contentRoots = this.getContentRoots();
 		const packagesDirectories = [];
 		
-		for(const root in contentRoots){
+		for(const root of contentRoots){
 			packagesDirectories.concat(fs.readdirSync(root, { withFileTypes: true })
 			.filter(dir => dir.isDirectory())
 			.map(dir => dir.name));

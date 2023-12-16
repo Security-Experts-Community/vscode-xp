@@ -6,6 +6,7 @@ import { BaseUnitTest } from './baseUnitTest';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Normalization } from '../content/normalization';
 import { XpException } from '../xpException';
+import { Log } from '../../extension';
 
 export class NormalizationUnitTest extends BaseUnitTest {
 	public getDefaultExpectation(): string {
@@ -39,7 +40,7 @@ export class NormalizationUnitTest extends BaseUnitTest {
 					const rawEventFileName = `raw_${index}.txt`;
 					const rawEventFilePath = path.join(unitTest.getTestsDirPath(), rawEventFileName);
 					if(!fs.existsSync(rawEventFilePath)) {
-						console.error(`Повреждены файлы тестов, не найден файл '${rawEventFilePath}'`);
+						Log.error(`Повреждены файлы тестов, не найден файл '${rawEventFilePath}'`);
 						return;
 					}
 
@@ -114,14 +115,6 @@ export class NormalizationUnitTest extends BaseUnitTest {
 			throw new XpException("Для модульного теста не задан порядковый номер");
 		}
 
-		// if(!this.getTestExpectation()) {
-		// 	throw new Error("Нельзя сохранять пустой тест");
-		// }
-
-		// if(!this.getTestInputData()){
-		// 	throw new Error("Нельзя сохранять тест без входных данных");
-		// }
-	
 		await FileSystemHelper.writeContentFileIfChanged(
 			this.getTestInputDataPath(),
 			this.getTestInputData()

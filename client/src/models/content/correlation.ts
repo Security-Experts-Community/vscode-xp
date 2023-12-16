@@ -61,7 +61,7 @@ export class Correlation extends RuleBaseItem {
 		return Object.assign(CorrelationUnitTest.create(this), object) as CorrelationUnitTest;
 	}
 
-	private constructor(name: string, parentDirectoryPath?: string) {
+	constructor(name: string, parentDirectoryPath?: string) {
 		super(name, parentDirectoryPath);
 		this.setFileName("rule.co");
 	}
@@ -88,7 +88,7 @@ export class Correlation extends RuleBaseItem {
 
 		const ruleFilePath = correlation.getRuleFilePath();
 		if (!fs.existsSync(ruleFilePath)) {
-			throw new XpException(`Файл с кодом правила '${ruleFilePath}' не существует.`);
+			throw new XpException(`Файл с кодом правила '${ruleFilePath}' не существует`);
 		}
 		
 		const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
@@ -114,6 +114,12 @@ export class Correlation extends RuleBaseItem {
 
 		const integrationTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
 		correlation.addIntegrationTests(integrationTests);
+
+		// Описание можно посматривать при наведении мыши.
+		// TODO: добавить поддержку английской локализации
+		if(ruDescription) {
+			correlation.setTooltip(correlation.getRuDescription());
+		}
 
 		// Добавляем команду на открытие.
 		correlation.setCommand({
@@ -288,7 +294,7 @@ export class Correlation extends RuleBaseItem {
 			
 			// Модифицируем код, если он есть
 			if (ruleCode) {
-				const newRuleCode = ContentHelper.replaceAllCorrelantionNameWithinCode(newRuleName, ruleCode);
+				const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode(newRuleName, ruleCode);
 				await this.setRuleCode(newRuleCode);
 			}
 		}

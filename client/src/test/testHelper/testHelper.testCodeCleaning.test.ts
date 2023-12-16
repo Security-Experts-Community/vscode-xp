@@ -213,6 +213,7 @@ const expectedTestCode =
     "category.low": "Permission Groups Discovery",
     "origin_app_id": "00000000-0000-0000-0000-000000000005",
     "subject": "account",
+    "_rule": "Active_Directory_Snapshot",
     "subject.account.domain": "testlab",
     "object": "resource",
     "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",
@@ -508,6 +509,7 @@ Got results:
     "category.low": "Permission Groups Discovery",
     "origin_app_id": "00000000-0000-0000-0000-000000000005",
     "subject": "account",
+    "_rule": "Active_Directory_Snapshot",
     "subject.account.domain": "testlab",
     "object": "resource",
     "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",
@@ -606,6 +608,7 @@ Got results:
 Got results:
 
 {
+    "_rule": "ESC_Checkpoint_Admin_Modification",
     "incident.severity": "high",
     "normalized": true
 }

@@ -9,6 +9,7 @@ import { diffJson } from 'diff';
 import { UnitTestRunner } from './unitTestsRunner';
 import { UnitTestOutputParser } from './unitTestOutputParser';
 import { XpException } from '../xpException';
+import { RegExpHelper } from '../../helpers/regExpHelper';
 
 export class NormalizationUnitTestsRunner implements UnitTestRunner {
 
@@ -38,9 +39,9 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 			return unitTest;
 		}
 
-		const normalizedEventResult = /^\{.*\}/is.exec(utilityOutput);
+		const normalizedEventResult = RegExpHelper.parseJsonsFromMultilineString(utilityOutput);
 		if(!normalizedEventResult || normalizedEventResult.length != 1) {
-			throw new XpException("Нормализатор не вернул никакого события или вернул ошибку. Исправьте правило нормализации и повторите.");
+			throw new XpException("Нормализатор не вернул никакого события или вернул ошибку. Исправьте правило нормализации и повторите");
 		}
 		const normalizedEvent = normalizedEventResult[0];
 
@@ -48,10 +49,14 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 		let expectation = JSON.parse(unitTest.getTestExpectation());
 		expectation = this.clearIrrelevantFields(expectation);
 
-		let actual = JSON.parse(normalizedEvent);
-		actual = this.clearIrrelevantFields(actual);
+		let actualEventObject = JSON.parse(normalizedEvent);
+		actualEventObject = this.clearIrrelevantFields(actualEventObject);
+
+		// Сохраняем фактическое события для последующего обновления ожидаемого.
+		const actualEventString = JSON.stringify(actualEventObject);
+		unitTest.setActualEvent(actualEventString);
 		
-		const difference = diffJson(expectation, actual);
+		const difference = diffJson(expectation, actualEventObject);
 		
 		let eventsDiff = "";
 		for (const part of difference) {
@@ -77,9 +82,9 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 			delete eventObject['recv_time'];
 		}
 
-		if(eventObject['time']) {
-			delete eventObject['time'];
-		}
+		// if(eventObject['time']) {
+		// 	delete eventObject['time'];
+		// }
 
 		// Костыль. Нивелируем appendix.xp
 		// event_src.host = coalesce(event_src.fqdn, event_src.hostname, event_src.ip, recv_ipv4, recv_ipv6, recv_host)

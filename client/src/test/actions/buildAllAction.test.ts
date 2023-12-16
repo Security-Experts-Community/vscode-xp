@@ -1,11 +1,11 @@
 import { Configuration } from '../../models/configuration';
-import { BuildAllAction } from '../../views/contentTree/actions/buildAllAction';
+import { BuildAllCommand } from '../../views/contentTree/commands/buildAllCommand';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 
-suite(BuildAllAction.name, () => {
+suite(BuildAllCommand.name, () => {
 
 	test('Инициализация', async () => {
-		new BuildAllAction(
+		new BuildAllCommand(
 			Configuration.get(),
 			new SiemJOutputParser()
 		);
