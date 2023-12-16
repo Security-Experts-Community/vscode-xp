@@ -34,7 +34,7 @@ export class PackSIEMAllPackagesAction {
 		});
 
 		if(!fileInfos) {
-			DialogHelper.showError(`Путь не выбран.`);
+			DialogHelper.showError(vscode.l10n.t("No path selected"));
 			return;
 		}
 

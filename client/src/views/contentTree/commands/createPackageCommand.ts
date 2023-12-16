@@ -13,7 +13,7 @@ import { ContentFolder } from '../../../models/content/contentFolder';
 
 export class CreatePackageCommand {
 
-	static CommandName = "SiemContentEditor.сreatePackageCommand";
+	static CommandName = "SiemContentEditor.createPackageCommand";
 
 	public async execute(selectedItem: RuleBaseItem) {
 

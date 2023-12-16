@@ -35,6 +35,7 @@
 		"vscode": "^1.75.0"
 	},
 	"main": "./client/out/extension",
+	"l10n": "./l10n",
 	"capabilities": {
 		"definitionProvider": "true"
 	},
@@ -216,13 +217,13 @@
 			"Content": [
 				{
 					"id": "KnowledgebaseTree",
-					"name": "Дерево контента",
-					"contextualTitle": "Дерево контента"
+					"name": "%vscode-xp.views.knowledgebaseTree.title%",
+					"contextualTitle": "%vscode-xp.views.knowledgebaseTree.title%"
 				},
 				{
 					"id": "ModularTestsListView",
-					"name": "Модульные тесты",
-					"contextualTitle": "Модульные тесты"
+					"name": "%vscode-xp.views.modularTestsListView.title%",
+					"contextualTitle": "%vscode-xp.views.modularTestsListView.title%"
 				}
 			]
 		},
@@ -288,7 +289,7 @@
 			],
 			"view/item/context": [
 				{
-					"command": "SiemContentEditor.сreatePackageCommand",
+					"command": "SiemContentEditor.createPackageCommand",
 					"when": "view == KnowledgebaseTree && viewItem == ContentRoot",
 					"group": "ContentRoot@1"
 				},
@@ -407,40 +408,39 @@
 			},
 			{
 				"command": "SiemContentEditor.openKnowledgebaseCommand",
-				"title": "Открыть базу знаний",
+				"title": "%vscode-xp.views.knowledgebaseTree.openKnowledgebaseCommand%",
 				"category": "Редактор XP",
 				"icon": "$(folder-opened)"
 			},
 			{
 				"command": "SiemContentEditor.refreshKbTree",
-				"title": "Обновить дерево контента",
+				"title": "%vscode-xp.views.knowledgebaseTree.refreshСontentTreeCommand%",
 				"icon": "$(refresh)"
 			},
 			{
-				"command": "SiemContentEditor.сreatePackageCommand",
-				"title": "Создать новый пакет",
+				"command": "SiemContentEditor.createPackageCommand",
+				"title": "%vscode-xp.views.knowledgebaseTree.createPackageCommand%",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "KnowledgebaseTree.showCreateCorrelationView",
-				"title": "Создать правило корреляции",
+				"title": "%vscode-xp.views.knowledgebaseTree.createCorrelationCommand%",
 				"category": "Редактор XP",
 				"icon": "$(file-add)"
 			},
 			{
 				"command": "KnowledgebaseTree.showCreateEnrichmentView",
-				"title": "Создать правило обогащения",
+				"title": "%vscode-xp.views.knowledgebaseTree.createEnrichmentCommand%",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "KnowledgebaseTree.showCreateNormalizationView",
-				"title": "Создать правило нормализации",
+				"title": "%vscode-xp.views.knowledgebaseTree.createNormalizationCommand%",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "TableListsEditorView.showView",
-				"title": "Создать табличный список",
-				"shortTitle": "Создать табличный список",
+				"title": "%vscode-xp.views.knowledgebaseTree.createTableListsCommand%",
 				"category": "Редактор XP"
 			},
 			{
@@ -488,24 +488,24 @@
 			},
 			{
 				"command": "SiemContentEditor.createSubFolderCommand",
-				"title": "Создать директорию",
+				"title": "%vscode-xp.views.knowledgebaseTree.createFolderCommand%",
 				"category": "Редактор XP",
 				"icon": "$(new-folder)"
 			},
 			{
 				"command": "SiemContentEditor.renameTreeItemCommand",
-				"title": "Переименовать",
+				"title": "%vscode-xp.views.knowledgebaseTree.renameCommand%",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "SiemContentEditor.deleteContentItemCommand",
-				"title": "Удалить",
+				"title": "%vscode-xp.views.knowledgebaseTree.deleteCommand%",
 				"category": "Редактор XP",
 				"icon": "$(notebook-delete-cell)"
 			},
 			{
 				"command": "MetaInfoView.showMetaInfoEditor",
-				"title": "Метаданные",
+				"title": "%vscode-xp.views.knowledgebaseTree.showMetainfoCommand%",
 				"category": "Редактор XP"
 			},
 			{
@@ -544,7 +544,7 @@
 			},
 			{
 				"command": "IntegrationTestEditorView.showEditor",
-				"title": "Интеграционные тесты",
+				"title": "%vscode-xp.views.knowledgebaseTree.showIntegrationTestsCommand%",
 				"category": "Редактор XP"
 			},
 			{
@@ -559,7 +559,7 @@
 			},
 			{
 				"command": "xp.contentTree.verifyFolder",
-				"title": "Проверить"
+				"title": "%vscode-xp.views.knowledgebaseTree.verifyFolderCommand%"
 			}
 		],
 		"keybindings": [
@@ -628,7 +628,8 @@
 		"@typescript-eslint/eslint-plugin": "^4.21.0",
 		"@typescript-eslint/parser": "^4.21.0",
 		"eslint": "^7.23.0",
-		"mocha": "^9.2.2"
+		"mocha": "^9.2.2",
+		"@vscode/l10n-dev": "^0.0.31"
 	},
 	"dependencies": {
 		"@supercharge/promise-pool": "^3.1.0",
@@ -654,6 +655,8 @@
 		"workerpool": "^6.5.0",
 		"xml2json-light": "^1.0.6",
 		"yaml": "^1.10.2",
-		"zlib": "^1.0.5"
+		"zlib": "^1.0.5",
+		"@vscode/l10n": "0.0.18",
+		"@types/vscode": "^1.85.0"
 	}
 }

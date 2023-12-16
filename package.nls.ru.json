@@ -1,0 +1,20 @@
+{
+	"vscode-xp.views.knowledgebaseTree.title": "Дерево контента",
+	"vscode-xp.views.knowledgebaseTree.refreshСontentTreeCommand": "Обновить дерево контента",
+	"vscode-xp.views.knowledgebaseTree.openKnowledgebaseCommand": "Открыть базу знаний",
+	"vscode-xp.views.knowledgebaseTree.createPackageCommand": "Создать новый пакет",
+	"vscode-xp.views.knowledgebaseTree.createCorrelationCommand": "Создать правило корреляции",
+	"vscode-xp.views.knowledgebaseTree.createEnrichmentCommand": "Создать правило обогащения",
+	"vscode-xp.views.knowledgebaseTree.createNormalizationCommand": "Создать правило нормализации",
+	"vscode-xp.views.knowledgebaseTree.createTableListsCommand": "Создать табличный список",
+	"vscode-xp.views.knowledgebaseTree.createFolderCommand": "Создать директорию",
+
+	"vscode-xp.views.knowledgebaseTree.verifyFolderCommand": "Проверить",
+	"vscode-xp.views.knowledgebaseTree.deleteCommand": "Удалить",
+	"vscode-xp.views.knowledgebaseTree.renameCommand": "Переименовать",
+	"vscode-xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Интеграционные тесты",
+	"vscode-xp.views.knowledgebaseTree.showMetainfoCommand": "Метаданные",
+
+	"vscode-xp.views.modularTestsListView.title": "Модульные тесты"
+}
+
