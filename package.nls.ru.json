@@ -12,9 +12,23 @@
 	"vscode-xp.views.knowledgebaseTree.verifyFolderCommand": "Проверить",
 	"vscode-xp.views.knowledgebaseTree.deleteCommand": "Удалить",
 	"vscode-xp.views.knowledgebaseTree.renameCommand": "Переименовать",
+
 	"vscode-xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Интеграционные тесты",
 	"vscode-xp.views.knowledgebaseTree.showMetainfoCommand": "Метаданные",
+	"vscode-xp.views.knowledgebaseTree.showLocalizationCommand": "Локализации",
+	"vscode-xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Ретро коррелятор",
 
-	"vscode-xp.views.modularTestsListView.title": "Модульные тесты"
+	"vscode-xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все графы",
+	"vscode-xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Компилировать все локализации",
+	"vscode-xp.views.knowledgebaseTree.buildAllWldsCommand": "Компилировать wld-файлы",
+
+	"vscode-xp.views.knowledgebaseTree.importKbFileCommand": "Импортировать пакеты из kb-файла",
+	"vscode-xp.views.knowledgebaseTree.exportKbFileCommand": "Экспортировать пакет в kb-файл",
+	"vscode-xp.views.knowledgebaseTree.correlateEventsCommand": "Коррелировать события",
+
+	"vscode-xp.views.knowledgebaseTree.defaultContent": "Добро пожаловать! Это расширение поможет в разработке правил на языке eXtraction and Processing (XP). Чтобы начать, откройте базу знаний.\n[Открыть базу знаний](command:SiemContentEditor.openKnowledgebaseCommand)\nПриятной работы!",
+
+	"vscode-xp.views.modularTestsListView.title": "Модульные тесты",
+	"vscode-xp.views.modularTestsListView.defaultContent": "Модульные тесты отсутствуют"
 }
 

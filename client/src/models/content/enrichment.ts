@@ -198,11 +198,9 @@ export class Enrichment extends RuleBaseItem {
 		const integrationTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
 		enrichment.addIntegrationTests(integrationTests);
 
-		// Описание можно посматривать при наведении мыши.
-		// TODO: добавить поддержку английской локализации
-		if(ruDescription) {
-			enrichment.setTooltip(enrichment.getRuDescription());
-		}
+		// TODO: поднять по иерархии выше
+		const localeDescription = enrichment.getLocaleDescription();
+		enrichment.setTooltip(localeDescription);
 
 		// Добавляем команду на открытие.
 		enrichment.setCommand({

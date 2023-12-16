@@ -184,6 +184,10 @@ export class Normalization extends RuleBaseItem {
 		const enDescription = await Localization.parseEnDescription(directoryPath);
 		normalization.setEnDescription(enDescription);
 
+		// TODO: поднять по иерархии выше
+		const localeDescription = normalization.getLocaleDescription();
+		normalization.setTooltip(localeDescription);
+
 		const localizations = await Localization.parseFromDirectory(directoryPath);
 		if(!normalization.checkLocalizationConsistency(localizations, normalization.getMetaInfo())) {
 			throw new XpException(

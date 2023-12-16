@@ -197,11 +197,11 @@
 		"viewsWelcome": [
 			{
 				"view": "KnowledgebaseTree",
-				"contents": "Добро пожаловать! Это расширение поможет в разработке правил на языке eXtraction and Processing (XP). Чтобы начать, откройте базу знаний.\n[Открыть базу знаний](command:SiemContentEditor.openKnowledgebaseCommand)\nПриятной работы!"
+				"contents": "%vscode-xp.views.knowledgebaseTree.defaultContent%"
 			},
 			{
 				"view": "ModularTestsListView",
-				"contents": "Модульные тесты отсутствуют"
+				"contents": "%vscode-xp.views.modularTestsListView.defaultContent%"
 			}
 		],
 		"viewsContainers": {
@@ -398,7 +398,7 @@
 		"commands": [
 			{
 				"command": "xp.retroCorrelationShow",
-				"title": "Ретро коррелятор",
+				"title": "%vscode-xp.views.knowledgebaseTree.showRetroCorrelationCommand%",
 				"category": "Редактор XP"
 			},
 			{
@@ -445,39 +445,35 @@
 			},
 			{
 				"command": "KnowledgebaseTree.runningCorrelationGraph",
-				"title": "Коррелировать события",
-				"shortTitle": "Коррелировать события",
+				"title": "%vscode-xp.views.knowledgebaseTree.correlateEventsCommand%",
 				"category": "Редактор XP",
 				"icon": "$(outline-view-icon)"
 			},
 			{
 				"command": "xp.contentTree.buildAll",
-				"title": "Компилировать все графы",
-				"shortTitle": "Собрать все графы",
+				"title": "%vscode-xp.views.knowledgebaseTree.buildAllGraphsCommand%",
 				"category": "Редактор XP",
 				"icon": "$(debug-start)"
 			},
 			{
 				"command": "xp.contentTree.buildLocalizations",
-				"title": "Компилировать все локализации",
+				"title": "%vscode-xp.views.knowledgebaseTree.buildAllLocalizationsCommand%",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "xp.contentTree.buildWld",
-				"title": "Компилировать wld-файлы",
+				"title": "%vscode-xp.views.knowledgebaseTree.buildAllWldsCommand%",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "KnowledgebaseTree.unpackKbPackage",
-				"title": "Импортировать пакеты из kb-файла",
-				"shortTitle": "Загрузить пакеты",
+				"title": "%vscode-xp.views.knowledgebaseTree.importKbFileCommand%",
 				"category": "Редактор XP",
 				"icon": "$(package)"
 			},
 			{
 				"command": "KnowledgebaseTree.buildKbPackage",
-				"title": "Экспортировать пакет в kb-файл",
-				"shortTitle": "Собрать пакет",
+				"title": "%vscode-xp.views.knowledgebaseTree.exportKbFileCommand%",
 				"category": "Редактор XP",
 				"icon": "$(debug-start)"
 			},
@@ -510,7 +506,7 @@
 			},
 			{
 				"command": "LocalizationView.showLocalizationEditor",
-				"title": "Локализации",
+				"title": "%vscode-xp.views.knowledgebaseTree.showLocalizationCommand%",
 				"category": "Редактор XP"
 			},
 			{

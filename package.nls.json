@@ -15,6 +15,19 @@
 
 	"vscode-xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Integration tests",
 	"vscode-xp.views.knowledgebaseTree.showMetainfoCommand": "Integration tests",
+	"vscode-xp.views.knowledgebaseTree.showLocalizationCommand": "Localization",
+	"vscode-xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Retro correlation",
 
-	"vscode-xp.views.modularTestsListView.title": "Unit tests"
+	"vscode-xp.views.knowledgebaseTree.buildAllGraphsCommand": "Build all graphs",
+	"vscode-xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Build all localizations",
+	"vscode-xp.views.knowledgebaseTree.buildAllWldsCommand": "Build all wld files",
+
+	"vscode-xp.views.knowledgebaseTree.importKbFileCommand": "Import packages from kb file",
+	"vscode-xp.views.knowledgebaseTree.exportKbFileCommand": "Export package to kb file",
+	"vscode-xp.views.knowledgebaseTree.correlateEventsCommand": "Correlate events",
+
+	"vscode-xp.views.knowledgebaseTree.defaultContent": "Welcome! This extension will help you develop rules in the eXtraction and Processing (XP) language. To get started, open the knowledge base.\n[Open Knowledge Base](command:SiemContentEditor.openKnowledgebaseCommand)\nHave fun!",
+
+	"vscode-xp.views.modularTestsListView.title": "Unit tests",
+	"vscode-xp.views.modularTestsListView.defaultContent": "No unit tests"
 }
