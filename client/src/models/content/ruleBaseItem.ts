@@ -450,7 +450,7 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 		
 		this._ruleCode = code;
 
-		// Меняем код правила на диске.
+		// Меняем код правила на диске, если он там есть.
 		const ruleFilePath = this.getRuleFilePath();
 		if(fs.existsSync(ruleFilePath)) {
 			return FileSystemHelper.writeContentFileIfChanged(ruleFilePath, code);

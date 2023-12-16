@@ -12,13 +12,22 @@ import { BaseUnitTest } from '../models/tests/baseUnitTest';
 import { StringHelper } from './stringHelper';
 import { Log } from '../extension';
 import { FileSystemHelper } from './fileSystemHelper';
-import { CorrelationEvent } from '../models/content/correlation';
+import { Correlation, CorrelationEvent } from '../models/content/correlation';
 import { ArgumentException } from '../models/argumentException';
 import { JsHelper } from './jsHelper';
 
 export type EventMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
 export class TestHelper {
+
+	/**
+	 * Проверяет, может быть проверена локализация у правила
+	 * @param rule правило
+	 * @returns может быть проверена локализация у правила
+	 */
+	public static isTestedLocalizationsRule(rule: RuleBaseItem): boolean {
+		return rule instanceof Correlation;
+	}
 
 	public static isNegativeTest(testCode: string) : boolean {
 		return /expect\s+not\s+/gm.test(testCode);

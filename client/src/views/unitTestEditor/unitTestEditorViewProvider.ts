@@ -164,13 +164,15 @@ export class UnitTestContentEditorViewProvider {
 	private async receiveMessageFromWebView(message: any) {
 		switch (message.command) {
 			case 'saveTest': {
-				this.saveTest(message);
+				await this.saveTest(message);
 				this.updateView();
 				return;
 			}
 
 			case 'runTest': {
+				await this.saveTest(message);
 				await this.runUnitTest(message);
+				this.updateView();
 				return;
 			}
 
@@ -201,12 +203,13 @@ export class UnitTestContentEditorViewProvider {
 					resultTestCode = actualEvent;
 				}
 				
-				// Обновляем ожидаемое событие на диске и во вьюшке.
+				// Обновляем ожидаемое событие на диске и во вьюшке и запускаем тесты.
 				this._test.setTestExpectation(resultTestCode);
 				await this._test.save();
+				await this.runUnitTest(message);
 				this.updateView();
 
-				DialogHelper.showInfo("Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти.");
+				DialogHelper.showInfo("Ожидаемое событие обновлено и тест перезапущен");
 				return;
 			}
 
@@ -243,18 +246,6 @@ export class UnitTestContentEditorViewProvider {
 	}
 
 	private async runUnitTest(message: any) {
-		if (!message.test) {
-			DialogHelper.showError("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
-			return;
-		}
-
-		// TODO: если тест еще не сохранён, то он падает так как в объекте дефолтный комментарий, а не значения из вьюшки.
-		// const expectation = message.test.expectation;
-		// this._test.setTestExpectation(expectation);
-
-		// const rawEvent = message.test.rawEvent;
-		// this._test.setTestInputData(rawEvent);
-
 		const rule = this._test.getRule();
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
@@ -264,7 +255,6 @@ export class UnitTestContentEditorViewProvider {
 				progress.report({ message: `Выполнение теста №${this._test.getNumber()}` });
 				const runner = rule.getUnitTestRunner();
 				this._test = await runner.run(this._test);
-				this.updateView();
 			}
 			catch (error) {
 				ExceptionHelper.show(error, "Неожиданная ошибка выполнения модульного теста");

@@ -7,6 +7,19 @@ export class JsHelper {
 		return Object.keys(obj).length === 0;
 	}
 
+	/**
+	 * Возвращает первый дублирующий элемент или null
+	 */
+	public static findDuplicates(arr: string[]): string {
+		const sortedArr = arr.slice().sort();
+		for (let i = 0; i < sortedArr.length - 1; i++) {
+			if (sortedArr[i + 1] == sortedArr[i]) {
+				return sortedArr[i];
+			}
+		}
+		return null;
+	}
+
 	public static removeEmptyKeys(obj : any) : any {
 		for (const key in obj) {
 			if(!obj[key]) {
