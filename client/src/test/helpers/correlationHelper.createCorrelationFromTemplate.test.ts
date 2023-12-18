@@ -11,18 +11,246 @@ import { Configuration } from '../../models/configuration';
 
 suite('CorrelationHelper.createCorrelationFromTemplate', async () => {
 
-	test('Создание универсальной корреляции в памяти', async () => {
-		const rule = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper", "Windows_Universal", Configuration.get());
+	test('Сохранение пустой корреляции', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Empty", Configuration.get());
 
-		assert.strictEqual(rule.getName(), "ESC_Super_Duper");
-		assert.strictEqual(rule.getMetaInfo().getName(), "ESC_Super_Duper");
-	});
-
-	test('Сохранение универсальной корреляции не упало', async () => {
-		const correlation = await ContentHelper.createCorrelationFromTemplate("ESC_Super_Duper", "Windows_Universal", Configuration.get());
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
 
 		const tmpPath = TestFixture.getTmpPath();
-		await correlation.save(tmpPath);
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение универсальной корреляции для Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Universal", Configuration.get());
+
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила на профилирование', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "For_Profilling", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила на брут', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Password_Brute", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила на подключение в Linux', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Unix_Connect", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила на выполнение команд в Linux', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Unix_Execve", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила на чтение файла в Linux', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Unix_OpenOpenat", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение универсального правила для Linux', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Unix_Universal", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по созданию файла для Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_FileCreate", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по загрузке образа файла для Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Image_Load", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по LDAP-запросу для Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_LDAP", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по авторизации для Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Logon", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по сетевому подключению для Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Network_Connect", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по выполнению Powershell команд', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Powershell_Execute", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по запуску процесса для Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Process_Start", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по запуску процесса или Powershell-команды для Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Process_Start_or_Powershell", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по модификации реестра Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Registry_modification", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по созданию удалённого потока в Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Remote_Thread", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по доступу по протоколу SMB для Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Share_Access", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по доступу в память другого процесса для Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Sysmon10", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+
+	test('Сохранение правила по доступу в память другого процесса для Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Sysmon10", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
+	});
+	
+	test('Сохранение правила по созданию задачи для Windows', async () => {
+		const ruleName = "ESC_Super_Duper";
+		const rule = await ContentHelper.createCorrelationFromTemplate(ruleName, "Windows_Tasks_actions", Configuration.get());
+		
+		assert.strictEqual(rule.getName(), ruleName);
+		assert.strictEqual(rule.getMetaInfo().getName(), ruleName);
+
+		const tmpPath = TestFixture.getTmpPath();
+		await rule.save(tmpPath);
 	});
 
 	test('Создание пустой корреляции', async () => {

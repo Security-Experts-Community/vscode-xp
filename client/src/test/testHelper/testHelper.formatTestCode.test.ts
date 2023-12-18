@@ -1,8 +1,24 @@
 import * as assert from 'assert';
+import * as os from 'os';
 
 import { TestHelper } from '../../helpers/testHelper';
 
 suite('TestHelper.formatTestCode', async () => {
+
+	test('Табуляция после события', async () => {
+
+		const formatted =
+"expect 1 {\"correlation_name\": null, \"object.process.cmdline\": \"c:\\\\windows\\\\whoami.exe\"}\t";
+			
+		const compressed = 
+`expect 1 {
+    "correlation_name": null,
+    "object.process.cmdline": "c:\\\\windows\\\\whoami.exe"
+}\t`;
+
+		const actual = TestHelper.formatTestCodeAndEvents(formatted);
+		assert.strictEqual(actual, compressed);
+	});
 
 	test('Корректная обработка localhost ipv6', async () => {
 

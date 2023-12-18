@@ -2,18 +2,47 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as crypto from 'crypto';
+import { ArgumentException } from '../models/argumentException';
+import { FileSystemException } from '../models/fileSystemException';
 import { Log } from '../extension';
+import { IntegrationTest } from '../models/tests/integrationTest';
+import { MetaInfo } from '../models/metaInfo/metaInfo';
 
 export class FileSystemHelper {
 
 	/**
-	 * Проверяем корректность пути для использования в KBT, без кириллици и пробелов.
+	 * Проверяем корректность пути для использования в KBT, без кириллицы и пробелов.
 	 * @param path путь к файлу или директории
 	 * @returns 
 	 */
 	public static isValidPath(path : string): boolean {
 		const regExp = /^[A-z0-9./!$%&;:{}=\-_`~()]+$/g;
 		return regExp.test(path);
+	}
+
+	public static async getLinesCount(filePath: string) : Promise<number> {
+		if(!filePath) {
+			throw new ArgumentException("Обязательный параметр не задан", "filePath");
+		}
+
+		if(!fs.existsSync(filePath)) {
+			throw new FileSystemException("Файл не существует", filePath);
+		}
+
+		let linesCount = 0;
+
+		const frs = fs.createReadStream(filePath);
+
+		return new Promise<number>(function(resolve, reject) {
+			frs.on('data', function(chunk) {
+				for (let i=0; i < chunk.length; ++i)
+				if (chunk[i] == 10) linesCount++;
+			});
+			frs.on('end', function() {
+				resolve(linesCount);
+			});
+			frs.on('error', reject); // or something like that. might need to close `hash`
+		});
 	}
 
 	public static checkIfFilesIsExisting(startPath: string, fileNameRegexPattern: RegExp) : boolean {
@@ -60,7 +89,7 @@ export class FileSystemHelper {
 	 * Определяет вхождение имени директории в путь.
 	 * @param fullPath путь
 	 * @param directoryName имя директории
-	 * @returns результат провеки вхождения директории в путь
+	 * @returns результат проверки вхождения директории в путь
 	 */
 	public static isIncludeDirectoryInPath(fullPath : string, directoryName: string) : boolean {
 		const pathEntries = fullPath.split(path.sep);
@@ -81,7 +110,7 @@ export class FileSystemHelper {
 
 		// Метаданные.
 		const fileName = path.basename(ruleFilePath);
-		if(fileName === "metainfo.yaml") {
+		if(fileName === MetaInfo.METAINFO_FILENAME) {
 			const ruleDirectoryPath = path.dirname(ruleFilePath);
 			return ruleDirectoryPath;
 		}
@@ -106,6 +135,11 @@ export class FileSystemHelper {
 	}
 
 	public static async writeContentFileIfChanged(filePath: string, newContent: string) : Promise<void> {
+
+		if(!newContent) {
+			throw new FileSystemException("Попытка записать неопределенное значение в файл", filePath);
+		}
+		
 		// Считаем код записываемых данных.
 		const newSha1Sum = crypto.createHash('sha1');
 		const newContentHash = newSha1Sum.update(newContent).digest('hex');
@@ -142,22 +176,19 @@ export class FileSystemHelper {
 		return file.toString();
 	}
 
-	public static readSubDirectoryNames(filePath: string) {
+	public static async readFilesFromDirectory(filePath: string): Promise<string[]> {
 
-		const directories = fs.readdirSync(filePath, { withFileTypes: true })
-			.filter(entity => entity.isDirectory())
-			.map(entity => entity.name);
+		const directories = (await fs.promises.readdir(filePath, { withFileTypes: true }))
+			.filter(entity => entity.isFile())
+			.map(entity => path.join(filePath, entity.name) );
 
 		return directories;
 	}
 
-	public static readDirectoryPathByName(filePath: string, dirNames: string []) {
+	public static readSubDirectoryNames(filePath: string) {
 
 		const directories = fs.readdirSync(filePath, { withFileTypes: true })
 			.filter(entity => entity.isDirectory())
-			.filter((e) => {
-				return dirNames.includes(e.name.toLocaleLowerCase());
-			})
 			.map(entity => entity.name);
 
 		return directories;

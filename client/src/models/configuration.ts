@@ -13,7 +13,7 @@ import { OsType, PathLocator } from './locator/pathLocator';
 import { SIEMPathHelper } from './locator/SIEMPathLocator';
 import { FileDiagnostics } from './siemj/siemJOutputParser';
 
-export type EncodingType = "windows-1251" | "utf-8"
+export type EncodingType = "windows-1251" | "utf-8" | "utf-16"
 
 export class Configuration {
 
@@ -124,7 +124,7 @@ export class Configuration {
 			case "win32" : return OsType.Windows;
 			case "linux" : return OsType.Linux;
 			case "darwin" : return OsType.Mac;
-			default: throw new Error("Платформа не поддеживается.");
+			default: throw new Error("Платформа не поддерживается.");
 		}
 	}
 
@@ -154,11 +154,10 @@ export class Configuration {
 	 * @returns внутреннее имя расширения.
 	 */
 	public getExtensionSettingsPrefix() : string {
-		// TODO: обновить после переименования
-		return "xplang";
+		return "xpConfig";
 	}
 
-	public getResoucesUri() : vscode.Uri {
+	public getResourcesUri() : vscode.Uri {
 		const templatesUri = vscode.Uri.joinPath(this.getExtensionUri(), "templates");
 		return templatesUri;
 	}
@@ -312,6 +311,11 @@ export class Configuration {
 		return fullPath;
 	}
 
+	public getEvtxToJsonToolFullPath() : string {
+		const fullPath = path.join(this.getExtensionPath(), "tools", "rustevtx.exe");
+		return fullPath;
+	}
+
 	public getEcatestFullPath() : string {
 		let appName = "";
 		switch(this.getOsType()) {
@@ -353,6 +357,14 @@ export class Configuration {
 		return path.join(this.getOutputDirectoryPath(rootFolder), this.getSchemaFileName());
 	}
 
+	public getWhitelistingPath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getWhitelistingFileName());
+	}
+
+	public getWhitelistingFileName() : string {
+		return "whitelisting_graph.json ";
+	}
+
 	public getNormalizedEventsFileName() : string {
 		return "norm_events.json";
 	}
@@ -381,11 +393,11 @@ export class Configuration {
 		return path.join(this.getOutputDirectoryPath(rootFolder), this.getCorrelatedEventsFileName());
 	}
 
-	public getRuLocalizationFilePath(rootFolder: string) : string {
+	public getRuRuleLocalizationFilePath(rootFolder: string) : string {
 		return path.join(this.getOutputDirectoryPath(rootFolder), "ru_events.json");
 	}
 
-	public getEnLocalizationFilePath(rootFolder: string) : string {
+	public getEnRuleLocalizationFilePath(rootFolder: string) : string {
 		return path.join(this.getOutputDirectoryPath(rootFolder), "en_events.json");
 	}
 
@@ -393,11 +405,23 @@ export class Configuration {
 		return "langs";
 	}
 
+	public getRuLangFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getLangsDirName(), "ru.lang");
+	}
+
+	public getEnLangFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getLangsDirName(), "en.lang");
+	}
+
 	// Пути к файлам зависят от текущего режима работы
 	// При смене режима SIEM/EDR заменяется реализация _pathHelper
 
 	public getNormalizationsGraphFileName() : string {
 		return this._pathHelper.getNormalizationsGraphFileName();
+	}
+
+	public getAggregationGraphFileName() : string {
+		return this._pathHelper.getAggregationsGraphFileName();
 	}
 	
 	public getEnrichmentsGraphFileName() : string {
@@ -408,12 +432,8 @@ export class Configuration {
 		return this._pathHelper.getCorrelationsGraphFileName();
 	}
 
-	public getAgregationsGraphFileName() : string {
-		return this._pathHelper.getAgregationsGraphFileName();
-	}
-
 	public getNormalizationsGraphFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder),this._pathHelper.getNormalizationsGraphFileName());
+		return path.join(this.getOutputDirectoryPath(rootFolder), this._pathHelper.getNormalizationsGraphFileName());
 	}
 	
 	public getEnrichmentsGraphFilePath(rootFolder: string) : string {
@@ -424,8 +444,8 @@ export class Configuration {
 		return path.join(this.getOutputDirectoryPath(rootFolder), this.getCorrelationsGraphFileName());
 	}
 
-	public getAgregationsGraphFilePath(rootFolder: string) : string {
-		return path.join(this.getOutputDirectoryPath(rootFolder), this.getAgregationsGraphFileName());
+	public getAggregationsGraphFilePath(rootFolder: string) : string {
+		return path.join(this.getOutputDirectoryPath(rootFolder), this.getAggregationGraphFileName());
 	}
 
 	public getLocalizationsFolder() : string {
@@ -449,7 +469,7 @@ export class Configuration {
 	}
 
 	public getTmpSiemjConfigPath(rootFolder: string) : string {
-		return path.join(this.getRandTmpSubDirectoryPath(rootFolder), "siemj.conf");
+		return path.join(this.getRandTmpSubDirectoryPath(rootFolder), Configuration.SIEMJ_CONFIG_FILENAME);
 	}
 
 	public getRandTmpSubDirectoryPath(rootFolder?: string) : string {
@@ -626,4 +646,6 @@ export class Configuration {
 	private _diagnosticCollection: vscode.DiagnosticCollection;
 
 	private BUILD_TOOLS_DIR_NAME = "build-tools";
+
+	public static readonly SIEMJ_CONFIG_FILENAME = "siemj.conf";	
 }

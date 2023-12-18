@@ -18,22 +18,15 @@ export class OpenKnowledgebaseCommand {
 			return;
 		}
 
-		const openClassifierDirectoryPath = showOpenDialogUris[0].fsPath;
+		const openKnowledgebaseDirectoryPath = showOpenDialogUris[0].fsPath;
 
 		// Проверка доступности директории.
-		if(!fs.existsSync(openClassifierDirectoryPath)) {
-			vscode.window.showErrorMessage(`Папка '${openClassifierDirectoryPath}' недоступна. Выберите другую папку.`);
+		if(!fs.existsSync(openKnowledgebaseDirectoryPath)) {
+			vscode.window.showErrorMessage(`Папка '${openKnowledgebaseDirectoryPath}' недоступна. Выберите другую папку.`);
 			return;
 		}
 
-		// Проверка минимального количества нужных файлов. 
-		// const packagesDirPath = path.join(openClassifierDirectoryPath, "packages");
-		// if(!fs.existsSync(packagesDirPath)) {
-		// 	vscode.window.showErrorMessage(`В выбранной директории отсутствует поддериктория packages. Директория контента выбрана неправильно или повреждена.`);
-		// 	return;
-		// }
-
 		// Открываем базу знаний.
-		VsCodeApiHelper.openFolder(openClassifierDirectoryPath);
+		VsCodeApiHelper.openFolder(openKnowledgebaseDirectoryPath);
 	}
 }

@@ -3,15 +3,15 @@ export class ExtensionState {
 		this._toolingExecution = false;
 	}
 
-	public runToolingExecution() {
+	public startExecutionState() {
 		this._toolingExecution = true;
 	}
 
-	public isToolingExecution() {
+	public isExecutedState() {
 		return this._toolingExecution;
 	}
 
-	public stopRoolingExecution() {
+	public stopExecutionState() {
 		this._toolingExecution = false;
 	}
 

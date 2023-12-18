@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+
+	<!--
+		Use a content security policy to only allow loading images from https or from our extension directory,
+		and only allow scripts that have a specific nonce.
+	-->
+	
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Тесты</title>
+
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/main.css">
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/tests.css">
+	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/hljs.css">
+
+	<!-- Для отладки в браузере добавляю прямую ссылку на JQuery. -->
+	<script	src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
+	<script src="{{{ExtensionBaseUri}}}/client/templates/js/highlight-10.0.1.min.js"></script>
+
+</head>
+	<body>
+		<!-- Common Panel -->
+		<div id="header">
+			<div id="navigation">
+				<input id="addEventFiles" class="run" name="full_test" type="button" value="Добавить файлы с событиями  ">
+				<input id="runFullGraph" class="run" name="full_test" type="button" value="&#9654;   Коррелировать события  ">
+			</div>
+	    </div>
+
+		<div id="main-body">
+			<!-- Raw Events -->
+			<div class="test_block">
+				<div class="block_header">
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
+					<label for="norm_event" class="label">Корреляционные события:</label>
+				</div>
+				<div class="text">
+					<div contenteditable="true" id="correlated_events" name="correlated_events">
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<script>
+
+			function toggleTextarea(arrow) {
+				labels = arrow.parentNode.parentNode.children[1];
+				txt = arrow.parentNode.parentNode.children[2];
+				if (txt.hidden == true) {
+					txt.hidden = false;
+					labels.hidden = false;
+					arrow.innerHTML = "ᐯ";
+				} else {
+					txt.hidden = true;
+					labels.hidden = true;
+					arrow.innerHTML = "❯";
+				}
+			}
+
+			// word wrap/unwrap with button
+			function wrap(check) {
+				const textField = check.parentNode.parentNode.children[2].children[0];
+				if (textField.wrap == "off") {
+					check.checked = true;
+					textField.wrap = "on";
+					textField.style.height = textField.scrollHeight + "px";
+				} else {
+					check.checked = false;
+					textField.wrap = "off";
+				}
+			}
+
+			var vscode = acquireVsCodeApi();
+
+			// Получение команд от расширения.
+			window.addEventListener(
+				'message', 
+				(event) => {
+					const message = event.data; 
+					switch (message.command) {
+						case 'correlatedEvents': {
+							
+							// Очищаем предыдущий вывод событий.
+							$('#correlated_events').html('');
+
+							// Подсвечиваем события.
+							const events = message.events;
+							const highlightedEvents = hljs.highlightAuto(events).value;
+							$('#correlated_events').html(highlightedEvents);
+
+							break;
+						}
+						case 'updateRawEvents': {
+							const rawEvents = message.rawEvents;
+							if(!rawEvents) {
+								alert("Ошибка обновления сырых событий.");
+								return;
+							}
+
+							$("#raw_events").val(rawEvents);
+							break;
+						}
+					}
+			});
+
+			$(document).ready(function() {
+				raws = $('[name=word-wrap]');
+				for (i = 0; i < raws.length; i++) {
+					wrap(raws[i]);
+				}
+
+				$(document).on("click",'#addEventFiles', function () {
+					vscode.postMessage({
+						cmdName: 'AppendEventsCommand'
+					});
+				});
+
+				// Полный тест
+				$(document).on("click",'#runFullGraph', function () {
+					$('#correlated_events').html('');
+
+					const rawEvents = $('#raw_events').val();
+					vscode.postMessage({
+						cmdName: 'CorrelateEventsCommand',
+						rawEvents : rawEvents
+					});
+				});
+
+				// Добавить конверт
+				$(document).on("click",'[name="add_envelope"]', function () {
+
+					const rawEvents = $('#raw_events').val();
+					vscode.postMessage({
+						command: 'addEnvelope',
+						rawEvents : rawEvents,
+						mimeType : $(this).text()
+					});
+				});
+			});
+		</script>
+	</body>
+</html>

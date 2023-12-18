@@ -3,24 +3,28 @@ import * as path from "path";
 import * as fs from "fs";
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { RuleBaseItem } from './ruleBaseItem';
-import { KbTreeBaseItem } from './kbTreeBaseItem';
+import { ContentTreeBaseItem } from './contentTreeBaseItem';
 import { XpException } from '../xpException';
+import { MetaInfo } from '../metaInfo/metaInfo';
 
 export enum ContentFolderType {
-	ContentRoot = 1,
-	PackageFolder, 		// Директория пакета
-	CorrelationsFolder, 	// Директория, с базовой директорией correlation_rules
-	EnrichmentsFolder, 		// Директория, с базовой директорией enrichment_rules
-	AggregationsFolder, 	// Директория, с базовой директорией aggregation_rules
-	NormalizationsFolder, 	// Директория, с базовой директорией normalization_formulas
-	TabularListsFolder,		// Директория, с базовой директорией tabular_lists
-	AnotherFolder,
+	ContentRoot = 			"ContentRoot",
+	PackageFolder = 		"PackageFolder", 				// Директория пакета
+	CorrelationsFolder = 	"CorrelationsFolder", 		// Директория, с базовой директорией correlation_rules
+	EnrichmentsFolder = 	"EnrichmentsFolder", 		// Директория, с базовой директорией enrichment_rules
+	AggregationsFolder = 	"AggregationsFolder", 		// Директория, с базовой директорией aggregation_rules
+	NormalizationsFolder = 	"NormalizationsFolder", 	// Директория, с базовой директорией normalization_formulas
+	TabularListsFolder = 	"TabularListsFolder",		// Директория, с базовой директорией tabular_lists
+	AnotherFolder = 		"AnotherFolder"
 }
 
-export class ContentFolder extends KbTreeBaseItem {
+export class ContentFolder extends ContentTreeBaseItem {
 	public getObjectType(): string {
 		throw new Error('Method not implemented.');
+	}
+
+	public isFolder(): boolean {
+		return true;
 	}
 
 	public async rename(newName: string): Promise<void> {
@@ -90,8 +94,17 @@ export class ContentFolder extends KbTreeBaseItem {
 		const parentPath = path.dirname(directoryPath);
 		contentFolder.setParentPath(parentPath);
 
+		// Парсим метаданные если это пакет 
+		const packageMetaInfoPath = path.join(directoryPath, ContentFolder.PACKAGE_METAINFO_DIRNAME);
+		if(fs.existsSync(packageMetaInfoPath)) {
+			const metaInfo = MetaInfo.fromFile(packageMetaInfoPath);
+			contentFolder.setMetaInfo(metaInfo);
+		}
+
 		// Задаем тип директории.
 		contentFolder.contextValue = ContentFolderType[newFolderType];
 		return contentFolder;
 	}
+
+	public static PACKAGE_METAINFO_DIRNAME = "_meta";
 }

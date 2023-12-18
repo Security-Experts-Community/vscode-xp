@@ -74,7 +74,7 @@ export class VsCodeApiHelper {
 		});
 	}
 
-	public static async getScmGitApiCore(): Promise<API | undefined> {
+	public static async getGitExtension(): Promise<API | undefined> {
 		try {
 			const extension = extensions.getExtension<GitExtension>('vscode.git');
 			if (extension == null) return undefined;
@@ -84,5 +84,43 @@ export class VsCodeApiHelper {
 		} catch {
 			return undefined;
 		}
+	}
+
+	public static isWorkDirectoryUsingGit(gitApi: API, workingTreePath: string) : boolean {
+		const kbUri = vscode.Uri.file(workingTreePath);
+		if(!gitApi) {
+			throw new Error("Git не уcтановлен");
+		}
+		
+		// Получаем нужный репозиторий
+		const repo = gitApi.getRepository(kbUri);
+
+		// База знаний не под git-ом.
+		if(!repo) {
+			return false;
+		}
+
+		return true;
+	}
+
+	public static gitWorkingTreeChanges(gitApi: API, workingTreePath: string) : string [] {
+		const kbUri = vscode.Uri.file(workingTreePath);
+		if(!gitApi) {
+			throw new Error("Git не уcтановлен");
+		}
+		
+		// Получаем нужный репозиторий
+		const repo = gitApi.getRepository(kbUri);
+
+		// База знаний не под git-ом.
+		if(!repo) {
+			throw new Error("Для контента не создан репозиторий");
+		}
+
+		const changePaths = repo.state.workingTreeChanges.map( c => {
+			return c.uri.fsPath.toLocaleLowerCase();
+		});
+
+		return changePaths;
 	}
 }

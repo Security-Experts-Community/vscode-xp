@@ -6,7 +6,7 @@ import { MetaInfo } from '../metaInfo/metaInfo';
 import { Localization, LocalizationExample, LocalizationLanguage } from './localization';
 import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { IntegrationTest } from '../tests/integrationTest';
-import { KbTreeBaseItem } from './kbTreeBaseItem';
+import { ContentTreeBaseItem } from './contentTreeBaseItem';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Configuration } from '../configuration';
 import { YamlHelper } from '../../helpers/yamlHelper';
@@ -16,13 +16,20 @@ import { BaseUnitTest } from '../tests/baseUnitTest';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 
+export enum ContentItemStatus {
+	Default = 1,
+	Verified,
+	Unverified
+}
+
 /**
  * Базовый класс для всех правил.
  */
-export abstract class RuleBaseItem extends KbTreeBaseItem {
+export abstract class RuleBaseItem extends ContentTreeBaseItem {
 
 	constructor(name: string, parentDirectoryPath? : string) {
 		super(name, parentDirectoryPath);
+		this.iconPath = new vscode.ThemeIcon('file');
 	}
 
 	public abstract convertUnitTestFromObject(object: any) : BaseUnitTest;
@@ -37,6 +44,10 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		const newUnitTest = this.createNewUnitTest();
 		this.addUnitTests([newUnitTest]);
 		return newUnitTest;
+	}
+
+	public setTooltip(tooltip: string) : void {
+		this.tooltip = tooltip;
 	}
 
 	public static getRuleDirectoryPath(parentDirPath : string, ruleName : string ) : string {
@@ -207,6 +218,23 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		return this._localizationExamples;
 	}
 
+	public setRuDescription(description: string) : void {
+		this._ruDescription = description;
+	}
+
+	/// Описания правила.
+	public setEnDescription(description: string) : void {
+		this._enDescription = description;
+	}
+
+	public getRuDescription() : string {
+		return this._ruDescription;
+	}
+
+	public getEnDescription() : string {
+		return this._enDescription;
+	}
+
 	public async saveMetaInfoAndLocalizations() : Promise<void> {
 
 		const fullPath = this.getDirectoryPath();
@@ -247,7 +275,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			};
 		});
 
-		await this.writeLocalizationToDisk(ruLocFullPath, ruEventDescriptions, this.getRuDescription());
+		const writeRuLocalization = this.writeLocalizationToDisk(ruLocFullPath, ruEventDescriptions, this.getRuDescription());
 
 		// Английские локализации
 		const enLocFullPath = this.getLocalizationPath(LocalizationLanguage.En, fullPath);
@@ -268,7 +296,8 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			};
 		});
 
-		await this.writeLocalizationToDisk(enLocFullPath, enEventDescriptions, this.getEnDescription());
+		const writeEnLocalization = this.writeLocalizationToDisk(enLocFullPath, enEventDescriptions, this.getEnDescription());
+		await Promise.all([writeRuLocalization, writeEnLocalization]);
 	}
 
 	private async writeLocalizationToDisk(localizationFullPath: string, eventDescriptions : any[], description : string) : Promise<void> {
@@ -327,7 +356,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	 * Добавляет локализацию и нужную метаинформацию.
 	 * @param localization новая локализация
 	 */
-	public addLocalization(localization : Localization) {
+	public addLocalization(localization : Localization): void {
 		const metaInfo = this.getMetaInfo();
 
 		// Если уже есть такая локализация
@@ -337,7 +366,7 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 
 		let locId = localization.getLocalizationId();
 
-		// Локализация без индетификатора локализации - новая локализация. 
+		// Локализация без идентификатора локализации - новая локализация. 
 		if(locId) {
 			// Если есть LocalizationId, тогда добавляем как есть.
 			this._localizations.push(localization);
@@ -376,7 +405,6 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 			return `${this.getLocalizationPrefix()}_${name}_${localizations.length + 1}`;
 		}
 	}
-	
 
 	/**
 	 * Возвращает путь к файлу правила, либо undefined.
@@ -433,7 +461,42 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 		throw new XpException("Сохранение данного типа контента не реализовано.");
 	}
 
-	iconPath = new vscode.ThemeIcon('file');
+	public setStatus(status: ContentItemStatus, tooltip?: string) : void {
+
+		this._status = status;
+		const config = Configuration.get();
+		const extensionResources = path.join(config.getExtensionPath(), 'resources');
+
+		if(tooltip) {
+			this.tooltip = tooltip;
+		} else {
+			// Задаем дефолтное значение подсказки, которая показывается при наведении.
+			this.tooltip = this.getName();
+		}
+
+		switch (this._status) {
+			case ContentItemStatus.Default: {
+				this.iconPath = vscode.ThemeIcon.File;
+				return;
+			}
+
+			case ContentItemStatus.Verified: {
+				const iconPath = path.join(extensionResources, 'test-passed.svg');
+				this.iconPath = { light: iconPath, dark: iconPath };
+				return;
+			}
+
+			case ContentItemStatus.Unverified: {
+				const iconPath = path.join(extensionResources, 'test-failed.svg');
+				this.iconPath = { light: iconPath, dark: iconPath };
+				return;
+			}
+			default: {
+				throw new XpException(`Поддержка значения ${status} еще не реализована`);
+			}
+		}
+	}
+	
 
 	private _localizations: Localization [] = [];
 	private _localizationExamples : LocalizationExample [] = [];
@@ -441,6 +504,10 @@ export abstract class RuleBaseItem extends KbTreeBaseItem {
 	protected _unitTests: BaseUnitTest [] = [];
 	protected _integrationTests : IntegrationTest [] = [];
 	
+	private _ruDescription : string;
+	private _enDescription : string;
+
+	private _status : ContentItemStatus;
 	protected _ruleCode = "";
 
 	contextValue = "BaseRule";

@@ -45,8 +45,6 @@ export class Logger extends ILogger {
 		const logLevel = LogLevel.Error;
 		if (this._level < logLevel) return;
 
-		
-
 		if(ex) {
 			console.error(this.timestamp, message ?? "", ...params, ex);
 			this._output.appendLine(

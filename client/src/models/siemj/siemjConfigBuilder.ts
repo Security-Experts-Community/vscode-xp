@@ -4,7 +4,12 @@ import * as path from 'path';
 import { Configuration } from '../configuration';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Log } from '../../extension';
+import { XpException } from '../xpException';
 
+export class LocalizationsBuildingOptions {
+	rulesSrcPath?: string;
+	force = true;
+}
 
 /**
  * Билдер конфига для упрощения его формирования по заданным параметрам.
@@ -30,6 +35,11 @@ temp=${this._config.getTmpDirectoryPath(this._contentRootFolder)}`;
 	 * @param force пересобирать ли ранее собранный	граф
 	 */
 	public addNormalizationsGraphBuilding(force = true) : void {
+
+		if(this._scenarios.includes(SiemjConfBuilder.MAKE_NFGRAPH_SCENARIO)) {
+			throw new XpException(`Дублирование сценария ${SiemjConfBuilder.MAKE_NFGRAPH_SCENARIO} при генерации конфигурационного файла siemj.conf`);
+		}
+
 		const xpAppendixPath = this._config.getAppendixFullPath();
 
 		if (!force){
@@ -50,25 +60,65 @@ xp_appendix=${xpAppendixPath}
 out=${output}`;
 
 		this._siemjConfigSection += nfgraphBuildingSection;
-		this._scenarios.push("make-nfgraph");
+		this._scenarios.push(SiemjConfBuilder.MAKE_NFGRAPH_SCENARIO);
 	}
 
 	/**
-	 * (Пока не используется) Рекурсивная проверка по регулярному выражению наличия файлов в директории 
+	 * Добавить сборку графа агрегации
+	 * @param force пересобирать ли ранее собранный	граф
+	 */
+	public addAggregationGraphBuilding(force = true) : void {
+
+		if(this._scenarios.includes(SiemjConfBuilder.MAKE_ARGRAPH_SCENARIO)) {
+			throw new XpException(`Дублирование сценария ${SiemjConfBuilder.MAKE_ARGRAPH_SCENARIO} при генерации конфигурационного файла siemj.conf`);
+		}
+
+		if (!force){
+			const arGraphFilePath = this._config.getAggregationsGraphFilePath(this._contentRootFolder);
+			if(fs.existsSync(arGraphFilePath)) {
+				return;
+			}
+		}
+
+		const output = path.join('${output_folder}', this._config.getAggregationGraphFileName());
+		const argraphBuildingSection = 
+`
+[make-argraph]
+type=BUILD_RULES
+rcc_lang=a
+rules_src=${this._contentRootPath}
+out=${output}`;
+
+		this._siemjConfigSection += argraphBuildingSection;
+		this._scenarios.push(SiemjConfBuilder.MAKE_ARGRAPH_SCENARIO);
+	}
+
+// `[make-argraph]
+// type=BUILD_RULES
+// rcc_lang=a
+// rules_src=C:\Work\-=SIEM=-\Content\knowledgebase\packages
+// out=${output_folder}\aggfilters.json`;
+
+	/**
+	 * Рекурсивная проверка по регулярному выражению наличия файлов в директории 
 	 * @param startPath начальная директория для рекурсивного поиска
 	 * @param fileNameRegexPattern регулярное выражение для поиска
 	 * @returns 
 	 */
-
-
-	public addTablesSchemaBuilding() : void {
+	public addTablesSchemaBuilding(force = true) : void {
 		// Если нет табличных списков, то не собираем схему		
+		// TODO: данная логика тут лишняя, вынести на уровень выше.
 		if (!FileSystemHelper.checkIfFilesIsExisting(this._contentRootPath, /\.tl$/)) {
-
-			const corrDefaultsPath = path.join(this._outputFolder, "correlation_defaults.json");
-			const schemaPath = path.join(this._outputFolder, "schema.json");
 			return;
-		}		
+		}
+
+		// Не собираем схему, если она уже есть.
+		if(!force) {
+			const schemaFilePath = this._config.getSchemaFullPath(this._contentRootFolder);
+			if(fs.existsSync(schemaFilePath)) {
+				return;
+			}
+		}
 
 		const contract = this._config.getTablesContract();
 		const tablesSchemaBuildingSection = 
@@ -83,7 +133,15 @@ out=\${output_folder}`;
 		this._scenarios.push("make-tables-schema");
 	}
 
-	public addTablesDbBuilding() : void {
+	public addTablesDbBuilding(force = true) : void {
+
+		// Не собираем схему, если она уже есть.
+		if(!force) {
+			const fptaDbFilePath = this._config.getFptaDbFilePath(this._contentRootFolder);
+			if(fs.existsSync(fptaDbFilePath)) {
+				return;
+			}
+		}
 
 		const table_list_schema = path.join('${output_folder}', this._config.getSchemaFileName());
 		const table_list_defaults= path.join('${output_folder}', this._config.getCorrelationDefaultsFileName());
@@ -111,7 +169,7 @@ out=${output}`;
 		
 		// Не собираем граф, если он уже есть.
 		if(!force) {
-			const enrichGraphFilePath = this._config.getEnrichmentsGraphFilePath(this._contentRootPath);
+			const enrichGraphFilePath = this._config.getEnrichmentsGraphFilePath(this._contentRootFolder);
 			if(fs.existsSync(enrichGraphFilePath)) {
 				return;
 			}
@@ -173,12 +231,21 @@ out=${output}`;
 		this._scenarios.push("make-ergraph");
 	}
 
-	public addLocalizationsBuilding(rulesSrcPath? : string) : void {
+	public addLocalizationsBuilding(options? : LocalizationsBuildingOptions) : void {
+
+		if(options && !options.force) {
+			const enLangFilePath = this._config.getRuLangFilePath(this._contentRootFolder);
+			const ruLangFilePath = this._config.getEnLangFilePath(this._contentRootFolder);
+			if(fs.existsSync(enLangFilePath) && fs.existsSync(ruLangFilePath)) {
+				return;
+			}
+		}
+
 		let rulesSrcPathResult : string;
-		if(!rulesSrcPath) {
+		if(!options?.rulesSrcPath) {
 			rulesSrcPathResult = this._contentRootPath;
 		} else {
-			rulesSrcPathResult = rulesSrcPath;
+			rulesSrcPathResult = options.rulesSrcPath;
 		}
 
 		const output = path.join('${output_folder}', this._config.getLocalizationsFolder());
@@ -305,7 +372,7 @@ out=${output}`;
 	}
 
 	/**
-	 * Добавить генерацию локализаций по скоррелированным событиям.
+	 * Добавить генерацию локализаций по коррелированным событиям.
 	 */
 	public addLocalizationForCorrelatedEvents(correlatedEventsFilePath? : string) : void {
 
@@ -346,7 +413,7 @@ out=\${output_folder}\\en_events.json`;
 type=SCENARIO
 scenario=${this._scenarios.join(" ")}
 `;
-		Log.info(`siemj.conf`);
+		Log.info(Configuration.SIEMJ_CONFIG_FILENAME);
 		Log.info(resultConfig);
 		return resultConfig;
 	}
@@ -356,4 +423,9 @@ scenario=${this._scenarios.join(" ")}
 
 	private _siemjConfigSection : string;
 	private _scenarios : string[] = [];
+
+	private static MAKE_NFGRAPH_SCENARIO = "make-nfgraph";
+
+	private static MAKE_ARGRAPH_SCENARIO = "make-argraph";
 }
+

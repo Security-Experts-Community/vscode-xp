@@ -1,8 +1,5 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { CorrelationUnitTestsRunner } from '../../models/tests/correlationUnitTestsRunner';
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { Configuration } from '../../models/configuration';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
@@ -12,9 +9,10 @@ import { TestStatus } from '../../models/tests/testStatus';
 import { BaseUnitTest } from '../../models/tests/baseUnitTest';
 import { Table } from '../../models/content/table';
 import { Macros } from '../../models/content/macros';
-import { SiemjManager } from '../../models/siemj/siemjManager';
 import { Correlation } from '../../models/content/correlation';
 import { Normalization } from '../../models/content/normalization';
+import { Log } from '../../extension';
+import { Test } from 'mocha';
 
 /**
  * Список тестов в отдельной вьюшке.
@@ -164,8 +162,6 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 
 	public async runTests(rule: RuleBaseItem | Table | Macros) {
 
-		// Очищаем предыдущий вывод и показываем окно вывода.
-		this._config.getOutputChannel().clear();
 		const tests = await this.getChildren();
 
 		// Сбрасываем результаты предыдущих тестов.
@@ -173,11 +169,7 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 		const testHandler = async (unitTest : BaseUnitTest) => {
 			const rule = unitTest.getRule();
 			const testRunner = rule.getUnitTestRunner();
-			return testRunner.run(unitTest).then( 
-				async () => {
-					await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
-				}
-			);
+			return testRunner.run(unitTest);
 		};
 
 		vscode.window.withProgress({
@@ -186,7 +178,16 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 		}, async (progress) => {
 			progress.report( {message : `Выполняются модульные тесты правила ${rule.getName()}`});
 			for (const test of tests) {
-				await testHandler(test);
+				try {
+					await testHandler(test);
+				}
+				catch(error) {
+					test.setStatus(TestStatus.Failed);
+					Log.error(error);
+				} 
+				finally {
+					await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
+				}
 			}
 		});
 	}

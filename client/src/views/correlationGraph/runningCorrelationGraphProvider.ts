@@ -7,7 +7,7 @@ import { DialogHelper } from '../../helpers/dialogHelper';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { CorrGraphRunner } from './corrGraphRunner';
+import { CorrGraphRunner } from '../corrGraphRunner';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { EventMimeType, TestHelper } from '../../helpers/testHelper';
@@ -30,10 +30,10 @@ export class RunningCorrelationGraphProvider {
         const createCorrelationTemplateFilePath = path.join(
             config.getExtensionPath(), "client", "templates", "FullGraphRun.html");
 
-        const reateCorrelationTemplateContent = fs.readFileSync(createCorrelationTemplateFilePath).toString();
+        const createCorrelationTemplateContent = fs.readFileSync(createCorrelationTemplateFilePath).toString();
         const createCorrelationViewProvider = new RunningCorrelationGraphProvider(
             config,
-            new MustacheFormatter(reateCorrelationTemplateContent));
+            new MustacheFormatter(createCorrelationTemplateContent));
 
         config.getContext().subscriptions.push(
             vscode.commands.registerCommand(
@@ -66,8 +66,8 @@ export class RunningCorrelationGraphProvider {
             this
         );
 
-        const resoucesUri = this._config.getExtensionUri();
-		const extensionBaseUri = this._view.webview.asWebviewUri(resoucesUri);
+        const resourcesUri = this._config.getExtensionUri();
+		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
         try {
             const templateDefaultContent = {
                 "ExtensionBaseUri" : extensionBaseUri
@@ -118,13 +118,13 @@ export class RunningCorrelationGraphProvider {
         const config = Configuration.get();
         const rootPaths = config.getContentRoots();
 
-        // Прогоняем событие по графам для каждой из корневых директорий теущего режима
+        // Прогоняем событие по графам для каждой из корневых директорий текущего режима
         rootPaths.forEach(rootPath => {
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
-                cancellable: false,
-                title: `Корреляция нормализованных событий с использованием графа для директории ${path.basename(rootPath)}`
-            }, async (progress) => {
+                cancellable: true,
+                title: `Корреляция событий с использованием графа для директории ${path.basename(rootPath)}`
+            }, async (progress, cancellationToken) => {
                 try {
                     const rootFolder = path.basename(rootPath);
 
@@ -136,7 +136,10 @@ export class RunningCorrelationGraphProvider {
                     const rawEventsFilePath = path.join(tmpDirectoryPath, "raw_events.json");
                     await FileSystemHelper.writeContentFile(rawEventsFilePath, rawEvents);
 
-                    const runner = new CorrGraphRunner(this._config);
+                    const runner = new CorrGraphRunner({
+                        config: this._config,
+                        cancellationToken: cancellationToken
+                    });
                     const correlatedEventsString = await runner.run(rootPath, rawEventsFilePath);
 
                     if(!correlatedEventsString) {
@@ -145,7 +148,7 @@ export class RunningCorrelationGraphProvider {
                     }
                     
                     // Извлекаем имена сработавших корреляций.
-                    const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /("correlation_name"\s*:\s*"(.*?)")/g);
+                    const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /"correlation_name"\s*:\s*"(.*?)"/g);
                     if(!correlationNames) {
                         DialogHelper.showError(`Не удалось скоррелировать нормализованные события с использованием графа для директории ${path.basename(rootPath)}.`);
                         return;
@@ -154,8 +157,8 @@ export class RunningCorrelationGraphProvider {
                     DialogHelper.showInfo(`Количество сработавших корреляций из папки ${rootFolder}: ${correlationNames.length}`);
 
                     // Отдаем события во front-end.
-                    const formatedEvents = TestHelper.formatTestCodeAndEvents(correlatedEventsString);
-                    const cleanedEvents = TestHelper.cleanTestCode(formatedEvents);
+                    const formattedEvents = TestHelper.formatTestCodeAndEvents(correlatedEventsString);
+                    const cleanedEvents = TestHelper.cleanTestCode(formattedEvents);
                     this._view.webview.postMessage( {
                         command : "correlatedEvents",
                         events : cleanedEvents            

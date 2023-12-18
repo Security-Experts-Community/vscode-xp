@@ -8,16 +8,16 @@ import { ExecutionResult, ProcessHelper } from '../../../helpers/processHelper';
 import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
 import { Configuration } from '../../../models/configuration';
 import { ContentTreeProvider } from '../contentTreeProvider';
-import { KbTreeBaseItem } from '../../../models/content/kbTreeBaseItem';
-import { ExceptionHelper } from '../../../helpers/exceptionHelper';
+import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
 import { ContentHelper } from '../../../helpers/contentHelper';
 import { XpException } from '../../../models/xpException';
+import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 
-export class UnpackKbAction {
+export class UnpackKbCommand {
 	constructor(private _config: Configuration) {
 	}
 
-	public async run(selectedPackage : KbTreeBaseItem) : Promise<void> {
+	public async execute(selectedPackage : ContentTreeBaseItem) : Promise<void> {
 
 		// Проверка наличия утилиты сборки kb-файлов.
 		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();
@@ -46,16 +46,17 @@ export class UnpackKbAction {
 
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
+			cancellable: true,
 			title: "Распаковка пакета"
-		}, async (progress) => {
+		}, async (progress, cancellationToken) => {
 
 			const kbFilePath = kbUris[0].fsPath; 
 
 			// Получаем путь к директории пакетов.
-			const exportDirPath = selectedPackage.getContentRootPath(Configuration.get());
+			const packageDirPath = selectedPackage.getContentRootPath(Configuration.get());
+			const rootContentDirPath = path.dirname(packageDirPath);
 
-			if(!fs.existsSync(exportDirPath)) {
+			if(!fs.existsSync(packageDirPath)) {
 				DialogHelper.showError(`Не существует такой папки для пакетов.`);
 				return;
 			}
@@ -89,63 +90,60 @@ export class UnpackKbAction {
 					{	
 						encoding: 'utf-8',
 						outputChannel: this._config.getOutputChannel(),
-						checkCommandBeforeExecution: true
+						checkCommandBeforeExecution: true,
+						cancellationToken: cancellationToken
 					}
 				);
 			} 
 			catch(error) {
-				throw new XpException(`Ошибка выполнения команды ${cmd}. Возможно, не был установлены [.NET Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) или не добавлен путь к нему в переменную PATH.`, error);
+				ExceptionHelper.show(error, `Ошибка выполнения команды ${cmd}. Возможно, не был установлены [.NET Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) или не добавлен путь к нему в переменную PATH.`);
+				return;
 			}
 				
 
 			if(!executeResult.output.includes(this.SUCCESS_SUBSTRING)) {
-				throw new XpException(`Не удалось распаковать пакет. Подробности приведены в панели Output.`);
+				DialogHelper.showError(`Не удалось распаковать пакет. Подробности приведены в панели Output.`);
+				return;
 			} 
 
 			// TODO: Убрать этот фикс, когда починят экспорт из PTKB
 			ContentHelper.fixTables(outputDirPath);
 
 			// Если внутри несколько пакетов.
-			const packagesPackagePath = path.join(outputDirPath, "packages");
+			const packagesPackagePath = path.join(outputDirPath, ContentTreeProvider.PACKAGES_DIRNAME);
 			if(fs.existsSync(packagesPackagePath)) {
-				await fse.copy(packagesPackagePath, exportDirPath, { overwrite: true });
+				await fse.copy(packagesPackagePath, packageDirPath, { overwrite: true });
 			}
 			
-			// Если внутри один пакет.
-			const objectsPackagePath = path.join(outputDirPath, "objects");
-			if(!fs.existsSync(packagesPackagePath) && fs.existsSync(objectsPackagePath)) {
-				const onePackagePath = path.join(exportDirPath, kbFileName);
-				await fse.copy(objectsPackagePath, onePackagePath, { overwrite: true });
+			// Пользовательские правила и директории, которые просто лежат в корне KB.
+			const objectsPackagePath = path.join(outputDirPath, this.ROOT_USERS_CONTENT_UNPACKED_DIRNAME);
+			if(fs.existsSync(objectsPackagePath)) {
+				await fse.copy(objectsPackagePath, packageDirPath, { overwrite: true });
 			}
 
-			// Копируем макросы
-			const macroPackagePath = path.join(outputDirPath, "common");
-			if(fs.existsSync(macroPackagePath)) {
-				const rootPath =
-				(vscode.workspace.workspaceFolders && (vscode.workspace.workspaceFolders.length > 0))
-					? vscode.workspace.workspaceFolders[0].uri.fsPath
-					: undefined;
-				if(rootPath){
-					const outPath = path.join(rootPath, "common");
-					await fse.copy(macroPackagePath, outPath);
+			// Распаковка контрактов, для пользователя не требуется.
+			// const contractsTmpPath = path.join(outputDirPath, this.CONTRACTS_UNPACKED_DIRNAME);
+			// const contractsPackagePath = path.join(rootContentDirPath, this.CONTRACTS_UNPACKED_DIRNAME);
+			// if(fs.existsSync(contractsTmpPath)) {
+			// 	await fse.copy(contractsTmpPath, contractsPackagePath, { overwrite: true });
+			// }
 
-					// Убираем BOM-метки из файлов
-					const files = ContentHelper.getFilesByPattern(outPath, /metainfo\.yaml/);
-					files.forEach(file => {
-						let content = fs.readFileSync(file, 'utf8');
-						if (typeof content === 'string') {
-							if (content.charCodeAt(0) === 0xFEFF) {
-								content = content.slice(1);
-							}
-							fs.writeFileSync(file, content, 'utf8');
-						}
-					});
-				}
+			// Обновляем макросы
+			const macroPackagePath = path.join(outputDirPath, this.MACRO_DIRNAME);
+			if(fs.existsSync(macroPackagePath)) {
+				const marcoDirPath = path.join(rootContentDirPath, this.MACRO_DIRNAME);
+				await fse.copy(macroPackagePath, marcoDirPath);
 			}
 
 			await ContentTreeProvider.refresh();
+			DialogHelper.showInfo(`Пакет успешно распакован`);
 		});
 	}
 
 	private readonly SUCCESS_SUBSTRING = "Knowledge base unpacking completed successfully";
+
+	private readonly ROOT_USERS_CONTENT_UNPACKED_DIRNAME = "objects";
+	private readonly CONTRACTS_UNPACKED_DIRNAME = "contracts";
+	private readonly MACRO_DIRNAME = "common";
 }
+

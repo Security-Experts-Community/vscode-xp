@@ -11,9 +11,12 @@ export class FileDiagnostics {
 
 export class SiemjExecutionResult {
 	public testsStatus : boolean;
+	public statusMessage : string;
+
 	public fileDiagnostics : FileDiagnostics[] = [];
 	public failedTestNumbers : number[] = [];
 	public tmpDirectoryPath: string;
+	public testCount?: number;
 }
 
 export class SiemJOutputParser {
@@ -25,12 +28,37 @@ export class SiemJOutputParser {
 	public async parse(siemjOutput : string) : Promise<SiemjExecutionResult> {
 		
 		const result = new SiemjExecutionResult();
+		this.processSectionsExitCode(siemjOutput, result);
 		this.processBuildRules(siemjOutput, result);
 		this.processTestRules(siemjOutput, result);
 
 		// Корректировка диагностиков (выделение конкретных токенов) по анализу файлов с ошибками
 		result.fileDiagnostics = await this.correctDiagnosticBeginCharRanges(result.fileDiagnostics);
 		return result;
+	}
+
+	/**
+	 * Проверяет возвращаемое значение от всех утилит SDK и Build Tools
+	 * @param siemjOutput 
+	 * @param result 
+	 */
+	private processSectionsExitCode(siemjOutput: string, result: SiemjExecutionResult) {
+		// SIEMJ :: -------------------- SUBPROCESS EXIT CODE: 3221225477 --------------------
+		const pattern = /SIEMJ :: -------------------- SUBPROCESS EXIT CODE: (\d+) --------------------/gm;
+		let m: RegExpExecArray | null;
+		while ((m = pattern.exec(siemjOutput))) {
+			if(m.length != 2) {
+				continue;
+			}
+			const exitCode = parseInt(m[1]);
+			if(exitCode !== 0) {
+				result.testsStatus = false;
+				result.statusMessage = `Ошибка выполнения, так как одна из утилит вернула код ошибки ${exitCode}, отличный от нуля. Смотри Output`;
+				return;
+			}
+		}
+
+		result.testsStatus = true;
 	}
 
 	private processBuildRules(siemjOutput: string, result: SiemjExecutionResult) {
@@ -95,7 +123,8 @@ export class SiemJOutputParser {
 
 		// Количество тестов не собрали.
 		// TEST_RULES [Err] :: Collected 5 tests.
-		const runningTestRegExp = /TEST_RULES \[Err\] :: Collected (\d+) tests./gm;
+		// TEST_RULES :: Collected 6 tests.
+		const runningTestRegExp = /Collected (\d+) tests./gm;
 		if(!siemjOutput.match(runningTestRegExp)) {
 			result.testsStatus = false;
 			return;
@@ -109,6 +138,8 @@ export class SiemJOutputParser {
 			testCount = parseInt(testCountString);
 		}
 
+		result.testCount = testCount;
+
 		// Все тесты прошли.
 		if(siemjOutput.includes(this.TESTS_SUCCESS_SUBSTRING)) {
 			result.testsStatus = true;
@@ -121,7 +152,9 @@ export class SiemJOutputParser {
 		// Не все прошли, значит есть ошибки.
 		// TEST_RULES :: Test Started: tests\\raw_events_1.json
 		// TEST_RULES :: Expected results are not obtained.
-		const failedTestRegExp = /TEST_RULES :: Test Started: tests\\raw_events_(\d+).json\s+TEST_RULES :: Expected results are not obtained./gm;
+		const failedTestRegExp = 
+			/Test Started: tests\\raw_events_(\d+).json\s+TEST_RULES :: Expected results are not obtained./gm;
+
 		let t: RegExpExecArray | null;
 		while ((t = failedTestRegExp.exec(siemjOutput))) {
 

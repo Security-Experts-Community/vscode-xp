@@ -10,7 +10,7 @@ import { Log } from '../extension';
 export interface ExecutionProcessOptions {
 	encoding?: EncodingType;
 	outputChannel? : vscode.OutputChannel;
-	token?: vscode.CancellationToken;
+	cancellationToken?: vscode.CancellationToken;
 	/**
 	 * Проверяет выполнимость команды (например, отсутствия нужного модуля в директориях PATH).
 	 * Если команда не выполнима, будет прошено исключение.
@@ -65,6 +65,10 @@ export class ProcessHelper {
 			let child : child_process.ChildProcessWithoutNullStreams;
 			// Вывод выполняемой команды для локализации ошибки.
 			Log.info(`${command} ${params.join(' ')}`);
+
+			if(!options?.encoding) {
+				options.encoding = "utf-8";
+			}
 			
 			try {
 				if(options.checkCommandBeforeExecution) {
@@ -83,8 +87,8 @@ export class ProcessHelper {
 			const executionResult : ExecutionResult = new ExecutionResult();
 			executionResult.output = "";
 
-			if(options.token) {
-				options.token.onCancellationRequested( (e) => {
+			if(options.cancellationToken) {
+				options.cancellationToken.onCancellationRequested( (e) => {
 					child.kill();
 					executionResult.exitCode = child.exitCode;
 					executionResult.isInterrupted = true;
@@ -92,9 +96,6 @@ export class ProcessHelper {
 				});
 			}
 
-			if(!options.encoding) {
-				options.encoding = "utf-8";
-			}
 		
 			child.stdout.on('data', function(data : Buffer) {
 				const encodedData = ProcessHelper.encodeOutputToString(data, options.encoding);
@@ -106,6 +107,15 @@ export class ProcessHelper {
 			});
 
 			child.stdout.on("error", function(exception : Error) {
+				const encodedData = exception.toString();
+				executionResult.output += encodedData;
+
+				if(options.outputChannel) {
+					options.outputChannel.append(encodedData);
+				}
+			});
+
+			child.stderr.on("data", function(exception : Error) {
 				const encodedData = exception.toString();
 				executionResult.output += encodedData;
 

@@ -111,11 +111,14 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 				test.setStatus(TestStatus.Success);
 
 				// Вывод теста содержит событие, подходящее под expect секцию, поэтому извлекаем его и очищаем, как код теста.
-				const extrectedResult = this._outputParser.parseSuccessOutput(output.output);
-				const clearedResult = TestHelper.cleanModularTestResult(extrectedResult);
+				const expectedResult = this._outputParser.parseSuccessOutput(output.output);
+				const clearedResult = TestHelper.cleanModularTestResult(expectedResult);
 
 				// Так как тест успешный, то можно сохранить отформатированный результат.
 				test.setOutput(clearedResult);
+
+				// Сохраняем фактическое события для последующего обновления ожидаемого.
+				test.setActualEvent(clearedResult);
 
 				// Добавляем отформатированный результат в окно вывода.				
 				this._config.getOutputChannel().append("\n\nFormatted result:\n" + clearedResult);
