@@ -9,26 +9,24 @@ import { Configuration } from '../../../models/configuration';
 import { SiemjConfBuilder } from '../../../models/siemj/siemjConfigBuilder';
 import { XpException } from '../../../models/xpException';
 import { DialogHelper } from '../../../helpers/dialogHelper';
+import { Log } from '../../../extension';
 
-export class BuildAllAction {
-	constructor(private _config: Configuration, private _outputParser: SiemJOutputParser) {
-	}
+export class BuildAllCommand {
+	constructor(private _config: Configuration, private _outputParser: SiemJOutputParser) {}
 
-	public async run() : Promise<void> {
+	public async execute() : Promise<void> {
 
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
-			title: `Сбор всех артефактов`
+			title: `Компиляция всех графов`
 		}, async (progress) => {
 
 			await SiemjConfigHelper.clearArtifacts(this._config);
 			
 			// Если в правиле используются сабрули, тогда собираем весь граф корреляций.
-			const siemjConfContents = this.getBuildAllGraphs(this._config);
+			const siemjConfContents = this.getParamsForAllRoots(this._config);
 			
-			// Очищаем и показываем окно Output.
-			this._config.getOutputChannel().clear();
 			this._config.getDiagnosticCollection().clear();
 			
 			for (const siemjConfContentEntity of siemjConfContents) {
@@ -40,8 +38,7 @@ export class BuildAllAction {
 						throw new XpException("Не удалось сгенерировать siemj.conf для заданного правила и тестов.");
 					}
 
-
-					// Cохраняем конфигурационный файл для siemj.
+					// Сохраняем конфигурационный файл для siemj.
 					const siemjConfigPath = this._config.getTmpSiemjConfigPath(rootFolder);
 					await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 
@@ -65,37 +62,43 @@ export class BuildAllAction {
 
 					// Разбираем вывод siemJ и корректируем начало строки с диагностикой (исключаем пробельные символы)
 					const result = await this._outputParser.parse(siemJOutput.output);
-					const fileDiagnostics = result.fileDiagnostics; 
 
 					// Выводим ошибки и замечания для тестируемого правила.
-					for (const rfd of fileDiagnostics) {
+					for (const rfd of result.fileDiagnostics) {
 						this._config.getDiagnosticCollection().set(rfd.uri, rfd.diagnostics);
 					}
 
-					if(!siemJOutput.output.includes(this.SUCCESS_EXIT_CODE_SUBSTRING)) {
-						DialogHelper.showInfo(`Компиляция пакетов успешно завершена`);
+					if(result.statusMessage) {
+						DialogHelper.showError(result.statusMessage);
+						return;
 					}
-					else {
-						DialogHelper.showError(this.COMPILATION_ERROR);
-					}
+
+					DialogHelper.showInfo(`Компиляция всех графов успешно завершена`);
 				}
 				finally {
 					const tmpPath = this._config.getTmpDirectoryPath(rootFolder);
 					try {
 						// Очищаем временные файлы.
-						await fs.promises.access(tmpPath).then(
-							() => { return fs.promises.unlink(tmpPath); }
-						);
+						if (fs.lstatSync(tmpPath).isDirectory())
+						{
+							await fs.promises.rmdir(tmpPath, {recursive: true});
+						}
+						else
+						{
+							await fs.promises.access(tmpPath).then(
+								() => { return fs.promises.unlink(tmpPath); }
+							);
+						}
 					}
 					catch(e){
-						//
+						Log.warn("Очистка временных файлов", e);
 					}
 				}
 			}
 		});
 	}
 
-	private getBuildAllGraphs(config : Configuration ) : any {
+	private getParamsForAllRoots(config : Configuration ) : any[] {
 		const rootPaths = config.getContentRoots();
 
 		return rootPaths.map(rootPath => { 
@@ -107,17 +110,14 @@ export class BuildAllAction {
 
 			const configBuilder = new SiemjConfBuilder(config, rootPath);
 			configBuilder.addNormalizationsGraphBuilding();
+			configBuilder.addAggregationGraphBuilding();
 			configBuilder.addTablesSchemaBuilding();
 			configBuilder.addTablesDbBuilding();
 			configBuilder.addEnrichmentsGraphBuilding();
 			configBuilder.addCorrelationsGraphBuilding();
-			configBuilder.addLocalizationsBuilding();
 	
 			const siemjConfContent = configBuilder.build();
 			return {'packagesRoot': rootFolder, 'configContent':siemjConfContent};
 		});
 	}
-
-	private readonly SUCCESS_EXIT_CODE_SUBSTRING = "SUBPROCESS EXIT CODE: 1";
-	private readonly COMPILATION_ERROR = "Ошибка компиляции. Смотри Output.";
 }

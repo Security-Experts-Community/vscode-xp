@@ -3,11 +3,11 @@ import * as path from "path";
 import * as vscode from 'vscode';
 
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
-import { KbTreeBaseItem } from './kbTreeBaseItem';
+import { ContentTreeBaseItem } from './contentTreeBaseItem';
 import { XpException } from '../xpException';
 import { XPObjectType } from './xpObjectType';
 
-export class Macros extends KbTreeBaseItem {
+export class Macros extends ContentTreeBaseItem {
 	public rename(newName: string): Promise<void> {
 		throw new XpException('Method not implemented.');
 	}

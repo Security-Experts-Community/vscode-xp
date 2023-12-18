@@ -11,13 +11,15 @@ import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
 import { XpException } from '../xpException';
 import { SiemjManager } from '../siemj/siemjManager';
 import { OperationCanceledException } from '../operationCanceledException';
+import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
+import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 
 export enum CompilationType {
-	DontCompile = 0,
-	CurrentRule,
-	CurrentPackage,
-	AllPackages,
-	Auto
+	DontCompile = 'DontCompile',
+	CurrentRule = 'CurrentRule',
+	CurrentPackage = 'CurrentPackage',
+	AllPackages = 'AllPackages',
+	Auto = 'Auto'
 }
 
 export class IntegrationTestRunnerOptions {
@@ -73,7 +75,26 @@ export class IntegrationTestRunner {
 		}
 
 		const configBuilder = new SiemjConfBuilder(this._config, rootPath);
-		configBuilder.addNormalizationsGraphBuilding(false);
+
+		const gitApi = await VsCodeApiHelper.getGitExtension();
+		if(!gitApi) {
+			// Нет git-а - пересобираем все нормализации.
+			configBuilder.addNormalizationsGraphBuilding(true);
+		} else {
+			// Есть хоть одна измененная нормализация, пересобираем все.
+			if(VsCodeApiHelper.isWorkDirectoryUsingGit(gitApi, rootPath)) {
+				const changePaths = VsCodeApiHelper.gitWorkingTreeChanges(gitApi, rootPath);
+				const isNormalizationsChanged = changePaths.some(cp => cp.endsWith(".xp"));
+				if(isNormalizationsChanged) {
+					configBuilder.addNormalizationsGraphBuilding(true);
+				} else {
+					configBuilder.addNormalizationsGraphBuilding(false);
+				}
+			} else {
+				configBuilder.addNormalizationsGraphBuilding(true);
+			}
+		}
+
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
 		configBuilder.addEnrichmentsGraphBuilding();
@@ -99,6 +120,12 @@ export class IntegrationTestRunner {
 				}
 
 				configBuilder.addCorrelationsGraphBuilding(true, options.dependentCorrelations);
+				break;
+			}
+			case CompilationType.DontCompile: {
+				// Если мы не собираем граф корреляции, то нужно создать пустой json-файл, чтобы siemj не ругался.
+				const corrGraphFilePath = this._config.getCorrelationsGraphFilePath(rootFolder);
+				await FileSystemHelper.writeContentFile(corrGraphFilePath, "{}");
 				break;
 			}
 			default: {

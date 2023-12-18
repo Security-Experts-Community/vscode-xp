@@ -1,7 +1,7 @@
 {
     "name": "server",
     "description": "Language server",
-    "version": "3.9.3",
+    "version": "3.11.3",
     "author": "Dmitry Fedosov (@DmitryOffsec)",
     "license": "MIT",
     "engines": {

@@ -11,12 +11,10 @@ import { RuleBaseItem } from '../content/ruleBaseItem';
 import { SiemjConfigHelper } from './siemjConfigHelper';
 import { FileSystemException } from '../fileSystemException';
 import { SiemjConfBuilder } from './siemjConfigBuilder';
-import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { DialogHelper } from '../../helpers/dialogHelper';
-import { Localization, LocalizationExample } from '../content/localization';
-import { IntegrationTest } from '../tests/integrationTest';
-import { StringHelper } from '../../helpers/stringHelper';
+import { LocalizationExample } from '../content/localization';
 import { TestHelper } from '../../helpers/testHelper';
+import { RegExpHelper } from '../../helpers/regExpHelper';
 
 export class SiemjManager {
 
@@ -172,7 +170,7 @@ export class SiemjManager {
 			{	
 				encoding: this._config.getSiemjOutputEncoding(),
 				outputChannel: this._config.getOutputChannel(),
-				token: this._token
+				cancellationToken: this._token
 			}
 		);
 		return result;
@@ -191,18 +189,18 @@ export class SiemjManager {
 		}
 
 		if(!fs.existsSync(integrationTestsTmpDirPath)) {
-			throw new FileSystemException(`Файлы интеграционных тестов по пути '${integrationTestsTmpDirPath}' не были получены.`);
+			throw new FileSystemException(`Файлы интеграционных тестов по пути '${integrationTestsTmpDirPath}' не были получены`);
 		}
 
 		// Нужно собрать все корреляционные события в один файл, который и передать на генерацию локализаций.
-		// raw_events_1_norm_enr_cor_enr.json
+		// raw_events_1_norm_enr_cor(r)?_enr.json
 		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
 		const correlatedEventFilePaths = files.filter(fp => {
-			return /raw_events_\d+_norm_enr_cor_enr\.json/gm.test(path.basename(fp));
+			return RegExpHelper.getEnrichedCorrTestEventsFileName(rule.getName()).test(fp);
 		});
 
 		if(correlatedEventFilePaths.length === 0) {
-			throw new XpException("Корреляционные события не найдены.");
+			throw new XpException("Корреляционные события не найдены");
 		}
 
 		const contentRootPath = rule.getContentRootPath(this._config);
@@ -217,13 +215,11 @@ export class SiemjManager {
 			}
 		}
 
-		// Собираем все скоррелированые события вместе.
+		// Собираем все коррелированные события вместе.
 		const correlateEventsContent = correlateEvents.join(os.EOL);
-		const localizationTmpPath = this._config.getRandTmpSubDirectoryPath(contentRootFolder);
-		await fs.promises.mkdir(localizationTmpPath);
 		
 		// Записываем их в файл.
-		const allCorrelateEventsFilePath = path.join(localizationTmpPath, this.ALL_CORR_EVENTS_FILENAME);
+		const allCorrelateEventsFilePath = path.join(integrationTestsTmpDirPath, this.ALL_CORR_EVENTS_FILENAME);
 		await FileSystemHelper.writeContentFile(allCorrelateEventsFilePath, correlateEventsContent);
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
@@ -234,39 +230,43 @@ export class SiemjManager {
 		}
 
 		// Удаляем файлы предыдущих локализаций.
-		const ruLocalizationFilePath = this._config.getRuLocalizationFilePath(contentRootFolder);
+		const ruLocalizationFilePath = this._config.getRuRuleLocalizationFilePath(contentRootFolder);
 		if(fs.existsSync(ruLocalizationFilePath)) {
 			await fs.promises.unlink(ruLocalizationFilePath);
 		}
 
-		const enLocalizationFilePath = this._config.getEnLocalizationFilePath(contentRootFolder);
+		const enLocalizationFilePath = this._config.getEnRuleLocalizationFilePath(contentRootFolder);
 		if(fs.existsSync(enLocalizationFilePath)) {
 			await fs.promises.unlink(enLocalizationFilePath);
 		}
 
 		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
-		configBuilder.addLocalizationsBuilding(rule.getDirectoryPath());
+		configBuilder.addLocalizationsBuilding({
+				rulesSrcPath: rule.getDirectoryPath(),
+				force: true
+			}
+		);
 		configBuilder.addLocalizationForCorrelatedEvents(allCorrelateEventsFilePath);
 		const siemjConfContent = configBuilder.build();
 		
 		const siemjOutput = await this.executeSiemjConfig(rule, siemjConfContent);
 		this.processOutput(siemjOutput.output);
 
-		const locExamples = this.readCurrentLocalizationExample(contentRootFolder, rule.getName());
+		const locExamples = await this.readCurrentLocalizationExample(contentRootFolder, rule.getName());
 		return locExamples;
 	}
 
 	private async readCurrentLocalizationExample(contentRootFolder : string, correlationName : string) : Promise<LocalizationExample[]> {
 
 		// Читаем события с русской локализацией.
-		const ruLocalizationFilePath = this._config.getRuLocalizationFilePath(contentRootFolder);
+		const ruLocalizationFilePath = this._config.getRuRuleLocalizationFilePath(contentRootFolder);
 		if(!fs.existsSync(ruLocalizationFilePath)) {
 			return [];
 		}
 		const ruLocalizationEvents = await FileSystemHelper.readContentFile(ruLocalizationFilePath);
 
 		// Читаем события с английской локализацией.
-		const enLocalizationFilePath = this._config.getEnLocalizationFilePath(contentRootFolder);
+		const enLocalizationFilePath = this._config.getEnRuleLocalizationFilePath(contentRootFolder);
 		if(!fs.existsSync(enLocalizationFilePath)) {
 			return [];
 		}

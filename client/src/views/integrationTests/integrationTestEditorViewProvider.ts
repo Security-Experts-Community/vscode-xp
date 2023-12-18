@@ -11,9 +11,6 @@ import { Enrichment } from '../../models/content/enrichment';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { RegExpHelper } from '../../helpers/regExpHelper';
-import { FastTest } from '../../models/tests/fastTest';
-import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { TestStatus } from '../../models/tests/testStatus';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { XpException } from '../../models/xpException';
@@ -23,6 +20,7 @@ import { Log } from '../../extension';
 import { ShowTestResultsDiffCommand } from './showTestResultsDiffCommand';
 import { RunIntegrationTestsCommand } from './runIntegrationTestsCommand';
 import { NormalizeRawEventsCommand } from './normalizeRawEventsCommand';
+import { GetExpectedEventCommand } from './getExpectEventCommand';
 
 export class IntegrationTestEditorViewProvider {
 
@@ -147,8 +145,7 @@ export class IntegrationTestEditorViewProvider {
 			"IntegrationTests": [],
 			"ExtensionBaseUri": extensionBaseUri,
 			"RuleName": this._rule.getName(),
-			"ActiveTestNumber": resultFocusTestNumber,
-			"WebviewUri": webviewUri
+			"ActiveTestNumber": resultFocusTestNumber
 		};
 
 		try {
@@ -163,35 +160,16 @@ export class IntegrationTestEditorViewProvider {
 					"TestCode": `expect 1 {"correlation_name" : "${this._rule.getName()}"}`,
 					"TestOutput": '',
 					"JsonedTestObject": '',
-					"TestStatus": '',
+					"TestStatus": ''
 				});
 			}
 			else {
-				integrationTest.forEach(it => {
+				for(const it of integrationTest) {
 					const jsonedTestObject = JSON.stringify(it);
 
 					const rawEvents = it.getRawEvents();
 					const formattedTestCode = TestHelper.formatTestCodeAndEvents(it.getTestCode());
 					const formattedNormalizedEvents = TestHelper.formatTestCodeAndEvents(it.getNormalizedEvents());
-
-					let isFailed = false;
-					let testStatusStyle: string;
-					const testStatus = it.getStatus();
-					switch (testStatus) {
-						case TestStatus.Unknown: {
-							testStatusStyle = "";
-							break;
-						}
-						case TestStatus.Success: {
-							testStatusStyle = "success";
-							break;
-						}
-						case TestStatus.Failed: {
-							testStatusStyle = "failure";
-							isFailed = true;
-							break;
-						}
-					}
 
 					plain["IntegrationTests"].push({
 						"TestNumber": it.getNumber(),
@@ -200,10 +178,11 @@ export class IntegrationTestEditorViewProvider {
 						"TestCode": formattedTestCode,
 						"TestOutput": it.getOutput(),
 						"JsonedTestObject": jsonedTestObject,
-						"TestStatus": testStatusStyle,
-						"IsFailed": isFailed
+						"TestStatus": this.testStatusToUiStyle(it),
+						"IsFailed" : it.getStatus() === TestStatus.Failed,
+						"CanGetExpectedEvent": this.canGetExpectedEvent(it)
 					});
-				});
+				}
 			}
 
 			const template = await FileSystemHelper.readContentFile(this._templatePath);
@@ -231,17 +210,61 @@ export class IntegrationTestEditorViewProvider {
 		}
 	}
 
-	private getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]) {
-		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
+	/**
+	 * Функция возвращает значение, показывающее возможность получить ожидаемое событие
+	 * @param it интеграционный тест
+	 * @returns возможно ли для данного теста получить ожидаемое событие
+	 */
+	private canGetExpectedEvent(it: IntegrationTest): boolean {
+		if(TestHelper.isNegativeTest(it.getTestCode())) {
+			return false;
+		}
+
+		if(it.getStatus() === TestStatus.Success) {
+			return true;
+		}
+
+		if(it.getNormalizedEvents()) {
+			return true;
+		} 
+	}
+
+	private testStatusToUiStyle(it: IntegrationTest) : string {
+		const testStatus = it.getStatus();
+		switch (testStatus) {
+			case TestStatus.Unknown: {
+				return "";
+			}
+			case TestStatus.Success: {
+				return "success";
+			}
+			case TestStatus.Failed: {
+				return "failure";
+			}
+		}
 	}
 
 	private async receiveMessageFromWebView(message: any) {
 
-		const executed = await this.runToolingAction(message);
-		if (executed) {
-			return;
+		if (ExtensionState.get().isExecutedState()) {
+			DialogHelper.showError("Дождитесь окончания выполняющихся процессов и повторите");
+			return true;
 		}
 
+		try {
+			ExtensionState.get().startExecutionState();
+			await this.executeCommand(message);
+		}
+		catch (error) {
+			ExceptionHelper.show(error, `Ошибка выполнения команды '${message.command}'`);
+			return true;
+		}
+		finally {
+			ExtensionState.get().stopExecutionState();
+		}
+	}
+
+	private async executeCommand(message: any) {
 		// События, не требующие запуска утилит.
 		switch (message.command) {
 			case 'saveTest': {
@@ -314,12 +337,12 @@ export class IntegrationTestEditorViewProvider {
 						throw new XpException(`Переданное значение ${message?.activeTestNumber} не является номером интеграционного теста`);
 					}
 
-					const command = new ShowTestResultsDiffCommand({
-						config: this._config,
-						rule: this._rule,
-						tmpDirPath: this._testsTmpFilesPath,
-						testNumber: selectedTestNumber
-					}
+					const command = new ShowTestResultsDiffCommand( {
+							config : this._config,
+							rule: this._rule,
+							tmpDirPath: this._testsTmpFilesPath,
+							testNumber: selectedTestNumber
+						}
 					);
 					await command.execute();
 				}
@@ -327,6 +350,75 @@ export class IntegrationTestEditorViewProvider {
 					ExceptionHelper.show(error, "Ошибка сравнения фактического и ожидаемого события");
 				}
 				break;
+			}
+			// Команды с запуском утилит.
+			case NormalizeRawEventsCommand.name: {
+
+				if (typeof message?.isEnrichmentRequired !== "boolean" ) {
+					DialogHelper.showInfo("Не задан параметр обогащения событий");
+					return true;
+				}
+				const isEnrichmentRequired = message?.isEnrichmentRequired as boolean;
+
+				// Актуализируем сырые события в тесте из вьюшки.
+				const currTest = await this.saveTestFromUI(message);
+				const command = new NormalizeRawEventsCommand({
+					config: this._config,
+					isEnrichmentRequired: isEnrichmentRequired,
+					rule: this._rule,
+					test: currTest
+				});
+
+				await command.execute();
+				this.updateView(currTest.getNumber());
+				return true;
+			}
+
+			case GetExpectedEventCommand.name: {
+				const currTest = await this.saveTestFromUI(message);
+				const command = new GetExpectedEventCommand({
+					config: this._config,
+					rule: this._rule,
+					test: currTest,
+					tmpDirPath: this._testsTmpFilesPath
+				});
+
+				await command.execute(this);
+				return true;
+			}
+
+			case RunIntegrationTestsCommand.name: {
+				// Сохраняем актуальное состояние тестов из вьюшки.
+				let rule: RuleBaseItem;
+				try {
+					rule = await TestHelper.saveAllTest(message, this._rule);
+					Log.info(`Все тесты правила ${this._rule.getName()} сохранены`);
+				}
+				catch (error) {
+					ExceptionHelper.show(error, `Не удалось сохранить тесты`);
+					return true;
+				}
+
+				try {
+					await FileSystemHelper.recursivelyDeleteDirectory(this._testsTmpFilesPath);
+
+					const command = new RunIntegrationTestsCommand({
+						config: this._config,
+						rule: rule,
+						tmpDirPath: this._testsTmpFilesPath
+					});
+
+					const shouldUpdateViewAfterTestsRunned = await command.execute();
+					// Обновляем только в том случае, если есть что нового показать пользователю.
+					if (shouldUpdateViewAfterTestsRunned) {
+						await this.updateView(this.getSelectedTestNumber(message));
+					}
+				}
+				catch(error) {
+					ExceptionHelper.show(error, `Не удалось выполнить тесты`);
+				}
+
+				return true;
 			}
 			default: {
 				DialogHelper.showError(`Команда ${message?.command} не найдена`);
@@ -338,119 +430,23 @@ export class IntegrationTestEditorViewProvider {
 		DialogHelper.showWarning('Последний тест нельзя удалить, он будет использован как шаблон для создания новых тестов');
 	}
 
-	private async runToolingAction(message: any) {
-		// Проверяем, что команда использует утилиты.
-		const commandName = message.command as string;
-		if (![
-			NormalizeRawEventsCommand.name,
-			RunIntegrationTestsCommand.name,
-			'fastTest'
-		].includes(commandName)
-		) {
-			return false;
+	private async saveTestFromUI(message: any) : Promise<IntegrationTest> {
+		let rawEvents = message?.rawEvents;
+		if (!rawEvents) {
+			// DialogHelper.showInfo("Не заданы сырые события для нормализации. Задайте события и повторите");
+			throw new XpException("Не заданы сырые события для нормализации. Задайте события и повторите");
 		}
 
-		if (ExtensionState.get().isToolingExecution()) {
-			DialogHelper.showError("Дождитесь окончания выполняющихся процессов и повторите");
-			return true;
+		if (!message?.test) {
+			// DialogHelper.showInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
+			throw new XpException("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
 		}
 
-		ExtensionState.get().runToolingExecution();
-
-		try {
-			switch (message.command) {
-				case NormalizeRawEventsCommand.name: {
-
-					if (typeof message?.isEnrichmentRequired !== "boolean") {
-						DialogHelper.showInfo("Не задан параметр обогащения событий");
-						return true;
-					}
-					const isEnrichmentRequired = message?.isEnrichmentRequired as boolean;
-
-					// Актуализируем сырые события в тесте из вьюшки.
-					let rawEvents = message?.rawEvents;
-					if (!rawEvents) {
-						DialogHelper.showInfo("Не заданы сырые события для нормализации. Задайте события и повторите");
-						return true;
-					}
-
-					if (!message?.test) {
-						DialogHelper.showInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
-						return true;
-					}
-
-					const currTest = IntegrationTest.convertFromObject(message.test);
-					rawEvents = TestHelper.compressTestCode(rawEvents);
-					currTest.setRawEvents(rawEvents);
-					await currTest.save();
-
-					const command = new NormalizeRawEventsCommand({
-						config: this._config,
-						isEnrichmentRequired: isEnrichmentRequired,
-						rule: this._rule,
-						test: currTest
-					});
-
-					await command.execute();
-					this.updateView(currTest.getNumber());
-					return true;
-				}
-
-				case 'fastTest': {
-					const testWithNewTestCode = await this.generateTestCode(message);
-					if (testWithNewTestCode) {
-						return this.updateTestCode(
-							testWithNewTestCode.getTestCode(),
-							// TODO: добавить конкретный тест для обновления, иначе может быть обновлён не тот тест.
-							// testWithNewTestCode.getNumber()
-						);
-					}
-
-					return true;
-				}
-
-				case RunIntegrationTestsCommand.name: {
-					// Сохраняем актуальное состояние тестов из вьюшки.
-					let rule: RuleBaseItem;
-					try {
-						rule = await TestHelper.saveAllTest(message, this._rule);
-						Log.info(`Все тесты правила ${this._rule.getName()} сохранены`);
-					}
-					catch (error) {
-						ExceptionHelper.show(error, `Не удалось сохранить тесты`);
-						return true;
-					}
-
-					try {
-						const command = new RunIntegrationTestsCommand({
-							config: this._config,
-							rule: rule,
-							tmpDirPath: this._testsTmpFilesPath
-						});
-
-						const shouldUpdateViewAfterTestsRunned = await command.execute();
-						// Обновляем только в том случае, если есть что нового показать пользователю.
-						if (shouldUpdateViewAfterTestsRunned) {
-							await this.updateView(this.getSelectedTestNumber(message));
-						}
-					}
-					catch (error) {
-						ExceptionHelper.show(error, `Не удалось выполнить тесты`);
-					}
-
-					return true;
-				}
-				default: {
-					return false;
-				}
-			}
-		}
-		catch (error) {
-			ExceptionHelper.show(error, "Ошибка запуска.");
-		}
-		finally {
-			ExtensionState.get().stopRoolingExecution();
-		}
+		const currTest = IntegrationTest.convertFromObject(message.test);
+		rawEvents = TestHelper.compressTestCode(rawEvents);
+		currTest.setRawEvents(rawEvents);
+		await currTest.save();
+		return currTest;
 	}
 
 	private getSelectedTestNumber(message: any): number {
@@ -510,118 +506,6 @@ export class IntegrationTestEditorViewProvider {
 		});
 	}
 
-	async generateTestCode(message: any): Promise<IntegrationTest> {
-
-		await VsCodeApiHelper.saveRuleCodeFile(this._rule);
-
-		// Если правило содержит сабрули, то мы сейчас не сможем просто получить ожидаемое событие.
-		const ruleCode = await this._rule.getRuleCode();
-		if (TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
-			throw new XpException("Получение ожидаемого события для правил с использованием сабрулей (например, correlation_name = \"subrule_...\") еще не реализовано. Детали можно посмотреть [тут](https://github.com/Security-Experts-Community/vscode-xp/issues/133)");
-		}
-
-		const currTest = IntegrationTest.convertFromObject(message.test);
-		let integrationTestSimplifiedContent = "";
-		let normalizedEvents = "";
-		try {
-			normalizedEvents = currTest.getNormalizedEvents();
-			if (!normalizedEvents) {
-				DialogHelper.showError("Для запуска быстрого теста нужно хотя бы одно нормализованное событие. Нормализуйте сырые события и повторите действие.");
-				return;
-			}
-
-			// Временно создать модульный тест путём добавления к интеграционному нормализованного события в конец файла.
-			// Убираем фильтр по полям в тесте, так как в модульном тесте нет обогащения, поэтому проверяем только сработку теста.
-			const integrationTestPath = currTest.getTestCodeFilePath();
-			const integrationTestContent = await FileSystemHelper.readContentFile(integrationTestPath);
-
-			// Проверку на наличие expect not {} в тесте, в этом случае невозможно получить ожидаемое событие.
-			if(TestHelper.isNegativeTest(integrationTestContent)) {
-				DialogHelper.showWarning("Невозможно получить ожидаемого события для теста с кодом expect not {}. Скорректируйте код теста если это необходимо, сохраните его и повторите.");
-				return;
-			}
-			integrationTestSimplifiedContent = integrationTestContent.replace(
-				RegExpHelper.getExpectSectionRegExp(),
-				"expect $1 {}");
-		}
-		catch (error) {
-			DialogHelper.showError("Не удалось сформировать условия выполнения быстрого теста.", error);
-			return;
-		}
-
-		return vscode.window.withProgress({
-			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
-			title: `Получение ожидаемого события для теста №${currTest.getNumber()}`
-		}, async (progress) => {
-
-			try {
-				const modularTestContent = `${integrationTestSimplifiedContent}\n\n${normalizedEvents}`;
-
-				// Сохраняем модульный тест во временный файл.
-				const rootPath = this._config.getRootByPath(currTest.getRuleDirectoryPath());
-				const rootFolder = path.basename(rootPath);
-				const randTmpPath = this._config.getRandTmpSubDirectoryPath(rootFolder);
-				await fs.promises.mkdir(randTmpPath, { recursive: true });
-
-				const fastTestFilePath = path.join(randTmpPath, "fast_test.sc");
-				await FileSystemHelper.writeContentFile(fastTestFilePath, modularTestContent);
-
-				// Создаем временный модульный тест для быстрого тестирования.
-				const fastTest = new FastTest(currTest.getNumber());
-				fastTest.setTestExpectationPath(fastTestFilePath);
-				fastTest.setRule(this._rule);
-
-				// Специальный тест быстрого теста.
-				const testRunner = this._rule.getUnitTestRunner();
-				const resultTest = await testRunner.run(fastTest);
-
-				if (resultTest.getStatus() === TestStatus.Failed) {
-					throw new XpException(`Получение ожидаемого события для теста №${resultTest.getNumber()} завершено неуспешно. Возможно интеграционный тест не проходит с условием expect 1 {"correlation_name": "${this._rule.getName()}"}. Добейтесь того чтобы данный тест проходил и повторите.`);
-				}
-
-				// Проверка, что не было ошибки и нам вернулся json, исключение поля time и форматируем.
-				let testOutput = resultTest.getOutput();
-				try {
-					let testObject = JSON.parse(testOutput);
-					testObject = TestHelper.removeKeys(testObject, ["time"]);
-					testOutput = JSON.stringify(testObject, null, 4);
-				}
-				catch (error) {
-					throw new XpException("Полученные данные не являются событием формата json", error);
-				}
-
-				// Получаем имеющийся код теста и заменяем секцию expect {}
-				const tests = this._rule.getIntegrationTests();
-				const ruleTestIndex = tests.findIndex(it => it.getNumber() == resultTest.getNumber());
-				if (ruleTestIndex == -1) {
-					throw new XpException("Не удалось получить интеграционный тест");
-				}
-
-				// Переносим данные из быстрого теста в модульный.
-				const currentIntTest = tests[ruleTestIndex];
-
-				// Меняем код теста на новый
-				const generatedExpectSection = `expect 1 ${testOutput}`;
-				const currentTestCode = currentIntTest.getTestCode();
-				const newTestCode = currentTestCode.replace(
-					RegExpHelper.getExpectSectionRegExp(),
-					generatedExpectSection);
-
-				// Удаляем временные файлы.
-				await fs.promises.rmdir(randTmpPath, { recursive: true });
-
-				// Обновляем код теста.
-				currTest.setTestCode(newTestCode);
-				DialogHelper.showInfo("Ожидаемое событие в коде теста успешно обновлено. Сохраните тест если результат вас устраивает");
-				return currTest;
-			}
-			catch (error) {
-				ExceptionHelper.show(error, 'Не удалось получить ожидаемое событие');
-			}
-		});
-	}
-
 	async saveTest(message: any): Promise<IntegrationTest> {
 		// Обновляем и сохраняем тест.
 		const test = await TestHelper.saveIntegrationTest(this._rule, message);
@@ -640,7 +524,7 @@ export class IntegrationTestEditorViewProvider {
 		return TestHelper.saveAllTest(message, this._rule);
 	}
 
-	private async updateTestCode(newTestCode: string, testNumber?: number) {
+	public async updateTestCode(newTestCode: string, testNumber?: number): Promise<boolean> {
 		return this._view.webview.postMessage({
 			'command': 'updateTestCode',
 			'newTestCode': newTestCode,
@@ -648,10 +532,11 @@ export class IntegrationTestEditorViewProvider {
 		});
 	}
 
+	private getUri(webview: vscode.Webview, extensionUri: vscode.Uri, pathList: string[]) {
+		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
+	}
+
 	private _testsTmpFilesPath: string;
 
 	public static TEXTAREA_END_OF_LINE = "\n";
-
-	public ALL_PACKAGES = "Все пакеты";
-	public CURRENT_PACKAGE = "Текущий пакет"
 }

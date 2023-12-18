@@ -14,6 +14,7 @@ import { Log } from '../extension';
 import { FileSystemHelper } from './fileSystemHelper';
 import { CorrelationEvent } from '../models/content/correlation';
 import { ArgumentException } from '../models/argumentException';
+import { JsHelper } from './jsHelper';
 
 export type EventMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
@@ -94,9 +95,6 @@ export class TestHelper {
 			/\s*"labels"(\s*):(\s*)".*?",/g,	// в середине json-а
 			/,\s*"labels"(\s*):(\s*)".*?"/g,	// в конце json-а
 
-			/\s*"_rule"(\s*):(\s*)".*?",/g,	// в середине json-а
-			/,\s*"_rule"(\s*):(\s*)".*?"/g,	// в конце json-а
-
 			/\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\],/g,
 			/,\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\]/g,
 
@@ -118,19 +116,112 @@ export class TestHelper {
 	}
 
 	/**
+	 * Очищает, сортирует и форматирует json ожидаемого события
+	 * @param testCode строка с ожидаемым событием в json
+	 * @returns результирующее ожидаемое событие в json
+	 */
+	public static cleanSortFormatExpectedEventTestCode(expectedEvent: string): string {
+
+		try {
+			let object = JSON.parse(expectedEvent);
+			object = TestHelper.removeKeys(object, [
+					"body", // Встречается в нормализованных (обогащенных) событиях
+					
+					"_subjects",
+					"_objects",
+					"_rule",
+
+					"time",
+
+					"generator.version",
+					"generator.type",
+
+					"count",		// Количество агрегированных инцидентов
+
+					"uuid",
+					"incident.name",
+
+					"primary_siem_app_id",
+					"siem_id",
+					"origin_app_id",
+
+					"normalized",
+					"labels",
+
+					"subevents",
+					"subevents.time"
+				]
+			);
+			object = JsHelper.sortObjectKeys(object);
+			return JsHelper.formatJsonObject(object);
+		}
+		catch(error) {
+			throw new XpException("Полученные данные не являются событием формата json", error);
+		}
+	}
+
+	/**
 	 * Возвращает путь к результату интеграционных тестов. Данный путь существует только тогда, когда включено сохранение временных файлов. В противном случае директория очищается.
 	 * @param integrationTestsTmpDirPath 
 	 * @param testNumber 
 	 */
-	public static getTestActualEventsFilePath(integrationTestsTmpDirPath: string, testNumber: number): string {
+	public static getEnrichedNormEventFilePath(integrationTestsTmpDirPath: string, ruleName: string, testNumber: number): string {
 		// c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
 		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
-		const resultEvent = files.find(fp => {
-			const fileName = path.basename(fp).toLocaleLowerCase();
-			return fileName === `raw_events_${testNumber}_norm_enr_cor_enr.json`;
+		const resultEvents = files.filter(fp => {
+			return RegExpHelper.getEnrichedNormTestEventsFileName(ruleName, testNumber).test(fp);
 		});
 
-		return resultEvent;
+		if(resultEvents.length === 1) {
+			return resultEvents[0];
+		}
+
+		if(resultEvents.length > 1) {
+			throw new XpException("Найдено больше одного файла обогащенного нормализованного события, перезапустите VSCode и попробуйте еще раз");
+		}
+
+		return undefined;
+	}
+
+	/**
+	 * Возвращает путь к результату интеграционных тестов. Данный путь существует только тогда, когда включено сохранение временных файлов. В противном случае директория очищается.
+	 * @param integrationTestsTmpDirPath 
+	 * @param testNumber 
+	 */
+	public static getEnrichedCorrEventFilePath(integrationTestsTmpDirPath: string, ruleName: string, testNumber: number): string {
+		// c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
+		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
+		const resultEvents = files.filter(fp => {
+			return RegExpHelper.getEnrichedCorrTestEventsFileName(ruleName, testNumber).test(fp);
+		});
+
+		if(resultEvents.length === 1) {
+			return resultEvents[0];
+		}
+
+		if(resultEvents.length > 1) {
+			throw new XpException("Найдено больше одного файла обогащенного корреляционного события, перезапустите VSCode и попробуйте еще раз");
+		}
+
+		return undefined;
+	}
+
+	public static getCorrEventEventFilePath(integrationTestsTmpDirPath: string, ruleName: string, testNumber: number): string {
+		// c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
+		const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
+		const resultEvents = files.filter(fp => {
+			return RegExpHelper.getCorrTestEventsFileName(ruleName, testNumber).test(fp);
+		});
+
+		if(resultEvents.length === 1) {
+			return resultEvents[0];
+		}
+
+		if(resultEvents.length > 1) {
+			throw new XpException("Найдено больше одного файла корреляционного события, перезапустите VSCode и попробуйте еще раз");
+		}
+
+		return undefined;
 	}
 
 	public static cleanModularTestResult(testCode: string) : string {
@@ -169,26 +260,31 @@ export class TestHelper {
 
 	/**
 	 * Убираем пробельные символы из ошибки.
-	 * @param ruleContent код правила.
+	 * @param fileContent код правила.
 	 * @param diagnostics список ошибок, полученный из разбора лога.
-	 * @returns список ошибок, в котором задан начальный символ строки первым непробельным символом.
+	 * @returns список ошибок, в котором задан начальный символ строки первым не пробельным символом.
 	 */
-	public static correctWhitespaceCharacterFromErrorLines(ruleContent: string, diagnostics: vscode.Diagnostic[]): vscode.Diagnostic[] {
-		if (!ruleContent) { return []; }
-		const fixedContent = ruleContent.replace(/(\r\n)/gm, "\n");
+	public static correctWhitespaceCharacterFromErrorLines(fileContent: string, diagnostics: vscode.Diagnostic[]): vscode.Diagnostic[] {
+		if (!fileContent) { 
+			return []; 
+		}
+		
+		const fixedContent = fileContent.replace(/(\r\n)/gm, "\n");
 		const lines = fixedContent.split('\n');
 
 		return diagnostics.map(d => {
 			const lineNumber = d.range.start.line;
 
+			// Ссылка на строку, которой нет файле
 			if (lineNumber >= lines.length) {
-				throw new ParseException(`Не удалось разобрать сообщения об ошибках в коде правила: ${ruleContent}`);
+				Log.warn(`В файле ${d.source} не удалось скорректировать ссылку на ошибку, так как указанная строка больше фактического количества строк в файле`);
+				return d;
 			}
 
 			const errorLine = lines[lineNumber];
 			const firstNonWhitespaceCharacterIndex = errorLine.search(/[^\s]/);
 
-			// Если не удалось скорректировать, тогда возвращем как ест.
+			// Если не удалось скорректировать, тогда возвращаем как ест.
 			if (firstNonWhitespaceCharacterIndex === -1) {
 				return d;
 			}
@@ -230,7 +326,7 @@ export class TestHelper {
 				compressedRawEvents = compressedRawEvents.replace(jsonRawEvent, compressedEventString);
 			}
 			catch (error) {
-				throw new XpException("Неудалось распарсить сырое JSON-событие", error);
+				throw new XpException("Не удалось распарсить сырое JSON-событие", error);
 			}
 		}
 
@@ -264,8 +360,15 @@ export class TestHelper {
 		return jsonlCleaned;
 	}
 
+	public static isDefaultLocalization(localization: string) {
+		// account start process success на узле wks01.testlab.esc
+		const defaultLocRegExp = /^\w+ \w+ \w+ \w+ (на узле|on host) [\w.]+$/g;
+		return defaultLocRegExp.test(localization);
+	}
+
+
 	public static compressTestCode(testCode: string) {
-		const compressedNormalizedEventReg = /{\s*[\s\S]*\s*}$/gm;
+		const compressedNormalizedEventReg = /{\s*[\s\S]*\s*}\s*$/gm;
 
 		let formattedTestCode = testCode;
 		let comNormEventResult: RegExpExecArray | null;
@@ -300,16 +403,16 @@ export class TestHelper {
 	}
 
 	public static formatTestCodeAndEvents(testCode: string) {
-		const compressedNormalizedEventReg = /{"\S.*}$/gm;
+		const compressedNormalizedEventReg = /({\S.+})\s*$/gm;
 
 		let formattedTestCode = testCode;
 		let comNormEventResult: RegExpExecArray | null;
 		while ((comNormEventResult = compressedNormalizedEventReg.exec(testCode))) {
-			if (comNormEventResult.length != 1) {
+			if (comNormEventResult.length != 2) {
 				continue;
 			}
 
-			const compressedEvent = comNormEventResult[0];
+			const compressedEvent = comNormEventResult[1];
 			const escapedCompressedEvent = TestHelper.escapeRawEvent(compressedEvent);
 
 			// Форматируем событие и сортируем поля объекта, чтобы поля групп типа subject.* были рядом.
@@ -327,29 +430,12 @@ export class TestHelper {
 			}
 			catch (error) {
 				// Если не удалось отформатировать, пропускаем и пишем в лог.
-				Log.error(error, `Не удалось отформатировать событие ${compressedEvent}.`, );
+				Log.error(error, `Не удалось отформатировать событие ${compressedEvent}`, );
 				continue;
 			}
 		}
 
 		return formattedTestCode;
-	}
-
-	public static sortObjectKeys(object: any) {
-		if (typeof object != "object") { return object; }
-		if (object instanceof Array) {
-			return object.map((obj) => { return this.sortObjectKeys(obj); });
-		}
-		const keys = Object.keys(object);
-		if (!keys) { return object; }
-		return keys.sort().reduce((obj, key) => {
-			if (object[key] instanceof Array) {
-				obj[key] = this.sortObjectKeys(object[key]);
-			} else {
-				obj[key] = object[key];
-			}
-			return obj;
-		}, {});
 	}
 
 	// Пока не используется, может пригодиться в дальнейшем. 
@@ -364,19 +450,19 @@ export class TestHelper {
 				continue;
 			}
 
-			const compessedEvent = comNormEventResult[0];
-			const escapedCompessedEvent = TestHelper.escapeRawEvent(compessedEvent);
+			const compressedEvent = comNormEventResult[0];
+			const escapedCompressedEvent = TestHelper.escapeRawEvent(compressedEvent);
 
 			// Форматируем событие и сортируем поля объекта, чтобы поля групп типа subject.* были рядом.
 			try {
-				const compressEventJson = JSON.parse(escapedCompessedEvent);
-				const orderedCompressEventJson = this.sortObjectKeys(compressEventJson);
-				const formatedEvent = JSON.stringify(orderedCompressEventJson);
-				formattedTestCode = formattedTestCode.replace(compessedEvent, formatedEvent);
+				const compressEventJson = JSON.parse(escapedCompressedEvent);
+				const orderedCompressEventJson = JsHelper.sortObjectKeys(compressEventJson);
+				const formattedEvent = JSON.stringify(orderedCompressEventJson);
+				formattedTestCode = formattedTestCode.replace(compressedEvent, formattedEvent);
 			}
 			catch (error) {
 				// Если не удалось отформатировать, пропускаем и пишем в лог.
-				console.warn(`Ошибка сжатия события ${compessedEvent}.`);
+				console.warn(`Ошибка сжатия события ${compressedEvent}.`);
 				continue;
 			}
 		}
@@ -482,6 +568,12 @@ export class TestHelper {
 	 */
 	public static isRuleCodeContainsSubrules(ruleCode: string): boolean {
 
+		// Сбрасываем состояние после предыдущего выполнения.
+		this.CORRELATION_NAME_COMPARE_REGEX.lastIndex = 0;
+		this.LOWER_CORRELATION_NAME_COMPARE_REGEX.lastIndex = 0;
+		this.INLIST_LOWER_CORRELATION_NAME_REGEX.lastIndex = 0;
+		this.INLIST_CORRELATION_NAME_REGEX.lastIndex = 0;
+
 		if (
 			this.CORRELATION_NAME_COMPARE_REGEX.test(ruleCode) ||
 			this.LOWER_CORRELATION_NAME_COMPARE_REGEX.test(ruleCode) ||
@@ -498,14 +590,20 @@ export class TestHelper {
 		return false;
 	}
 
-	public static parseSubRuleNames(ruleCode: string): string[] {
+	public static parseSubRuleNamesFromKnownOperation(ruleCode: string): string[] {
+		// Сбрасываем состояние после предыдущего выполнения.
+		this.CORRELATION_NAME_COMPARE_REGEX.lastIndex = 0;
+		this.LOWER_CORRELATION_NAME_COMPARE_REGEX.lastIndex = 0;
+		this.INLIST_LOWER_CORRELATION_NAME_REGEX.lastIndex = 0;
+		this.INLIST_CORRELATION_NAME_REGEX.lastIndex = 0;
+
 		// const correlationNameCompareRegex = /correlation_name\s*==\s*"(\w+)"/gm;
 		const correlationNameCompareRegexResult = RegExpHelper.parseValues(ruleCode, this.CORRELATION_NAME_COMPARE_REGEX, "gm");
 
 		// const correlationNameWithLowerCompareRegex = /lower\(\s*correlation_name\s*\)\s*==\s*"(\w+)"/gm;
 		const correlationNameWithLowerCompareRegexResult = RegExpHelper.parseValues(ruleCode, this.LOWER_CORRELATION_NAME_COMPARE_REGEX, "gm");
 
-		// const correlationNameWihtLowerInListRegex = /in_list\(\s*(\[[\w\W]+\])\s*,\s*lower\(correlation_name\)/gm;
+		// const correlationNameWithLowerInListRegex = /in_list\(\s*(\[[\w\W]+\])\s*,\s*lower\(correlation_name\)/gm;
 		const correlationNameWithLowerInListRegexResult = RegExpHelper.parseJsArrays(ruleCode, this.INLIST_LOWER_CORRELATION_NAME_REGEX, "gm");
 
 		const correlationNameInListRegexResult = RegExpHelper.parseJsArrays(ruleCode, this.INLIST_CORRELATION_NAME_REGEX, "gm");
@@ -514,6 +612,10 @@ export class TestHelper {
 			.concat(correlationNameWithLowerCompareRegexResult)
 			.concat(correlationNameWithLowerInListRegexResult)
 			.concat(correlationNameInListRegexResult);
+	}
+
+	public static isCorrelationNameUsedInFilter(ruleCode: string): boolean {
+		return /filter\s+{[\s\S]+?correlation_name[\s\S]+?}/gm.test(ruleCode);
 	}
 
 	/**
@@ -564,14 +666,16 @@ export class TestHelper {
 
 				// Из textarea новые строки только \n, поэтому надо их поправить под систему.
 				rawEvents = rawEvents.replace(/(?<!\\)\n/gm, os.EOL);
-				test.setRawEvents(TestHelper.compressTestCode(rawEvents));
+				const compressedRawEvents = TestHelper.compressTestCode(rawEvents);
+				test.setRawEvents(compressedRawEvents);
 
 				// Код теста.
 				let testCode = plainTest?.testCode;
 
 				// Из textarea новые строки только \n, поэтому надо их поправить под систему.
 				testCode = testCode.replace(/(?<!\\)\n/gm, os.EOL);
-				test.setTestCode(TestHelper.compressTestCode(testCode));
+				const compressedCode = TestHelper.compressTestCode(testCode);
+				test.setTestCode(compressedCode);
 
 				// Нормализованные события.
 				const normEvents = plainTest?.normEvents;
@@ -592,7 +696,15 @@ export class TestHelper {
 
 
 	public static escapeRawEvent(normalizedEvent: string) {
-		return normalizedEvent;
+		return normalizedEvent
+			.replace(/\\n/g, "\\n")
+			.replace(/\\'/g, "\\'")
+			.replace(/\\"/g, '\\"')
+			.replace(/\\&/g, "\\&")
+			.replace(/\\r/g, "\\r")
+			.replace(/\\t/g, "\\t")
+			.replace(/\\b/g, "\\b")
+			.replace(/\\f/g, "\\f");
 	}
 
 	private static CORRELATION_NAME_COMPARE_REGEX = /correlation_name\s*==\s*"(\w+)"/gm;

@@ -1,7 +1,43 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+
 export class RegExpHelper {
 	public static getExpectSectionRegExp() : RegExp {
 		return /expect\s*(\d+|not)\s*{(.*)}/gm;
+	}
+
+	public static getEnrichedNormTestEventsFileName(ruleName: string, testNumber?: number) : RegExp { 
+		let regExpTemplate: string;
+		if(testNumber) {
+			regExpTemplate = `.+?${ruleName}.+?raw_events_${testNumber}_norm_enr\.json`;
+		} else {
+			regExpTemplate = `.+?${ruleName}.+?raw_events_\\d+_norm_enr\.json`;
+		}
+		
+		return RegExp(regExpTemplate, "i");
+	}
+
+	public static getEnrichedCorrTestEventsFileName(ruleName: string, testNumber?: number) : RegExp { 
+		let regExpTemplate: string;
+		if(testNumber) {
+			regExpTemplate = `.+?${ruleName}.+?raw_events_${testNumber}_norm_enr_cor(r)?_enr\.json`;
+		} else {
+			regExpTemplate = `.+?${ruleName}.+?raw_events_\\d+_norm_enr_cor(r)?_enr\.json`;
+		}
+		
+		return RegExp(regExpTemplate, "i");
+	}
+
+	public static getCorrTestEventsFileName(ruleName: string, testNumber?: number) : RegExp { 
+
+		let regExpTemplate: string;
+		if(testNumber) {
+			regExpTemplate = `.+?${ruleName}.+?raw_events_${testNumber}_norm_enr_cor(r)\.json`;
+		} else {
+			regExpTemplate = `.+?${ruleName}.+?raw_events_\\d+_norm_enr_cor(r)?\.json`;
+		}
+		
+		return RegExp(regExpTemplate, "i");
 	}
 
 	public static getSingleExpectEvent(text: string) : string {
@@ -14,17 +50,34 @@ export class RegExpHelper {
 		return result[1];
 	}
 
-	public static getJsons() : RegExp {
-		return /({.*?})/g;
+	public static parseJsonsFromMultilineString(str: string) : string[] {
+		const jsons : string[] = [];
+		let currResult: RegExpExecArray | null;
+		const regExp = /^\{[\s\S]+\}/gm;
+		while ((currResult = regExp.exec(str))) {
+			const curValue = currResult[0];
+			jsons.push(curValue);
+		}
+
+		return jsons;
 	}
 
+	/**
+	 * Выделяет из текста все вхождения первой группы
+	 * @param inputText входной текст
+	 * @param regExp регулярное выражение с захватом одной группы
+	 * @returns список выделенных подстрок
+	 */
 	public static getAllStrings(inputText : string, regExp: RegExp) : string[] {
 
 		const strings : string[] = [];
 		let curResult: RegExpExecArray | null;
 		while ((curResult = regExp.exec(inputText))) {
 			
-			const curValue = curResult[2];
+			if(curResult.length !== 2) {
+				continue;
+			}
+			const curValue = curResult[1];
 			strings.push(curValue);
 		}
 
@@ -53,7 +106,7 @@ export class RegExpHelper {
 	 * Парсит элементы по регулярному выражение и собирает их в единый список.
 	 * Регулярное выражение собирает значение первой группы и только они попадают в массив.
 	 * @param text строка
-	 * @param regExp регулярное выражение с заполненой второй группой
+	 * @param regExp регулярное выражение с заполненной второй группой
 	 * @returns 
 	 */
 	public static parseValues(text : string, reg : string|RegExp, flags : string) : string[] {
@@ -76,27 +129,39 @@ export class RegExpHelper {
 	 * Парсить js-массивы ([1, 2, 3]) из строки по регулярному выражению и объединяет их в единый список.
 	 * Регулярное выражение собирает значение первой группы и только они попадают в массив.
 	 * @param text строка 
-	 * @param regExp регулярное выражение с заполненой второй группой
+	 * @param regExp регулярное выражение с заполненной второй группой
 	 * @returns совокупный список всех элементов
 	 */
 	public static parseJsArrays(text : string, reg : string|RegExp, flags : string) : string[] {
-		const arrays : string [] = [];
 		let parseResult: RegExpExecArray | null;
 		const regExp = new RegExp(reg, flags);
+		const elements: string[] = [];
 		while ((parseResult = regExp.exec(text))) {
 			if(parseResult.length != 2) {
 				continue;
 			}
 			
 			const array : string = parseResult[1];
-			arrays.push(array);
+			// Чистим от возможных комментариев.
+			// [
+			// 	"Super_Duper_SubRule", # Тут есть комментарий
+			// ];
+			let elementsResult: RegExpExecArray | null;
+			
+			const elementRegExp = /(?<!#.*?)"(\w+?)"/gm;
+			while ((elementsResult = elementRegExp.exec(array))) {
+				if(elementsResult.length != 2) {
+					continue;
+				}
+				const currElem = elementsResult[1];
+				elements.push(currElem);
+			}
 		}
 
-		const values = arrays.flatMap(array => JSON.parse(array));
-		return values;
+		return elements;
 	}
 
-	public static parseFunctionCalls(text: string, lineNumber: number, fuctionNames: string[]) : vscode.Range [] {
+	public static parseFunctionCalls(text: string, lineNumber: number, functionNames: string[]) : vscode.Range [] {
 		const functionCallRegEx = /(?:.*?)([A-Za-z0-9_]+)\(/g;
 
 		const functionCalls : vscode.Range [] = [];
@@ -111,11 +176,11 @@ export class RegExpHelper {
 			
 			// Находим вызов функции.
 			const functionCall = parseResult[1];
-			if(!fuctionNames.includes(functionCall)) {
+			if(!functionNames.includes(functionCall)) {
 				continue;
 			}
 
-			// Расчитываем позицию вызова функции в коде.
+			// Рассчитываем позицию вызова функции в коде.
 			const beginIndex = text.indexOf(functionCall + "(", prevFunctionNameIndex);
 			const endIndex = beginIndex + functionCall.length;
 

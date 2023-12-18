@@ -12,7 +12,7 @@
         },
         {
             "name": "keyword.control.xp",
-            "match": "\\b(not|table_list|default)\\b"
+            "match": "\\b(not|table_list|default|expect)\\b"
         },
 		{
 			"comment": "Ключ в json-е выделяем отдельно, дабы не сливался со значением",

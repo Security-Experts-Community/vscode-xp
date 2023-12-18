@@ -12,6 +12,9 @@ import { DialogHelper } from '../../helpers/dialogHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { UnitTestsListViewProvider } from './unitTestsListViewProvider';
 import { XpException } from '../../models/xpException';
+import { RegExpHelper } from '../../helpers/regExpHelper';
+import { Correlation } from '../../models/content/correlation';
+import { Normalization } from '../../models/content/normalization';
 
 export class UnitTestContentEditorViewProvider {
 
@@ -61,16 +64,6 @@ export class UnitTestContentEditorViewProvider {
 				async (test: BaseUnitTest) => {
 					// Открываем код теста.
 					vscode.commands.executeCommand(UnitTestContentEditorViewProvider.showEditorCommand, test);
-
-					// Показываем вывод теста, если он есть.
-					const testOutput = test.getOutput();
-					if (!testOutput) {
-						return;
-					}
-
-					const outputChannel = Configuration.get().getOutputChannel();
-					outputChannel.clear();
-					outputChannel.append(testOutput);
 				}
 			)
 		);
@@ -181,6 +174,42 @@ export class UnitTestContentEditorViewProvider {
 				return;
 			}
 
+			case 'updateExpectEvent': {
+				const actualEvent = this._test.getActualEvent();
+				if(!actualEvent) {
+					DialogHelper.showWarning("Фактическое событие не получено. Запустите тест для получения фактического события, после чего можно заменить ожидаемое событие фактическим");
+					return;
+				}
+
+				const rule = this._test.getRule();
+				let resultTestCode: string;
+
+				// В модульных тестах корреляций есть expect и возможны комментарии, поэтому надо заменить события, сохранив остальное.
+				if(rule instanceof Correlation) {
+					const newTestCode = `expect 1 ${actualEvent}`;
+					const currentTestCode = this._test.getTestExpectation();
+					resultTestCode = currentTestCode.replace(
+						RegExpHelper.getExpectSectionRegExp(),
+						// Фикс того, что из newTestCode пропадают доллары
+						// https://stackoverflow.com/questions/9423722/string-replace-weird-behavior-when-using-dollar-sign-as-replacement
+						function () {return newTestCode;}
+					);
+				}
+
+				// Для нормализации просто сохраняем фактическое событие без дополнительных преобразований.
+				if(rule instanceof Normalization) {
+					resultTestCode = actualEvent;
+				}
+				
+				// Обновляем ожидаемое событие на диске и во вьюшке.
+				this._test.setTestExpectation(resultTestCode);
+				await this._test.save();
+				this.updateView();
+
+				DialogHelper.showInfo("Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти.");
+				return;
+			}
+
 			default: {
 				DialogHelper.showError("Переданная команда не поддерживается");
 			}
@@ -194,11 +223,14 @@ export class UnitTestContentEditorViewProvider {
 			if (!rawEvent) {
 				throw new XpException(`Не задано сырое событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`);
 			}
-			this._test.setTestInputData(rawEvent);
+			const compressedRawEvent = TestHelper.compressTestCode(rawEvent);
+			this._test.setTestInputData(compressedRawEvent);
+
 			const expectation = testInfo.expectation;
 			if (!expectation) {
 				throw new XpException(`Не задано ожидаемое нормализованное событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`);
 			}
+			
 			this._test.setTestExpectation(expectation);
 			await this._test.save();
 
@@ -215,6 +247,13 @@ export class UnitTestContentEditorViewProvider {
 			DialogHelper.showError("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
 			return;
 		}
+
+		// TODO: если тест еще не сохранён, то он падает так как в объекте дефолтный комментарий, а не значения из вьюшки.
+		// const expectation = message.test.expectation;
+		// this._test.setTestExpectation(expectation);
+
+		// const rawEvent = message.test.rawEvent;
+		// this._test.setTestInputData(rawEvent);
 
 		const rule = this._test.getRule();
 		return vscode.window.withProgress({

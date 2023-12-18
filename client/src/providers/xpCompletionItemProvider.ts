@@ -88,11 +88,11 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 			autocompleteSignatures = autocompleteSignatures.concat(keywords);
 
 			if (keywords.length == 0) {
-				console.warn("Не было считано ни одного описания функций.");
+				Log.warn("Не было считано ни одного описания функций.");
 			}
 		}
 		catch (error) {
-			console.warn("Ошибка при считывании." + error.message);
+			Log.warn("Ошибка при считывании." + error.message);
 		}
 
 		return new XpCompletionItemProvider(autocompleteSignatures);
@@ -118,17 +118,17 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 		}
 
 		const unendedToken = parseResult[1];
-		const filtredItems = this._completionItems.filter(ci => ci.label.startsWith(unendedToken));
+		const filteredItems = this._completionItems.filter(ci => ci.label.startsWith(unendedToken));
 
 		// Вставлять будем только окончание, вместо полного item-а.
 		// const wordRange = document.getWordRangeAtPosition(position);
 		// const word = document.getText(wordRange);
 		
-		for (const filtredItem of filtredItems) {
+		for (const filteredItem of filteredItems) {
 			const unendedTokenWithoutLastChar = unendedToken.slice(0, -1);
-			filtredItem.insertText = filtredItem.label.replace(unendedTokenWithoutLastChar, "");
+			filteredItem.insertText = filteredItem.label.replace(unendedTokenWithoutLastChar, "");
 		}
 
-		return filtredItems;
+		return filteredItems;
 	}
 }

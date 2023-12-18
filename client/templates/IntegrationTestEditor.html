@@ -115,9 +115,9 @@
 				</div>
 				<div class="manage_buttons">
 					<!-- Получить ожидаемое событие можно только при наличии нормализованных событий -->
-					{{#NormEvents.0}}
+					{{#CanGetExpectedEvent}}
 						<input name="fast_test" type="button" value="&#9654;   Получить ожидаемое событие  ">
-					{{/NormEvents.0}}
+					{{/CanGetExpectedEvent}}
 					<!-- Сравнить полученные результаты можно только если тест прошёл неуспешно -->
 					{{#IsFailed}}
 						<input id="open_result_diff" type="button" value="Сравнить полученные результаты">
@@ -153,7 +153,9 @@
 		<script type="module" src="{{WebviewUri}}"></script>
 
 		<script>
-			// Глобальное определение функций.
+			// Глобальное определение переменных.
+			const redos = [];
+			const undos = [];
 
 			// Сохраняем все тесты.
 			function saveAllTests() {					
@@ -189,8 +191,26 @@
 					tests: tests
 				});
 			};
+
+			const undo = (redos, undos, currentHtml) => {
+				if (undos.length) {
+					redos.push(currentHtml);
+					return undos.pop();
+				} else {
+					return null;
+				}
+			};
+
+			const redo = (redos, undos, currentHtml) => {
+				if (redos.length) {
+					undos.push(currentHtml);
+					return redos.pop();
+				} else {
+					return null;
+				}
+			};
 			
-			const editor = (el, tab = '    ') => {
+			const editor = (el, language, redos, undos, tab = '    ') => {
 					const caret = () => {
 						const range = window.getSelection().getRangeAt(0);
 						const prefix = range.cloneRange();
@@ -223,23 +243,75 @@
 						return pos;
 					};
 
-					// Обработка символа табуляции
+					el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
+
+					// событие перед вводом символа
+					el.addEventListener('beforeinput', e=> {
+						undos.push(el.innerHTML)
+					})
+
+					// Особая обработка специальных клавиш
 					el.addEventListener('keydown', e => {
+						// Обработка символа табуляции
 						if (e.which === 9) {
+							console.log('Tab pressed');
+
+							undos.push(el.innerHTML)
 							const pos = caret() + tab.length;
 							const range = window.getSelection().getRangeAt(0);
 							range.deleteContents();
 							document.execCommand("InsertHTML", false, tab);
+							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
 							setCaret(pos);
 							e.preventDefault();
+							return;
 						}
+
+						// Обработка enter, так как новая строка не формируется в html
+						if (e.which === 13) {
+							console.log('Enter pressed');
+
+							const newLine = '\n\n';
+							undos.push(el.innerHTML)
+							const pos = caret() + newLine.length;
+							const range = window.getSelection().getRangeAt(0);
+							range.deleteContents();
+							document.execCommand("InsertHTML", false, newLine);
+							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
+							setCaret(pos);
+							e.preventDefault();
+							return;
+    					}
 					});
 
 					// Обработка вставки символа с поддержкой выделения на Ctrl+A.
 					el.addEventListener('keyup', e => {
-						if ((e.keyCode >= 0x30 || e.keyCode == 0x20) && !(e.ctrlKey && e.code == 'KeyA')) {
+						if ((e.keyCode >= 0x30 || e.keyCode == 0x20) && !(e.ctrlKey && e.code == 'KeyA') && !(e.ctrlKey && e.code == 'KeyZ') && !(e.ctrlKey && e.code == 'KeyY')) {
 							const pos = caret();
+							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
 							setCaret(pos);
+						}
+					});
+
+					el.addEventListener('keydown', e => {
+						if (e.ctrlKey && e.code == 'KeyZ') {
+							const prevHTML = undo(redos, undos, el.innerHTML)
+							if (prevHTML) {
+								el.innerHTML = prevHTML
+								const pos = caret();
+								setCaret(pos);
+							}
+						}
+					});
+
+					el.addEventListener('keydown', e => {
+						if (e.ctrlKey && e.code == 'KeyY') {
+							const prevHTML = redo(redos, undos, el.innerHTML)
+							if (prevHTML) {
+								el.innerHTML = prevHTML
+								const pos = caret();
+								setCaret(pos);
+							}
 						}
 					});
 				};
@@ -375,7 +447,6 @@
 			window.addEventListener(
 				'message', 
 				(event) => {
-					console.log('команда от расширения')
 					const message = event.data; 
 					switch (message.command) {
 						case 'updateRawEvents': {
@@ -427,22 +498,24 @@
 				$(this).height(this.scrollHeight);
 			});
 
-			function addEditorEvents() {
+			function addEditorEvents(redos, undos) {
 				// Добавляем автоподстветку для каждого из полей кода тестов.
 				const xpTestElements = document.querySelectorAll(".xp-test_highlight");
 				for(el of xpTestElements) {
-					el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: 'xp-test-code'}).value
-					editor(el);
+					// el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: 'xp-test-code'}).value
+					editor(el, 'xp-test-code', redos, undos);
 				}
 
 				const jsonElements = document.querySelectorAll(".json_highlight");
 				for(el of jsonElements) {
-					el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: 'json'}).value
-					editor(el);
+					// el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: 'json'}).value
+					editor(el, 'json', redos, undos);
 				}
 			}
 
 			$(document).ready(function() {
+
+
 
 				addEventListenerOnClickForStopPropaginationAndDeleteTest()
 
@@ -513,9 +586,11 @@
 
 					// Передает тест как параметр запроса.
 					const test = baseTestElement.data("test");
+					const rawEvents = baseTestElement.find('[name="raw_events"]').text();
 					vscode.postMessage({
 						activeTestNumber : activeTestNumber,
-						command: 'fastTest',
+						command: 'GetExpectedEventCommand',
+						rawEvents : rawEvents,
 						test: test
 					});
 				});
@@ -584,7 +659,6 @@
 				// Сохраняем все тесты по хот кею Ctrl+S
 				$(document).on("keydown", e => {
 					if (e.ctrlKey && e.code == 'KeyS') {
-						console.log(e.keyCode);
 						e.preventDefault();
 						saveAllTests();
 					}
@@ -630,8 +704,8 @@
 					() => {return xpTestCode;}
 				);
 
-				// Добавляем автоподстветку для каждого из полей кода тестов.
-				addEditorEvents();
+				// Добавляем автоподсветку для каждого из полей кода тестов.
+				addEditorEvents(redos, undos);
 			});
 
 			function createTest() {	
@@ -670,7 +744,7 @@
 
 				// Добавляем обработчик для удаления вкладки и подсвечиваем содержимое 
 				addEventListenerOnClickForStopPropaginationAndDeleteTest()
-				addEditorEvents();
+				addEditorEvents(redos, undos);
 
 				// Переходим на созданную вкладку
 				openTest(new_id);

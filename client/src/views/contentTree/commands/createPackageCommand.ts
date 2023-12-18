@@ -9,6 +9,7 @@ import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { Configuration } from '../../../models/configuration';
 import { YamlHelper } from '../../../helpers/yamlHelper';
 import { MetaInfo } from '../../../models/metaInfo/metaInfo';
+import { ContentFolder } from '../../../models/content/contentFolder';
 
 export class CreatePackageCommand {
 
@@ -21,28 +22,30 @@ export class CreatePackageCommand {
 				ignoreFocusOut: true,
 				placeHolder: 'Название пакета',
 				prompt: 'Название пакета',
+				// TODO: убрать дублирование кода валидации
+				// Учесть отличие локализации
 				validateInput: (v) => {
-					const trimed = v.trim();
+					const trimmed = v.trim();
 					// Корректность имени директории с точки зрения ОС.
-					if(trimed.includes(">") || trimed.includes("<") || trimed.includes(":") || trimed.includes("\"") || trimed.includes("/") || trimed.includes("|") || trimed.includes("?") || trimed.includes("*"))
+					if(trimmed.includes(">") || trimmed.includes("<") || trimmed.includes(":") || trimmed.includes("\"") || trimmed.includes("/") || trimmed.includes("|") || trimmed.includes("?") || trimmed.includes("*"))
 						return "Название пакета содержит недопустимые символы";
 
-					if(trimed === '')
+					if(trimmed === '')
 						return "Название пакета должно содержать хотя бы один символ";
 
 					// Не используем штатные директории контента.
 					const contentSubDirectories = KbHelper.getContentSubDirectories();
-					if(contentSubDirectories.includes(trimed))
+					if(contentSubDirectories.includes(trimmed))
 						return "Это название пакета зарезервировано и не может быть использовано";
 
 					// Английский язык
 					const englishAlphabet = /^[a-z0-9_]*$/;
-					if(!englishAlphabet.test(trimed)) {
+					if(!englishAlphabet.test(trimmed)) {
 						return "Используйте только строчные английские буквы, цифры и символ подчеркивания";
 					}
 
 					// Невозможность создать уже созданную директорию.
-					const newFolderPath = path.join(selectedItem.getParentPath(), trimed);
+					const newFolderPath = path.join(selectedItem.getParentPath(), trimmed);
 					if(fs.existsSync(newFolderPath))
 						return "Пакет с таким названием уже существует";
 				}
@@ -76,7 +79,7 @@ export class CreatePackageCommand {
 		await fs.promises.mkdir(tablesPath, {recursive: true});
 
 		// Пакет -> _meta
-		const metaPath = path.join(newPackagePath, "_meta");
+		const metaPath = path.join(newPackagePath, ContentFolder.PACKAGE_METAINFO_DIRNAME);
 		await fs.promises.mkdir(metaPath, {recursive: true});
 
 		// Пакет -> _meta -> metainfo.yaml

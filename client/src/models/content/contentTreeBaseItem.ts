@@ -8,9 +8,9 @@ import { ArgumentException } from '../argumentException';
 import { XpException } from '../xpException';
 
 /**
- * Базовый класс для всех item-ом из дерева контента.
+ * Базовый класс для всех item-ом дерева контента.
  */
-export abstract class KbTreeBaseItem extends vscode.TreeItem {
+export abstract class ContentTreeBaseItem extends vscode.TreeItem {
 	constructor(protected _name : string, 
 		protected _parentPath : string) {
 		super(_name, vscode.TreeItemCollapsibleState.None);
@@ -18,6 +18,9 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 	}
 
 	public abstract getObjectType() : string;
+	public isFolder(): boolean {
+		return false;
+	}
 
 	public generateObjectId() : string {
 		const ruleName = this.getName();
@@ -109,13 +112,13 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 		return path.join(this._parentPath, this._name, this._fileName);
 	}
 
-	public setLabel(label:string) : void {
-		this.label = label;
+	public setLabel(newLabel:string) : void {
+		this.label = newLabel;
 	}
 
-	public setHighlightsLabel(label:string) : void {
+	public setHighlightsLabel(newLabel:string) : void {
 		this.label = {
-			label:label, highlights:[[0,label.length]]
+			label:newLabel, highlights:[[0,newLabel.length]]
 		};
 	}
 
@@ -155,24 +158,15 @@ export abstract class KbTreeBaseItem extends vscode.TreeItem {
 		return path.join(Configuration.get().getExtensionPath(), 'resources');
 	}
 
-	public setRuDescription(description: string) : void {
-		this._ruDescription = description;
+	public getChildren() : ContentTreeBaseItem [] {
+		return this._children;
 	}
 
-	public setEnDescription(description: string) : void {
-		this._enDescription = description;
-	}
-
-	public getRuDescription() : string {
-		return this._ruDescription;
-	}
-
-	public getEnDescription() : string {
-		return this._enDescription;
+	public setChildren(children: ContentTreeBaseItem []) : void {
+		this._children = children;
 	}
 
 	private _fileName : string;
-	private _ruDescription : string;
-	private _enDescription : string;
 	private _metaInfo: MetaInfo = new MetaInfo();
+	private _children: ContentTreeBaseItem [] = [];
 }

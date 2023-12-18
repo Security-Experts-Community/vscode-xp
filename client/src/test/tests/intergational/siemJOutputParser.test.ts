@@ -6,40 +6,27 @@ import { TestFixture } from '../../helper';
 
 suite('SiemJOutputParser', () => {
 
-// 	test('Баг новой версии KBT', async () => {
-// 		const parser = new SiemJOutputParser();
+	test('Новый формат вывода siemj ', async () => {
+		const parser = new SiemJOutputParser();
 
-// 		const output = 
-// `
-// TEST_RULES [Err] :: Collected 8 tests.
-// ...
-// TEST_RULES [Err] :: Test Started: tests\\raw_events_1.json
-// TEST_RULES [Err] :: Expected results are not obtained.
-// TEST_RULES [Err] :: Details:
-// TEST_RULES [Err] :: Expected json:
-// TEST_RULES [Err] :: Expected 1, got 0
-// TEST_RULES [Err] :: Rule name is detected in expect. Building diff for all emits with the same \\"ExpectCorrelation\\" field..
-// TEST_RULES [Err] :: There are no emits with same correlation_name \\"ActualCorrelation\\".
-// TEST_RULES [Err] :: Emitted CR: ActualCorrelation
-// TEST_RULES [Err] :: Test Failed. See messages above
-// TEST_RULES [Err] :: 
-// TEST_RULES [Err] :: Correlator statistics:
-// TEST_RULES [Err] :: rule ActualCorrelation
-// TEST_RULES [Err] ::     emit: 1
-// TEST_RULES [Err] :: 
-// TEST_RULES [Err] :: Test Finished: tests\\raw_events_1.json
-// TEST_RULES [Err] :: 
-// TEST_RULES [Err] :: 
-// TEST_RULES [Err] :: 
-// TEST_RULES [Err] :: 
-// TEST_RULES [Err] :: 
-// TEST_RULES [Err] ::  1 tests failed`;
+		const output = 
+`
+TEST_RULES :: Using 8 threads
+TEST_RULES :: argraph was not specified - will skip aggregation tests, errors in dependent tests may occur
+TEST_RULES :: Getting content from path c:\\Content\\knowledgebase\\packages\\1\\correlation_rules\\rule
+TEST_RULES :: Collected 6 tests.
+TEST_RULES :: Generating empty main FPTA database...
+TEST_RULES :: Copying empty main FPTA database...
+TEST_RULES :: Generating specific FPTA databases...
+TEST_RULES :: Tests started
+TEST_RULES :: All tests OK
+TEST_RULES :: Elapsed time: 43.649 sec`;
 
-// 		const status = await parser.parse(output);
+		const status = await parser.parse(output);
 
-// 		assert.ok(!status.testStatus);
-// 		assert.strictEqual(status.failedTestNumbers.length, 1);
-// 	});
+		assert.ok(status.testsStatus);
+		assert.strictEqual(status.testCount, 6);
+	});
 
 	test('Прошли все тесты', async () => {
 		const parser = new SiemJOutputParser();

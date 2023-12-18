@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
-import { KbTreeBaseItem } from './kbTreeBaseItem';
 import { XpException } from '../xpException';
 import { XPObjectType } from './xpObjectType';
 import { MetaInfo } from '../metaInfo/metaInfo';
@@ -56,6 +55,7 @@ export class Table extends RuleBaseItem {
 		const rulePath = this.getRuleFilePath();
 
 		// Порядок не такой как в других правилах, сохраненное состояние в памяти имеет приоритет при пересохранении ТС
+		// TODO: нарушение инкапсуляции
 		if(this._ruleCode) {
 			return this._ruleCode;
 		}
@@ -90,12 +90,11 @@ export class Table extends RuleBaseItem {
 
 		const ruleFullPath = this.getRuleFilePath();
 		const ruleCode = await this.getRuleCode();
-		await FileSystemHelper.writeContentFileIfChanged(ruleFullPath, ruleCode);
-
-		// Параллельно сохраняем все данные правила.
+		
+		const writeContentPromise = FileSystemHelper.writeContentFileIfChanged(ruleFullPath, ruleCode); 
 		const metainfoPromise = this.getMetaInfo().save(tableDirPath);
 		const localizationPromise = this.saveLocalizationsImpl(tableDirPath);
-		await Promise.all([metainfoPromise, localizationPromise]);
+		await Promise.all([writeContentPromise, metainfoPromise, localizationPromise]);
 	}
 
 	constructor(name: string, parentDirectoryPath?: string) {

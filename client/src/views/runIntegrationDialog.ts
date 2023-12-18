@@ -10,6 +10,8 @@ import { Configuration } from '../models/configuration';
 import { OperationCanceledException } from '../models/operationCanceledException';
 import { XpException } from '../models/xpException';
 import { DialogHelper } from '../helpers/dialogHelper';
+import { Log } from '../extension';
+import { RegExpHelper } from '../helpers/regExpHelper';
 
 export class RunIntegrationTestDialog {
 	constructor(private _config : Configuration, private _tmpFilesPath?: string) {}
@@ -26,7 +28,7 @@ export class RunIntegrationTestDialog {
 				return this.getEnrichmentOptions(rule);
 			}
 
-			throw new XpException('Для заданного типа контента не поддерживается получение настроек интеграционных тестов.');
+			throw new XpException('Для заданного типа контента не поддерживается получение настроек интеграционных тестов');
 		}
 		catch(error) {
 			throw new XpException('Ошибка анализа правила на зависимые корреляции');
@@ -37,15 +39,26 @@ export class RunIntegrationTestDialog {
 		const testRunnerOptions = new IntegrationTestRunnerOptions();
 		testRunnerOptions.tmpFilesPath = this._tmpFilesPath;
 
+		// Получение сабрулей из кода.
 		const ruleCode = await rule.getRuleCode();
-		const subRuleNames = TestHelper.parseSubRuleNames(ruleCode).map(srn => srn.toLocaleLowerCase());
+		const subRuleNames = TestHelper.parseSubRuleNamesFromKnownOperation(ruleCode).map(srn => srn.toLocaleLowerCase());
 		const uniqueSubRuleNames = [...new Set(subRuleNames)];
 
-		// У правила нет зависимых корреляций, собираем только его.
+		// У правила нет типичных сабрулей корреляций, собираем только его.
 		if(uniqueSubRuleNames.length == 0) {
-			testRunnerOptions.correlationCompilation = CompilationType.CurrentRule;
+			// Если есть еще другие операции с полем correlation_name, тогда собираем текущий пакет.
+			// Если нет, тогда только правило.
+			if(TestHelper.isCorrelationNameUsedInFilter(ruleCode)) {
+				testRunnerOptions.correlationCompilation = CompilationType.CurrentPackage;	
+			}
+			else {
+				testRunnerOptions.correlationCompilation = CompilationType.CurrentRule;
+			}
+			
 			return testRunnerOptions;
 		}
+
+		Log.info(`Из правила ${rule.getName()} получены следующие подправила (subrules): `, uniqueSubRuleNames);
 
 		const currentPackagePath = rule.getPackagePath(this._config);
 		const currPackageSubRulePaths = FileSystemHelper.getRecursiveDirPathByName(currentPackagePath, uniqueSubRuleNames);
@@ -84,7 +97,7 @@ export class RunIntegrationTestDialog {
 			this.ALL_PACKAGES);
 
 		if(!result) {
-			throw new OperationCanceledException("Операция отменена.");
+			throw new OperationCanceledException("Операция отменена");
 		}
 		
 		switch(result) {
@@ -113,14 +126,20 @@ export class RunIntegrationTestDialog {
 		const testRunnerOptions = new IntegrationTestRunnerOptions();
 		testRunnerOptions.tmpFilesPath = this._tmpFilesPath;
 
-		const result = await DialogHelper.showInfo(
-			"Правило обогащения может обогащать как нормализованные события, так и корреляционные. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",
-			this.CURRENT_PACKAGE,
-			this.ALL_PACKAGES);
+		// TODO: экспериментальная оптимизация
+		const ruleCode = await rule.getRuleCode();
+		const events = RegExpHelper.getAllStrings(ruleCode, /event\s*(\w+)\s*:/gm);
 
-		if(!result) {
-			throw new OperationCanceledException("Операция отменена.");
-		}
+		// Одно событие, значит если там проверяется отсутствие в фильтре правила корреляции, то можно граф корреляции не собирать.
+		if(events.length === 1) {
+			const corrNameFilter = RegExpHelper.getAllStrings(ruleCode, /filter\s+{[\s\S]+?(correlation_name\s+==\s+null|filter::NotFromCorrelator\s*\(\))[\s\S]+?}/gm);
+			if(corrNameFilter.length === 1) {
+				testRunnerOptions.correlationCompilation = CompilationType.DontCompile;
+				return testRunnerOptions;
+			} 
+		} 
+
+		const result = await this.askTheUser();
 		
 		switch(result) {
 			case this.CURRENT_PACKAGE: {
@@ -135,6 +154,19 @@ export class RunIntegrationTestDialog {
 		}
 
 		return testRunnerOptions;
+	}
+
+	private async askTheUser(): Promise<string> {
+		const result = await DialogHelper.showInfo(
+			"Правило обогащения может обогащать как нормализованные события, так и корреляционные. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",
+			this.CURRENT_PACKAGE,
+			this.ALL_PACKAGES);
+
+		if(!result) {
+			throw new OperationCanceledException("Операция отменена");
+		}
+
+		return result;
 	}
 
 	public ALL_PACKAGES = "Все пакеты";
