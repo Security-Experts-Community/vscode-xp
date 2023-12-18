@@ -50,7 +50,7 @@ export class RunningCorrelationGraphProvider {
         // Создать и показать панель.
         this._view = vscode.window.createWebviewPanel(
             RunningCorrelationGraphProvider.viewId,
-            'Коррелировать события',
+            'Корреляция событий',
             vscode.ViewColumn.One,
             {
                 retainContextWhenHidden : true,
@@ -115,15 +115,14 @@ export class RunningCorrelationGraphProvider {
 
     private async corrGraphRun(rawEvents: string) : Promise<void> {
 
-        const config = Configuration.get();
-        const rootPaths = config.getContentRoots();
+        const rootPaths = this._config.getContentRoots();
 
         // Прогоняем событие по графам для каждой из корневых директорий текущего режима
         rootPaths.forEach(rootPath => {
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
                 cancellable: true,
-                title: `Корреляция событий с использованием графа для директории ${path.basename(rootPath)}`
+                title: `Корреляция событий`
             }, async (progress, cancellationToken) => {
                 try {
                     const rootFolder = path.basename(rootPath);
@@ -150,11 +149,11 @@ export class RunningCorrelationGraphProvider {
                     // Извлекаем имена сработавших корреляций.
                     const correlationNames = RegExpHelper.getAllStrings(correlatedEventsString, /"correlation_name"\s*:\s*"(.*?)"/g);
                     if(!correlationNames) {
-                        DialogHelper.showError(`Не удалось скоррелировать нормализованные события с использованием графа для директории ${path.basename(rootPath)}.`);
+                        DialogHelper.showError(`Не удалось коррелировать нормализованные события с использованием графа для директории ${path.basename(rootPath)}.`);
                         return;
                     }
 
-                    DialogHelper.showInfo(`Количество сработавших корреляций из папки ${rootFolder}: ${correlationNames.length}`);
+                    DialogHelper.showInfo(`Количество сработавших корреляций: ${correlationNames.length}`);
 
                     // Отдаем события во front-end.
                     const formattedEvents = TestHelper.formatTestCodeAndEvents(correlatedEventsString);

@@ -9,6 +9,7 @@ import { Configuration } from '../../../models/configuration';
 import { SiemjConfBuilder } from '../../../models/siemj/siemjConfigBuilder';
 import { XpException } from '../../../models/xpException';
 import { DialogHelper } from '../../../helpers/dialogHelper';
+import { SiemjManager } from '../../../models/siemj/siemjManager';
 
 export class BuildWldCommand {
 	constructor(private _config: Configuration, private _outputParser: SiemJOutputParser) {}
@@ -19,7 +20,7 @@ export class BuildWldCommand {
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
 			title: `Компиляция wld-файлов`
-		}, async (progress) => {
+		}, async (progress, cancellationToken: vscode.CancellationToken) => {
 
 			await SiemjConfigHelper.clearArtifacts(this._config);
 			
@@ -37,20 +38,11 @@ export class BuildWldCommand {
 
 				// Для сборки WLD нам нужен файл схемы, собираем его.
 				const rootFolder = siemjConfContentEntity['packagesRoot'];
-				const siemjConfigPath = this._config.getTmpSiemjConfigPath(rootFolder);
-				await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
 
-				// Типовая команда выглядит так:
-				// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
-				const siemjExePath = this._config.getSiemjPath();
-				const siemJOutput = await ProcessHelper.execute(
-					siemjExePath,
-					["-c", siemjConfigPath, "main"],
-					{
-						encoding: this._config.getSiemjOutputEncoding(),
-						outputChannel: this._config.getOutputChannel()
-					}
-				);
+				const siemjManager = new SiemjManager(this._config, cancellationToken);
+				const contentRootPath = path.join(this._config.getKbFullPath(), rootFolder);
+				const siemjExecutionResult = await siemjManager.executeSiemjConfig(contentRootPath, siemjConfContent);
+				const result = await this._outputParser.parse(siemjExecutionResult.output);
 
 				// Типовая команда выглядит так:
 				// .\ptsiem-sdk\release-26.0\26.0.11839\vc150\x86_64\win\cli/rcc.exe --lang w --taxonomy=.\taxonomy\release-26.0\26.0.215\any\any\any/taxonomy.json --schema=.\gui_output/schema.json -o c:\tmp\whitelisting_graph.json .\knowledgebase\packages
@@ -88,7 +80,7 @@ export class BuildWldCommand {
 		});
 	}
 
-	private getParamsForAllRoots(config : Configuration ) : any[] {
+	private getParamsForAllRoots(config : Configuration) : any[] {
 		const rootPaths = config.getContentRoots();
 
 		return rootPaths.map(rootPath => { 

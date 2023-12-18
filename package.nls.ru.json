@@ -14,7 +14,7 @@
 	"vscode-xp.views.knowledgebaseTree.renameCommand": "Переименовать",
 
 	"vscode-xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Интеграционные тесты",
-	"vscode-xp.views.knowledgebaseTree.showMetainfoCommand": "Метаданные",
+	"vscode-xp.views.knowledgebaseTree.showMetainfoCommand": "Метаинформация",
 	"vscode-xp.views.knowledgebaseTree.showLocalizationCommand": "Локализации",
 	"vscode-xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Ретро коррелятор",
 

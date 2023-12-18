@@ -1,11 +1,11 @@
 import { Configuration } from '../../models/configuration';
-import { BuildAllCommand } from '../../views/contentTree/commands/buildAllCommand';
+import { BuildAllGraphCommand } from '../../views/contentTree/commands/buildAllGraphCommand';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 
-suite(BuildAllCommand.name, () => {
+suite(BuildAllGraphCommand.name, () => {
 
 	test('Инициализация', async () => {
-		new BuildAllCommand(
+		new BuildAllGraphCommand(
 			Configuration.get(),
 			new SiemJOutputParser()
 		);

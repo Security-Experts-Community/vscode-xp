@@ -23,7 +23,7 @@ import { RenameTreeItemCommand } from './commands/renameTreeItemCommand';
 import { DeleteContentItemCommand } from './commands/deleteContentItemCommand';
 import { CreatePackageCommand } from './commands/createPackageCommand';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
-import { BuildAllCommand } from './commands/buildAllCommand';
+import { BuildAllGraphCommand } from './commands/buildAllGraphCommand';
 import { PackKbAction } from './actions/packSIEMAllPackagesAction';
 import { UnpackKbCommand } from './commands/unpackKbCommand';
 import { ContentType } from '../../contentType/contentType';
@@ -223,7 +223,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 				ContentTreeProvider.buildAllCommand,
 				async (selectedItem: RuleBaseItem) => {
 					const parser = new SiemJOutputParser();
-					const buildCommand = new BuildAllCommand(config, parser);
+					const buildCommand = new BuildAllGraphCommand(config, parser);
 					await buildCommand.execute();
 				}
 			)
