@@ -1,10 +1,13 @@
 # Change Log
 
+## 3.11.6 (Pre-Release)
+
+- исправлены ошибка формирования дерева контента (special thanks @r0mka_Ch, @FedosovaOA).
+
 ## 3.11.5 (Pre-Release)
 
 - расширение локализации на английском языке (special thanks @DuckDarkwing);
 - исправлены ошибки для контента без табличных списков (special thanks @r0mka_Ch).
-- исправлены ошибка формирования дерева контента (special thanks @r0mka_Ch, @FedosovaOA).
 
 ## 3.11.4 (Pre-Release)
 
