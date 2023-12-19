@@ -7,12 +7,12 @@ import { DialogHelper } from '../../helpers/dialogHelper';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { CorrGraphRunner } from '../corrGraphRunner';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { EventMimeType, TestHelper } from '../../helpers/testHelper';
 import { Enveloper } from '../../models/enveloper';
 import { Log } from '../../extension';
+import { CorrGraphRunner } from './corrGraphRunner';
 
 export class RunningCorrelationGraphProvider {
 
@@ -118,9 +118,8 @@ export class RunningCorrelationGraphProvider {
 
         Log.info("Запущена корреляция событий");
 
-        const rootPaths = this._config.getContentRoots();
-
         // Прогоняем событие по графам для каждой из корневых директорий текущего режима
+        const rootPaths = this._config.getContentRoots();
         rootPaths.forEach(rootPath => {
             vscode.window.withProgress({
                 location: vscode.ProgressLocation.Notification,
@@ -138,10 +137,7 @@ export class RunningCorrelationGraphProvider {
                     const rawEventsFilePath = path.join(tmpDirectoryPath, RunningCorrelationGraphProvider.RAW_EVENTS_FILENAME);
                     await FileSystemHelper.writeContentFile(rawEventsFilePath, rawEvents);
 
-                    const runner = new CorrGraphRunner({
-                        config: this._config,
-                        cancellationToken: cancellationToken
-                    });
+                    const runner = new CorrGraphRunner(this._config);
                     const correlatedEventsString = await runner.run(rootPath, rawEventsFilePath);
 
                     if(!correlatedEventsString) {

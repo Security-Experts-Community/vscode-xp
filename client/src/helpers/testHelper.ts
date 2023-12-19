@@ -142,6 +142,9 @@ export class TestHelper {
 
 			/\s*"siem_id"(\s*):(\s*)".*?",/g,
 			/,\s*"siem_id"(\s*):(\s*)".*?"/g,
+
+			/\s*"uuid"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"uuid"(\s*):(\s*)".*?"/g,	// в конце json-а
 			
 			/\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\],/g,
 			/,\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\]/g,
