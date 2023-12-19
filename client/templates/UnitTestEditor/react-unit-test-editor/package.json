@@ -11,6 +11,12 @@
     },
     "dependencies": {
         "@bendera/vscode-webview-elements": "^0.17.1",
+        "@codemirror/lang-json": "^6.0.1",
+        "@uiw/codemirror-theme-vscode": "^4.21.21",
+        "@uiw/react-codemirror": "^4.21.21",
+        "@vscode/codicons": "^0.0.35",
+        "i": "^0.3.7",
+        "npm": "^10.2.5",
         "react": "^18.2.0",
         "react-dom": "^18.2.0"
     },

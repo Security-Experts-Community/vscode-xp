@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+    /* vscode-textarea не дружит с тайлвиндовыми классами из-за shadow root, поэтому здесь сделано именно так */
+    vscode-textarea {
+        width: 100%;
+    }
+}
