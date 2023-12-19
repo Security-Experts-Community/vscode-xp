@@ -12,6 +12,7 @@ import { RegExpHelper } from '../../helpers/regExpHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { EventMimeType, TestHelper } from '../../helpers/testHelper';
 import { Enveloper } from '../../models/enveloper';
+import { Log } from '../../extension';
 
 export class RunningCorrelationGraphProvider {
 
@@ -115,6 +116,8 @@ export class RunningCorrelationGraphProvider {
 
     private async corrGraphRun(rawEvents: string) : Promise<void> {
 
+        Log.info("Запущена корреляция событий");
+
         const rootPaths = this._config.getContentRoots();
 
         // Прогоняем событие по графам для каждой из корневых директорий текущего режима
@@ -132,7 +135,7 @@ export class RunningCorrelationGraphProvider {
                     await fs.promises.mkdir(tmpDirectoryPath, {recursive : true});
 
                     // Сохраняет сырые события в конверте на диск.
-                    const rawEventsFilePath = path.join(tmpDirectoryPath, "raw_events.json");
+                    const rawEventsFilePath = path.join(tmpDirectoryPath, RunningCorrelationGraphProvider.RAW_EVENTS_FILENAME);
                     await FileSystemHelper.writeContentFile(rawEventsFilePath, rawEvents);
 
                     const runner = new CorrGraphRunner({
@@ -155,9 +158,11 @@ export class RunningCorrelationGraphProvider {
 
                     DialogHelper.showInfo(`Количество сработавших корреляций: ${correlationNames.length}`);
 
-                    // Отдаем события во front-end.
                     const formattedEvents = TestHelper.formatTestCodeAndEvents(correlatedEventsString);
-                    const cleanedEvents = TestHelper.cleanTestCode(formattedEvents);
+                    // TODO: корректно парсить json и очищать его от ненужных полей.
+                    const cleanedEvents = TestHelper.cleanCorrelationEvents(formattedEvents);
+
+                    // Отдаем события во front-end.
                     this._view.webview.postMessage( {
                         command : "correlatedEvents",
                         events : cleanedEvents            
@@ -192,5 +197,7 @@ export class RunningCorrelationGraphProvider {
 
     // TODO: вынести в общий класс для всех вьюшек.
     public static TEXTAREA_END_OF_LINE = "\n";
+    public static RAW_EVENTS_FILENAME = "raw_events.json"
+    
     private _view: vscode.WebviewPanel;
 }

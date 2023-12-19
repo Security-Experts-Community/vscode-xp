@@ -125,6 +125,45 @@ export class TestHelper {
 	}
 
 	/**
+	 * Убирает из корреляционных событий технические поля
+	 * @param testCode код теста
+	 * @returns код теста, очищенный от тегов
+	 */
+	public static cleanCorrelationEvents(testCode: string): string {
+		if (!testCode) { 
+			throw new ArgumentException("Не задан обязательных параметр", "testCode");
+		}
+
+		const regexPatterns = [
+			/\s*"_rule"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"_rule"(\s*):(\s*)".*?"/g,	// в конце json-а
+
+			/\s*"generator.version"(\s*):(\s*)"(.*?",)/g,
+
+			/\s*"siem_id"(\s*):(\s*)".*?",/g,
+			/,\s*"siem_id"(\s*):(\s*)".*?"/g,
+			
+			/\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\]/g,
+
+			/\s*"_objects"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"_objects"(\s*):(\s*)\[[\s\S]*?\]/g,
+
+			/\s*"subevents"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"subevents"(\s*):(\s*)\[[\s\S]*?\]/g,
+
+			/\s*"subevents.time"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"subevents.time"(\s*):(\s*)\[[\s\S]*?\]/g
+		];
+
+		for (const regexPattern of regexPatterns) {
+			testCode = testCode.replace(regexPattern, "");
+		}
+
+		return testCode;
+	}
+
+	/**
 	 * Очищает, сортирует и форматирует json ожидаемого события
 	 * @param testCode строка с ожидаемым событием в json
 	 * @returns результирующее ожидаемое событие в json

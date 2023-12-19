@@ -485,7 +485,6 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		
 		if(!actualContentType){
 			const answer = await DialogHelper.showInfo(
-				// `База знаний не проинициализирована. Создать необходимые папки для формата ${configContentType}?`,
 				vscode.l10n.t(
 					'The knowledge base is not initialized. Create required folders for {0} format?',
 					configContentType
