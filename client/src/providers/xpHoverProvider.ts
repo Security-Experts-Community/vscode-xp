@@ -63,9 +63,18 @@ export class XpHoverProvider implements vscode.HoverProvider {
 
 		const selectedToken = ParserHelper.parseTokenWithInsidePosition(line, position);
 
-		// Если выделенный токен это функция
-		const foundFuncSignature = this._signatures.find( s => s.name === selectedToken);
-		const foundTaxonomyField = this._taxonomySignatures.find(ci => ci.label === selectedToken);
+		// Если выделенный токен это функция или таксономическое поле
+		const foundFuncSignature = this._signatures.find((s) => s.name === selectedToken);
+
+		const foundTaxonomyField = this._taxonomySignatures.find(t => {
+			// Таксономическое поле текущего событие
+			return t.label === selectedToken ||
+			// Таксономическое поле формируемого события
+			(
+				selectedToken.startsWith('$') &&
+				selectedToken.substring(1) === t.label
+			);
+		});
 
 		if(foundFuncSignature) {
 			return this.getFuncHover(foundFuncSignature);

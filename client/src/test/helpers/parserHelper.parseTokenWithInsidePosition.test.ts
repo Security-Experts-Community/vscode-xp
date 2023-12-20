@@ -39,4 +39,22 @@ suite('parserHelper.parseTokenWithInsidePosition', async () => {
 
 		assert.strictEqual(actual, 'object.process.name');
 	});
+
+	test('Поле в первом параметре функции', async () => {
+		const textLine = TestFixture.createOneLineTextLine(
+`            lower(join([object.name, datafield2], "|"))`
+);
+		const actual = ParserHelper.parseTokenWithInsidePosition(textLine, new vscode.Position(0, 26));
+
+		assert.strictEqual(actual, 'object.name');
+	});
+
+	test('No name', async () => {
+		const textLine = TestFixture.createOneLineTextLine(
+`	and regex(lower(datafield3), "(.*?)@", 1) != lower(subject.name)`
+);
+		const actual = ParserHelper.parseTokenWithInsidePosition(textLine, new vscode.Position(0, 60));
+
+		assert.strictEqual(actual, 'subject.name');
+	});
 });

@@ -44,17 +44,10 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 		
 		// Схема БД необходима для запуска юнит-тестов.
 		if(!fs.existsSync(schemaFullPath)) {
-			await vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				cancellable: false
-			}, async (progress) => {
-				const message = "Сборка схемы БД, которая необходима для запуска тестов";
-				progress.report( {message : message});
-				Log.info(message);
-				
-				const siemjManager = new SiemjManager(this._config);
-				await siemjManager.buildSchema(rule);
-			});
+			Log.info("Сборка схемы базы данных табличных списков, которая необходима для запуска тестов");
+			
+			const siemjManager = new SiemjManager(this._config);
+			await siemjManager.buildSchema(rule);
 		}
 
 		try {

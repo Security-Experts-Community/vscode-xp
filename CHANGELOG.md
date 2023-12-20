@@ -2,7 +2,8 @@
 
 ## 3.11.6 (Pre-Release)
 
-- исправлены ошибка формирования дерева контента (special thanks @r0mka_Ch, @FedosovaOA).
+- исправлена ошибка формирования дерева контента (special thanks @r0mka_Ch, @FedosovaOA).
+- реализована фичa [#170](https://github.com/Security-Experts-Community/vscode-xp/issues/170) в корреляционном событие добавлено поле `time`.
 
 ## 3.11.5 (Pre-Release)
 
@@ -23,7 +24,7 @@
 ## 3.11.2 (Pre-Release)
 
 - исправлена ошибка статуса интеграционных тестов;
-- добавлен PoC описания функций и полей таксономии при наведении на них мышкой;
+- реализована фича [#171](https://github.com/Security-Experts-Community/vscode-xp/issues/171) - описание функций и полей таксономии при наведении на них мышки;
 - исправлена ошибка создания обогащений из шаблонов (special thanks @skylex11).
 
 ## 3.11.1 (Pre-Release)

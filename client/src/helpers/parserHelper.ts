@@ -20,10 +20,12 @@ export class ParserHelper {
 			// Проверяем предыдущий символ, который надо тоже исключить.
 			const prevTokenIndex = startTokenIndex - 1;
 			const prevChar = beforePart[prevTokenIndex];
-			if(prevTokenIndex > 0 && [")", "]", "(", "["].includes(prevChar)) {
+			if(prevTokenIndex > 0 && [")", "]", "(", "[", ","].includes(prevChar)) {
 				break;
 			}
 		}
+
+		const firstPart = beforePart.substring(startTokenIndex);
 
 		// Ищем кусок токена после позиции мышки.
 		const afterPart = textLine.substring(mouseOffset);
@@ -36,12 +38,13 @@ export class ParserHelper {
 			// Проверяем следующий символ, который надо тоже исключить.
 			const nextTokenIndex = endTokenIndex;
 			const nextChar = afterPart[nextTokenIndex];
-			if(nextTokenIndex < afterPart.length - 1 && [")", "]", "(", "["].includes(nextChar)) {
+			if(nextTokenIndex <= afterPart.length - 1 && [")", "]", "(", "[", ","].includes(nextChar)) {
 				break;
 			}
 		}
 
-		const selectedToken = beforePart.substring(startTokenIndex) + afterPart.substring(0, endTokenIndex);
+		const secondPart = afterPart.substring(0, endTokenIndex);
+		const selectedToken = firstPart + secondPart;
 		return selectedToken;	
 	} 
 }

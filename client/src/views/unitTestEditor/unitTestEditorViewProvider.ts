@@ -170,7 +170,7 @@ export class UnitTestContentEditorViewProvider {
 			}
 
 			case 'runTest': {
-				await this.saveTest(message);
+				await this.saveTest(message, false);
 				await this.runUnitTest(message);
 				this.updateView();
 				return;
@@ -219,7 +219,7 @@ export class UnitTestContentEditorViewProvider {
 		}
 	}
 
-	private async saveTest(message: any) {
+	private async saveTest(message: any, informTheUser = true) {
 		const testInfo = message.test;
 		try {
 			const rawEvent = testInfo.rawEvent;
@@ -237,7 +237,9 @@ export class UnitTestContentEditorViewProvider {
 			this._test.setTestExpectation(expectation);
 			await this._test.save();
 
-			DialogHelper.showInfo("Тест успешно сохранён");
+			if(informTheUser) {
+				DialogHelper.showInfo("Тест успешно сохранён");
+			}
 		}
 		catch (error) {
 			ExceptionHelper.show(error, `Не удалось сохранить модульный тест №${this._test.label} правила ${this._test.getRule().getName()}`);
