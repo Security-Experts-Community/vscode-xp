@@ -30,14 +30,12 @@ export default function Events() {
         }
     }`);
     return (
-        <div className="flex flex-auto flex-col gap-2">
+        <div className="flex h-full flex-auto flex-col gap-2">
             <div className="flex h-5 w-full items-center justify-between">
                 <span>События для модульного теста</span>
                 <vscode-checkbox label="Переносить по словам" value="testvalue1"></vscode-checkbox>
             </div>
-            <div className="grow">
-                <Editor text={text1} setText={setText1} />
-            </div>
+            <Editor text={text1} setText={setText1} />
         </div>
     );
 }

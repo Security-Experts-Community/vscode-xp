@@ -26,18 +26,14 @@ export default function Results() {
         }
     }`);
     return (
-        <div className="col-span-full grid grid-cols-2 gap-2">
+        <div className="grid h-full w-full grid-cols-2 gap-2">
             <div className="col-span-1 flex flex-col gap-2">
                 <span className="h-5">Ожидаемый результат</span>
-                <div className="grow">
-                    <Editor text={text1} setText={setText1} />
-                </div>
+                <Editor text={text1} setText={setText1} />
             </div>
             <div className="col-span-1 flex flex-col gap-2">
                 <span className="h-5">Полученный результат</span>
-                <div className="grow">
-                    <Editor text={text1} setText={setText1} readOnly={true} />
-                </div>
+                <Editor text={text1} setText={setText1} readOnly={true} />
             </div>
         </div>
     );
