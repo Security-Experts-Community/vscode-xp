@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-import Editor from './editor/editor';
+import Editor from '../ui/editor/editor';
 
 export default function Results() {
     const [text1, setText1] = useState(`{
@@ -33,7 +33,7 @@ export default function Results() {
             </div>
             <div className="col-span-1 flex flex-col gap-2">
                 <span className="h-5">Полученный результат</span>
-                <Editor text={text1} setText={setText1} readOnly={true} />
+                <Editor text={text1} setText={setText1} isReadOnly={true} />
             </div>
         </div>
     );

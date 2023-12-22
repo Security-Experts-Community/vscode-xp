@@ -12,7 +12,10 @@
     "dependencies": {
         "@bendera/vscode-webview-elements": "^0.17.1",
         "@codemirror/lang-json": "^6.0.1",
+        "@codemirror/view": "^6.22.3",
+        "@types/vscode-webview": "^1.57.4",
         "@uiw/codemirror-theme-vscode": "^4.21.21",
+        "@uiw/codemirror-theme-xcode": "^4.21.21",
         "@uiw/react-codemirror": "^4.21.21",
         "@vscode/codicons": "^0.0.35",
         "i": "^0.3.7",

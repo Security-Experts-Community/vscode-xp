@@ -1,10 +1,11 @@
 import '@bendera/vscode-webview-elements/dist/vscode-collapsible';
-import '@bendera/vscode-webview-elements/dist/vscode-checkbox';
 import '@bendera/vscode-webview-elements/dist/vscode-textarea';
 
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 
-import Editor from './editor/editor';
+import { MessageContext } from '../providers/message-provider';
+import Checkbox from '../ui/checkbox/checkbox';
+import Editor from '../ui/editor/editor';
 
 export default function Events() {
     const [text1, setText1] = useState(`{
@@ -29,13 +30,17 @@ export default function Events() {
             }
         }
     }`);
+
+    // const { currentRawEvent, setCurrentRawEvent } = useContext(MessageContext);
+    const [isWordWrap, setIsWordWrap] = useState<boolean>(false);
+
     return (
         <div className="flex h-full flex-auto flex-col gap-2">
             <div className="flex h-5 w-full items-center justify-between">
                 <span>События для модульного теста</span>
-                <vscode-checkbox label="Переносить по словам" value="testvalue1"></vscode-checkbox>
+                <Checkbox label="Переносить по словам" setIsCheckedState={setIsWordWrap} />
             </div>
-            <Editor text={text1} setText={setText1} />
+            <Editor text={text1} setText={setText1} isWordWrap={isWordWrap} />
         </div>
     );
 }
