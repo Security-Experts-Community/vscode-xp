@@ -5,7 +5,7 @@
 	"author": "Dmitry Fedosov (@DmitryOffsec)",
 	"icon": "resources/xp.png",
 	"license": "MIT",
-	"version": "3.11.3",
+	"version": "3.11.6",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -35,6 +35,7 @@
 		"vscode": "^1.75.0"
 	},
 	"main": "./client/out/extension",
+	"l10n": "./l10n",
 	"capabilities": {
 		"definitionProvider": "true"
 	},
@@ -196,11 +197,11 @@
 		"viewsWelcome": [
 			{
 				"view": "KnowledgebaseTree",
-				"contents": "Добро пожаловать! Это расширение поможет в разработке правил на языке eXtraction and Processing (XP). Чтобы начать, откройте базу знаний.\n[Открыть базу знаний](command:SiemContentEditor.openKnowledgebaseCommand)\nПриятной работы!"
+				"contents": "%vscode-xp.views.knowledgebaseTree.defaultContent%"
 			},
 			{
 				"view": "ModularTestsListView",
-				"contents": "Модульные тесты отсутствуют"
+				"contents": "%vscode-xp.views.modularTestsListView.defaultContent%"
 			}
 		],
 		"viewsContainers": {
@@ -216,13 +217,13 @@
 			"Content": [
 				{
 					"id": "KnowledgebaseTree",
-					"name": "Дерево контента",
-					"contextualTitle": "Дерево контента"
+					"name": "%vscode-xp.views.knowledgebaseTree.title%",
+					"contextualTitle": "%vscode-xp.views.knowledgebaseTree.title%"
 				},
 				{
 					"id": "ModularTestsListView",
-					"name": "Модульные тесты",
-					"contextualTitle": "Модульные тесты"
+					"name": "%vscode-xp.views.modularTestsListView.title%",
+					"contextualTitle": "%vscode-xp.views.modularTestsListView.title%"
 				}
 			]
 		},
@@ -412,7 +413,7 @@
 		"commands": [
 			{
 				"command": "xp.retroCorrelationShow",
-				"title": "Ретро коррелятор",
+				"title": "%vscode-xp.views.knowledgebaseTree.showRetroCorrelationCommand%",
 				"category": "Редактор XP"
 			},
 			{
@@ -422,34 +423,34 @@
 			},
 			{
 				"command": "SiemContentEditor.openKnowledgebaseCommand",
-				"title": "Открыть базу знаний",
+				"title": "%vscode-xp.views.knowledgebaseTree.openKnowledgebaseCommand%",
 				"category": "Редактор XP",
 				"icon": "$(folder-opened)"
 			},
 			{
 				"command": "SiemContentEditor.refreshKbTree",
-				"title": "Обновить дерево контента",
+				"title": "%vscode-xp.views.knowledgebaseTree.refreshСontentTreeCommand%",
 				"icon": "$(refresh)"
 			},
 			{
 				"command": "SiemContentEditor.createPackageCommand",
-				"title": "Создать новый пакет",
+				"title": "%vscode-xp.views.knowledgebaseTree.createPackageCommand%",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "KnowledgebaseTree.showCreateCorrelationView",
-				"title": "Создать правило корреляции",
+				"title": "%vscode-xp.views.knowledgebaseTree.createCorrelationCommand%",
 				"category": "Редактор XP",
 				"icon": "$(file-add)"
 			},
 			{
 				"command": "KnowledgebaseTree.showCreateEnrichmentView",
-				"title": "Создать правило обогащения",
+				"title": "%vscode-xp.views.knowledgebaseTree.createEnrichmentCommand%",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "KnowledgebaseTree.showCreateNormalizationView",
-				"title": "Создать правило нормализации",
+				"title": "%vscode-xp.views.knowledgebaseTree.createNormalizationCommand%",
 				"category": "Редактор XP"
 			},
 			{
@@ -459,46 +460,42 @@
 				"category": "Редактор XP"
 			},
 			{
-				"command": "TableListsEditorView.createTableList",
+				"command": "%vscode-xp.views.knowledgebaseTree.createTableListsCommand%",
 				"title": "Создать табличный список",
 				"shortTitle": "Создать табличный список",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "KnowledgebaseTree.runningCorrelationGraph",
-				"title": "Коррелировать события",
-				"shortTitle": "Коррелировать события",
+				"title": "%vscode-xp.views.knowledgebaseTree.correlateEventsCommand%",
 				"category": "Редактор XP",
 				"icon": "$(outline-view-icon)"
 			},
 			{
 				"command": "xp.contentTree.buildAll",
-				"title": "Компилировать все графы",
-				"shortTitle": "Собрать все графы",
+				"title": "%vscode-xp.views.knowledgebaseTree.buildAllGraphsCommand%",
 				"category": "Редактор XP",
 				"icon": "$(debug-start)"
 			},
 			{
 				"command": "xp.contentTree.buildLocalizations",
-				"title": "Компилировать все локализации",
+				"title": "%vscode-xp.views.knowledgebaseTree.buildAllLocalizationsCommand%",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "xp.contentTree.buildWld",
-				"title": "Компилировать wld-файлы",
+				"title": "%vscode-xp.views.knowledgebaseTree.buildAllWldsCommand%",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "KnowledgebaseTree.unpackKbPackage",
-				"title": "Импортировать пакеты из kb-файла",
-				"shortTitle": "Загрузить пакеты",
+				"title": "%vscode-xp.views.knowledgebaseTree.importKbFileCommand%",
 				"category": "Редактор XP",
 				"icon": "$(package)"
 			},
 			{
 				"command": "KnowledgebaseTree.buildKbPackage",
-				"title": "Экспортировать пакет в kb-файл",
-				"shortTitle": "Собрать пакет",
+				"title": "%vscode-xp.views.knowledgebaseTree.exportKbFileCommand%",
 				"category": "Редактор XP",
 				"icon": "$(debug-start)"
 			},
@@ -509,29 +506,29 @@
 			},
 			{
 				"command": "SiemContentEditor.createSubFolderCommand",
-				"title": "Создать директорию",
+				"title": "%vscode-xp.views.knowledgebaseTree.createFolderCommand%",
 				"category": "Редактор XP",
 				"icon": "$(new-folder)"
 			},
 			{
 				"command": "SiemContentEditor.renameTreeItemCommand",
-				"title": "Переименовать",
+				"title": "%vscode-xp.views.knowledgebaseTree.renameCommand%",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "SiemContentEditor.deleteContentItemCommand",
-				"title": "Удалить",
+				"title": "%vscode-xp.views.knowledgebaseTree.deleteCommand%",
 				"category": "Редактор XP",
 				"icon": "$(notebook-delete-cell)"
 			},
 			{
 				"command": "MetaInfoView.showMetaInfoEditor",
-				"title": "Метаданные",
+				"title": "%vscode-xp.views.knowledgebaseTree.showMetainfoCommand%",
 				"category": "Редактор XP"
 			},
 			{
 				"command": "LocalizationView.showLocalizationEditor",
-				"title": "Локализации",
+				"title": "%vscode-xp.views.knowledgebaseTree.showLocalizationCommand%",
 				"category": "Редактор XP"
 			},
 			{
@@ -565,7 +562,7 @@
 			},
 			{
 				"command": "IntegrationTestEditorView.showEditor",
-				"title": "Интеграционные тесты",
+				"title": "%vscode-xp.views.knowledgebaseTree.showIntegrationTestsCommand%",
 				"category": "Редактор XP"
 			},
 			{
@@ -580,7 +577,7 @@
 			},
 			{
 				"command": "xp.contentTree.verifyFolder",
-				"title": "Проверить"
+				"title": "%vscode-xp.views.knowledgebaseTree.verifyFolderCommand%"
 			}
 		],
 		"keybindings": [
@@ -655,7 +652,8 @@
 		"esbuild": "^0.16.17",
 		"eslint": "^7.23.0",
 		"jest": "^29.7.0",
-		"mocha": "^9.2.2"
+		"mocha": "^9.2.2",
+		"@vscode/l10n-dev": "^0.0.31"
 	},
 	"dependencies": {
 		"@supercharge/promise-pool": "^3.1.0",
@@ -684,6 +682,8 @@
 		"xml-serializer-ts": "^1.0.2",
 		"xml2json-light": "^1.0.6",
 		"yaml": "^1.10.2",
-		"zlib": "^1.0.5"
+		"zlib": "^1.0.5",
+		"@vscode/l10n": "0.0.18",
+		"@types/vscode": "^1.85.0"
 	}
 }

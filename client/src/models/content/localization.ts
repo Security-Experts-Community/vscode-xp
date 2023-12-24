@@ -186,7 +186,7 @@ export class Localization {
 
 		const ruLocFilePath = path.join(fullPath, this.LOCALIZATIONS_DIRNAME, this.RU_LOCALIZATION_FILENAME);
 		if(!fs.existsSync(ruLocFilePath)) {
-			return null;
+			return "";
 		}
 		
 		const ruLocContent = await FileSystemHelper.readContentFile(ruLocFilePath);
@@ -198,7 +198,7 @@ export class Localization {
 	public static async parseEnDescription(fullPath: string) : Promise<string> {
 		const enLocFilePath = path.join(fullPath, this.LOCALIZATIONS_DIRNAME, this.EN_LOCALIZATION_FILENAME);
 		if(!fs.existsSync(enLocFilePath)) {
-			return null;
+			return "";
 		}
 		
 		const enLocContent = await FileSystemHelper.readContentFile(enLocFilePath);

@@ -198,6 +198,23 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 		}
 	}
 
+	public setRuDescription(description: string) : void {
+		this._ruDescription = description;
+	}
+
+	/// Описания правила.
+	public setEnDescription(description: string) : void {
+		this._enDescription = description;
+	}
+
+	public getRuDescription() : string {
+		return this._ruDescription;
+	}
+
+	public getEnDescription() : string {
+		return this._enDescription;
+	}
+
 	public getLocalizations() : Localization[] {
 		return this._localizations;
 	}
@@ -450,7 +467,7 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 		
 		this._ruleCode = code;
 
-		// Меняем код правила на диске.
+		// Меняем код правила на диске, если он там есть.
 		const ruleFilePath = this.getRuleFilePath();
 		if(fs.existsSync(ruleFilePath)) {
 			return FileSystemHelper.writeContentFileIfChanged(ruleFilePath, code);

@@ -17,6 +17,25 @@ export let platformEol: string;
 
 export class TestFixture {
 
+	public static createOneLineTextLine(line: string): vscode.TextLine {
+		const lineLength = line.length;
+		const lineMaxOffset = lineLength - 1;
+		
+		let firstNonWhitespaceCharacterIndex = line.search(/\S/);
+		if(firstNonWhitespaceCharacterIndex === -1) {
+			firstNonWhitespaceCharacterIndex = 0;
+		}
+
+		const lineRange = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(0, lineMaxOffset));
+		return {
+			text: line,
+			lineNumber: 0,
+			range: lineRange,
+			isEmptyOrWhitespace: false,
+			firstNonWhitespaceCharacterIndex: firstNonWhitespaceCharacterIndex,
+			rangeIncludingLineBreak: lineRange,
+		};
+	}
 	
 	public static readErrorFile(filePath: string) {
 		const testFileFullPath = this.getTestFilePath(filePath);

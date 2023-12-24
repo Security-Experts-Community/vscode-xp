@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
+import * as vscode from 'vscode';
 
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { Localization } from './localization';
@@ -115,11 +116,9 @@ export class Correlation extends RuleBaseItem {
 		const integrationTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
 		correlation.addIntegrationTests(integrationTests);
 
-		// Описание можно посматривать при наведении мыши.
-		// TODO: добавить поддержку английской локализации
-		if(ruDescription) {
-			correlation.setTooltip(correlation.getRuDescription());
-		}
+		// TODO: поднять по иерархии выше
+		const localeDescription = correlation.getLocaleDescription();
+		correlation.setTooltip(localeDescription);
 
 		// Добавляем команду на открытие.
 		correlation.setCommand({

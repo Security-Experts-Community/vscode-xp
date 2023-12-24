@@ -37,7 +37,7 @@ export class SiemjManager {
 		configBuilder.addTablesSchemaBuilding();
 		const siemjConfContent = configBuilder.build();
 
-		const siemjOutput = await this.executeSiemjConfig(rule, siemjConfContent);
+		const siemjOutput = await this.executeSiemjConfigForRule(rule, siemjConfContent);
 		this.processOutput(siemjOutput.output);
 
 		const schemaFilePath = this._config.getSchemaFullPath(contentRootFolder);
@@ -76,7 +76,7 @@ export class SiemjManager {
 		configBuilder.addEventsNormalization(rawEventsFilePath);
 		const siemjConfContent = configBuilder.build();
 
-		const siemjExecutionResult = await this.executeSiemjConfig(rule, siemjConfContent);
+		const siemjExecutionResult = await this.executeSiemjConfigForRule(rule, siemjConfContent);
 		this.processOutput(siemjExecutionResult.output);
 
 		const normEventsFilePath = this._config.getNormalizedEventsFilePath(contentRootFolder);
@@ -123,7 +123,7 @@ export class SiemjManager {
 		configBuilder.addEventsEnrichment();
 		const siemjConfContent = configBuilder.build();
 
-		const siemjExecutionResult = await this.executeSiemjConfig(rule, siemjConfContent);
+		const siemjExecutionResult = await this.executeSiemjConfigForRule(rule, siemjConfContent);
 		this.processOutput(siemjExecutionResult.output);
 
 		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(contentRootFolder);
@@ -142,19 +142,52 @@ export class SiemjManager {
 		return enrichEventsContent;
 	}
 
-	public async executeSiemjConfig(rule: RuleBaseItem, siemjConfContent: string) : Promise<ExecutionResult> { 
+	public async executeSiemjConfigForRule(rule: RuleBaseItem, siemjConfContent: string) : Promise<ExecutionResult> { 
 	
 		// Централизованно сохраняем конфигурационный файл для siemj.
 		const contentRootPath = rule.getContentRootPath(this._config);
 		const contentRootFolder = path.basename(contentRootPath);
-		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
+		const outputFolderPath = this._config.getOutputDirectoryPath(contentRootFolder);
 
 		// Создаем пустую схему и дефолты для того, чтобы работали все утилиты.	
 		if (!FileSystemHelper.checkIfFilesIsExisting(contentRootPath, /\.tl$/)) {
-			const corrDefaultsPath = path.join(outputFolder, "correlation_defaults.json");
+			const corrDefaultsPath = path.join(outputFolderPath, "correlation_defaults.json");
 			await FileSystemHelper.writeContentFile(corrDefaultsPath,  "{}");
 
-			const schemaPath = path.join(outputFolder, "schema.json");
+			const schemaPath = path.join(outputFolderPath, "schema.json");
+			await FileSystemHelper.writeContentFile(schemaPath,  "{}");
+		}	
+		
+		const siemjConfigPath = this._config.getTmpSiemjConfigPath(contentRootFolder);
+		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
+		const siemjExePath = this._config.getSiemjPath();
+
+		// Типовая команда выглядит так:
+		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
+		const result = await ProcessHelper.execute(
+			siemjExePath,
+			["-c", siemjConfigPath, "main"],
+			{	
+				encoding: this._config.getSiemjOutputEncoding(),
+				outputChannel: this._config.getOutputChannel(),
+				cancellationToken: this._token
+			}
+		);
+		return result;
+	}
+
+	public async executeSiemjConfig(contentRootPath: string, siemjConfContent: string) : Promise<ExecutionResult> { 
+	
+		// Централизованно сохраняем конфигурационный файл для siemj.
+		const contentRootFolder = path.basename(contentRootPath);
+		const outputFolderPath = this._config.getOutputDirectoryPath(contentRootFolder);
+
+		// Создаем пустую схему и дефолты для того, чтобы работали все утилиты.	
+		if (!FileSystemHelper.checkIfFilesIsExisting(contentRootPath, /\.tl$/)) {
+			const corrDefaultsPath = path.join(outputFolderPath, "correlation_defaults.json");
+			await FileSystemHelper.writeContentFile(corrDefaultsPath,  "{}");
+
+			const schemaPath = path.join(outputFolderPath, "schema.json");
 			await FileSystemHelper.writeContentFile(schemaPath,  "{}");
 		}	
 		
@@ -249,7 +282,7 @@ export class SiemjManager {
 		configBuilder.addLocalizationForCorrelatedEvents(allCorrelateEventsFilePath);
 		const siemjConfContent = configBuilder.build();
 		
-		const siemjOutput = await this.executeSiemjConfig(rule, siemjConfContent);
+		const siemjOutput = await this.executeSiemjConfigForRule(rule, siemjConfContent);
 		this.processOutput(siemjOutput.output);
 
 		const locExamples = await this.readCurrentLocalizationExample(contentRootFolder, rule.getName());

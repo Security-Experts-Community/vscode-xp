@@ -144,12 +144,12 @@ export class PackEDRAllPackagesAction implements PackAction {
 		}
 		const pathEntities = moduleDirectory.split(path.sep);
 		const packagesDirectoryIndex = pathEntities.findIndex( pe => pe.toLocaleLowerCase() === expectedFolder);
-		if(packagesDirectoryIndex === -1){
+		if(packagesDirectoryIndex === -1) {
 			throw new Error(`Задана не корректная директория с модулем коррелятора для платформы '${platform}'`);
 		}
 
 		if(!moduleDirectory) {
-			DialogHelper.showError(`Путь не выбран.`);
+			DialogHelper.showError(vscode.l10n.t("No path selected"));
 			return;
 		}
 

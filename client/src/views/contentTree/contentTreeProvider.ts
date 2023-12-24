@@ -23,7 +23,7 @@ import { RenameTreeItemCommand } from './commands/renameTreeItemCommand';
 import { DeleteContentItemCommand } from './commands/deleteContentItemCommand';
 import { CreatePackageCommand } from './commands/createPackageCommand';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
-import { BuildAllCommand } from './commands/buildAllCommand';
+import { BuildAllGraphCommand } from './commands/buildAllGraphCommand';
 import { PackKbAction } from './actions/packSIEMAllPackagesAction';
 import { UnpackKbCommand } from './commands/unpackKbCommand';
 import { ContentType } from '../../contentType/contentType';
@@ -223,7 +223,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 				ContentTreeProvider.buildAllCommand,
 				async (selectedItem: RuleBaseItem) => {
 					const parser = new SiemJOutputParser();
-					const buildCommand = new BuildAllCommand(config, parser);
+					const buildCommand = new BuildAllGraphCommand(config, parser);
 					await buildCommand.execute();
 				}
 			)
@@ -256,7 +256,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 				ContentTreeProvider.buildKbPackageCommand,
 				async (selectedPackage: RuleBaseItem) => {
 					if(!config.isKbOpened()) {
-						DialogHelper.showInfo("Для сбора графов нужно открыть базу знаний.");
+						DialogHelper.showInfo("Для сбора графов нужно открыть базу знаний");
 						return;
 					}
 					
@@ -270,7 +270,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 					});
 
 					if(!fileInfos) {
-						DialogHelper.showError(`Путь не выбран.`);
+						DialogHelper.showError(vscode.l10n.t("No path selected"));
 						return;
 					}
 
@@ -485,11 +485,16 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		
 		if(!actualContentType){
 			const answer = await DialogHelper.showInfo(
-				`База знаний не проинициализирована. Создать необходимые папки для формата ${configContentType}?`,
-				"Да",
-				"Нет");
+				vscode.l10n.t(
+					'The knowledge base is not initialized. Create required folders for {0} format?',
+					configContentType
+				),
+				vscode.l10n.t('Yes'),
+				vscode.l10n.t('No')
+			);
 
-			if (answer === "Да") {		
+			
+			if (answer === vscode.l10n.t('Yes')) {		
 				return vscode.commands.executeCommand(InitKBRootCommand.Name, this._config, this._knowledgebaseDirectoryPath);
 			}
 		}
@@ -503,10 +508,11 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		if(actualContentType == ContentType.EDR && configContentType == ContentType.SIEM) {
 			const answer = await DialogHelper.showInfo(
 				"Формат базы знаний (EDR) не соответствует текущему целевому продукту (SIEM). Выбрать другой продукт? Неправильная настройка не позволит собрать пакет",
-				"Да",
-				"Нет");
+				vscode.l10n.t('Yes'),
+				vscode.l10n.t('No')
+			);
 
-			if (answer === "Да") {
+			if (answer === vscode.l10n.t('Yes')) {
 				return vscode.commands.executeCommand(SetContentTypeCommand.Name, ContentType.EDR);
 			}
 		}
@@ -514,10 +520,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		if(actualContentType == ContentType.SIEM && configContentType == ContentType.EDR) {
 			const answer = await DialogHelper.showInfo(
 				"Формат базы знаний (SIEM) не соответствует текущему целевому продукту (EDR). Выбрать другой продукт? Неправильная настройка не позволит собрать пакет",
-				"Да",
-				"Нет");
+				vscode.l10n.t('Yes'),
+				vscode.l10n.t('No'));
 
-			if (answer === "Да") {
+			if (answer === vscode.l10n.t('Yes')) {
 				return vscode.commands.executeCommand(SetContentTypeCommand.Name, ContentType.SIEM);
 			}
 		}

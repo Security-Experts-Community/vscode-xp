@@ -4,7 +4,6 @@ import * as fs from 'fs';
 
 import { workspace, ExtensionContext } from 'vscode';
 
-
 import {
 	LanguageClient,
 	LanguageClientOptions,

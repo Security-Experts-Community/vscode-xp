@@ -142,7 +142,7 @@ export class IntegrationTestRunner {
 		}
 
 		const siemjManager = new SiemjManager(this._config, options.cancellationToken);
-		const siemjExecutionResult = await siemjManager.executeSiemjConfig(rule, siemjConfContent);
+		const siemjExecutionResult = await siemjManager.executeSiemjConfigForRule(rule, siemjConfContent);
 		const executedTests = rule.getIntegrationTests();
 
 		if(siemjExecutionResult.isInterrupted) {

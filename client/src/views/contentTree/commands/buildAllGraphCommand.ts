@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import * as os from 'os';
 
 import { ProcessHelper } from '../../../helpers/processHelper';
 import { SiemjConfigHelper } from '../../../models/siemj/siemjConfigHelper';
@@ -10,17 +11,22 @@ import { SiemjConfBuilder } from '../../../models/siemj/siemjConfigBuilder';
 import { XpException } from '../../../models/xpException';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { Log } from '../../../extension';
+import { SiemjManager } from '../../../models/siemj/siemjManager';
 
-export class BuildAllCommand {
+/**
+ * Команда выполняющая сборку всех графов: нормализации, агрегации, обогащения и корреляции.
+ */
+export class BuildAllGraphCommand {
 	constructor(private _config: Configuration, private _outputParser: SiemJOutputParser) {}
 
 	public async execute() : Promise<void> {
+		Log.info("Запущена компиляция всех графов");
 
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
+			cancellable: true,
 			title: `Компиляция всех графов`
-		}, async (progress) => {
+		}, async (progress, cancellationToken: vscode.CancellationToken) => {
 
 			await SiemjConfigHelper.clearArtifacts(this._config);
 			
@@ -38,30 +44,10 @@ export class BuildAllCommand {
 						throw new XpException("Не удалось сгенерировать siemj.conf для заданного правила и тестов.");
 					}
 
-					// Сохраняем конфигурационный файл для siemj.
-					const siemjConfigPath = this._config.getTmpSiemjConfigPath(rootFolder);
-					await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
-
-					// Типовая команда выглядит так:
-					// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
-					const siemjExePath = this._config.getSiemjPath();
-
-					const siemJOutput = await ProcessHelper.execute(
-						siemjExePath,
-						["-c", siemjConfigPath, "main"],
-						{
-							encoding: this._config.getSiemjOutputEncoding(),
-							outputChannel: this._config.getOutputChannel()
-						}
-					);
-					
-
-					// Добавляем новые строки, чтобы разделить разные запуски утилиты
-					this._config.getOutputChannel().append('\n\n\n');
-					this._config.getOutputChannel().show();
-
-					// Разбираем вывод siemJ и корректируем начало строки с диагностикой (исключаем пробельные символы)
-					const result = await this._outputParser.parse(siemJOutput.output);
+					const siemjManager = new SiemjManager(this._config, cancellationToken);
+					const contentRootPath = path.join(this._config.getKbFullPath(), rootFolder);
+					const siemjExecutionResult = await siemjManager.executeSiemjConfig(contentRootPath, siemjConfContent);
+					const result = await this._outputParser.parse(siemjExecutionResult.output);
 
 					// Выводим ошибки и замечания для тестируемого правила.
 					for (const rfd of result.fileDiagnostics) {

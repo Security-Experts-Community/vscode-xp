@@ -12,7 +12,7 @@ import { StringHelper } from '../../helpers/stringHelper';
 import { XpException } from '../../models/xpException';
 import { SiemjManager } from '../../models/siemj/siemjManager';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
-import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
+import { SiemJOutputParser} from '../../models/siemj/siemJOutputParser';
 import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
 import { RunIntegrationTestDialog } from '../runIntegrationDialog';
 import { Enrichment } from '../../models/content/enrichment';
@@ -21,7 +21,9 @@ import { Log } from '../../extension';
 import { TestHelper } from '../../helpers/testHelper';
 import { ContentTreeProvider } from '../contentTree/contentTreeProvider';
 import { OperationCanceledException } from '../../models/operationCanceledException';
+import { Normalization } from '../../models/content/normalization';
 import { JsHelper } from '../../helpers/jsHelper';
+import { ContentHelper } from '../../helpers/contentHelper';
 
 export class LocalizationEditorViewProvider {
 
@@ -48,7 +50,7 @@ export class LocalizationEditorViewProvider {
 		config.getContext().subscriptions.push(
 			vscode.commands.registerCommand(
 				LocalizationEditorViewProvider.showLocalizationEditorCommand,
-				async (correlation: Correlation) => LocalizationEditorViewProvider.provider.showLocalizationEditor(correlation)
+				async (rule: RuleBaseItem) => LocalizationEditorViewProvider.provider.showLocalizationEditor(rule)
 			)
 		);
 	}
@@ -97,7 +99,7 @@ export class LocalizationEditorViewProvider {
 			this.updateView();
 		}
 		catch (error) {
-			ExceptionHelper.show(error, `Не удалось открыть правила локализации`);
+			ExceptionHelper.show(error, `Не удалось отобразить правила локализации`);
 		}
 	}
 
@@ -132,9 +134,8 @@ export class LocalizationEditorViewProvider {
 	public async updateView() {
 		const localizations = this._rule.getLocalizations();
 
-		const plainLocalizations: any[] = [];
-		localizations.forEach(loc => {
-
+		const plainLocalizations = localizations.map(
+		loc => {
 			const locId = loc.getLocalizationId();
 			if (!locId) {
 				throw new XpException("Не задан LocalizationId");
@@ -142,31 +143,23 @@ export class LocalizationEditorViewProvider {
 
 			const criteria = loc.getCriteria();
 			if (!criteria) {
-				throw new XpException(`Критерий для правила локализации не задан: LocalizationId = '${locId}'.`);
+				throw new XpException(`Критерий для правила локализации не задан: LocalizationId = ${locId}`);
 			}
 
 			// Ошибка в том случае, если нет обоих локализаций.
 			if (!loc.getRuLocalizationText() && !loc.getEnLocalizationText()) {
-				throw new XpException(`Для критерия LocalizationId = '${locId}' не задано ни одного значения.`);
+				throw new XpException(`Для критерия LocalizationId = ${locId} не задано ни одного значения`);
 			}
 
-			let ruLocalizationText = loc.getRuLocalizationText();
-			if (!loc.getRuLocalizationText()) {
-				ruLocalizationText = "";
-			}
+			const ruLocalizationText = loc.getRuLocalizationText() ?? "";
+			const enLocalizationText = loc.getEnLocalizationText() ?? "";
 
-			let enLocalizationText = loc.getEnLocalizationText();
-			if (!enLocalizationText) {
-				enLocalizationText = "";
-			}
-
-			plainLocalizations.push({
+			return {
 				"Criteria": criteria,
-
 				"LocalizationId": locId,
 				"RuLocalization": ruLocalizationText,
 				"EnLocalization": enLocalizationText,
-			});
+			};
 		});
 
 		const resourcesUri = this._config.getExtensionUri();
@@ -180,8 +173,9 @@ export class LocalizationEditorViewProvider {
 			"Localizations": plainLocalizations,
 			"ExtensionBaseUri": extensionBaseUri,
 			"LocalizationExamples": locExamples,
-			"IsLocalizableRule": this.isLocalizableRule(this._rule),
-			"IsTestedLocalizationsRule" : this.isTestedLocalizationsRule(this._rule)
+			"IsLocalizableRule": ContentHelper.isLocalizableRule(this._rule),
+			"IsTestedLocalizationsRule" : TestHelper.isTestedLocalizationsRule(this._rule),
+			"DefaultLocalizationCriteria" : await ContentHelper.getDefaultLocalizationCriteria(this._rule)
 		};
 
 		// Подгружаем шаблон и шаблонизируем данные.
@@ -192,24 +186,11 @@ export class LocalizationEditorViewProvider {
 		this._view.webview.html = htmlContent;
 	}
 
-	private isLocalizableRule(rule: RuleBaseItem): boolean {
-		if (rule instanceof Enrichment) {
-			return false;
-		}
-
-		return true;
-	}
-
-	private isTestedLocalizationsRule(rule: RuleBaseItem): boolean {
-		return rule instanceof Correlation;
-	}
-
 	async receiveMessageFromWebView(message: any) {
 		switch (message.command) {
 			case 'buildLocalizations': {
-
 				try {
-					if( !(this._rule instanceof Correlation) ) {
+					if(!TestHelper.isTestedLocalizationsRule(this._rule)) {
 						return DialogHelper.showInfo(
 							"В настоящий момент поддерживается проверка локализаций только для корреляций. Если вам требуется поддержка других правил, можете добавить или проверить наличие подобного [Issue](https://github.com/Security-Experts-Community/vscode-xp/issues).");					
 					}
@@ -260,12 +241,9 @@ export class LocalizationEditorViewProvider {
 			}
 
 			case 'saveLocalizations': {
-
 				try {
 					const localizations = message.localizations;
 					await this.saveLocalization(localizations);
-
-					DialogHelper.showInfo(`Правила локализации для ${this._rule.getName()} сохранены`);
 				}
 				catch (error) {
 					ExceptionHelper.show(error, "Не удалось сохранить правила локализации");
@@ -293,7 +271,7 @@ export class LocalizationEditorViewProvider {
 
 		const firstDuplicate = JsHelper.findDuplicates(criteria);
 		if (firstDuplicate != null) {
-			DialogHelper.showError(`Критерий '${firstDuplicate}' дублируется в нескольких правилах локализации`);
+			DialogHelper.showError(`Критерий ${firstDuplicate} дублируется в нескольких правилах локализации`);
 			return;
 		}
 
@@ -317,6 +295,7 @@ export class LocalizationEditorViewProvider {
 		}
 
 		await this._rule.saveMetaInfoAndLocalizations();
+		DialogHelper.showInfo(`Правила локализации для ${this._rule.getName()} сохранены`);
 	}
 
 	private async getLocalizationExamples(): Promise<LocalizationExample[]> {
@@ -367,15 +346,7 @@ export class LocalizationEditorViewProvider {
 		});
 	}
 
-	private findDuplicates(arr: string[]): string {
-		const sorted_arr = arr.slice().sort();
-		for (let i = 0; i < sorted_arr.length - 1; i++) {
-			if (sorted_arr[i + 1] == sorted_arr[i]) {
-				return sorted_arr[i];
-			}
-		}
-		return null;
-	}
+
 
 	private _integrationTestTmpFilesPath: string;
 
