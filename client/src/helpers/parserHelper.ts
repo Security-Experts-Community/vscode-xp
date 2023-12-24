@@ -10,6 +10,7 @@ export class ParserHelper {
 		// Ищем кусок токена до позиции мышки.
 		const beforePart = textLine.substring(0, mouseOffset);
 		let startTokenIndex = beforePart.length - 1;
+		// TODO: тут проще и лучше сделать регулярками
 		// eslint-disable-next-line for-direction
 		for (; startTokenIndex > 0; startTokenIndex--) {
 			if(beforePart[startTokenIndex] === " ") {
@@ -30,6 +31,7 @@ export class ParserHelper {
 		// Ищем кусок токена после позиции мышки.
 		const afterPart = textLine.substring(mouseOffset);
 		let endTokenIndex = 0;
+		// TODO: тут проще и лучше сделать регулярками
 		for (; endTokenIndex < afterPart.length; endTokenIndex++) {
 			if(afterPart[endTokenIndex] === " ") {
 				break;
