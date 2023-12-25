@@ -45,6 +45,8 @@ export function MessageProvider({ children }: PropsWithChildren) {
             command: 'documentIsReady',
         });
 
+        console.log('ducomentIsReady');
+
         return () => {
             window.removeEventListener('message', messageListener);
         };
