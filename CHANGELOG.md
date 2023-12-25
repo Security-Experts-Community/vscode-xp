@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.11.7 (Pre-Release)
+
+- реализован PoC фичи [#156](https://github.com/Security-Experts-Community/vscode-xp/issues/156) - редактирование структуры табличных списков.
+
 ## 3.11.6 (Pre-Release)
 
 - исправлена ошибка формирования дерева контента (special thanks @r0mka_Ch, @FedosovaOA).
