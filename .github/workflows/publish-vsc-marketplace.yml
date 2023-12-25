@@ -97,18 +97,18 @@ jobs:
           asset_name: vscode-xp-${{ env.EXT_VERSION }}.vsix
           asset_content_type: application/zip
 
-      - name: Publish at VSCode marketplace
-        if: env.EXT_ISPREVIEW != 1
-        run: npx vsce publish -i "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VS_MARKETPLACE_TOKEN }}"
+      # - name: Publish at VSCode marketplace
+      #   if: env.EXT_ISPREVIEW != 1
+      #   run: npx vsce publish -i "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VS_MARKETPLACE_TOKEN }}"
 
-      - name: Publish pre-release at VSCode marketplace
-        if: env.EXT_ISPREVIEW == 1
-        run: npx vsce publish --pre-release -i "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VS_MARKETPLACE_TOKEN }}"
+      # - name: Publish pre-release at VSCode marketplace
+      #   if: env.EXT_ISPREVIEW == 1
+      #   run: npx vsce publish --pre-release -i "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.VS_MARKETPLACE_TOKEN }}"
 
-      - name: Publish at Open VSIX
-        if: env.EXT_ISPREVIEW != 1
-        run: npx ovsx publish "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.OPEN_VSIX_TOKEN }}"
+      # - name: Publish at Open VSIX
+      #   if: env.EXT_ISPREVIEW != 1
+      #   run: npx ovsx publish "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.OPEN_VSIX_TOKEN }}"
 
-      - name: Publish pre-release at Open VSIX
-        if: env.EXT_ISPREVIEW == 1
-        run: npx ovsx publish --pre-release "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.OPEN_VSIX_TOKEN }}"
+      # - name: Publish pre-release at Open VSIX
+      #   if: env.EXT_ISPREVIEW == 1
+      #   run: npx ovsx publish --pre-release "./vscode-xp-${{ env.EXT_VERSION }}.vsix" -p "${{ secrets.OPEN_VSIX_TOKEN }}"
