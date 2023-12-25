@@ -455,8 +455,7 @@
 			},
 			{
 				"command": "TableListsEditorView.showView",
-				"title": "Редактировать",
-				"shortTitle": "Редактировать",
+				"title": "%vscode-xp.views.knowledgebaseTree.showTableListsEditorCommand%",
 				"category": "Редактор XP"
 			},
 			{

@@ -17,6 +17,7 @@
 	"vscode-xp.views.knowledgebaseTree.showMetainfoCommand": "Метаинформация",
 	"vscode-xp.views.knowledgebaseTree.showLocalizationCommand": "Локализации",
 	"vscode-xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Ретро коррелятор",
+	"vscode-xp.views.knowledgebaseTree.showTableListsEditorCommand": "Редактировать",
 
 	"vscode-xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все графы",
 	"vscode-xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Компилировать все локализации",

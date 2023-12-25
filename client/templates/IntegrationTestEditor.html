@@ -16,8 +16,8 @@
 		<!-- Common Panel -->
 		<div id="header">
 			<div id="navigation">
-				<input id="run_tests" class="run" name="full_test" type="button" value="&#9654;   Запустить все тесты  ">			
-				<input id="save_all_tests" class="save" type="button" value="Сохранить все">
+				<input id="run_tests" class="run" name="full_test" type="button" value="&#9654;   {{Locale.RunAllTests}}  ">			
+				<input id="save_all_tests" class="save" type="button" value="{{Locale.SaveAll}}">
 			</div>
 			<!-- Tab links -->
 			<div class="tab">
@@ -28,7 +28,7 @@
 						onclick="openTest('{{TestNumber}}')" 
 						id="tab{{TestNumber}}"
 					>
-						<span>Тест №{{TestNumber}}</span>
+						<span>{{Locale.Test}} №{{TestNumber}}</span>
 						<button 
 							class="delete-tablink" 
 							id="test{{TestNumber}}" 
@@ -57,15 +57,15 @@
 			<div class="test_block">
 				<div class="block_header">
 					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
-					<label for="raw_event" class="label">Сырые события:</label>
+					<label for="raw_event" class="label">{{Locale.RawEvents}}:</label>
 
 					<input type="checkbox" name="word-wrap" onclick="wrap(this);" checked>
-					<label for="word-wrap">переносить по словам</label>
+					<label for="word-wrap">{{Locale.WordWrap}}</label>
 				</div>
 				
 				<div class="manage_buttons">				
 					<div class="dropdown">
-						<input class="dropbtn" type="button" value="Обернуть в конверт сырые события">
+						<input class="dropbtn" type="button" value="{{Locale.WrapRawEvents}}">
 						<div class="dropdown-content">
 							<div name="add_envelope">application/x-pt-eventlog</div>
 							<div name="add_envelope">application/json</div>
@@ -74,8 +74,8 @@
 							<div name="add_envelope">text/xml</div>
 						</div>
 					</div>
-					<input name="normalize_and_enrich" type="button" value="Нормализовать и обогатить">
-					<input name="normalize" type="button" value="Нормализовать">
+					<input name="normalize_and_enrich" type="button" value="{{Locale.NormalizeAndEnrich}}">
+					<input name="normalize" type="button" value="{{Locale.Normalize}}">
 				</div>
 
 				<div class="text">
@@ -91,7 +91,7 @@
 			<div class="test_block">
 				<div class="block_header">
 					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
-					<label for="norm_event" class="label">Нормализованное событие:</label>
+					<label for="norm_event" class="label">{{Locale.NormalizedEvents}}:</label>
 				</div>
 				<div class="manage_buttons">
 				</div>
@@ -111,19 +111,19 @@
 			<div class="test_block">
 				<div class="block_header">
 					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
-					<label for="expect" class="label">Условие прохождение теста:</label>
+					<label for="expect" class="label">{{Locale.TestCondition}}:</label>
 				</div>
 				<div class="manage_buttons">
 					<!-- Получить ожидаемое событие можно только при наличии нормализованных событий -->
 					{{#CanGetExpectedEvent}}
-						<input name="fast_test" type="button" value="&#9654;   Получить ожидаемое событие  ">
+						<input name="fast_test" type="button" value="&#9654;   {{Locale.GetExpectedEvent}}  ">
 					{{/CanGetExpectedEvent}}
 					<!-- Сравнить полученные результаты можно только если тест прошёл неуспешно -->
 					{{#IsFailed}}
-						<input id="open_result_diff" type="button" value="Сравнить полученные результаты">
+						<input id="open_result_diff" type="button" value="{{Locale.CompareResults}}">
 					{{/IsFailed}}
 
-					<input id="clean_test_button" type="button" value="Очистить" alt="Исключает из кода теста технические поля события">
+					<input id="clean_test_button" type="button" value="{{Locale.ClearExpectedEvent}}" alt="Исключает из кода теста технические поля события">
 				</div>
 
 				<div class="text">
