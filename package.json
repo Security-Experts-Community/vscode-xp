@@ -324,7 +324,7 @@
 					"group": "verify@1"
 				},
 				{
-					"command": "TableListsEditorView.createTableList",
+					"command": "%vscode-xp.views.knowledgebaseTree.createTableListsCommand%",
 					"when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
 					"group": "create@4"
 				},
@@ -679,7 +679,6 @@
 		"typescript": "^4.2.3",
 		"util": "^0.12.4",
 		"uuid": "^8.3.2",
-		"xml-serializer-ts": "^1.0.2",
 		"xml2json-light": "^1.0.6",
 		"yaml": "^1.10.2",
 		"zlib": "^1.0.5",

@@ -6,7 +6,8 @@
 		"outDir": "out",
 		"rootDir": "src",
 		"sourceMap": true,
-		"skipLibCheck": true
+		"skipLibCheck": true,
+		"esModuleInterop": true
 	},
 	"include": ["src", "src/commands/.ts", "../server/ValidationRegEx.ts"],
 	"exclude": ["node_modules", ".vscode-test"]

@@ -198,27 +198,23 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 		}
 	}
 
-	public setRuDescription(description: string) : void {
-		this._ruDescription = description;
-	}
-
-	/// Описания правила.
-	public setEnDescription(description: string) : void {
-		this._enDescription = description;
-	}
-
-	public getRuDescription() : string {
-		return this._ruDescription;
-	}
-
-	public getEnDescription() : string {
-		return this._enDescription;
+	public getLocaleDescription() : string {
+		switch(vscode.env.language) {
+			case 'ru': {
+				return this.getRuDescription();
+			}
+			case 'en': {
+				return this.getEnDescription();
+			}
+			default: {
+				return "";
+			}
+		}
 	}
 
 	public getLocalizations() : Localization[] {
 		return this._localizations;
 	}
-	
 	public setLocalizationTemplates(localizations: Localization[]) : void {
 		this._localizations = [];
 		this.getMetaInfo().setEventDescriptions([]);
