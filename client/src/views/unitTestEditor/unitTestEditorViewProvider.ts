@@ -179,7 +179,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
             const htmlContent = formatter.format(plain);
             this.setHtmlContent(htmlContent);
         } catch (error) {
-            DialogHelper.showError("Не удалось открыть интеграционные тесты.", error);
+            DialogHelper.showError("Не удалось открыть модульный тест", error);
         }
     }
 
