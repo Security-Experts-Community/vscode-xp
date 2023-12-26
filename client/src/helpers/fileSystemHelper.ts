@@ -136,7 +136,7 @@ export class FileSystemHelper {
 
 	public static async writeContentFileIfChanged(filePath: string, newContent: string) : Promise<void> {
 
-		if(!newContent) {
+		if(newContent === undefined || newContent === null) {
 			throw new FileSystemException("Попытка записать неопределенное значение в файл", filePath);
 		}
 		

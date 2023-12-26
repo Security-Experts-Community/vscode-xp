@@ -126,18 +126,18 @@ export class RunIntegrationTestDialog {
 		const testRunnerOptions = new IntegrationTestRunnerOptions();
 		testRunnerOptions.tmpFilesPath = this._tmpFilesPath;
 
-		// TODO: экспериментальная оптимизация
-		const ruleCode = await rule.getRuleCode();
-		const events = RegExpHelper.getAllStrings(ruleCode, /event\s*(\w+)\s*:/gm);
+		// TODO: экспериментальная оптимизация, добавить только с флагом ExperimentalFeature
+		// const ruleCode = await rule.getRuleCode();
+		// const events = RegExpHelper.getAllStrings(ruleCode, /event\s*(\w+)\s*:/gm);
 
-		// Одно событие, значит если там проверяется отсутствие в фильтре правила корреляции, то можно граф корреляции не собирать.
-		if(events.length === 1) {
-			const corrNameFilter = RegExpHelper.getAllStrings(ruleCode, /filter\s+{[\s\S]+?(correlation_name\s+==\s+null|filter::NotFromCorrelator\s*\(\))[\s\S]+?}/gm);
-			if(corrNameFilter.length === 1) {
-				testRunnerOptions.correlationCompilation = CompilationType.DontCompile;
-				return testRunnerOptions;
-			} 
-		} 
+		// // Одно событие, значит если там проверяется отсутствие в фильтре правила корреляции, то можно граф корреляции не собирать.
+		// if(events.length === 1) {
+		// 	const corrNameFilter = RegExpHelper.getAllStrings(ruleCode, /filter\s+{[\s\S]+?(correlation_name\s+==\s+null|filter::NotFromCorrelator\s*\(\))[\s\S]+?}/gm);
+		// 	if(corrNameFilter.length === 1) {
+		// 		testRunnerOptions.correlationCompilation = CompilationType.DontCompile;
+		// 		return testRunnerOptions;
+		// 	} 
+		// } 
 
 		const result = await this.askTheUser();
 		
@@ -151,6 +151,11 @@ export class RunIntegrationTestDialog {
 				testRunnerOptions.correlationCompilation = CompilationType.AllPackages;
 				break;
 			}
+			
+			case this.DONT_COMPILE_CORRELATIONS: {
+				testRunnerOptions.correlationCompilation = CompilationType.DontCompile;
+				break;
+			}
 		}
 
 		return testRunnerOptions;
@@ -158,9 +163,10 @@ export class RunIntegrationTestDialog {
 
 	private async askTheUser(): Promise<string> {
 		const result = await DialogHelper.showInfo(
-			"Правило обогащения может обогащать как нормализованные события, так и корреляционные. Хотите скомпилировать корреляции из текущего пакета или их всех пакетов?",
+			"Правило обогащения может обрабатывать как нормализованные события, так и корреляционные. Какие корреляции необходимо компилировать?",
 			this.CURRENT_PACKAGE,
-			this.ALL_PACKAGES);
+			this.ALL_PACKAGES,
+			this.DONT_COMPILE_CORRELATIONS);
 
 		if(!result) {
 			throw new OperationCanceledException("Операция отменена");
@@ -170,5 +176,6 @@ export class RunIntegrationTestDialog {
 	}
 
 	public ALL_PACKAGES = "Все пакеты";
-	public CURRENT_PACKAGE = "Текущий пакет"
+	public CURRENT_PACKAGE = "Текущий пакет";
+	public DONT_COMPILE_CORRELATIONS = "Не компилировать";
 }

@@ -116,7 +116,6 @@ export class Correlation extends RuleBaseItem {
 		const integrationTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
 		correlation.addIntegrationTests(integrationTests);
 
-		// TODO: поднять по иерархии выше
 		const localeDescription = correlation.getLocaleDescription();
 		correlation.setTooltip(localeDescription);
 

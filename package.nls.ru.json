@@ -1,6 +1,6 @@
 {
 	"vscode-xp.views.knowledgebaseTree.title": "Дерево контента",
-	"vscode-xp.views.knowledgebaseTree.refreshСontentTreeCommand": "Обновить дерево контента",
+	"vscode-xp.views.knowledgebaseTree.refreshContentTreeCommand": "Обновить дерево контента",
 	"vscode-xp.views.knowledgebaseTree.openKnowledgebaseCommand": "Открыть базу знаний",
 	"vscode-xp.views.knowledgebaseTree.createPackageCommand": "Создать новый пакет",
 	"vscode-xp.views.knowledgebaseTree.createCorrelationCommand": "Создать правило корреляции",

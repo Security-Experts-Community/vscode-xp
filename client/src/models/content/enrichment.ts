@@ -198,7 +198,6 @@ export class Enrichment extends RuleBaseItem {
 		const integrationTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
 		enrichment.addIntegrationTests(integrationTests);
 
-		// TODO: поднять по иерархии выше
 		const localeDescription = enrichment.getLocaleDescription();
 		enrichment.setTooltip(localeDescription);
 

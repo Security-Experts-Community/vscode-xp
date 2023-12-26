@@ -149,12 +149,15 @@ export class Table extends RuleBaseItem {
 		const metaInfo = MetaInfo.fromFile(directoryPath);
 		table.setMetaInfo(metaInfo);
 
-		// // Парсим описания на разных языках.
+		// Парсим описания на разных языках.
 		const ruDescription = await Localization.parseRuDescription(directoryPath);
 		table.setRuDescription(ruDescription);
 
 		const enDescription = await Localization.parseEnDescription(directoryPath);
 		table.setEnDescription(enDescription);
+
+		const localeDescription = table.getLocaleDescription();
+		table.setTooltip(localeDescription);
 
 		// Добавляем команду на открытие.
 		table.setCommand({

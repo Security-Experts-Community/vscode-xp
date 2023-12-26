@@ -25,10 +25,6 @@ export class SaveTableListCommand implements TableListCommand {
 		const jsonTableView = message.data;
 		const tableObject = JSON.parse(jsonTableView) as TableView;
 
-		// if(tableObject.fillType !== TableListType.Registry) {
-		// 	throw new XpException(`На текущий момент поддерживается только тип Справочник. Отслеживать поддержку других типов табличных списков можно [тут](https://github.com/Security-Experts-Community/vscode-xp/issues)`);
-		// }
-
 		if(!tableObject.name) {
 			throw new XpException(`Не задано имя табличного списка. Задайте его и повторите`);
 		}
@@ -87,7 +83,8 @@ export class SaveTableListCommand implements TableListCommand {
 		ContentTreeProvider.refresh();
 
 		if(webView.getTable()) {
-			DialogHelper.showWarning("Табличный список сохранен. При изменении структуры табличного списка проверьте корректность заполнения по умолчанию (defaults)");
+			DialogHelper.showWarning(
+				"Табличный список сохранен. При изменении структуры табличного списка скорректируйте заполнение по умолчанию (defaults) файла table.tl");
 			return true;
 		}
 

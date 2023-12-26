@@ -2,7 +2,8 @@
 
 ## 3.11.7 (Pre-Release)
 
-- реализован PoC фичи [#156](https://github.com/Security-Experts-Community/vscode-xp/issues/156) - редактирование структуры табличных списков (special thanks @iam_bdoxhn);
+- реализован PoC фичи [#156](https://github.com/Security-Experts-Community/vscode-xp/issues/156) - создание и редактирование структуры табличных списков (special thanks @iam_bdoxhn);
+- добавлена возможность явно не компилировать корреляции при интеграционном тестировании обогащений (special thanks @bobyboba18, @r0mka_Ch);
 - локализован интерфейс интеграционных тестов.
 
 ## 3.11.6 (Pre-Release)

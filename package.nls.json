@@ -1,12 +1,12 @@
 {
 	"vscode-xp.views.knowledgebaseTree.title": "Content tree",
-	"vscode-xp.views.knowledgebaseTree.refreshСontentTreeCommand": "Refresh content tree",
+	"vscode-xp.views.knowledgebaseTree.refreshContentTreeCommand": "Refresh content tree",
 	"vscode-xp.views.knowledgebaseTree.openKnowledgebaseCommand": "Open knowledge base",
 	"vscode-xp.views.knowledgebaseTree.createPackageCommand": "Create new package",
 	"vscode-xp.views.knowledgebaseTree.createCorrelationCommand": "Create a correlation rule",
 	"vscode-xp.views.knowledgebaseTree.createEnrichmentCommand": "Create a enrichment rule",
 	"vscode-xp.views.knowledgebaseTree.createNormalizationCommand": "Create a normalization rule",
-	"vscode-xp.views.knowledgebaseTree.createTableListsCommand": "Create tabular list",
+	"vscode-xp.views.knowledgebaseTree.createTableListsCommand": "Create a tabular list",
 	"vscode-xp.views.knowledgebaseTree.createFolderCommand": "Create folder",
 
 	"vscode-xp.views.knowledgebaseTree.verifyFolderCommand": "Verify",
