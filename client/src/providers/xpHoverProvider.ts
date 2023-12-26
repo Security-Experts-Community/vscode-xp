@@ -104,10 +104,12 @@ export class XpHoverProvider implements vscode.HoverProvider {
 
 	private getTaxonomyField(sign : vscode.CompletionItem): vscode.Hover {
 		return new vscode.Hover([
-			// Выделяем название поля жирным
-			new vscode.MarkdownString(`**${sign.label}**`),
-			sign.documentation,
-			sign.detail
+			// Выделяем название поля жирным а на следующей строке общее описание. Две новых строки нужно, так как это markdown.
+			new vscode.MarkdownString(
+`**${sign.label}**
+
+${sign.detail}`),
+			sign.documentation
 		]);
 	}
 }
