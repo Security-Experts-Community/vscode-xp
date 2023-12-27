@@ -12,7 +12,7 @@
     "Wrap raw events in an envelope" : "Обернуть в конверт сырые события",
     "Normalize" : "Нормализовать",
     "Normalize and enrich" : "Нормализовать и обогатить",
-    "Normalized Events" : "Нормализованные события",
+    "Normalized events" : "Нормализованные события",
     "Condition for passing the test" : "Условие прохождение теста",
     "Get expected event" : "Получить ожидаемое событие",
     "Compare your results": "Сравнить полученные результаты",

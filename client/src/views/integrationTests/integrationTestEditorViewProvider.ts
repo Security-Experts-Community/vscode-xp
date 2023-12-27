@@ -158,7 +158,7 @@ export class IntegrationTestEditorViewProvider {
 				"WrapRawEvents" : vscode.l10n.t('Wrap raw events in an envelope'),
 				"Normalize" : vscode.l10n.t('Normalize'),
 				"NormalizeAndEnrich" : vscode.l10n.t('Normalize and enrich'),
-				"NormalizedEvents" : vscode.l10n.t('Normalized Events'),
+				"NormalizedEvents" : vscode.l10n.t('Normalized events'),
 				"TestCondition" : vscode.l10n.t('Condition for passing the test'),
 				"GetExpectedEvent" : vscode.l10n.t('Get expected event'),
 				"CompareResults" : vscode.l10n.t('Compare your results'),
@@ -392,7 +392,9 @@ export class IntegrationTestEditorViewProvider {
 				return true;
 			}
 
-			case GetExpectedEventCommand.name: {
+			// Почему-то GetExpectedEventCommand.name при отладке равен _GetExpectedEventCommand
+			// TODO: разобраться, почему так получилось
+			case "GetExpectedEventCommand": {
 				const currTest = await this.saveTestFromUI(message);
 				const command = new GetExpectedEventCommand({
 					config: this._config,
