@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.11.8 (Pre-Release)
+
+- исправлена ошибка получения ожидаемого события в интеграционных тестах (special thanks @g4n8g).
+
 ## 3.11.7 (Pre-Release)
 
 - реализован PoC фичи [#156](https://github.com/Security-Experts-Community/vscode-xp/issues/156) - создание и редактирование структуры табличных списков (special thanks @iam_bdoxhn);
