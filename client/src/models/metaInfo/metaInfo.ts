@@ -400,9 +400,15 @@ export class MetaInfo {
 			}
 			metaInfoObject["ContentRelations"]["Implements"]["ATTACK"] = attackPlain;
 		}
+		else {
+			delete metaInfoObject["ContentRelations"];
+		}
 
 		if (this.DataSources.length != 0) {
 			metaInfoObject["ExpertContext"]["DataSources"] = this.DataSources;
+		}
+		else {
+			delete metaInfoObject["ExpertContext"]["DataSources"];
 		}
 
 		let yamlContent = YamlHelper.stringify(metaInfoObject);
