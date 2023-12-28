@@ -135,7 +135,7 @@ export class IntegrationTestEditorViewProvider {
 		}
 
 		const resultFocusTestNumber = focusTestNumber ?? 1;
-		Log.info(`WebView ${IntegrationTestEditorViewProvider.name} была загружена/обновлена. Текущий тест №${resultFocusTestNumber ?? "1"}`);
+		Log.debug(`WebView ${IntegrationTestEditorViewProvider.name} была загружена/обновлена. Текущий тест №${resultFocusTestNumber ?? "1"}`);
 
 		const resourcesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
