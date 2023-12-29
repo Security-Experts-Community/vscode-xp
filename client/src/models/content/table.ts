@@ -78,7 +78,7 @@ export class Table extends RuleBaseItem {
 		} else {
 			const parentPath = this.getParentPath();
 			if (!parentPath) {
-				throw new XpException("Не задан путь для сохранения корреляции.");
+				throw new XpException("Не задан путь для сохранения табличного списка");
 			}
 
 			tableDirPath = this.getDirectoryPath();
@@ -93,7 +93,7 @@ export class Table extends RuleBaseItem {
 		
 		const writeContentPromise = FileSystemHelper.writeContentFileIfChanged(ruleFullPath, ruleCode); 
 		const metainfoPromise = this.getMetaInfo().save(tableDirPath);
-		const localizationPromise = this.saveLocalizationsImpl(tableDirPath);
+		const localizationPromise = this.saveLocalization(tableDirPath);
 		await Promise.all([writeContentPromise, metainfoPromise, localizationPromise]);
 	}
 
@@ -130,7 +130,7 @@ export class Table extends RuleBaseItem {
 	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Table> {
 
 		if (!fs.existsSync(directoryPath)) {
-			throw new XpException(`Директория '${directoryPath}' не существует.`);
+			throw new XpException(`Директория '${directoryPath}' не существует`);
 		}
 
 		// Получаем название табличного списка и родительский путь.
@@ -146,15 +146,23 @@ export class Table extends RuleBaseItem {
 		}
 
 		// Парсим основные метаданные.
-		const metaInfo = MetaInfo.fromFile(directoryPath);
+		const metaInfo = await MetaInfo.fromFile(directoryPath);
 		table.setMetaInfo(metaInfo);
 
 		// Парсим описания на разных языках.
+		// Русский
 		const ruDescription = await Localization.parseRuDescription(directoryPath);
 		table.setRuDescription(ruDescription);
 
+		const ruWhitelistingDescriptions = await Localization.parseRuWhitelistingDescriptions(directoryPath);
+		table.setRuWhitelistingDescriptions(ruWhitelistingDescriptions);
+
+		// Английский
 		const enDescription = await Localization.parseEnDescription(directoryPath);
 		table.setEnDescription(enDescription);
+
+		const enWhitelistingDescriptions = await Localization.parseEnWhitelistingDescriptions(directoryPath);
+		table.setEnWhitelistingDescriptions(enWhitelistingDescriptions);
 
 		const localeDescription = table.getLocaleDescription();
 		table.setTooltip(localeDescription);

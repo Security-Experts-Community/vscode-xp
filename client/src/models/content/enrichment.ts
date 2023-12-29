@@ -76,7 +76,7 @@ export class Enrichment extends RuleBaseItem {
 
 		// Параллельно сохраняем все данные правила.
 		const metainfoPromise = this.getMetaInfo().save(corrDirPath);
-		const localizationPromise = this.saveLocalizationsImpl(corrDirPath);
+		const localizationPromise = this.saveLocalization(corrDirPath);
 		const integrationTestsPromise = this.saveIntegrationTests(corrDirPath);
 		const unitTestsPromise = this.saveUnitTests();
 		await Promise.all([metainfoPromise, localizationPromise, integrationTestsPromise, unitTestsPromise]);
@@ -179,7 +179,7 @@ export class Enrichment extends RuleBaseItem {
 		}
 
 		// Парсим основные метаданные.
-		const metaInfo = MetaInfo.fromFile(directoryPath);
+		const metaInfo = await MetaInfo.fromFile(directoryPath);
 		enrichment.setMetaInfo(metaInfo);
 		
 		// Парсим описания на разных языках.

@@ -185,7 +185,7 @@ export class FileSystemHelper {
 		return directories;
 	}
 
-	public static readSubDirectoryNames(filePath: string) {
+	public static readSubDirectoryNames(filePath: string): string[] {
 
 		const directories = fs.readdirSync(filePath, { withFileTypes: true })
 			.filter(entity => entity.isDirectory())

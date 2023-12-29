@@ -113,7 +113,7 @@ export class Normalization extends RuleBaseItem {
 		await FileSystemHelper.writeContentFile(ruleFullPath, ruleCode);
 
 		await this.getMetaInfo().save(rulePath);
-		await this.saveLocalizationsImpl(rulePath);
+		await this.saveLocalization(rulePath);
 		await this.saveIntegrationTests(rulePath);
 		await this.saveUnitTests();
 	}
@@ -170,7 +170,7 @@ export class Normalization extends RuleBaseItem {
 		}
 
 		// Парсим основные метаданные.
-		const metaInfo = MetaInfo.fromFile(directoryPath);
+		const metaInfo = await MetaInfo.fromFile(directoryPath);
 		normalization.setMetaInfo(metaInfo);
 
 		const ruleFilePath = normalization.getRuleFilePath();

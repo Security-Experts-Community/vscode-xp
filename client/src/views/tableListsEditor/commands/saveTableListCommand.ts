@@ -79,8 +79,7 @@ export class SaveTableListCommand implements TableListCommand {
 		await this.fillDefaultValues(webView, tableObject);
 		await this.saveTableList(webView, tableObject);
 
-		// TODO: добавить обновление только родительского элемента созданного ТС.
-		ContentTreeProvider.refresh();
+		ContentTreeProvider.refresh(webView.getParentItem());
 
 		if(webView.getTable()) {
 			DialogHelper.showWarning(
@@ -182,8 +181,8 @@ export class SaveTableListCommand implements TableListCommand {
 				prevTableData = YamlHelper.parse(tableContent) as TableView;
 
 				// Удаляем предыдущее файловое представление таблицы
-				const tableDirPath = prevTable.getDirectoryPath();
-				await fs.promises.rmdir(tableDirPath, {recursive: true});
+				// const tableDirPath = prevTable.getDirectoryPath();
+				// await fs.promises.rmdir(tableDirPath, {recursive: true});
 			}
 		}
 
@@ -213,9 +212,6 @@ export class SaveTableListCommand implements TableListCommand {
 	}
 
 	protected async saveTableList(webView : TableListsEditorViewProvider, tableObject: TableView) : Promise<void> {
-
-
-
 
 		// Сохраняем в YAML
 		const resultYamlTable = YamlHelper.tableStringify(tableObject);

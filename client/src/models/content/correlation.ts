@@ -84,7 +84,7 @@ export class Correlation extends RuleBaseItem {
 		}
 
 		// Парсим основные метаданные.
-		const metaInfo = MetaInfo.fromFile(directoryPath);
+		const metaInfo = await MetaInfo.fromFile(directoryPath);
 		correlation.setMetaInfo(metaInfo);
 
 		const ruleFilePath = correlation.getRuleFilePath();
@@ -273,7 +273,7 @@ export class Correlation extends RuleBaseItem {
 
 		// Параллельно сохраняем все данные правила.
 		const metainfoPromise = this.getMetaInfo().save(corrDirPath);
-		const localizationPromise = this.saveLocalizationsImpl(corrDirPath);
+		const localizationPromise = this.saveLocalization(corrDirPath);
 		const integrationTestsPromise = this.saveIntegrationTests(corrDirPath);
 		const unitTestsPromise = this.saveUnitTests();
 		await Promise.all([metainfoPromise, localizationPromise, integrationTestsPromise, unitTestsPromise]);

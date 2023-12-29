@@ -215,6 +215,7 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 	public getLocalizations() : Localization[] {
 		return this._localizations;
 	}
+
 	public setLocalizationTemplates(localizations: Localization[]) : void {
 		this._localizations = [];
 		this.getMetaInfo().setEventDescriptions([]);
@@ -255,10 +256,10 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 		await this.getMetaInfo().save(fullPath);
 
 		// Обновление локализаций.
-		await this.saveLocalizationsImpl(fullPath);
+		await this.saveLocalization(fullPath);
 	}
 
-	protected async saveLocalizationsImpl(fullPath: string) : Promise<void> {
+	protected async saveLocalization(fullPath: string) : Promise<void> {
 
 		if(!this.getRuDescription() && !this.getEnDescription()) {
 			return;
@@ -288,7 +289,12 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 			};
 		});
 
-		const writeRuLocalization = this.writeLocalizationToDisk(ruLocFullPath, ruEventDescriptions, this.getRuDescription());
+		const writeRuLocalization = this.writeLocalizationToDisk(
+			ruLocFullPath,
+			ruEventDescriptions,
+			this.getRuDescription(),
+			this.getRuWhitelistingDescriptions()
+		);
 
 		// Английские локализации
 		const enLocFullPath = this.getLocalizationPath(LocalizationLanguage.En, fullPath);
@@ -309,23 +315,34 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 			};
 		});
 
-		const writeEnLocalization = this.writeLocalizationToDisk(enLocFullPath, enEventDescriptions, this.getEnDescription());
+		const writeEnLocalization = this.writeLocalizationToDisk(
+			enLocFullPath,
+			enEventDescriptions,
+			this.getEnDescription(),
+			this.getEnWhitelistingDescriptions()
+		);
+		
 		await Promise.all([writeRuLocalization, writeEnLocalization]);
 	}
 
-	private async writeLocalizationToDisk(localizationFullPath: string, eventDescriptions : any[], description : string) : Promise<void> {
-		let localizationYamlContent : any;
+	private async writeLocalizationToDisk(
+		localizationFullPath: string,
+		eventDescriptions : any[],
+		description : string,
+		whitelistingDescriptions: any) : Promise<void> {
+
+		const localizationYamlObject = {"Description": description};
+
 		if(eventDescriptions.length != 0) {
-			localizationYamlContent = YamlHelper.localizationsStringify({
-				"Description" : description,
-				"EventDescriptions" : eventDescriptions
-			});
-		} else {
-			localizationYamlContent = YamlHelper.localizationsStringify({
-				"Description" : description
-			});
+			localizationYamlObject["EventDescriptions"] = eventDescriptions;
 		}
 
+		if(whitelistingDescriptions) {
+			localizationYamlObject["WhitelistingDescriptions"] = whitelistingDescriptions;
+		}
+
+		// Сохраняем в файл
+		const localizationYamlContent = YamlHelper.localizationsStringify(localizationYamlObject);
 		await FileSystemHelper.writeContentFileIfChanged(localizationFullPath, localizationYamlContent);
 	}
 
@@ -509,6 +526,25 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 			}
 		}
 	}
+
+	public setRuWhitelistingDescriptions(whitelistingDescriptions: any) : void{
+		this._ruWhitelistingDescriptions = whitelistingDescriptions;
+	}
+
+	public setEnWhitelistingDescriptions(whitelistingDescriptions: any) : void {
+		this._enWhitelistingDescriptions = whitelistingDescriptions;
+	}
+
+	public getRuWhitelistingDescriptions() : any {
+		return this._ruWhitelistingDescriptions;
+	}
+
+	public getEnWhitelistingDescriptions() : any {
+		return this._enWhitelistingDescriptions;
+	}
+
+	private _ruWhitelistingDescriptions : any;
+	private _enWhitelistingDescriptions : any;
 	
 
 	private _localizations: Localization [] = [];
@@ -519,6 +555,8 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 	
 	private _ruDescription : string;
 	private _enDescription : string;
+
+
 
 	private _status : ContentItemStatus;
 	protected _ruleCode = "";

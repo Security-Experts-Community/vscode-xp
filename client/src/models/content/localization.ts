@@ -5,9 +5,6 @@ import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { YamlHelper } from '../../helpers/yamlHelper';
 import { MetaInfo } from '../metaInfo/metaInfo';
-import { XpException } from '../xpException';
-import { IncorrectFieldFillingException } from '../../views/incorrectFieldFillingException';
-import { ContentFolder } from './contentFolder';
 import { Log } from '../../extension';
 
 export enum LocalizationLanguage{
@@ -27,19 +24,19 @@ export class Localization {
 		//
 	}
 
-	public setRuDescription(description: string ) {
+	public setRuDescription(description: string) : void {
 		this._ruDescription = description;
 	}
 
-	public getRuDescription() {
+	public getRuDescription() : string  {
 		return this._ruDescription;
 	}
 
-	public setEnDescription(description: string ) {
+	public setEnDescription(description: string) : void {
 		this._enDescription = description;
 	}
 
-	public getEnDescription() {
+	public getEnDescription() : string {
 		return this._enDescription;
 	}
 
@@ -104,7 +101,7 @@ export class Localization {
 		}
 
 		// Читаем метаданные для извлечения критериев локализаций.
-		const eventDescriptions = this.parseEventDescriptions(ruleDirectoryPath);
+		const eventDescriptions = await this.parseEventDescriptions(ruleDirectoryPath);
 
 		const localizations : Localization[] = []; 
 		if(ruEventDescriptionsObject) {
@@ -150,7 +147,7 @@ export class Localization {
 		return localizations;
 	}
 
-	public static parseEventDescriptions(ruleDirFullPath: string) : MetaInfoEventDescription [] {
+	public static async parseEventDescriptions(ruleDirFullPath: string) : Promise<MetaInfoEventDescription[]> {
 		
 		// Читаем метаинформацию.
 		const metaInfoFullPath = path.join(ruleDirFullPath, MetaInfo.METAINFO_FILENAME);
@@ -205,6 +202,32 @@ export class Localization {
 		const enLocObject = YamlHelper.parse(enLocContent);
 
 		return enLocObject.Description;
+	}
+
+	public static async parseRuWhitelistingDescriptions(fullPath: string) : Promise<string> {
+
+		const ruLocFilePath = path.join(fullPath, this.LOCALIZATIONS_DIRNAME, this.RU_LOCALIZATION_FILENAME);
+		if(!fs.existsSync(ruLocFilePath)) {
+			return "";
+		}
+		
+		const ruLocContent = await FileSystemHelper.readContentFile(ruLocFilePath);
+		const ruLocObject = YamlHelper.parse(ruLocContent);
+
+		return ruLocObject.WhitelistingDescriptions;
+	}
+
+	public static async parseEnWhitelistingDescriptions(fullPath: string) : Promise<string> {
+
+		const ruLocFilePath = path.join(fullPath, this.LOCALIZATIONS_DIRNAME, this.EN_LOCALIZATION_FILENAME);
+		if(!fs.existsSync(ruLocFilePath)) {
+			return "";
+		}
+		
+		const ruLocContent = await FileSystemHelper.readContentFile(ruLocFilePath);
+		const ruLocObject = YamlHelper.parse(ruLocContent);
+
+		return ruLocObject.WhitelistingDescriptions;
 	}
 
 	private _ruDescription : string;
