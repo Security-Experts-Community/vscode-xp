@@ -63,8 +63,8 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 	}
 
 	/**
-	 * Возвращает путь к пакету, в котором расположеню правило.
-	 * @returns путь к пакету, в котором расположеню правило.
+	 * Возвращает путь к пакету, в котором расположено правило.
+	 * @returns путь к пакету, в котором расположено правило.
 	 */
 	public getPackagePath(config: Configuration) : string {
 		if(!this._parentPath) {

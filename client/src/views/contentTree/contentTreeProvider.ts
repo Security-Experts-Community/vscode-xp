@@ -345,6 +345,11 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		}
 
 		const explorerCorrelation = await ContentTreeProvider.createContentElement(ruleDirectoryPath);
+		// Директории не выделяем в дереве контента
+		if(explorerCorrelation.isFolder()) {
+			return;
+		}
+
 		return kbTree.reveal(explorerCorrelation,
 		{
 			focus: true,
