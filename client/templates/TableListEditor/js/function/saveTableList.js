@@ -31,7 +31,6 @@ const _saveTableList = () => {
 	const data = {};
 
 	data.type = defaultType;
-	data.userCanEditContent = defaultUserCanEditContent;
 	data.name = $(nameInputClassSelector).val();
 	data.fillType = $(fillTypeIdSelector).val();
 
@@ -53,6 +52,8 @@ const _saveTableList = () => {
 
 		data.maxSize = Number($(idRecordSizeMaxInputIdSelector).val());
 		data.typicalSize = Number($(idRecordSizeTypicalInputIdSelector).val());
+	} else {
+		data.userCanEditContent = defaultUserCanEditContent;
 	}
 
 	data.fields = [];

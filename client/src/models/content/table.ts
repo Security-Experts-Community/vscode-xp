@@ -12,6 +12,8 @@ import { BaseUnitTest } from '../tests/baseUnitTest';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
+import { YamlHelper } from '../../helpers/yamlHelper';
+import { TableView } from '../../views/tableListsEditor/commands/tableListCommandBase';
 
 export enum TableListType {
 	Registry =  		'Registry',
@@ -87,27 +89,41 @@ export class Table extends RuleBaseItem {
 		if (!fs.existsSync(tableDirPath)) {
 			await fs.promises.mkdir(tableDirPath, {recursive: true});
 		}
-
-		const ruleFullPath = this.getRuleFilePath();
-		const ruleCode = await this.getRuleCode();
 		
-		const writeContentPromise = FileSystemHelper.writeContentFileIfChanged(ruleFullPath, ruleCode); 
+		const writeContentPromise = this.saveTableListStructure(); 
 		const metainfoPromise = this.getMetaInfo().save(tableDirPath);
 		const localizationPromise = this.saveLocalization(tableDirPath);
 		await Promise.all([writeContentPromise, metainfoPromise, localizationPromise]);
 	}
 
-	constructor(name: string, parentDirectoryPath?: string) {
+	public async saveTableListStructure() : Promise<void> {
+		const ruleFullPath = this.getRuleFilePath();
+		const tableList = await this.getRuleCode();
+
+		const writeContentPromise = FileSystemHelper.writeContentFileIfChanged(ruleFullPath, tableList);
+		return writeContentPromise;
+	}
+
+	public setTableType(type: TableListType): void {
+		this._type = type;
+	}
+
+	public getTableType() : TableListType {
+		return this._type;
+	}
+
+	constructor(name: string, type: TableListType, parentDirectoryPath?: string) {
 		super(name, parentDirectoryPath);
-		this.setFileName("table.tl");
+		this.setFileName(Table.DEFAULT_TABLELIST_FILENAME);
+		this.setTableType(type);
 	}
 
 	public getObjectType(): string {
 		return XPObjectType.Table;
 	}
 
-	public static create(name: string, parentPath?: string): Table {
-		const table = new Table(name, parentPath);
+	public static create(name: string, type: TableListType, parentPath?: string): Table {
+		const table = new Table(name, type, parentPath);
 
 		const metainfo = table.getMetaInfo();
 		metainfo.setName(name);
@@ -137,7 +153,21 @@ export class Table extends RuleBaseItem {
 		const name = path.basename(directoryPath);
 		const parentDirectoryPath = path.dirname(directoryPath);
 
-		const table = new Table(name, parentDirectoryPath);
+		// Получаем тип табличного списка из файла
+		let tableListFilePath: string;
+		if(!fileName) {
+			tableListFilePath = path.join(directoryPath, Table.DEFAULT_TABLELIST_FILENAME);
+		} else {
+			tableListFilePath = path.join(directoryPath, fileName);
+		}
+
+		const tableString = await FileSystemHelper.readContentFile(tableListFilePath);
+		const tableObject = YamlHelper.parse(tableString) as TableView;
+		if(!tableObject.fillType) {
+			throw new XpException(`Не удалось определить тип табличного списка ${name}`);
+		}
+
+		const table = new Table(name, tableObject.fillType, parentDirectoryPath);
 
 		// Если явно указано имя файла, то сохраняем его.
 		// Иначе используем заданное в конструкторе
@@ -177,6 +207,10 @@ export class Table extends RuleBaseItem {
 		return table;
 	}
 
+	private _type: TableListType;
+
 	iconPath = new vscode.ThemeIcon('symbol-number');
 	contextValue = 'Table';
+
+	public static DEFAULT_TABLELIST_FILENAME = "table.tl";
 }

@@ -6,6 +6,7 @@ import { TestFixture } from '../helper';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
 import { Table } from '../../models/content/table';
 import { Configuration } from '../../models/configuration';
+import { MetaInfo } from '../../models/metaInfo/metaInfo';
 
 suite('Табличные списки', () => {
 
@@ -18,9 +19,9 @@ suite('Табличные списки', () => {
 		assert.strictEqual(tablePath, path.join(testTablesPath, "AD_Domain_Controllers"));
 		assert.strictEqual(table.getParentPath(), testTablesPath);
 		assert.strictEqual(table.getDirectoryPath(), tablePath);
-		assert.strictEqual(table.getFileName(), "table.tl");
-		assert.strictEqual(table.getFilePath(), path.join(tablePath, "table.tl"));
-		assert.strictEqual(table.getMetaInfoFilePath(), path.join(tablePath, "metainfo.yaml"));
+		assert.strictEqual(table.getFileName(), Table.DEFAULT_TABLELIST_FILENAME);
+		assert.strictEqual(table.getFilePath(), path.join(tablePath, Table.DEFAULT_TABLELIST_FILENAME));
+		assert.strictEqual(table.getMetaInfoFilePath(), path.join(tablePath, MetaInfo.METAINFO_FILENAME));
 		assert.ok(table.getCommand());
 	});
 	
@@ -35,7 +36,7 @@ suite('Табличные списки', () => {
 		assert.strictEqual(table.getDirectoryPath(), tablePath);
 		assert.strictEqual(table.getFileName(), "NewName");
 		assert.strictEqual(table.getFilePath(), path.join(tablePath, "NewName"));
-		assert.strictEqual(table.getMetaInfoFilePath(), path.join(tablePath, "metainfo.yaml"));
+		assert.strictEqual(table.getMetaInfoFilePath(), path.join(tablePath, MetaInfo.METAINFO_FILENAME));
 		assert.ok(table.getCommand());
 	});
 

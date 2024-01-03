@@ -30,13 +30,15 @@ export class SaveTableListCommand implements TableListCommand {
 		}
 
 		if(!tableObject.metainfo.ruDescription && !tableObject.metainfo.enDescription) {
-			throw new XpException(`Не заданы описания табличного списка. Задайте хотя бы одно описание и повторите`);
+			throw new XpException(`Не задано описание табличного списка. Задайте хотя бы описание на одном языке и повторите`);
+		}
+
+		if(tableObject.typicalSize && tableObject.maxSize && tableObject.typicalSize > tableObject.maxSize) {
+			throw new XpException(`Не может быть типичный размер табличного списка больше максимального. Исправьте данные параметры и повторите`);
 		}
 
 		// Проверяем уникальность полей
-		const columnNames = tableObject.fields.map(f => {
-			return TableHelper.getFieldName(f);
-		});
+		const columnNames = tableObject.fields.map(f => TableHelper.getFieldName(f));
 
 		const duplicateColumnName = JsHelper.findDuplicates(columnNames);
 		if(duplicateColumnName) {
@@ -67,7 +69,7 @@ export class SaveTableListCommand implements TableListCommand {
 		} else {
 			// Создаем табличный список с нуля
 			const parentItem = webView.getParentItem();
-			this._newTable = Table.create(tableObject.name, parentItem.getDirectoryPath());
+			this._newTable = Table.create(tableObject.name, tableObject.fillType, parentItem.getDirectoryPath());
 		}
 
 		// Сохраняем метаданные и удаляем их из данных FE.
@@ -77,11 +79,13 @@ export class SaveTableListCommand implements TableListCommand {
 
 		this.convertKeysToYamlFormat(tableObject);
 		await this.fillDefaultValues(webView, tableObject);
-		await this.saveTableList(webView, tableObject);
+		await this.saveTableList(tableObject);
 
-		ContentTreeProvider.refresh(webView.getParentItem());
+		// Дерево обновляем целиком, так как иначе не будет выделены все директории выше, относительно измененного объекта.
+		ContentTreeProvider.refresh();
 
 		if(webView.getTable()) {
+			// TODO: добавить ссылку на сам файл, чтобы можно было сразу перейти к нему.
 			DialogHelper.showWarning(
 				"Табличный список сохранен. При изменении структуры табличного списка скорректируйте заполнение по умолчанию (defaults) файла table.tl");
 			return true;
@@ -179,17 +183,15 @@ export class SaveTableListCommand implements TableListCommand {
 			if(fs.existsSync(tableFilePath)) {
 				const tableContent = await FileSystemHelper.readContentFile(tableFilePath);
 				prevTableData = YamlHelper.parse(tableContent) as TableView;
-
-				// Удаляем предыдущее файловое представление таблицы
-				// const tableDirPath = prevTable.getDirectoryPath();
-				// await fs.promises.rmdir(tableDirPath, {recursive: true});
 			}
 		}
 
+		// Сохраняем заполнение по умолчанию, если оно было.
 		if(prevTableData && JSON.stringify(prevTableData.defaults) !== "{}") {
-			// Количество столбцов изменилось, значит пользователь должен скорректировать дефолтное заполнение.
 			tableObject.defaults = prevTableData.defaults;
 
+			// Количество столбцов изменилось, значит пользователь должен скорректировать дефолтное заполнение.
+			// TODO: попытка сконвертировать заполнение по умолчанию.
 			// let defaultsColumnCount = 0;
 			// const ptDefaults = prevTableData.defaults?.["PT"];
 			// const userDefaults = prevTableData.defaults?.["LOC"];
@@ -207,28 +209,28 @@ export class SaveTableListCommand implements TableListCommand {
 			// 	}
 			// }
 		} else {
-			tableObject.defaults = this.getDefaultsValue(tableObject.fillType);
+			tableObject.defaults = this.getDefaultsValue(tableObject);
 		}
 	}
 
-	protected async saveTableList(webView : TableListsEditorViewProvider, tableObject: TableView) : Promise<void> {
+	protected async saveTableList(tableObject: TableView) : Promise<void> {
 
 		// Сохраняем в YAML
 		const resultYamlTable = YamlHelper.tableStringify(tableObject);
-		this._newTable.setRuleCode(resultYamlTable);
-		await this._newTable.save();
+		await this._newTable.setRuleCode(resultYamlTable);
+		return this._newTable.save();
 	}
 
-	protected getDefaultsValue(fillType: string) : any {
-		switch(fillType) {
-			case 'Registry':  {
+	protected getDefaultsValue(tableObject: TableView) : any {
+		switch(tableObject.fillType) {
+			case TableListType.Registry:  {
 				return {};
 			}
-			case 'CorrelationRule': 
-			case 'EnrichmentRule':  {
+			case TableListType.CorrelationRule: 
+			case TableListType.EnrichmentRule:  {
 				return undefined;
 			}
-			case 'AssetGrid': 
+			case TableListType.AssetGrid: 
 			default: {
 				throw new XpException("Данный тип табличного списка не поддерживается");
 			}

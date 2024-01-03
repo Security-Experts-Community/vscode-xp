@@ -1,9 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import * as os from 'os';
 
-import { ProcessHelper } from '../../../helpers/processHelper';
 import { SiemjConfigHelper } from '../../../models/siemj/siemjConfigHelper';
 import { SiemJOutputParser } from '../../../models/siemj/siemJOutputParser';
 import { Configuration } from '../../../models/configuration';
@@ -20,12 +18,12 @@ export class BuildAllGraphCommand {
 	constructor(private _config: Configuration, private _outputParser: SiemJOutputParser) {}
 
 	public async execute() : Promise<void> {
-		Log.info("Запущена компиляция всех графов");
+		Log.info("Запущена компиляция всех графов и табличных списков");
 
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: true,
-			title: `Компиляция всех графов`
+			title: `Компиляция всех графов и табличных списков`
 		}, async (progress, cancellationToken: vscode.CancellationToken) => {
 
 			await SiemjConfigHelper.clearArtifacts(this._config);
@@ -59,7 +57,7 @@ export class BuildAllGraphCommand {
 						return;
 					}
 
-					DialogHelper.showInfo(`Компиляция всех графов успешно завершена`);
+					DialogHelper.showInfo(`Компиляция всех графов и табличных списков успешно завершена`);
 				}
 				finally {
 					const tmpPath = this._config.getTmpDirectoryPath(rootFolder);

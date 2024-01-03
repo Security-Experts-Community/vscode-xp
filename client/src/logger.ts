@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { Configuration } from './models/configuration';
-import { XpException } from './models/xpException';
 
 export enum LogLevel {
 	Error = 1,
