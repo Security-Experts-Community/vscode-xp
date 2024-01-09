@@ -14,6 +14,8 @@ import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { YamlHelper } from '../../helpers/yamlHelper';
 import { TableView } from '../../views/tableListsEditor/commands/tableListCommandBase';
+import { Configuration } from '../configuration';
+import { KbHelper } from '../../helpers/kbHelper';
 
 export enum TableListType {
 	Registry =  		'Registry',
@@ -141,6 +143,20 @@ export class Table extends RuleBaseItem {
 		});
 
 		return table;
+	}
+
+	public generateObjectId() : string {
+		const tableName = this.getName();
+		const contentPrefix = Configuration.get().getContentPrefix();
+		if(contentPrefix === "") {
+			return undefined;
+		}
+
+		// Если у ТС изменился тип и он был установлен в PTKB, то ему нужно получить другой ID.
+		const objectIdSeed = `${tableName}|${TableListType[this.getTableType()]}`;
+
+		const objectType = this.getObjectType();
+		return KbHelper.generateObjectId(objectIdSeed, contentPrefix, objectType);
 	}
 
 	public static async parseFromDirectory(directoryPath: string, fileName?: string): Promise<Table> {
