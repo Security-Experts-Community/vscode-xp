@@ -210,7 +210,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
             }
 
             case "updateExpectation": {
-                const actualEvent = this._test.getActualEvent();
+                const actualEvent = this._test.getActualData();
                 if (!actualEvent) {
                     DialogHelper.showWarning(
                         "Фактическое событие не получено. Запустите тест для получения фактического события, после чего можно заменить ожидаемое событие фактическим"
@@ -243,8 +243,8 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
                 // Обновляем ожидаемое событие на диске и во вьюшке.
                 this._test.setTestExpectation(testResult);
                 await this._test.save();
-                this.updateInputDataInView(testResult);
 
+                this.updateExpectationInView(testResult);
                 DialogHelper.showInfo("Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти.");
                 return;
             }
@@ -298,18 +298,17 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
     }
 
     private async saveTest(message: any) {
-        const testInfo = message.test;
         try {
-            const rawEvent = testInfo?.rawEvent;
-            if (!rawEvent) {
+            const inputData = message?.inputData;
+            if (!inputData) {
                 throw new XpException(
                     `Не задано сырое событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`
                 );
             }
-            const compressedRawEvent = TestHelper.compressTestCode(rawEvent);
-            this._test.setTestInputData(compressedRawEvent);
+            const compressedInputData = TestHelper.compressTestCode(inputData);
+            this._test.setTestInputData(compressedInputData);
 
-            const expectation = testInfo?.expectation;
+            const expectation = message?.expectation;
             if (!expectation) {
                 throw new XpException(
                     `Не задано ожидаемое нормализованное событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`
@@ -326,7 +325,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
     }
 
     private async runUnitTest(message: any) {
-        if (!message?.test) {
+        if (!message?.inputData) {
             DialogHelper.showError(
                 "Сохраните тест перед запуском нормализации сырых событий и повторите действие"
             );
@@ -353,7 +352,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
                     const runner = rule.getUnitTestRunner();
                     this._test = await runner.run(this._test);
 
-                    this.updateExpectationInView(this._test.getTestExpectation());
+                    this.updateActualDataInView(this._test.getActualData());
                 } catch (error) {
                     ExceptionHelper.show(error, "Неожиданная ошибка выполнения модульного теста");
                 }
@@ -368,10 +367,17 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
         });      
     }
 
-    private async updateInputDataInView(rawEvent: string) : Promise<boolean> {
+    private async updateInputDataInView(inputData: string) : Promise<boolean> {
         return this.postMessage({
             command: "updateInputData",
-            rawEvent : rawEvent
+            inputData : inputData
+        });      
+    }
+
+    private async updateActualDataInView(actualData: string) : Promise<boolean> {
+        return this.postMessage({
+            command: "updateActualData",
+            actualData : actualData
         });      
     }
 }
