@@ -210,42 +210,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
             }
 
             case "updateExpectation": {
-                const actualEvent = this._test.getActualData();
-                if (!actualEvent) {
-                    DialogHelper.showWarning(
-                        "Фактическое событие не получено. Запустите тест для получения фактического события, после чего можно заменить ожидаемое событие фактическим"
-                    );
-                    return;
-                }
-
-                const rule = this._test.getRule();
-                let testResult: string;
-
-                // В модульных тестах корреляций есть expect и возможны комментарии, поэтому надо заменить события, сохранив остальное.
-                if (rule instanceof Correlation) {
-                    const newTestCode = `expect 1 ${actualEvent}`;
-                    const currentTestCode = this._test.getTestExpectation();
-                    testResult = currentTestCode.replace(
-                        RegExpHelper.getExpectSectionRegExp(),
-                        // Фикс того, что из newTestCode пропадают доллары
-                        // https://stackoverflow.com/questions/9423722/string-replace-weird-behavior-when-using-dollar-sign-as-replacement
-                        function () {
-                            return newTestCode;
-                        }
-                    );
-                }
-
-                // Для нормализации просто сохраняем фактическое событие без дополнительных преобразований.
-                if (rule instanceof Normalization) {
-                    testResult = actualEvent;
-                }
-
-                // Обновляем ожидаемое событие на диске и во вьюшке.
-                this._test.setTestExpectation(testResult);
-                await this._test.save();
-
-                this.updateExpectationInView(testResult);
-                DialogHelper.showInfo("Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти.");
+                await this.updateExpectationHandler();
                 return;
             }
 
@@ -253,6 +218,45 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
                 DialogHelper.showError("Переданная команда не поддерживается");
             }
         }
+    }
+
+    private async updateExpectationHandler() : Promise<void> {
+        const actualEvent = this._test.getActualData();
+        if (!actualEvent) {
+            DialogHelper.showWarning(
+                "Фактическое событие не получено. Запустите тест для получения фактического события, после чего можно заменить ожидаемое событие фактическим"
+            );
+            return;
+        }
+
+        const rule = this._test.getRule();
+        let testResult: string;
+
+        // В модульных тестах корреляций есть expect и возможны комментарии, поэтому надо заменить события, сохранив остальное.
+        if (rule instanceof Correlation) {
+            const newTestCode = `expect 1 ${actualEvent}`;
+            const currentTestCode = this._test.getTestExpectation();
+            testResult = currentTestCode.replace(
+                RegExpHelper.getExpectSectionRegExp(),
+                // Фикс того, что из newTestCode пропадают доллары
+                // https://stackoverflow.com/questions/9423722/string-replace-weird-behavior-when-using-dollar-sign-as-replacement
+                function () {
+                    return newTestCode;
+                }
+            );
+        }
+
+        // Для нормализации просто сохраняем фактическое событие без дополнительных преобразований.
+        if (rule instanceof Normalization) {
+            testResult = actualEvent;
+        }
+
+        // Обновляем ожидаемое событие на диске и во вьюшке.
+        this._test.setTestExpectation(testResult);
+        await this._test.save();
+
+        this.updateExpectationInView(testResult);
+        DialogHelper.showInfo("Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти.");
     }
 
     private async documentIsReadyHandler() : Promise<boolean> {
