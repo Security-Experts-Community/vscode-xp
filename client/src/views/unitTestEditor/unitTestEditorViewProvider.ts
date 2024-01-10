@@ -189,8 +189,18 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
                 return this.documentIsReadyHandler();
             }
             case "saveTest": {
-                this.saveTest(message);
-                this.updateView();
+                await this.saveTest(message);
+
+                const inputEvents = TestHelper.formatTestCodeAndEvents(
+                    this._test.getTestInputData()
+                );
+                await this.updateInputDataInView(inputEvents);
+
+                const expectationData = TestHelper.formatTestCodeAndEvents(
+                    this._test.getTestExpectation()
+                );
+                await this.updateExpectationInView(expectationData);
+                
                 return;
             }
 
@@ -199,7 +209,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
                 return;
             }
 
-            case "updateExpectEvent": {
+            case "updateExpectation": {
                 const actualEvent = this._test.getActualEvent();
                 if (!actualEvent) {
                     DialogHelper.showWarning(
@@ -209,13 +219,13 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
                 }
 
                 const rule = this._test.getRule();
-                let resultTestCode: string;
+                let testResult: string;
 
                 // В модульных тестах корреляций есть expect и возможны комментарии, поэтому надо заменить события, сохранив остальное.
                 if (rule instanceof Correlation) {
                     const newTestCode = `expect 1 ${actualEvent}`;
                     const currentTestCode = this._test.getTestExpectation();
-                    resultTestCode = currentTestCode.replace(
+                    testResult = currentTestCode.replace(
                         RegExpHelper.getExpectSectionRegExp(),
                         // Фикс того, что из newTestCode пропадают доллары
                         // https://stackoverflow.com/questions/9423722/string-replace-weird-behavior-when-using-dollar-sign-as-replacement
@@ -227,17 +237,15 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
 
                 // Для нормализации просто сохраняем фактическое событие без дополнительных преобразований.
                 if (rule instanceof Normalization) {
-                    resultTestCode = actualEvent;
+                    testResult = actualEvent;
                 }
 
                 // Обновляем ожидаемое событие на диске и во вьюшке.
-                this._test.setTestExpectation(resultTestCode);
+                this._test.setTestExpectation(testResult);
                 await this._test.save();
-                this.updateView();
+                this.updateInputDataInView(testResult);
 
-                DialogHelper.showInfo(
-                    "Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти."
-                );
+                DialogHelper.showInfo("Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти.");
                 return;
             }
 
@@ -292,7 +300,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
     private async saveTest(message: any) {
         const testInfo = message.test;
         try {
-            const rawEvent = testInfo.rawEvent;
+            const rawEvent = testInfo?.rawEvent;
             if (!rawEvent) {
                 throw new XpException(
                     `Не задано сырое событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`
@@ -301,7 +309,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
             const compressedRawEvent = TestHelper.compressTestCode(rawEvent);
             this._test.setTestInputData(compressedRawEvent);
 
-            const expectation = testInfo.expectation;
+            const expectation = testInfo?.expectation;
             if (!expectation) {
                 throw new XpException(
                     `Не задано ожидаемое нормализованное событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`
@@ -313,18 +321,12 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
 
             DialogHelper.showInfo("Тест успешно сохранён");
         } catch (error) {
-            ExceptionHelper.show(
-                error,
-                `Не удалось сохранить модульный тест №${
-                    this._test.label
-                } правила ${this._test.getRule().getName()}`
-            );
-            return;
+            ExceptionHelper.show(error, `Не удалось сохранить модульный тест №${this._test.label} правила ${this._test.getRule().getName()}`);
         }
     }
 
     private async runUnitTest(message: any) {
-        if (!message.test) {
+        if (!message?.test) {
             DialogHelper.showError(
                 "Сохраните тест перед запуском нормализации сырых событий и повторите действие"
             );
@@ -334,7 +336,6 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
         // TODO: если тест еще не сохранён, то он падает так как в объекте дефолтный комментарий, а не значения из вьюшки.
         // const expectation = message.test.expectation;
         // this._test.setTestExpectation(expectation);
-
         // const rawEvent = message.test.rawEvent;
         // this._test.setTestInputData(rawEvent);
 
@@ -351,14 +352,26 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
                     });
                     const runner = rule.getUnitTestRunner();
                     this._test = await runner.run(this._test);
-                    this.updateView();
+
+                    this.updateExpectationInView(this._test.getTestExpectation());
                 } catch (error) {
-                    ExceptionHelper.show(
-                        error,
-                        "Неожиданная ошибка выполнения модульного теста"
-                    );
+                    ExceptionHelper.show(error, "Неожиданная ошибка выполнения модульного теста");
                 }
             }
         );
+    }
+
+    private async updateExpectationInView(expectation: string) : Promise<boolean> {
+        return this.postMessage({
+            command: "updateExpectation",
+            expectation : expectation
+        });      
+    }
+
+    private async updateInputDataInView(rawEvent: string) : Promise<boolean> {
+        return this.postMessage({
+            command: "updateInputData",
+            rawEvent : rawEvent
+        });      
     }
 }
