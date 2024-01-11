@@ -635,7 +635,7 @@
     "package": "set NODE_ENV=development && node ./esbuild.js",
     "watch": "node ./esbuild.js --watch",
     "tswatch": "tsc -b -w",
-    "postinstall": "cd ./client && npm install && cd .. && cd ./server && npm install && cd .. && cd ./client/templates/UnitTestEditor/react-unit-test-editor/ && npm install",
+    "postinstall": "cd ./client && npm install && cd .. && cd ./server && npm install && cd .. && cd ./client/templates/UnitTestEditor/react-unit-test-editor/ && npm install && npm run build",
     "pretest": "tsc -b",
     "react:build:all": "cd ./client/templates/UnitTestEditor/react-unit-test-editor/ && npm run build && cd ..",
     "compile:all": "npm run react:build:all && npm run compile"

@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 
 import { Configuration } from '../configuration';
 import { TestStatus } from './testStatus';
@@ -10,6 +9,7 @@ import { UnitTestRunner } from './unitTestsRunner';
 import { UnitTestOutputParser } from './unitTestOutputParser';
 import { XpException } from '../xpException';
 import { RegExpHelper } from '../../helpers/regExpHelper';
+import { JsHelper } from '../../helpers/jsHelper';
 
 export class NormalizationUnitTestsRunner implements UnitTestRunner {
 
@@ -27,6 +27,7 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 			throw new XpException("Нормализатор не вернул никакого события. Исправьте правило нормализации и повторите.");
 		}
 		
+		unitTest.setOutput(utilityOutput);
 		const diagnostics = this._outputParser.parse(utilityOutput);
 
 		// Выводим ошибки в нативной для VsCode форме.
@@ -34,39 +35,51 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 		this._config.getDiagnosticCollection().set(ruleFileUri, diagnostics);			
 		
 		unitTest.setStatus(TestStatus.Failed);
-		if (diagnostics && diagnostics.length > 0){
-			unitTest.setOutput(utilityOutput);
+		if (diagnostics && diagnostics.length > 0) {
 			return unitTest;
 		}
 
 		const normalizedEventResult = RegExpHelper.parseJsonsFromMultilineString(utilityOutput);
 		if(!normalizedEventResult || normalizedEventResult.length != 1) {
-			throw new XpException("Нормализатор не вернул никакого события или вернул ошибку. Исправьте правило нормализации и повторите");
+			throw new XpException("Нормализатор не вернул никакого события. Некорректен код нормализации или входные данные. Смотри Output");
 		}
 		const normalizedEvent = normalizedEventResult[0];
 
-		// Проверяем ожидаемого и фактическое событие.
-		let expectation = JSON.parse(unitTest.getTestExpectation());
-		expectation = this.clearIrrelevantFields(expectation);
+		// Проверяем ожидаемое событие
+		let expectationObject = {};
+		try {
+			expectationObject = JSON.parse(unitTest.getTestExpectation());
+			expectationObject = this.clearIrrelevantFields(expectationObject);
+		}
+		catch(error) {
+			throw new XpException("Ожидаемый результат содержит некорректный JSON. Скорректируйте его и повторите", error);
+		}
 
-		let actualEventObject = JSON.parse(normalizedEvent);
-		actualEventObject = this.clearIrrelevantFields(actualEventObject);
+		// Проверяем ожидаемое событие
+		let actualEventObject = {};
+		try {
+			actualEventObject = JSON.parse(normalizedEvent);
+			actualEventObject = this.clearIrrelevantFields(actualEventObject);
+		}
+		catch(error) {
+			throw new XpException("Возвращенное нормализатором событие не является корректным JSON. Проверьте и скорректируйте входное событие после чего повторите", error);
+		}
 
 		// Сохраняем фактическое события для последующего обновления ожидаемого.
-		const actualEventString = JSON.stringify(actualEventObject);
+		const actualEventString = JsHelper.formatJsonObject(actualEventObject);
 		unitTest.setActualEvent(actualEventString);
 		
-		const difference = diffJson(expectation, actualEventObject);
+		const difference = diffJson(expectationObject, actualEventObject);
 		
-		let eventsDiff = "";
-		for (const part of difference) {
-			const sign = part.added ? '+' :	(part.removed ? '-' : ' ');
-			const lines = part.value.split(/\r?\n/).filter((line)=>{return line != '';});
-			for (const line of lines) {
-				eventsDiff += sign + line + '\n';
-			}
-		}
-		unitTest.setOutput(eventsDiff);
+		// let eventsDiff = "";
+		// for (const part of difference) {
+		// 	const sign = part.added ? '+' :	(part.removed ? '-' : ' ');
+		// 	const lines = part.value.split(/\r?\n/).filter((line)=>{return line != '';});
+		// 	for (const line of lines) {
+		// 		eventsDiff += sign + line + '\n';
+		// 	}
+		// }
+		// unitTest.setOutput(eventsDiff);
 
 		if (difference.length == 1) {
 			unitTest.setStatus(TestStatus.Success);

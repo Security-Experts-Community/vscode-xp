@@ -159,7 +159,7 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 	private constructor(private _config : Configuration) {
 	}
 
-	public async runTests(rule: RuleBaseItem | Table | Macros) {
+	public async runTests(rule: RuleBaseItem | Table | Macros) : Promise<void> {
 
 		const tests = await this.getChildren();
 
@@ -171,7 +171,7 @@ export class UnitTestsListViewProvider implements vscode.TreeDataProvider<BaseUn
 			return testRunner.run(unitTest);
 		};
 
-		vscode.window.withProgress({
+		return vscode.window.withProgress<void>({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
 		}, async (progress) => {

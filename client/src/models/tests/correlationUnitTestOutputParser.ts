@@ -7,7 +7,7 @@ export class CorrelationUnitTestOutputParser implements UnitTestOutputParser {
 	
 	public parseFailedOutput(output: string, expectation: string): string {
 			if(/Got no resulting events/.exec(output)) {
-				return "Got no resulting events";
+				return output;
 			}
 
 			const testResults = /(?:Got these results:\s*)(\{.*\})(?:\s*(\{.*\}))*/m.exec(output);
@@ -87,7 +87,7 @@ export class CorrelationUnitTestOutputParser implements UnitTestOutputParser {
 
 		// [ERROR] Compilation failed:
 		// c:\Work\-=SIEM=-\Content\knowledgebase\packages\esc\correlation_rules\active_directory\Active_Directory_Snapshot\rule.co:27:29: syntax error, unexpected '='
-		const pattern = /\[ERROR\] Compilation failed:\s*(\S+?):(\d+):(\d+):([\S ]+)/gm;
+		const pattern = /^(\S+?):(\d+):(\d+):([\S ]+)/gm;
 		let m: RegExpExecArray | null;
 		while ((m = pattern.exec(testOutput))) {
 

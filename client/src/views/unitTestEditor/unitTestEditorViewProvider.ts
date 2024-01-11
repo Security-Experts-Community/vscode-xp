@@ -328,16 +328,25 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
   private async runUnitTest(message: any) {
     if (!message?.inputData) {
       DialogHelper.showError(
-        "Сохраните тест перед запуском нормализации сырых событий и повторите действие"
+        "Не заданы входные данные теста. Задайте их и повторите"
       );
       return;
     }
 
-    // TODO: если тест еще не сохранён, то он падает так как в объекте дефолтный комментарий, а не значения из вьюшки.
-    // const expectation = message.test.expectation;
-    // this._test.setTestExpectation(expectation);
-    // const rawEvent = message.test.rawEvent;
-    // this._test.setTestInputData(rawEvent);
+    if (!message?.expectation) {
+      DialogHelper.showError(
+        "Не задано условие проверки теста или ожидаемое событие. Задайте его и повторите"
+      );
+      return;
+    }
+
+    // Обновляем тест и сохраняем
+    const expectation = message.expectation;
+    this._test.setTestExpectation(expectation);
+
+    const inputData = message?.inputData;
+    this._test.setTestInputData(inputData);
+    await this._test.save();
 
     const rule = this._test.getRule();
     return vscode.window.withProgress(
@@ -353,8 +362,12 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
           const runner = rule.getUnitTestRunner();
           this._test = await runner.run(this._test);
 
-          this.updateActualDataInView(this._test.getActualData());
+          const actualData = this._test.getActualData();
+          this.updateActualDataInView(actualData);
+          vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
         } catch (error) {
+          const outputData = this._test.getOutput();
+          this.updateActualDataInView(outputData);
           ExceptionHelper.show(
             error,
             "Неожиданная ошибка выполнения модульного теста"

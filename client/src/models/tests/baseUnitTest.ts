@@ -17,16 +17,16 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 		this.setStatus(TestStatus.Unknown);
 	}
 
-	public setNumber(number: number) {
+	public setNumber(number: number): void {
 		this._number = number;
 		this.label = number.toString();
 	}
 
-	public getNumber() {
+	public getNumber() : number {
 		return this._number;
 	}
 
-	public setCommand(command: any): void {
+	public setCommand(command: vscode.Command): void {
 		this.command = command;
 	}
 
@@ -92,11 +92,11 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 		return this._status;
 	}
 
-	public setOutput(output: string) {
+	public setOutput(output: string): void {
 		this._output = output;
 	}
 
-	public getOutput() {
+	public getOutput() : string {
 		return this._output;
 	}
 
@@ -108,7 +108,7 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 		return this._inputData;
 	}
 
-	public setRule(rule: RuleBaseItem){
+	public setRule(rule: RuleBaseItem): void {
 		this._rule = rule;
 	}
 
