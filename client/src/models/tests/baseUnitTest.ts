@@ -42,11 +42,11 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 
 	public abstract getTestInputDataPath() : string;
 
-	public getRuleDirectoryPath() {
+	public getRuleDirectoryPath() : string {
 		return this._rule.getDirectoryPath();
 	}
 
-	public setTestExpectation(testExpectation: string) {
+	public setTestExpectation(testExpectation: string): void {
 		this._testExpectation = testExpectation;
 	}
 
@@ -54,7 +54,7 @@ export abstract class BaseUnitTest extends vscode.TreeItem {
 		return this._testExpectation;
 	}
 
-	public getActualEvent() : string {
+	public getActualData() : string {
 		return this._actualEvent;
 	}
 
