@@ -8,30 +8,29 @@ export type Test = {
     expectation: string;
 };
 
-type PostCommand = 'saveTest' | 'updateExpectEvent' | 'runTest';
+type PostCommand = 'saveTest' | 'updateExpectation' | 'runTest';
 
 export default function usePostMessage() {
-    const { currentExpectation, currentInputEvents } = useContext(MessageContext);
+    const { expectation, inputData } = useContext(MessageContext);
 
-    const postMessageWithoutTest = (command: PostCommand): void => {
+    const postMessageWithExpectation = (command: PostCommand): void => {
         vscode.postMessage({
             command: command,
+            expectation: expectation,
         });
     };
 
-    const postMessageWithTest = (command: PostCommand): void => {
+    const postMessageWithExpectationAndInputData = (command: PostCommand): void => {
         vscode.postMessage({
             command: command,
-            test: {
-                rawEvent: currentInputEvents,
-                expectation: currentExpectation,
-            },
+            inputData: inputData,
+            expectation: expectation,
         });
     };
 
-    const postUpdateExpectEvent = () => postMessageWithoutTest('updateExpectEvent');
-    const postRunTest = () => postMessageWithTest('runTest');
-    const postSaveTest = () => postMessageWithTest('saveTest');
+    const postUpdateExpectation = () => postMessageWithExpectation('updateExpectation');
+    const postRunTest = () => postMessageWithExpectationAndInputData('runTest');
+    const postSaveTest = () => postMessageWithExpectationAndInputData('saveTest');
 
-    return { postUpdateExpectEvent, postRunTest, postSaveTest };
+    return { postUpdateExpectation, postRunTest, postSaveTest };
 }

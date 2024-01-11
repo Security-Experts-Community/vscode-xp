@@ -2,56 +2,69 @@ import { createContext, PropsWithChildren, useCallback, useEffect, useState } fr
 
 import { vscode } from '../utils/vscode';
 
-export type ThemeContext = {
-    currentInputEvents: string;
-    setCurrentInputEvents: (value: React.SetStateAction<string>) => void;
-    currentExpectation: string;
-    setCurrentExpectation: (value: React.SetStateAction<string>) => void;
-    currentResult: string;
-    setCurrentResult: (value: React.SetStateAction<string>) => void;
+export type MessageContext = {
+    inputData: string;
+    setInputData: (value: React.SetStateAction<string>) => void;
+    expectation: string;
+    setExpectation: (value: React.SetStateAction<string>) => void;
+    actualData: string;
+    setActualData: (value: React.SetStateAction<string>) => void;
 };
 
-export const MessageContext = createContext<ThemeContext>({} as ThemeContext);
+export const MessageContext = createContext<MessageContext>({} as MessageContext);
 
 export function MessageProvider({ children }: PropsWithChildren) {
-    const [currentInputEvents, setCurrentInputEvents] = useState<string>('');
-    const [currentExpectation, setCurrentExpectation] = useState<string>('');
-    const [currentResult, setCurrentResult] = useState<string>('');
+    const [inputData, setInputData] = useState<string>('');
+    const [expectation, setExpectation] = useState<string>('');
+    const [actualData, setActualData] = useState<string>('');
 
     const messageListener = useCallback((e: MessageEvent) => {
         const message = e.data;
         switch (message.command) {
             case 'setIUnitTestEditorViewContent': {
                 if (!message.inputEvents.data || !message.expectation.data) {
-                    // alert('Ошибка обновления кода теста событий.');
-                    // return;
-                }
-                setCurrentExpectation(message.expectation.data);
-                setCurrentInputEvents(message.inputEvents.data);
-                console.log('setIUnitTestEditorViewContent');
-                break;
-            }
-            case 'updateRawEvent': {
-                if (!message.rawEvent) {
-                    alert('Ошибка обновления сырых событий.');
+                    alert(
+                        'Ошибка, события для модульного теста или ожидаемый результат не пришли с бекенда. Смотри консоль разработчика.',
+                    );
+                    console.log(message);
                     return;
                 }
-                setCurrentInputEvents(message.rawEvent);
+                setExpectation(message.expectation.data);
+                setInputData(message.inputEvents.data);
+                break;
+            }
+            case 'updateInputData': {
+                if (!message.inputData) {
+                    alert('Ошибка, события для модульного теста не пришли с бекенда. Смотри консоль разработчика.');
+                    console.log(message);
+                    return;
+                }
+                setInputData(message.inputData);
                 break;
             }
             case 'updateExpectation': {
                 if (!message.expectation) {
-                    alert('Ошибка обновления кода теста событий.');
+                    alert('Ошибка, ожидаемый результат не пришел с бекенда. Смотри консоль разработчика.');
+                    console.log(message);
                     return;
                 }
-                setCurrentExpectation(message.expectation);
+                setExpectation(message.expectation);
+                break;
+            }
+            case 'updateActualData': {
+                if (!message.actualData) {
+                    alert('Ошибка, результат не пришел с бекенда. Смотри консоль разработчика.');
+                    console.log(message);
+                    return;
+                }
+                setActualData(message.actualData);
                 break;
             }
         }
     }, []);
 
     // Добавляем листенер сообщений с бекенда, затем после первого рендера
-    // триггерим бекенд на отправку на отправку данных через эвенты-сообщения
+    // триггерим бекенд на отправку данных через эвенты-сообщения
     useEffect(() => {
         window.addEventListener('message', messageListener);
 
@@ -67,12 +80,12 @@ export function MessageProvider({ children }: PropsWithChildren) {
     return (
         <MessageContext.Provider
             value={{
-                currentExpectation,
-                setCurrentInputEvents,
-                currentInputEvents,
-                setCurrentExpectation,
-                currentResult,
-                setCurrentResult,
+                expectation,
+                setInputData,
+                inputData,
+                setExpectation,
+                actualData,
+                setActualData,
             }}
         >
             {children}

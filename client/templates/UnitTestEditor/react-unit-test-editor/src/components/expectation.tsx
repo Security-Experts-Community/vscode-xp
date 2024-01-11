@@ -5,7 +5,7 @@ import Checkbox from '../ui/checkbox/checkbox';
 import Editor from '../ui/editor/editor';
 
 export default function Expectation() {
-    const { currentExpectation, setCurrentExpectation } = useContext(MessageContext);
+    const { expectation, setExpectation } = useContext(MessageContext);
     const [isWordWrap, setIsWordWrap] = useState<boolean>(false);
 
     return (
@@ -14,7 +14,7 @@ export default function Expectation() {
                 <span>Ожидаемый результат</span>
                 <Checkbox label="Переносить по словам" setIsCheckedState={setIsWordWrap} />
             </div>
-            <Editor text={currentExpectation} setText={setCurrentExpectation} isWordWrap={isWordWrap} />
+            <Editor text={expectation} setText={setExpectation} isWordWrap={isWordWrap} />
         </div>
     );
 }
