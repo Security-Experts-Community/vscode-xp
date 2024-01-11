@@ -6,6 +6,7 @@ import { ProcessHelper } from '../../helpers/processHelper';
 import { Configuration } from '../../models/configuration';
 import { XpException } from '../../models/xpException';
 import { SiemjConfBuilder } from '../../models/siemj/siemjConfigBuilder';
+import { SiemjManager } from '../../models/siemj/siemjManager';
 
 export class CorrGraphRunner {
 
@@ -14,11 +15,11 @@ export class CorrGraphRunner {
 	public async run(correlationsFullPath: string, rawEventsFilePath: string) : Promise<string> {
 
 		if(!fs.existsSync(rawEventsFilePath)) {
-			throw new XpException(`Файл сырых событий '${rawEventsFilePath}' не доступен.`);
+			throw new XpException(`Файл сырых событий '${rawEventsFilePath}' не доступен`);
 		}
 
 		if(!fs.existsSync(correlationsFullPath)) {
-			throw new XpException(`Директория контента '${correlationsFullPath}' не существует.`);
+			throw new XpException(`Директория контента '${correlationsFullPath}' не существует`);
 		}
 
 		const rootPath = this._config.getRootByPath(correlationsFullPath);
@@ -58,26 +59,18 @@ export class CorrGraphRunner {
 			await fs.promises.unlink(ftpaDbPath);
 		}
 		
-		// Удаляем скорреклированные события, если такие были.
+		// Удаляем коррелированные события, если такие были.
 		const corrEventFilePath = this._config.getCorrelatedEventsFilePath(rootFolder);
 		if(fs.existsSync(corrEventFilePath)) {
 			await fs.promises.unlink(corrEventFilePath);
 		}
 
-		// Типовая команда выглядит так:
-		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-		await ProcessHelper.execute(
-			siemjExePath,
-			["-c", siemjConfigPath, "main"],
-			{
-				encoding: this._config.getSiemjOutputEncoding(),
-				outputChannel: this._config.getOutputChannel()
-			}
-		);
+		const siemjManager = new SiemjManager(this._config);
+		await siemjManager.executeSiemjConfig(correlationsFullPath, siemjConfContent);
 
 		const corrEventsFilePath = this._config.getCorrelatedEventsFilePath(rootFolder);
 		if(!fs.existsSync(corrEventsFilePath)) {
-			throw new XpException("Ошибка прогона события на графе корреляций.");
+			throw new XpException("Ошибка прогона события на графе корреляций");
 		}
 		
 		const normEventsContent = await FileSystemHelper.readContentFile(corrEventsFilePath);

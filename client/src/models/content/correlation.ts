@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
+import * as vscode from 'vscode';
 
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { Localization } from './localization';
@@ -83,7 +84,7 @@ export class Correlation extends RuleBaseItem {
 		}
 
 		// Парсим основные метаданные.
-		const metaInfo = MetaInfo.fromFile(directoryPath);
+		const metaInfo = await MetaInfo.fromFile(directoryPath);
 		correlation.setMetaInfo(metaInfo);
 
 		const ruleFilePath = correlation.getRuleFilePath();
@@ -115,11 +116,8 @@ export class Correlation extends RuleBaseItem {
 		const integrationTests = IntegrationTest.parseFromRuleDirectory(directoryPath);
 		correlation.addIntegrationTests(integrationTests);
 
-		// Описание можно посматривать при наведении мыши.
-		// TODO: добавить поддержку английской локализации
-		if(ruDescription) {
-			correlation.setTooltip(correlation.getRuDescription());
-		}
+		const localeDescription = correlation.getLocaleDescription();
+		correlation.setTooltip(localeDescription);
 
 		// Добавляем команду на открытие.
 		correlation.setCommand({
@@ -275,7 +273,7 @@ export class Correlation extends RuleBaseItem {
 
 		// Параллельно сохраняем все данные правила.
 		const metainfoPromise = this.getMetaInfo().save(corrDirPath);
-		const localizationPromise = this.saveLocalizationsImpl(corrDirPath);
+		const localizationPromise = this.saveLocalization(corrDirPath);
 		const integrationTestsPromise = this.saveIntegrationTests(corrDirPath);
 		const unitTestsPromise = this.saveUnitTests();
 		await Promise.all([metainfoPromise, localizationPromise, integrationTestsPromise, unitTestsPromise]);

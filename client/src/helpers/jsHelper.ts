@@ -3,18 +3,21 @@ export class JsHelper {
 		return new Promise(resolve => setTimeout(resolve, milliseconds));
 	}
 
-	public static findDuplicates(arr: string[]): string {
-		const sorted_arr = arr.slice().sort();
-		for (let i = 0; i < sorted_arr.length - 1; i++) {
-			if (sorted_arr[i + 1] == sorted_arr[i]) {
-				return sorted_arr[i];
+	public static isEmptyObj(obj : any) : boolean {
+		return Object.keys(obj).length === 0;
+	}
+
+	/**
+	 * Возвращает первый дублирующий элемент или null
+	 */
+	public static findDuplicates(arr: string[]): string|null {
+		const sortedArr = arr.slice().sort();
+		for (let i = 0; i < sortedArr.length - 1; i++) {
+			if (sortedArr[i + 1] == sortedArr[i]) {
+				return sortedArr[i];
 			}
 		}
 		return null;
-	}
-
-	public static isEmptyObj(obj : any) : boolean {
-		return Object.keys(obj).length === 0;
 	}
 
 	public static removeEmptyKeys(obj : any) : any {

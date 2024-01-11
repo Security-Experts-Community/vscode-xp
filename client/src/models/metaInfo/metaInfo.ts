@@ -12,7 +12,7 @@ import { YamlHelper } from '../../helpers/yamlHelper';
 
 export class MetaInfo {
 
-	public static fromFile(ruleDirFullPath: string): MetaInfo {
+	public static async fromFile(ruleDirFullPath: string): Promise<MetaInfo> {
 
 		const metaInfoFullPath = path.join(ruleDirFullPath, this.METAINFO_FILENAME);
 
@@ -27,7 +27,7 @@ export class MetaInfo {
 			return emptyMetainfo;
 		}
 
-		const yamlContent = FileSystemHelper.readContentFileSync(metaInfoFullPath);
+		const yamlContent = await FileSystemHelper.readContentFile(metaInfoFullPath);
 		const metaInfoAsInFile = YamlHelper.parse(yamlContent);
 
 		const metaInfo = MetaInfo.create(metaInfoAsInFile);
@@ -400,9 +400,15 @@ export class MetaInfo {
 			}
 			metaInfoObject["ContentRelations"]["Implements"]["ATTACK"] = attackPlain;
 		}
+		else {
+			delete metaInfoObject["ContentRelations"];
+		}
 
 		if (this.DataSources.length != 0) {
 			metaInfoObject["ExpertContext"]["DataSources"] = this.DataSources;
+		}
+		else {
+			delete metaInfoObject["ExpertContext"]["DataSources"];
 		}
 
 		let yamlContent = YamlHelper.stringify(metaInfoObject);

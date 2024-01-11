@@ -136,7 +136,7 @@ export class FileSystemHelper {
 
 	public static async writeContentFileIfChanged(filePath: string, newContent: string) : Promise<void> {
 
-		if(!newContent) {
+		if(newContent === undefined || newContent === null) {
 			throw new FileSystemException("Попытка записать неопределенное значение в файл", filePath);
 		}
 		
@@ -185,7 +185,7 @@ export class FileSystemHelper {
 		return directories;
 	}
 
-	public static readSubDirectoryNames(filePath: string) {
+	public static readSubDirectoryNames(filePath: string): string[] {
 
 		const directories = fs.readdirSync(filePath, { withFileTypes: true })
 			.filter(entity => entity.isDirectory())

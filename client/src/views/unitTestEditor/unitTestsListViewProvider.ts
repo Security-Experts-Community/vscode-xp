@@ -12,7 +12,6 @@ import { Macros } from '../../models/content/macros';
 import { Correlation } from '../../models/content/correlation';
 import { Normalization } from '../../models/content/normalization';
 import { Log } from '../../extension';
-import { Test } from 'mocha';
 
 /**
  * Список тестов в отдельной вьюшке.

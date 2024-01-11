@@ -4,7 +4,6 @@ import * as fs from 'fs';
 
 import { workspace, ExtensionContext } from 'vscode';
 
-
 import {
 	LanguageClient,
 	LanguageClientOptions,
@@ -226,7 +225,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
 				},
 				{
 					scheme: 'file',
-					language: 'xp'					
+					language: 'xp'
+				},
+				{
+					scheme: 'file',
+					language: 'en'
 				}], 
 				xpHoverProvider
 			)

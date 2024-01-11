@@ -97,7 +97,7 @@ export class ContentFolder extends ContentTreeBaseItem {
 		// Парсим метаданные если это пакет 
 		const packageMetaInfoPath = path.join(directoryPath, ContentFolder.PACKAGE_METAINFO_DIRNAME);
 		if(fs.existsSync(packageMetaInfoPath)) {
-			const metaInfo = MetaInfo.fromFile(packageMetaInfoPath);
+			const metaInfo = await MetaInfo.fromFile(packageMetaInfoPath);
 			contentFolder.setMetaInfo(metaInfo);
 		}
 

@@ -109,6 +109,7 @@ out=${output}`;
 		// Если нет табличных списков, то не собираем схему		
 		// TODO: данная логика тут лишняя, вынести на уровень выше.
 		if (!FileSystemHelper.checkIfFilesIsExisting(this._contentRootPath, /\.tl$/)) {
+			Log.info("Компиляция схемы не требуется, так как в дереве контента не найдено ни одного файла с расширением .tl");
 			return;
 		}
 
@@ -116,6 +117,7 @@ out=${output}`;
 		if(!force) {
 			const schemaFilePath = this._config.getSchemaFullPath(this._contentRootFolder);
 			if(fs.existsSync(schemaFilePath)) {
+				Log.info("Компиляция схемы не требуется, так как файл схемы уже существует");
 				return;
 			}
 		}

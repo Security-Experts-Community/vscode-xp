@@ -15,15 +15,27 @@ export class DocumentIsReadyCommand implements TableListCommand {
 
 	async execute(webView: TableListsEditorViewProvider): Promise<boolean> {
 		const table = webView.getTable();
-		const tableJson = await this.tableToEditorJsonView(table);
 
+		// Либо открываем таблицу, либо передаем значения по умолчанию для новой.
+		let tableObject = {};
+		if(table) {
+			tableObject = await this.tableToEditorJsonView(table);
+		} else {
+			tableObject = {
+				"ttl" : TableListsEditorViewProvider.DEFAULT_TTL_PER_SEC,
+				"maxSize" : TableListsEditorViewProvider.DEFAULT_MAX_SIZE,
+				"typicalSize" : TableListsEditorViewProvider.DEFAULT_TYPICAL_SIZE
+			};
+		}
+
+		const tableJson = JSON.stringify(tableObject);
 		return webView.postMessage({
 			command: "setViewContent",
 			data: tableJson
 		});
 	}
 
-	public async tableToEditorJsonView(table: Table) : Promise<string> {
+	public async tableToEditorJsonView(table: Table) : Promise<TableView> {
 		if(!table) {
 			return null;
 		}
@@ -76,8 +88,7 @@ export class DocumentIsReadyCommand implements TableListCommand {
 			objectId: table.getMetaInfo().getObjectId()
 		};
 		
-		const tableJson = JSON.stringify(tableObject);
-		return tableJson;
+		return tableObject;
 	}
 
 	static get commandName(): string {

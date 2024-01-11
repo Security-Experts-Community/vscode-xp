@@ -35,7 +35,7 @@ export class IntegrationTestEditorViewProvider {
 		private readonly _templatePath: string) {
 	}
 
-	public static init(config: Configuration) {
+	public static init(config: Configuration) : void {
 
 		// Форма создания визуализации интеграционных тестов.
 		const templatePath = path.join(
@@ -72,7 +72,7 @@ export class IntegrationTestEditorViewProvider {
 	}
 
 	public static readonly showEditorCommand = "IntegrationTestEditorView.showEditor";
-	public async showEditor(rule: Correlation | Enrichment) {
+	public async showEditor(rule: Correlation | Enrichment) : Promise<void> {
 
 		Log.info(`Редактор интеграционных тестов открыт для правила ${rule.getName()}`);
 
@@ -84,7 +84,8 @@ export class IntegrationTestEditorViewProvider {
 		}
 
 		if (!(rule instanceof Correlation || rule instanceof Enrichment)) {
-			return DialogHelper.showWarning(`Редактор интеграционных тестов не поддерживает правил кроме корреляций и обогащений`);
+			DialogHelper.showWarning(`Редактор интеграционных тестов не поддерживает правил кроме корреляций и обогащений`);
+			return;
 		}
 
 		this._rule = rule;
@@ -134,7 +135,7 @@ export class IntegrationTestEditorViewProvider {
 		}
 
 		const resultFocusTestNumber = focusTestNumber ?? 1;
-		Log.info(`WebView ${IntegrationTestEditorViewProvider.name} была загружена/обновлена. Текущий тест №${resultFocusTestNumber ?? "1"}`);
+		Log.debug(`WebView ${IntegrationTestEditorViewProvider.name} была загружена/обновлена. Текущий тест №${resultFocusTestNumber ?? "1"}`);
 
 		const resourcesUri = this._config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
@@ -145,7 +146,24 @@ export class IntegrationTestEditorViewProvider {
 			"IntegrationTests": [],
 			"ExtensionBaseUri": extensionBaseUri,
 			"RuleName": this._rule.getName(),
-			"ActiveTestNumber": resultFocusTestNumber
+			"ActiveTestNumber": resultFocusTestNumber,
+
+			// Локализация вьюшки
+			"Locale" : {
+				"Test" : vscode.l10n.t('Test'),
+				"SaveAll" : vscode.l10n.t('Save all'),
+				"RunAllTests" : vscode.l10n.t('Run all tests'),
+				"RawEvents" : vscode.l10n.t('Raw events'),
+				"WordWrap" : vscode.l10n.t('word wrap'),
+				"WrapRawEvents" : vscode.l10n.t('Wrap raw events in an envelope'),
+				"Normalize" : vscode.l10n.t('Normalize'),
+				"NormalizeAndEnrich" : vscode.l10n.t('Normalize and enrich'),
+				"NormalizedEvents" : vscode.l10n.t('Normalized events'),
+				"TestCondition" : vscode.l10n.t('Condition for passing the test'),
+				"GetExpectedEvent" : vscode.l10n.t('Get expected event'),
+				"CompareResults" : vscode.l10n.t('Compare your results'),
+				"ClearExpectedEvent" : vscode.l10n.t('Clear expected event'),
+			}
 		};
 
 		try {
@@ -374,7 +392,9 @@ export class IntegrationTestEditorViewProvider {
 				return true;
 			}
 
-			case GetExpectedEventCommand.name: {
+			// Почему-то GetExpectedEventCommand.name при отладке равен _GetExpectedEventCommand
+			// TODO: разобраться, почему так получилось
+			case "GetExpectedEventCommand": {
 				const currTest = await this.saveTestFromUI(message);
 				const command = new GetExpectedEventCommand({
 					config: this._config,

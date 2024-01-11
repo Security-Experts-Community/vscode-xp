@@ -46,16 +46,16 @@ suite('MetaInfo', () => {
 		assert.ok(metaInfoString.includes("- user_cmd"));
 	});
 
-	test('Минимальная метаинформация, содержащая только ObjectId', () => {
+	test('Минимальная метаинформация, содержащая только ObjectId', async () => {
 		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "onlyObjectId");
-		const metaInfo = MetaInfo.fromFile(metaInfoPath);
+		const metaInfo = await MetaInfo.fromFile(metaInfoPath);
 
 		assert.strictEqual(metaInfo.getObjectId(), "LOC-ER-1");
 	});
 
-	test('Поле Created = []', () => {
+	test('Поле Created = []', async () => {
 		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "createdIsEmptyArray");
-		const metaInfo = MetaInfo.fromFile(metaInfoPath);
+		const metaInfo = await MetaInfo.fromFile(metaInfoPath);
 
 		assert.strictEqual(metaInfo.getCreatedDate(), undefined);
 	});
@@ -116,7 +116,7 @@ suite('MetaInfo', () => {
 	test('Сохранение произвольных полей metainfo', async () => {
 		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "keepUnknownFields");
 
-		const metainfo = MetaInfo.fromFile(metaInfoPath);
+		const metainfo = await MetaInfo.fromFile(metaInfoPath);
 
 		metainfo.setAttacks([{ Tactic: "test", Techniques: ["T1234.56"] }]);
 		metainfo.setName("KeepUnknownFieldsTest");

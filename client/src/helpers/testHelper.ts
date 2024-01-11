@@ -12,13 +12,22 @@ import { BaseUnitTest } from '../models/tests/baseUnitTest';
 import { StringHelper } from './stringHelper';
 import { Log } from '../extension';
 import { FileSystemHelper } from './fileSystemHelper';
-import { CorrelationEvent } from '../models/content/correlation';
+import { Correlation, CorrelationEvent } from '../models/content/correlation';
 import { ArgumentException } from '../models/argumentException';
 import { JsHelper } from './jsHelper';
 
 export type EventMimeType = "application/x-pt-eventlog" | "application/json" | "text/plain" | "text/csv" | "text/xml"
 
 export class TestHelper {
+
+	/**
+	 * Проверяет, может быть проверена локализация у правила
+	 * @param rule правило
+	 * @returns может быть проверена локализация у правила
+	 */
+	public static isTestedLocalizationsRule(rule: RuleBaseItem): boolean {
+		return rule instanceof Correlation;
+	}
 
 	public static isNegativeTest(testCode: string) : boolean {
 		return /expect\s+not\s+/gm.test(testCode);
@@ -95,6 +104,48 @@ export class TestHelper {
 			/\s*"labels"(\s*):(\s*)".*?",/g,	// в середине json-а
 			/,\s*"labels"(\s*):(\s*)".*?"/g,	// в конце json-а
 
+			/\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\]/g,
+
+			/\s*"_objects"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"_objects"(\s*):(\s*)\[[\s\S]*?\]/g,
+
+			/\s*"subevents"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"subevents"(\s*):(\s*)\[[\s\S]*?\]/g,
+
+			/\s*"subevents.time"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"subevents.time"(\s*):(\s*)\[[\s\S]*?\]/g
+		];
+
+		for (const regexPattern of regexPatterns) {
+			testCode = testCode.replace(regexPattern, "");
+		}
+
+		return testCode;
+	}
+
+	/**
+	 * Убирает из корреляционных событий технические поля
+	 * @param testCode код теста
+	 * @returns код теста, очищенный от тегов
+	 */
+	public static cleanCorrelationEvents(testCode: string): string {
+		if (!testCode) { 
+			throw new ArgumentException("Не задан обязательных параметр", "testCode");
+		}
+
+		const regexPatterns = [
+			/\s*"_rule"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"_rule"(\s*):(\s*)".*?"/g,	// в конце json-а
+
+			/\s*"generator.version"(\s*):(\s*)"(.*?",)/g,
+
+			/\s*"siem_id"(\s*):(\s*)".*?",/g,
+			/,\s*"siem_id"(\s*):(\s*)".*?"/g,
+
+			/\s*"uuid"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"uuid"(\s*):(\s*)".*?"/g,	// в конце json-а
+			
 			/\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\],/g,
 			/,\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\]/g,
 

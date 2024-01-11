@@ -10,9 +10,52 @@ import { FileSystemHelper } from './fileSystemHelper';
 import { Normalization } from '../models/content/normalization';
 import { YamlHelper } from './yamlHelper';
 import { KbHelper } from './kbHelper';
-
+import { RuleBaseItem } from '../models/content/ruleBaseItem';
 
 export class ContentHelper {
+
+    /**
+     * Проверяет локализуемое ли правило
+     * @param rule правило
+     * @returns локализуемое ли правило
+     */
+	public static isLocalizableRule(rule: RuleBaseItem): boolean {
+		if (rule instanceof Enrichment) {
+			return false;
+		}
+
+		return true;
+	}
+
+    /**
+     * Возвращает критерий по умолчанию для правил
+     * @param rule правило
+     * @returns критерий по умолчанию для правила
+     */
+    public static async getDefaultLocalizationCriteria(rule: RuleBaseItem) : Promise<string> {
+		const ruleType = rule.contextValue;
+		switch(ruleType) {
+			case Correlation.name: {
+				return `correlation_name = "${rule.getName()}"`;
+			}
+			case Normalization.name: {
+				// Извлекаем id из кода правила
+				const parseIdRegExp = /id\s+=\s+"(\w+)"/gm;
+				const code = await rule.getRuleCode();
+				const parseIdResult = parseIdRegExp.exec(code);
+				if(parseIdResult && parseIdResult.length === 2) {
+					return `id = "${parseIdResult[1]}"`;
+				}
+
+				// Если не удалось, тогда возвращаем с именем правила нормализации.
+				return `id = "${rule.getName()}"`;
+			}
+			default: {
+				throw new XpException("Данный тип правил не поддерживается");
+			}
+		}
+	}
+
 
     /**
      * Проверяет единицу контента на удовлетворение ограничением по именованию и возвращает ошибку в виде строки.

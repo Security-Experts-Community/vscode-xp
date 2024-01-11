@@ -129,18 +129,15 @@
 			</tr>
 
 			<tr>
-				<datalist id="providers">
-					<option>Microsoft-Windows-Security-Auditing</option>
-					<option>Microsoft-Windows-Sysmon</option>
-					<option>Microsoft-Windows-PowerShell</option>
-					<option>PostgreSQL</option>
-					<option>MySQL</option>
-					<option>Oracle</option>
-					<option>MSSQL</option>
-					<option>Unix</option>
-					<option>MacOS</option>
-				</datalist>
-
+				<div style="display: none;">
+					<vscode-dropdown name="provider" aria-required="true" class="vscode-dropdown">
+						<vscode-option>Microsoft-Windows-Security-Auditing</vscode-option>
+						<vscode-option>Microsoft-Windows-Sysmon</vscode-option>
+						<vscode-option>Microsoft-Windows-PowerShell</vscode-option>
+						<vscode-option>Unix</vscode-option>
+						<vscode-option>MacOS</vscode-option>
+					</vscode-dropdown>
+				</div>
 				<td class="labels">Источники данных</td>
 				<td>
 					{{#DataSources}}
@@ -168,23 +165,24 @@
 			</tr>
 
 			<tr>
-				<datalist id="tactics">
-					<option>reconnaissance</option>
-					<option>resource-development</option>
-					<option>initial-access</option>
-					<option>execution</option>
-					<option>persistence</option>
-					<option>privilege-escalation</option>
-					<option>defense-evasion</option>
-					<option>credential-access</option>
-					<option>discovery</option>
-					<option>lateral-movement</option>
-					<option>collection</option>
-					<option>command-and-control</option>
-					<option>exfiltration</option>
-					<option>impact</option>
-				</datalist>
-
+				<div style="display: none;">
+					<vscode-dropdown name="tactic" aria-required="true" class="vscode-dropdown">
+						<vscode-option>reconnaissance</vscode-option>
+						<vscode-option>resource-development</vscode-option>
+						<vscode-option>initial-access</vscode-option>
+						<vscode-option>execution</vscode-option>
+						<vscode-option>persistence</vscode-option>
+						<vscode-option>privilege-escalation</vscode-option>
+						<vscode-option>defense-evasion</vscode-option>
+						<vscode-option>credential-access</vscode-option>
+						<vscode-option>discovery</vscode-option>
+						<vscode-option>lateral-movement</vscode-option>
+						<vscode-option>collection</vscode-option>
+						<vscode-option>command-and-control</vscode-option>
+						<vscode-option>exfiltration</vscode-option>
+						<vscode-option>impact</vscode-option>
+					</vscode-dropdown>
+				</div>
 				<td class="labels">MITRE</td>
 				<td>
 					{{#ATTACK}}
@@ -224,220 +222,8 @@
 	</div>
 
 	<script type="module" src="{{WebviewUri}}"></script>
-
-	<script>
-		const vscode = acquireVsCodeApi();
-
-		document.querySelector("body").addEventListener("keyup", event => {
-			if (event.key !== "Enter") return;
-			saveMetaInfo();
-			event.preventDefault();
-		});
-
-		function saveMetaInfo() {
-
-			const newName = document.getElementById("name")?.value;
-			const newObjectId = document.getElementById("ObjectId")?.value;
-			const newCreated = document.getElementById("Created")?.value;
-			const newUpdated = document.getElementById("Updated")?.value;
-
-			const usecases = inputsNameToArray("usecase");
-			const knowledgeHolders = inputsNameToArray("knowledgeHolder");
-			const falsepositives = inputsNameToArray("falsepositive");
-			const improvements = inputsNameToArray("improvement");
-
-			const references = inputsNameToArray("reference");
-
-			// Получаем источники данных
-			const dataSourceElements = Array.from(document.getElementsByName('dataSource'));
-
-			var dataSourcesAsDict = {};
-			dataSourceElements.map(ds => {
-				const providerElement = ds.querySelector("[name='provider']");
-				if (!providerElement) {
-					console.log("Ошибка получения провайдера.")
-					return;
-				}
-				const providerName = providerElement.value;
-
-				const eventIdsElement = ds.querySelector("[name='eventID']");
-				if (!eventIdsElement) {
-					console.log("Ошибка получения списка EventID.")
-					return;
-				}
-				const eventIdString = eventIdsElement.value;
-				const eventIds = eventIdString.split(',').map(eid => eid.trim());
-
-				if (!(providerName in dataSourcesAsDict)) {
-					dataSourcesAsDict[providerName] = [];
-				}
-
-				dataSourcesAsDict[providerName] = dataSourcesAsDict[providerName].concat(eventIds);
-			});
-
-			var dataSources = [];
-			for (var k in dataSourcesAsDict) {
-				dataSources.push({ 'Provider': k, 'EventID': dataSourcesAsDict[k] });
-			}
-
-			// Преобразум атаки по MITRE.
-			const attackElements = Array.from(document.getElementsByName('attack'));
-
-			var attackAsDict = {};
-			attackElements.map(ds => {
-				const tacticElement = ds.querySelector("[name='tactic']");
-				if (!tacticElement) {
-					console.log("Ошибка получения провайдера.")
-					return;
-				}
-				const tacticName = tacticElement.value;
-
-				const techniquesIdsElement = ds.querySelector("[name='techniques']");
-				if (!techniquesIdsElement) {
-					console.log("Ошибка получения списка EventID.")
-					return;
-				}
-				const techniquesIdsString = techniquesIdsElement.value;
-				const techniques = techniquesIdsString.split(',').map(eid => eid.trim());
-
-				if (!(tacticName in attackAsDict)) {
-					attackAsDict[tacticName] = [];
-				}
-
-				attackAsDict[tacticName] = attackAsDict[tacticName].concat(techniques);
-			});
-
-			/* Сконвертируем полученные пары тактик\техник в такой список
-			[
-				{'Tactic': 'initial_access', 'Techniques': ['t123', 't124'...]}, 
-				{'Tactic': 'persistence', 'Techniques': ['t125']}, 
-				...
-			] */
-			var attacks = [];
-			for (var k in attackAsDict) {
-				attacks.push({ "Tactic": k, "Techniques": attackAsDict[k] });
-			}
-
-
-			vscode.postMessage({
-				command: 'saveMetaInfo',
-				metainfo: {
-					'Name': newName,
-					'ObjectId': newObjectId,
-					'Created': newCreated,
-					'Updated': newUpdated,
-
-					'Usecases': usecases,
-					'KnowledgeHolders': knowledgeHolders,
-					'Falsepositives': falsepositives,
-					'Improvements': improvements,
-					'References': references,
-
-					'DataSources': dataSources,
-					'ATTACK': attacks,
-				}
-			});
-		}
-
-		// Сохраняем все тесты по хот кею Ctrl+S
-		$(document).on("keydown", e => {
-			if (e.ctrlKey && e.code == 'KeyS') {
-				console.log(e.keyCode);
-				e.preventDefault();
-				saveMetaInfo();
-			}
-		});
-
-		function inputsNameToArray(name) {
-			const elements = [...document.getElementsByName(name)];
-			return elements.map(u => u.value);
-		}
-
-		function addValue(button, name) {
-			const newDiv = document.createElement('div');
-
-			const newField = document.createElement('input');
-			if (name == "reference") {
-				newField.type = 'url';
-			} else {
-				newField.type = 'text';
-			}
-			newField.name = name;
-			newField.required = true;
-
-			const deleteButton = document.createElement('input');
-			deleteButton.type = 'button';
-			deleteButton.value = '-';
-			deleteButton.classList.add("delete");
-			deleteButton.onclick = function () {
-				deleteButton.parentNode.remove();
-			}
-
-			newDiv.appendChild(newField);
-			newDiv.appendChild(deleteButton);
-
-			button.parentNode.insertBefore(newDiv, button);
-			newField.focus();
-		}
-
-		function addComplexValue(button, type) {
-			var name = "";
-			if (type == "dataSource" || type == "attack") name = type;
-
-			var a = name == "dataSource" ? "provider" : "tactic";
-			var b = a + "s";
-			var c = name == "dataSource" ? "eventID" : "techniques";
-
-			const complexDiv = document.createElement('div');
-			complexDiv.classList.add("complex");
-			complexDiv.setAttribute("name", name);
-
-			const dropdownGroupDiv = document.createElement('div');
-			dropdownGroupDiv.classList.add("dropdown-group");
-
-			// const newField1 = document.createElement('input');
-			// newField1.type = 'text';
-			// newField1.required = true;
-			// newField1.name = a;
-			// newField1.setAttribute('list', b);
-
-			const inputField = document.createElement('input');
-			inputField.required = true;
-			inputField.type = 'text';
-			inputField.name = c;
-
-			const deleteButton = document.createElement('input');
-			deleteButton.type = 'button';
-			deleteButton.value = '-';
-			deleteButton.classList.add("delete");
-			deleteButton.onclick = function () {
-				deleteButton.parentNode.remove();
-			}
-
-			$(`[name="${a}"]`).first().clone(true, true).appendTo(dropdownGroupDiv)
-			dropdownGroupDiv.appendChild(inputField)
-
-			complexDiv.appendChild(dropdownGroupDiv);
-			complexDiv.appendChild(deleteButton);
-			const simpleDiv = document.createElement('div');
-			simpleDiv.appendChild(complexDiv);
-
-			button.parentElement.insertBefore(simpleDiv, button)
-			newField1.focus();
-		}
-
-		function addAttackComplexValue(button) {
-			addComplexValue(button, "attack");
-		}
-
-		function addDataSourceComplexValue(button) {
-			addComplexValue(button, "dataSource");
-		}
-
-		function deleteValue(button) {
-			button.parentNode.remove();
-		}
-	</script>
+	
+	<script src="{{{ExtensionBaseUri}}}/client/templates/js/meta.js"></script>
 </body>
 
 </html>
