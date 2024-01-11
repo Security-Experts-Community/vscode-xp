@@ -198,4 +198,8 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 	private _table: Table;
 	private _parentItem: ContentFolder;
 	private _view?: vscode.WebviewPanel;
+
+	public static DEFAULT_TYPICAL_SIZE = 80000;
+	public static DEFAULT_MAX_SIZE = 100000;
+	public static DEFAULT_TTL_PER_SEC = 86400;	// Сутки в секундах
 }
