@@ -21,6 +21,8 @@
 
 	"vscode-xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все графы",
 	"vscode-xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Компилировать все локализации",
+	"vscode-xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Компилировать все нормализации",
+	
 	"vscode-xp.views.knowledgebaseTree.buildAllWldsCommand": "Компилировать wld-файлы",
 
 	"vscode-xp.views.knowledgebaseTree.importKbFileCommand": "Импортировать пакеты из kb-файла",

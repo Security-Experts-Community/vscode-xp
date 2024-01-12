@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
 
 import { ContentTreeProvider } from '../contentTreeProvider';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
-import { KbHelper } from '../../../helpers/kbHelper';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { ContentHelper } from '../../../helpers/contentHelper';
 
@@ -12,7 +11,7 @@ export class RenameTreeItemCommand {
 
 	static CommandName = "SiemContentEditor.renameTreeItemCommand";
 
-	public async execute(selectedItem: RuleBaseItem) {
+	public async execute(selectedItem: RuleBaseItem): Promise<void> {
 
 		const ruleDirPath = selectedItem.getDirectoryPath();
 
@@ -50,7 +49,7 @@ export class RenameTreeItemCommand {
 		}
 		
 		try {
-			// Получаем директорию для исходного правила, дабы удалить её после переименованиия.
+			// Получаем директорию для исходного правила, дабы удалить её после переименования.
 			const oldRuleDirectoryPath = selectedItem.getDirectoryPath();
 
 			const newRuleName = userInput.trim();
@@ -70,7 +69,7 @@ export class RenameTreeItemCommand {
 			await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, selectedItem);
 		}
 		catch(error) {
-			DialogHelper.showInfo("Не удалось переименовать объект.");
+			DialogHelper.showInfo("Не удалось переименовать объект");
 			return;
 		}
 	}

@@ -36,12 +36,13 @@ import { LocalizationEditorViewProvider } from '../localizationEditor/localizati
 import { ContentVerifierCommand } from './commands/ruleVerifierCommand';
 import { BuildLocalizationsCommand } from './commands/buildLocalizationsCommand';
 import { BuildWldCommand } from './commands/buildWldCommand';
+import { BuildNormalizationsCommand } from './commands/buildNormalizationsCommand';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeBaseItem> {
 
 	static async init(
 		config: Configuration,
-		knowledgebaseDirectoryPath: string) {
+		knowledgebaseDirectoryPath: string) : Promise<void> {
 
 		const context = config.getContext();
 		const gitApi = await VsCodeApiHelper.getGitExtension();
@@ -221,7 +222,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
 				ContentTreeProvider.buildAllCommand,
-				async (selectedItem: RuleBaseItem) => {
+				async () => {
 					const parser = new SiemJOutputParser();
 					const buildCommand = new BuildAllGraphCommand(config, parser);
 					await buildCommand.execute();
@@ -232,9 +233,20 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
 				ContentTreeProvider.buildLocalizationsCommand,
-				async (selectedItem: RuleBaseItem) => {
+				async () => {
 					const parser = new SiemJOutputParser();
 					const buildCommand = new BuildLocalizationsCommand(config, parser);
+					await buildCommand.execute();
+				}
+			)
+		);
+
+		context.subscriptions.push(
+			vscode.commands.registerCommand(
+				ContentTreeProvider.buildNormalizationsCommand,
+				async () => {
+					const parser = new SiemJOutputParser();
+					const buildCommand = new BuildNormalizationsCommand(config, parser);
 					await buildCommand.execute();
 				}
 			)
@@ -645,6 +657,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 	public static readonly onRuleClickCommand = 'KnowledgebaseTree.onElementSelectionChange';
 	public static readonly buildAllCommand = 'xp.contentTree.buildAll';
 	public static readonly buildLocalizationsCommand = 'xp.contentTree.buildLocalizations';
+	public static readonly buildNormalizationsCommand = 'xp.contentTree.buildNormalizations';
 	public static readonly buildWldCommand = 'xp.contentTree.buildWld';
 	public static readonly buildKbPackageCommand = 'KnowledgebaseTree.buildKbPackage';
 	public static readonly unpackKbPackageCommand = 'KnowledgebaseTree.unpackKbPackage';

@@ -22,9 +22,15 @@ export class DocumentIsReadyCommand implements TableListCommand {
 			tableObject = await this.tableToEditorJsonView(table);
 		} else {
 			tableObject = {
-				"ttl" : TableListsEditorViewProvider.DEFAULT_TTL_PER_SEC,
-				"maxSize" : TableListsEditorViewProvider.DEFAULT_MAX_SIZE,
-				"typicalSize" : TableListsEditorViewProvider.DEFAULT_TYPICAL_SIZE
+				ttl : TableListsEditorViewProvider.DEFAULT_TTL_PER_SEC,
+				maxSize : TableListsEditorViewProvider.DEFAULT_MAX_SIZE,
+				typicalSize : TableListsEditorViewProvider.DEFAULT_TYPICAL_SIZE,
+				type : null,
+				fillType: null,
+				name: null,
+				metainfo: {
+					objectId: null
+				}
 			};
 		}
 

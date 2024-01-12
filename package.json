@@ -261,6 +261,11 @@
           "group": "dots@1"
         },
         {
+          "command": "xp.contentTree.buildNormalizations",
+          "when": "view == KnowledgebaseTree",
+          "group": "dots@1"
+        },
+        {
           "command": "xp.contentTree.buildWld",
           "when": "view == KnowledgebaseTree",
           "group": "dots@2"
@@ -477,6 +482,11 @@
 			{
 				"command": "xp.contentTree.buildLocalizations",
 				"title": "%vscode-xp.views.knowledgebaseTree.buildAllLocalizationsCommand%",
+				"category": "Редактор XP"
+			},
+			{
+				"command": "xp.contentTree.buildNormalizations",
+				"title": "%vscode-xp.views.knowledgebaseTree.buildAllNormalizationsCommand%",
 				"category": "Редактор XP"
 			},
 			{

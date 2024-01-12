@@ -22,6 +22,7 @@
 	"vscode-xp.views.knowledgebaseTree.buildAllGraphsCommand": "Build all graphs",
 	"vscode-xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Build all localizations",
 	"vscode-xp.views.knowledgebaseTree.buildAllWldsCommand": "Build all wld files",
+	"vscode-xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Build all normalizations",
 
 	"vscode-xp.views.knowledgebaseTree.importKbFileCommand": "Import packages from kb file",
 	"vscode-xp.views.knowledgebaseTree.exportKbFileCommand": "Export package to kb file",
