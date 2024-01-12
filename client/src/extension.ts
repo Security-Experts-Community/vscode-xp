@@ -35,6 +35,7 @@ import { XpEnumValuesCompletionItemProvider } from './providers/xpEnumValuesComp
 import { LogLevel, Logger } from './logger';
 import { RetroCorrelationViewController } from './views/retroCorrelation/retroCorrelationViewProvider';
 import { XpHoverProvider } from './providers/xpHoverProvider';
+import { DialogMessage } from './l10n/messages';
 
 export let Log: Logger;
 let client: LanguageClient;
@@ -289,6 +290,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		}
 
 		Log.info(`Расширение '${Configuration.getExtensionDisplayName()}' активировано`);
+
+		// TODO: тест сервиса локализации
+		// const message = Configuration.get().getLocalizationService().getMessage("TheKnowledgeBaseIsNotInitialized", "3543");
+		// Log.info(message);
 	}
 	catch (error) {
 		ExceptionHelper.show(error, `Расширение '${Configuration.getExtensionDisplayName()}' не удалось активировать`);

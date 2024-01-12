@@ -12,13 +12,13 @@ import { EDRPathHelper } from './locator/EDRPathLocator';
 import { OsType, PathLocator } from './locator/pathLocator';
 import { SIEMPathHelper } from './locator/SIEMPathLocator';
 import { FileDiagnostics } from './siemj/siemJOutputParser';
+import { LocalizationService } from '../l10n/localizationService';
 
 export type EncodingType = "windows-1251" | "utf-8" | "utf-16"
 
 export class Configuration {
 
 	private constructor(context: vscode.ExtensionContext) {
-
 		this._context = context;
 
 		const contentType = this.getContentType();
@@ -26,8 +26,9 @@ export class Configuration {
 
 		const extensionName = Configuration.getExtensionDisplayName();
 		this._outputChannel = vscode.window.createOutputChannel(extensionName);
+		this._localizationService = new LocalizationService(vscode.env.language, context.extensionPath);
+		
 		this._diagnosticCollection = vscode.languages.createDiagnosticCollection(extensionName);
-
 		context.subscriptions.push(this._diagnosticCollection);
 	}
 
@@ -38,7 +39,7 @@ export class Configuration {
 	public getRootByPath(directory: string): string { return this._pathHelper.getRootByPath(directory); } 
 	public getRequiredRootDirectories(): string[] { return this._pathHelper.getRequiredRootDirectories(); }
 
-	public setContentType(contentType: ContentType) {
+	public setContentType(contentType: ContentType): void {
 		if (contentType === ContentType.EDR) {
 			this._pathHelper = EDRPathHelper.get();
 		}
@@ -48,7 +49,13 @@ export class Configuration {
 		this._context.workspaceState.update("ContentType", contentType);
 	}
 
-	public getKbFullPath(){ return this._pathHelper.getKbPath(); }
+    public getMessage(messageKey: string, ...args: (string | number | boolean | undefined | null)[]): string {
+        return this._localizationService.getMessage(messageKey, ...args);
+    }
+
+	public getKbFullPath() : string {
+		return this._pathHelper.getKbPath(); 
+	}
 
 	public static getContentTypeBySubDirectories(subDirectories: string[]): ContentType | undefined {
 		const EDRpathHelper = EDRPathHelper.get();
@@ -626,7 +633,7 @@ export class Configuration {
 		}
 	}
 
-	public static get() {
+	public static get() : Configuration {
 		if(!this._instance) {
 			throw new XpException("Конфигурация расширения не получена. Возможно, она не была инициализирована.");
 		}
@@ -644,7 +651,8 @@ export class Configuration {
 	private _outputChannel : vscode.OutputChannel;
 	private _context: vscode.ExtensionContext;
 	private _diagnosticCollection: vscode.DiagnosticCollection;
-
+	private _localizationService: LocalizationService;
+	
 	private BUILD_TOOLS_DIR_NAME = "build-tools";
 
 	public static readonly SIEMJ_CONFIG_FILENAME = "siemj.conf";	

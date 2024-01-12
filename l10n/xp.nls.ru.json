@@ -1,0 +1,20 @@
+{
+    "Yes": "Да",
+    "No": "Нет",
+    "NoPathSelected": "Путь не выбран",
+    "TheKnowledgeBaseIsNotInitialized": "База знаний не проинициализирована. Создать необходимые папки для формата {0}?",
+
+    "Test": "Тест", 
+    "SaveAll" : "Сохранить все",
+    "RunAllTests" : "Запустить все тесты",
+    "RawEvents" : "Сырые события",
+    "WordWrap" : "переносить по словам",
+    "WrapRawEventsInAnEnvelope" : "Обернуть в конверт сырые события",
+    "Normalize" : "Нормализовать",
+    "NormalizeAndEnrich" : "Нормализовать и обогатить",
+    "NormalizedEvents" : "Нормализованные события",
+    "ConditionForPassingTheTest" : "Условие прохождение теста",
+    "GetExpectedEvent" : "Получить ожидаемое событие",
+    "CompareYourResults": "Сравнить полученные результаты",
+    "ClearExpectedEvent": "Очистить ожидаемое событие"
+}

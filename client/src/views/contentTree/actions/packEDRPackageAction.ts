@@ -149,7 +149,7 @@ export class PackEDRAllPackagesAction implements PackAction {
 		}
 
 		if(!moduleDirectory) {
-			DialogHelper.showError(vscode.l10n.t("No path selected"));
+			DialogHelper.showError(this.config.getMessage("NoPathSelected"));
 			return;
 		}
 

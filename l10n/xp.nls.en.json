@@ -1,0 +1,20 @@
+{
+    "Yes": "Yes",
+    "No": "No",
+    "NoPathSelected": "No path selected",
+    "TheKnowledgeBaseIsNotInitialized": "The knowledge base is not initialized. Create required folders for {0} format?",
+
+    "Test": "Test", 
+    "SaveAll" : "Save all",
+    "RunAllTests" : "Run all tests",
+    "RawEvents" : "Raw events",
+    "WordWrap" : "word wrap",
+    "WrapRawEventsInAnEnvelope" : "Wrap raw events in an envelope",
+    "Normalize" : "Normalize",
+    "NormalizeAndEnrich" : "Normalize and enrich",
+    "NormalizedEvents" : "Normalized events",
+    "ConditionForPassingTheTest" : "Condition for passing the test",
+    "GetExpectedEvent" : "Get expected event",
+    "CompareYourResults": "Compare your results",
+    "ClearExpectedEvent": "Clear expected event"
+}

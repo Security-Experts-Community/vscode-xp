@@ -150,19 +150,19 @@ export class IntegrationTestEditorViewProvider {
 
 			// Локализация вьюшки
 			"Locale" : {
-				"Test" : vscode.l10n.t('Test'),
-				"SaveAll" : vscode.l10n.t('Save all'),
-				"RunAllTests" : vscode.l10n.t('Run all tests'),
-				"RawEvents" : vscode.l10n.t('Raw events'),
-				"WordWrap" : vscode.l10n.t('word wrap'),
-				"WrapRawEvents" : vscode.l10n.t('Wrap raw events in an envelope'),
-				"Normalize" : vscode.l10n.t('Normalize'),
-				"NormalizeAndEnrich" : vscode.l10n.t('Normalize and enrich'),
-				"NormalizedEvents" : vscode.l10n.t('Normalized events'),
-				"TestCondition" : vscode.l10n.t('Condition for passing the test'),
-				"GetExpectedEvent" : vscode.l10n.t('Get expected event'),
-				"CompareResults" : vscode.l10n.t('Compare your results'),
-				"ClearExpectedEvent" : vscode.l10n.t('Clear expected event'),
+				"Test" : this._config.getMessage('Test'),
+				"SaveAll" : this._config.getMessage('SaveAll'),
+				"RunAllTests" : this._config.getMessage('RunAllTests'),
+				"RawEvents" : this._config.getMessage('RawEvents'),
+				"WordWrap" : this._config.getMessage('WordWrap'),
+				"WrapRawEvents" : this._config.getMessage('WrapRawEventsInAnEnvelope'),
+				"Normalize" : this._config.getMessage('Normalize'),
+				"NormalizeAndEnrich" : this._config.getMessage('NormalizeAndEnrich'),
+				"NormalizedEvents" : this._config.getMessage('NormalizedEvents'),
+				"TestCondition" : this._config.getMessage('ConditionForPassingTheTest'),
+				"GetExpectedEvent" : this._config.getMessage('GetExpectedEvent'),
+				"CompareResults" : this._config.getMessage('CompareYourResults'),
+				"ClearExpectedEvent" : this._config.getMessage('ClearExpectedEvent'),
 			}
 		};
 

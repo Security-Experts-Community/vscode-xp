@@ -195,9 +195,9 @@ export class CreateRuleViewProvider {
         if(fs.existsSync(ruleFullPath)) {
             const overwriteResult = await DialogHelper.showInfo(
                 `Правило с именем '${ruleName}' уже есть. Перезаписать его?`,
-                ...[vscode.l10n.t('Yes'), vscode.l10n.t('No')]);
+                ...[this._config.getMessage('Yes'), this._config.getMessage('No')]);
 
-            if (overwriteResult === vscode.l10n.t('No')) {
+            if (overwriteResult === this._config.getMessage('No')) {
                 return;
             }
 

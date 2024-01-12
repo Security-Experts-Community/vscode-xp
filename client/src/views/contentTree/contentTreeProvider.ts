@@ -282,7 +282,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 					});
 
 					if(!fileInfos) {
-						DialogHelper.showError(vscode.l10n.t("No path selected"));
+						DialogHelper.showError(config.getMessage("No path selected"));
 						return;
 					}
 
@@ -502,16 +502,12 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		
 		if(!actualContentType){
 			const answer = await DialogHelper.showInfo(
-				vscode.l10n.t(
-					'The knowledge base is not initialized. Create required folders for {0} format?',
-					configContentType
-				),
-				vscode.l10n.t('Yes'),
-				vscode.l10n.t('No')
+				this._config.getMessage("TheKnowledgeBaseIsNotInitialized", configContentType),
+				this._config.getMessage("Yes"),
+				this._config.getMessage("No")
 			);
-
 			
-			if (answer === vscode.l10n.t('Yes')) {		
+			if (answer === this._config.getMessage("Yes")) {		
 				return vscode.commands.executeCommand(InitKBRootCommand.Name, this._config, this._knowledgebaseDirectoryPath);
 			}
 		}
@@ -525,11 +521,11 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		if(actualContentType == ContentType.EDR && configContentType == ContentType.SIEM) {
 			const answer = await DialogHelper.showInfo(
 				"Формат базы знаний (EDR) не соответствует текущему целевому продукту (SIEM). Выбрать другой продукт? Неправильная настройка не позволит собрать пакет",
-				vscode.l10n.t('Yes'),
-				vscode.l10n.t('No')
+				this._config.getMessage("Yes"),
+				this._config.getMessage("No")
 			);
 
-			if (answer === vscode.l10n.t('Yes')) {
+			if (answer === this._config.getMessage("Yes")) {
 				return vscode.commands.executeCommand(SetContentTypeCommand.Name, ContentType.EDR);
 			}
 		}
@@ -537,10 +533,11 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		if(actualContentType == ContentType.SIEM && configContentType == ContentType.EDR) {
 			const answer = await DialogHelper.showInfo(
 				"Формат базы знаний (SIEM) не соответствует текущему целевому продукту (EDR). Выбрать другой продукт? Неправильная настройка не позволит собрать пакет",
-				vscode.l10n.t('Yes'),
-				vscode.l10n.t('No'));
-
-			if (answer === vscode.l10n.t('Yes')) {
+				this._config.getMessage("Yes"),
+				this._config.getMessage("No")
+			);
+			
+			if (answer === this._config.getMessage("Yes")) {
 				return vscode.commands.executeCommand(SetContentTypeCommand.Name, ContentType.SIEM);
 			}
 		}
