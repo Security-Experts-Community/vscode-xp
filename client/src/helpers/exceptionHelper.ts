@@ -1,28 +1,25 @@
 import * as vscode from 'vscode';
 
-import { FileSystemException } from '../models/fileSystemException';
 import { XpException } from '../models/xpException';
-import { IncorrectFieldFillingException } from '../views/incorrectFieldFillingException';
 import { Log } from '../extension';
 import { Configuration } from '../models/configuration';
-import { OperationCanceledException } from '../models/operationCanceledException';
 
 export class ExceptionHelper {
-	public static async show(error: Error, defaultMessage?: string) {
+	public static async show(error: Error, defaultMessage?: string) : Promise<void> {
 		const errorType = error.constructor.name;
 		const outputChannel = Configuration.get().getOutputChannel();
 
 		switch(errorType)  {
-			case XpException.name: 
-			case FileSystemException.name: 
-			case IncorrectFieldFillingException.name: {
+			case "XpException": 
+			case "FileSystemException": 
+			case "IncorrectFieldFillingException": {
 				const typedError = error as XpException;
 
 				vscode.window.showErrorMessage(typedError.message);
 				ExceptionHelper.recursiveWriteXpExceptionToOutput(typedError, outputChannel);
 				break;
 			}
-			case OperationCanceledException.name: {
+			case "OperationCanceledException": {
 				const typedError = error as XpException;
 
 				Log.info(null, typedError);

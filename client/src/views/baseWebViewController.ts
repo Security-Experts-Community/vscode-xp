@@ -28,7 +28,7 @@ export abstract class BaseWebViewController {
 
 	constructor(protected _descriptor : WebViewDescriptor) { }
 
-	protected async showDefault() {
+	protected async showDefault() : Promise<void> {
 
 		// Если открыта еще одна локализация, то закрываем её перед открытием новой.
 		if (this._view) {
@@ -50,7 +50,7 @@ export abstract class BaseWebViewController {
 				this
 			);
 
-			this._view.webview.html = await this.getHtml();
+			this._view.webview.html = this.getHtml();
 		}
 		catch (error) {
 			ExceptionHelper.show(error, `Не удалось открыть ${this._descriptor.viewTitle}`);
@@ -79,12 +79,12 @@ export abstract class BaseWebViewController {
 		return;
 	}
 
-	protected async receiveMessageFromWebViewDefault(message: WebViewMessage) {
+	protected async receiveMessageFromWebViewDefault(message: WebViewMessage) : Promise<void> {
 
 		if (message == null) return;
 
 		switch (message.cmdName) {
-			case LogErrorCommand.name: {
+			case "LogErrorCommand": {
 				const cmd = new LogErrorCommand(message);
 				cmd.execute(this);
 				break;
@@ -103,7 +103,7 @@ export abstract class BaseWebViewController {
 		}
 	}
 
-	public get view() {
+	public get view() : vscode.WebviewPanel {
 		return this._view;
 	}
 

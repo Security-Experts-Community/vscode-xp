@@ -343,7 +343,7 @@ export class IntegrationTestEditorViewProvider {
 				return this.cleanTestCode(message);
 			}
 
-			case ShowTestResultsDiffCommand.name: {
+			case "ShowTestResultsDiffCommand": {
 				if (!message?.selectedTestNumber) {
 					DialogHelper.showError('Номер теста не передан в запросе на back-end');
 					return;
@@ -370,7 +370,7 @@ export class IntegrationTestEditorViewProvider {
 				break;
 			}
 			// Команды с запуском утилит.
-			case NormalizeRawEventsCommand.name: {
+			case "NormalizeRawEventsCommand": {
 
 				if (typeof message?.isEnrichmentRequired !== "boolean" ) {
 					DialogHelper.showInfo("Не задан параметр обогащения событий");
@@ -407,7 +407,7 @@ export class IntegrationTestEditorViewProvider {
 				return true;
 			}
 
-			case RunIntegrationTestsCommand.name: {
+			case "RunIntegrationTestsCommand": {
 				// Сохраняем актуальное состояние тестов из вьюшки.
 				let rule: RuleBaseItem;
 				try {

@@ -319,7 +319,7 @@ export class Configuration {
 	}
 
 	public getEvtxToJsonToolFullPath() : string {
-		const fullPath = path.join(this.getExtensionPath(), "tools", "rustevtx.exe");
+		const fullPath = path.join(this.getExtensionPath(), "tools", "evtx_converter.exe");
 		return fullPath;
 	}
 

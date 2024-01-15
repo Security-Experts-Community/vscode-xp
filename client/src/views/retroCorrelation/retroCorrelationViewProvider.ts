@@ -77,9 +77,9 @@ export class RetroCorrelationViewController extends BaseWebViewController {
 		return htmlContent;
 	}
 
-    protected async receiveMessageFromWebView(message: WebViewMessage) {
+    protected async receiveMessageFromWebView(message: WebViewMessage) : Promise<void> {
 		switch (message.cmdName) {
-            case AppendEventsCommand.name: {
+            case "AppendEventsCommand": {
 				// TODO: подумать над улучшением представления команд.
 				message.params = {
 					tmpDirPath: this._tmpDirPath,
@@ -90,7 +90,7 @@ export class RetroCorrelationViewController extends BaseWebViewController {
 				const cmd = new AppendEventsCommand(typedMessage);
                 return cmd.execute(this);
 			}
-			case CorrelateEventsCommand.name: {
+			case "CorrelateEventsCommand": {
                 const cmd = new CorrelateEventsCommand(message);
 				// TODO: подумать над улучшением представления команд.
 				message.params = {

@@ -37,7 +37,7 @@ export class AppendEventsCommand extends WebViewCommand<AppendEventMessage> {
 		super(AppendEventsCommand.name, message);
 	}
 
-	public async execute(controller: BaseWebViewController) {
+	public async execute(controller: BaseWebViewController) : Promise<void> {
         // Выбор либо одной директории либо одного файла.
         const showOpenDialogUris = await vscode.window.showOpenDialog({
 			canSelectMany: true, 
