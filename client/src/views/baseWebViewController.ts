@@ -1,13 +1,8 @@
-import * as fs from 'fs';
 import * as vscode from 'vscode';
-import * as path from 'path';
 
 import { Configuration } from '../models/configuration';
-import { RuleBaseItem } from '../models/content/ruleBaseItem';
 import { XpException } from '../models/xpException';
-import { MustacheFormatter } from './mustacheFormatter';
 import { ExceptionHelper } from '../helpers/exceptionHelper';
-import { Log } from '../extension';
 import { LogErrorCommand } from './webViewCommands';
 
 export interface WebViewDescriptor {
@@ -50,6 +45,10 @@ export abstract class BaseWebViewController {
 				this
 			);
 
+			this._view.onDidDispose( () => {
+				this._view = undefined;
+			});
+
 			this._view.webview.html = this.getHtml();
 		}
 		catch (error) {
@@ -89,18 +88,18 @@ export abstract class BaseWebViewController {
 				cmd.execute(this);
 				break;
 			}
-			// case 'log.warn': {
-			// 	Log.warn(message.message);
-			// 	break;
-			// }
-			// case 'log.info': {
-			// 	Log.info(message.message);
-			// 	break;
-			// }
 			default: {
 				this.receiveMessageFromWebView(message);
 			}
 		}
+	}
+
+	public postMessage(message: any): Thenable<boolean> {
+		if(!this._view) {
+			throw new XpException("Невозможно отобразить данные в окне, так как оно закрыто. Откройте его заново и повторите операцию");
+		}
+
+		return this._view.webview.postMessage(message);
 	}
 
 	public get view() : vscode.WebviewPanel {

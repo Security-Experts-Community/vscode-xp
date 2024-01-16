@@ -37,6 +37,7 @@ export class AppendEventsCommand extends WebViewCommand<AppendEventMessage> {
 		super(AppendEventsCommand.name, message);
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	public async execute(controller: BaseWebViewController) : Promise<void> {
         // Выбор либо одной директории либо одного файла.
         const showOpenDialogUris = await vscode.window.showOpenDialog({
