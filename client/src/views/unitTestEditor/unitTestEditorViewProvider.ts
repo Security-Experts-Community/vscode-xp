@@ -180,11 +180,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
       }
       case "saveTest": {
         await this.saveTest(message);
-
-        const inputEvents = TestHelper.formatTestCodeAndEvents(
-          this._test.getTestInputData()
-        );
-        await this.updateInputDataInView(inputEvents);
+        await this.updateInputDataInView(this._test.getTestInputData());
 
         const expectationData = TestHelper.formatTestCodeAndEvents(
           this._test.getTestExpectation()
@@ -195,7 +191,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
       }
 
       case "runTest": {
-        await this.runUnitTest(message);
+        await this.runUnitTestHandler(message);
         return;
       }
 
@@ -252,9 +248,8 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
   }
 
   private async documentIsReadyHandler(): Promise<boolean> {
-    const inputEvents = TestHelper.formatTestCodeAndEvents(
-      this._test.getTestInputData()
-    );
+    const inputEvents = this._test.getTestInputData();
+
     const expectationData = TestHelper.formatTestCodeAndEvents(
       this._test.getTestExpectation()
     );
@@ -286,11 +281,17 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
     // inputEvents : {language: json, data: string},
     // expectation: {language: json|xp-test-code, data: string},
     // }
-    return this.postMessage({
+    await this.postMessage({
       command: "setIUnitTestEditorViewContent",
       inputEvents: { language: inputType, data: inputEvents },
       expectation: { language: expectationLanguage, data: expectationData },
     });
+
+    // Если в тесте сохранены фактические данные, например, после запуска тестов по списку.
+    const actualData = this._test.getActualData();
+    if(actualData) {
+      return this.updateActualDataInView(actualData);
+    }
   }
 
   private async saveTest(message: any) {
@@ -298,16 +299,15 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
       const inputData = message?.inputData;
       if (!inputData) {
         throw new XpException(
-          `Не задано сырое событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`
+          `Не задано сырое событие для теста №${this._test.getNumber()}. Добавьте его и повторите`
         );
       }
-      const compressedInputData = TestHelper.compressTestCode(inputData);
-      this._test.setTestInputData(compressedInputData);
+      this._test.setTestInputData(inputData);
 
       const expectation = message?.expectation;
       if (!expectation) {
         throw new XpException(
-          `Не задано ожидаемое нормализованное событие для теста №${this._test.getNumber()}. Добавьте его и повторите.`
+          `Не задано ожидаемое нормализованное событие для теста №${this._test.getNumber()}. Добавьте его и повторите`
         );
       }
 
@@ -325,7 +325,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
     }
   }
 
-  private async runUnitTest(message: any) {
+  private async runUnitTestHandler(message: any) {
     if (!message?.inputData) {
       DialogHelper.showError(
         "Не заданы входные данные теста. Задайте их и повторите"
@@ -364,7 +364,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
 
           const actualData = this._test.getActualData();
           this.updateActualDataInView(actualData);
-          vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
+
         } catch (error) {
           const outputData = this._test.getOutput();
           this.updateActualDataInView(outputData);
@@ -372,7 +372,9 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
             error,
             "Неожиданная ошибка выполнения модульного теста"
           );
-        }
+        } finally {
+          vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
+        }        
       }
     );
   }
