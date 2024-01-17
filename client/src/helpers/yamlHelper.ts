@@ -69,6 +69,14 @@ export class YamlHelper {
         });
 	}
 
+	public static jsonToYaml(jsonStr: string) : string {
+		return js_yaml.dump(JSON.parse(jsonStr));
+	}
+
+	public static yamlToJson(yamlStr: string) : string {
+		return JSON.stringify(js_yaml.load(yamlStr, this.loadOptions));
+	}
+
 	public static parse(str: string): any {
 		return js_yaml.load(str, this.loadOptions);
 	}

@@ -39,6 +39,17 @@
     "definitionProvider": "true"
   },
   "contributes": {
+    "customEditors": [
+      {
+        "viewType": "xp.default-tl-value-editor",
+        "displayName": "Default TL Value Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.tl"
+          }
+        ]
+      }
+    ],
     "taskDefinitions": [
       {
         "type": "XP",
@@ -227,6 +238,46 @@
       ]
     },
     "menus": {
+      "webview/context": [
+        {
+          "command": "xp.DeleteTLRowCommand",
+          "when": "activeCustomEditorId == 'xp.default-tl-value-editor'"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "xp.openTLInTextEditor",
+          "when": "activeCustomEditorId == 'xp.default-tl-value-editor' && activeEditorIsNotPreview == false",
+          "group": "navigation@1"
+        },
+        {
+          "command": "xp.openTLPreview",
+          "when": "(resourceExtname == '.tl') && activeEditor == 'workbench.editors.files.textFileEditor'",
+          "group": "navigation@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "xp.DeleteTLRowCommand",
+          "when": "false"
+        },
+        {
+          "command": "xp.AddLOCTLRowCommand",
+          "when": "activeCustomEditorId == 'xp.default-tl-value-editor'"
+        }, 
+        {
+          "command": "xp.AddPTTLRowCommand",
+          "when": "activeCustomEditorId == 'xp.default-tl-value-editor'"
+        },
+        {
+          "command": "xp.openTLInTextEditor",
+          "when": "activeCustomEditorId == 'xp.default-tl-value-editor'"
+        },
+        {
+          "command": "xp.openTLPreview",
+          "when": "false"
+        } 
+      ],
       "editor/context": [
         {
           "when": "resourceLangId == test",
@@ -415,6 +466,34 @@
       ]
     },
     "commands": [
+      {
+        "command": "xp.DeleteTLRowCommand",
+        "title": "Delete TL Row",
+        "category": "Редактор XP"
+      },
+      {
+        "command": "xp.AddTLRowCommand",
+        "title": "Add TL Row",
+        "category": "Редактор XP"
+      },
+      {
+        "command": "xp.openTLInTextEditor",
+        "title": "Open in Text Editor",
+        "category": "Редактор XP",
+        "icon": "$(notebook-open-as-text)"
+      },
+      {
+        "command": "xp.openTLPreview",
+        "title": "Open Preview",
+        "category": "Редактор XP",
+        "icon": "$(open-preview)"
+      },
+      {
+        "command": "xp.openTLInDefultEditor",
+        "title": "Open in Default TL Editor",
+        "category": "Редактор XP",
+        "icon": "$(notebook-render-output)"
+      },
       {
         "command": "xp.retroCorrelationShow",
         "title": "%vscode-xp.views.knowledgebaseTree.showRetroCorrelationCommand%",

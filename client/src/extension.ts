@@ -22,7 +22,7 @@ import { Configuration } from './models/configuration';
 import { XpCompletionItemProvider } from './providers/xpCompletionItemProvider';
 import { ContentTreeProvider } from './views/contentTree/contentTreeProvider';
 import { RunningCorrelationGraphProvider } from './views/correlationGraph/runningCorrelationGraphProvider';
-import { TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
+import { DefaultTLValuesEditorViewProvider, TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
 import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvider';
 import { TestsFormatContentMenuExtension } from './ext/contextMenuExtension';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
@@ -126,6 +126,25 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		SetContentTypeCommand.init(config);
 		InitKBRootCommand.init(config);
 		RetroCorrelationViewController.init(config);
+
+		const openPreviewCommand = vscode.commands.registerCommand("xp.openTLPreview", () => {
+			const editor = vscode.window.activeTextEditor;
+			if (YamlHelper.parse(editor.document.getText()).fillType == 'Registry'){
+				vscode.commands.executeCommand('vscode.openWith',
+					editor?.document?.uri,
+					"xp.default-tl-value-editor",
+					{
+						preview: true,
+						viewColumn: vscode.ViewColumn.Beside
+					});
+			}
+		});
+		context.subscriptions.push(openPreviewCommand);
+		const templateFilePath = path.join(
+			config.getExtensionPath(),
+			"client", "templates", "TableListEditor", "html", "TableListEditor.html"
+		);
+		context.subscriptions.push(DefaultTLValuesEditorViewProvider.register(context, templateFilePath, config));
 
 		siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(XPPackingTaskProvider.Type, new XPPackingTaskProvider(config));
 
