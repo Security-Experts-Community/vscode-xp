@@ -1,7 +1,7 @@
 {
     "Yes": "Да",
     "No": "Нет",
-    "NoPathSelected": "Путь не выбран",
+    "NoPathSelected": "Путь выбран",
     "TheKnowledgeBaseIsNotInitialized": "База знаний не проинициализирована. Создать необходимые папки для формата {0}?",
 
     "Test": "Тест", 
