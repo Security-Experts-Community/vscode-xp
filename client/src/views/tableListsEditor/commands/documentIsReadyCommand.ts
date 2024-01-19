@@ -24,13 +24,7 @@ export class DocumentIsReadyCommand implements TableListCommand {
 			tableObject = {
 				ttl : TableListsEditorViewProvider.DEFAULT_TTL_PER_SEC,
 				maxSize : TableListsEditorViewProvider.DEFAULT_MAX_SIZE,
-				typicalSize : TableListsEditorViewProvider.DEFAULT_TYPICAL_SIZE,
-				type : null,
-				fillType: null,
-				name: null,
-				metainfo: {
-					objectId: null
-				}
+				typicalSize : TableListsEditorViewProvider.DEFAULT_TYPICAL_SIZE
 			};
 		}
 
