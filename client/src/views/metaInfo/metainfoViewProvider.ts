@@ -45,7 +45,7 @@ export class MetainfoViewProvider {
 		return metaInfoViewProvider;
 	}
 
-	public showMetaInfoEditor(rule: RuleBaseItem) {
+	public async showMetaInfoEditor(rule: RuleBaseItem) : Promise<void> {
 
 		// Если открыта еще одна метаинформация, то закрываем её перед открытием новой.
 		if (this._view) {
@@ -90,11 +90,26 @@ export class MetainfoViewProvider {
 		metaInfo.ExtensionBaseUri = extensionBaseUri;
 
 		const webviewUri = this.getUri(this._view.webview, this._config.getExtensionUri(), ["client", "out", "ui.js"]);
-		const metainfoHtml = this._formatter.format({ ...metaInfo, "WebviewUri": webviewUri });
+		const metainfoHtml = this._formatter.format({ ...metaInfo,
+			WebviewUri: webviewUri,
+
+			// Локализация
+			Localization: {
+				Save: this._config.getMessage("Save"),
+				KnowledgeHolders : this._config.getMessage("KnowledgeHolders"),
+				Created: this._config.getMessage("Created"),
+				Updated: this._config.getMessage("Updated"),
+				Usecases: this._config.getMessage("Usecases"),
+				Falsepositives: this._config.getMessage("Falsepositives"),
+				Improvements: this._config.getMessage("Improvements"),
+				References: this._config.getMessage("References"),
+				DataSources: this._config.getMessage("DataSources"),
+			}
+		});
 		this._view.webview.html = metainfoHtml;
 	}
 
-	async receiveMessageFromWebView(message: any) {
+	private async receiveMessageFromWebView(message: any) {
 		switch (message.command) {
 			case 'saveMetaInfo': {
 				try {

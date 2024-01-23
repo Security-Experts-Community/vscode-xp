@@ -1,6 +1,7 @@
 {
     "Yes": "Да",
     "No": "Нет",
+    "Save": "Сохранить",
     "NoPathSelected": "Путь не выбран",
     "TheKnowledgeBaseIsNotInitialized": "База знаний не проинициализирована. Создать необходимые папки для формата {0}?",
 
@@ -16,5 +17,17 @@
     "ConditionForPassingTheTest" : "Условие прохождение теста",
     "GetExpectedEvent" : "Получить ожидаемое событие",
     "CompareYourResults": "Сравнить полученные результаты",
-    "ClearExpectedEvent": "Очистить ожидаемое событие"
+    "ClearExpectedEvent": "Очистить ожидаемое событие",
+
+    "ExpectedEventWasSuccessfullyUpdated": "Ожидаемое событие в коде теста успешно обновлено. Скорректируйте если необходимо и сохраните тест",
+    "UnableGetExpectedEvent": "Невозможно получить ожидаемое событие для теста, который завершился неуспешно",
+
+    "KnowledgeHolders" : "Авторы",
+    "Created": "Создано",
+    "Updated": "Обновлено",
+    "Usecases": "Сценарии использования",
+    "Falsepositives": "Ложноположительные сработки",
+    "Improvements": "Улучшения", 
+    "References": "Ссылки",
+    "DataSources": "Источники данных"
 }

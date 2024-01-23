@@ -1,6 +1,7 @@
 {
     "Yes": "Yes",
     "No": "No",
+    "Save": "Save",
     "NoPathSelected": "No path selected",
     "TheKnowledgeBaseIsNotInitialized": "The knowledge base is not initialized. Create required folders for {0} format?",
 
@@ -16,5 +17,17 @@
     "ConditionForPassingTheTest" : "Condition for passing the test",
     "GetExpectedEvent" : "Get expected event",
     "CompareYourResults": "Compare your results",
-    "ClearExpectedEvent": "Clear expected event"
+    "ClearExpectedEvent": "Clear expected event", 
+
+    "ExpectedEventWasSuccessfullyUpdated": "The expected event in the test code was successfully updated. Adjust if necessary and save the test",
+    "UnableGetExpectedEvent": "Unable to get expected event for test that failed",
+
+    "KnowledgeHolders" : "Authors",
+    "Created": "Created",
+    "Updated": "Updated",
+    "Usecases": "Use cases",
+    "Falsepositives": "False positives",
+    "Improvements": "Improvements", 
+    "References": "References",
+    "DataSources": "Data sources"
 }

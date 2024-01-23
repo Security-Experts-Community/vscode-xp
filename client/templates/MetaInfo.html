@@ -25,12 +25,12 @@
 	<div id="header" class="header__meta">
 		<div id="navigation">
 			<input id="name" type="text" value="{{Name}}" title="{{Name}}" pattern="[A-Z][a-zA-Z0-9_]+">
-			<p>Cоздано: {{FormattedCreated}}</p>
-			<p>Обновлено: {{FormattedUpdated}}</p>
+			<p>{{Localization.Created}}: {{FormattedCreated}}</p>
+			<p>{{Localization.Updated}}: {{FormattedUpdated}}</p>
 			<p>ID: {{ObjectId}}</p>
 		</div>
 
-		<input class="save" name="saveMetainfo" onclick="saveMetaInfo()" type="button" value="Сохранить">
+		<input class="save" name="saveMetainfo" onclick="saveMetaInfo()" type="button" value="{{Localization.Save}}">
 	</div>
 
 	<div id="main-body">
@@ -50,7 +50,7 @@
 				</tr> -->
 
 			<tr>
-				<td class="labels">Авторы</td>
+				<td class="labels">{{Localization.KnowledgeHolders}}</td>
 				<td>
 					{{#KnowledgeHolders}}
 					<div>
@@ -63,20 +63,20 @@
 			</tr>
 
 			<tr class="service">
-				<td class="labels">Создано</td>
+				<td class="labels">{{Localization.Created}}</td>
 				<td>
 					<input id="Created" readonly type="text" value="{{Created}}" title="{{Created}}">
 				</td>
 			</tr>
 
 			<tr class="service">
-				<td class="labels">Обновлено</td>
+				<td class="labels">{{Localization.Updated}}</td>
 				<td>
 					<input id="Updated" readonly type="text" value="{{Updated}}" title="{{Updated}}">
 				</td>
 			</tr>
 			<tr>
-				<td class="labels">Сценарии использования</td>
+				<td class="labels">{{Localization.Usecases}}</td>
 				<td>
 					{{#Usecases}}
 					<div>
@@ -90,7 +90,7 @@
 
 
 			<tr>
-				<td class="labels">Ложноположительные сработки</td>
+				<td class="labels">{{Localization.Falsepositives}}</td>
 				<td>
 					{{#Falsepositives}}
 					<div>
@@ -103,7 +103,7 @@
 			</tr>
 
 			<tr>
-				<td class="labels">Улучшения</td>
+				<td class="labels">{{Localization.Improvements}}</td>
 				<td>
 					{{#Improvements}}
 					<div>
@@ -116,7 +116,7 @@
 			</tr>
 
 			<tr>
-				<td class="labels">Ссылки</td>
+				<td class="labels">{{Localization.References}}</td>
 				<td>
 					{{#References}}
 					<div>
@@ -138,7 +138,7 @@
 						<vscode-option>MacOS</vscode-option>
 					</vscode-dropdown>
 				</div>
-				<td class="labels">Источники данных</td>
+				<td class="labels">{{Localization.DataSources}}</td>
 				<td>
 					{{#DataSources}}
 					<div>
