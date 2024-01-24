@@ -160,7 +160,7 @@ export class CorrelateEventsCommand extends WebViewCommand {
 
                     // Отдаем события во front-end.
                     const formattedEvents = TestHelper.formatTestCodeAndEvents(correlatedEventsString);
-                    const cleanedEvents = TestHelper.cleanTestCode(formattedEvents);
+                    const cleanedEvents = TestHelper.cleanRetroCorrelations(formattedEvents);
 					
                     controller.postMessage({
                         command : "correlatedEvents",

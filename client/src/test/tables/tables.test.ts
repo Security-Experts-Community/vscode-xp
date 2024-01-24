@@ -10,7 +10,7 @@ import { MetaInfo } from '../../models/metaInfo/metaInfo';
 
 suite('Табличные списки', () => {
 
-	test('Успешный парсинг ТС без указания имени', async () => {
+	test('Успешный парсинг ТС без указания имени файла табличного списка', async () => {
 		const tablePath = TestFixture.getTablesPath("AD_Domain_Controllers");
 		const testTablesPath = path.join(TestFixture.getFixturePath(), "tables");
 		const table = await Table.parseFromDirectory(tablePath);
@@ -25,17 +25,19 @@ suite('Табличные списки', () => {
 		assert.ok(table.getCommand());
 	});
 	
-	test('Успешный парсинг ТС с указанием имени', async () => {
+	test('Успешный парсинг ТС с указанием имени файла табличного списка', async () => {
 		const tablePath = TestFixture.getTablesPath("AD_Domain_Controllers");
 		const testTablesPath = path.join(TestFixture.getFixturePath(), "tables");
-		const table = await Table.parseFromDirectory(tablePath, "NewName");
+
+		const tableFileName = "table.tl";
+		const table = await Table.parseFromDirectory(tablePath, tableFileName);
 		
 		assert.strictEqual(table.getName(), "AD_Domain_Controllers");
 		assert.strictEqual(tablePath, path.join(testTablesPath, "AD_Domain_Controllers"));
 		assert.strictEqual(table.getParentPath(), testTablesPath);
 		assert.strictEqual(table.getDirectoryPath(), tablePath);
-		assert.strictEqual(table.getFileName(), "NewName");
-		assert.strictEqual(table.getFilePath(), path.join(tablePath, "NewName"));
+		assert.strictEqual(table.getFileName(), tableFileName);
+		assert.strictEqual(table.getFilePath(), path.join(tablePath, tableFileName));
 		assert.strictEqual(table.getMetaInfoFilePath(), path.join(tablePath, MetaInfo.METAINFO_FILENAME));
 		assert.ok(table.getCommand());
 	});
@@ -65,7 +67,7 @@ suite('Табличные списки', () => {
 		
 		const tablePath = TestFixture.getTablesPath("AD_Domain_Controllers");
 		const table = await Table.parseFromDirectory(tablePath);
-		const expectedObjectId = "LOC-TL-41842215";
+		const expectedObjectId = "LOC-TL-757135800";
 		assert.strictEqual(table.generateObjectId(), expectedObjectId);
 	});
 });

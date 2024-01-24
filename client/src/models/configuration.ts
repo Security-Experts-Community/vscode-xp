@@ -468,12 +468,16 @@ export class Configuration {
 	}
 
 	public getTmpDirectoryPath(rootFolder?: string) : string {
+		let systemTmpPath: string;
 		if(rootFolder) {
-			return path.join(os.tmpdir(), Configuration.getExtensionDisplayName(), rootFolder);
+			systemTmpPath = path.join(os.tmpdir(), Configuration.getExtensionDisplayName(), rootFolder);
+		} else {
+			systemTmpPath = path.join(os.tmpdir(), Configuration.getExtensionDisplayName());
 		}
-
-		return path.join(os.tmpdir(), Configuration.getExtensionDisplayName());
+	
+		return systemTmpPath;
 	}
+
 
 	public getTmpSiemjConfigPath(rootFolder: string) : string {
 		return path.join(this.getRandTmpSubDirectoryPath(rootFolder), Configuration.SIEMJ_CONFIG_FILENAME);

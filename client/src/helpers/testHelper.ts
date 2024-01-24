@@ -124,6 +124,37 @@ export class TestHelper {
 		return testCode;
 	}
 
+	public static cleanRetroCorrelations(testCode: string): string {
+		if (!testCode) { 
+			throw new ArgumentException("Не задан обязательных параметр", "testCode");
+		}
+
+		const regexPatterns = [
+			/\s*"generator.version"(\s*):(\s*)"(.*?",)/g,
+
+			/\s*"incident.name"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"incident.name"(\s*):(\s*)".*?"/g,	// в конце json-а
+
+			/\s*"siem_id"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"siem_id"(\s*):(\s*)".*?"/g,	// в конце json-а
+
+			/\s*"labels"(\s*):(\s*)".*?",/g,	// в середине json-а
+			/,\s*"labels"(\s*):(\s*)".*?"/g,	// в конце json-а
+
+			/\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"_subjects"(\s*):(\s*)\[[\s\S]*?\]/g,
+
+			/\s*"_objects"(\s*):(\s*)\[[\s\S]*?\],/g,
+			/,\s*"_objects"(\s*):(\s*)\[[\s\S]*?\]/g,
+		];
+
+		for (const regexPattern of regexPatterns) {
+			testCode = testCode.replace(regexPattern, "");
+		}
+
+		return testCode;
+	}
+
 	/**
 	 * Убирает из корреляционных событий технические поля
 	 * @param testCode код теста

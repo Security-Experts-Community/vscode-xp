@@ -1,8 +1,9 @@
 # Change Log
 
-## 3.11.X (Pre-Release)
+## 3.11.13 (Pre-Release)
 
 - локализовано окно редактора метаданных;
+- исправлена ошибка [#176](https://github.com/Security-Experts-Community/vscode-xp/issues/176) создания пустого kb-пакета для некоторых конфигураций (special thanks @qazws56866)
 
 ## 3.11.12 (Pre-Release)
 

@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as os from 'os';
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -144,7 +145,13 @@ export class PackKbAction {
 				const packageName = path.basename(packageDirPath);
 				progress.report({message: `Сборка пакета '${packageName}'`});
 
-				const tmpSubDirectoryPath = this._config.getRandTmpSubDirectoryPath();
+				// Исправляем системный путь с тильдой, утилита такого пути не понимает
+				let tmpSubDirectoryPath = this._config.getRandTmpSubDirectoryPath();
+				const username = os.userInfo().username;
+				tmpSubDirectoryPath = FileSystemHelper.resolveTildeWindowsUserHomePath(
+					tmpSubDirectoryPath,
+					username);
+				
 				await fs.promises.mkdir(tmpSubDirectoryPath, {recursive: true});
 
 				// Очищаем окно Output.

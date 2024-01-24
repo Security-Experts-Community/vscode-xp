@@ -1,11 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
 import * as crypto from 'crypto';
 import { ArgumentException } from '../models/argumentException';
 import { FileSystemException } from '../models/fileSystemException';
 import { Log } from '../extension';
-import { IntegrationTest } from '../models/tests/integrationTest';
 import { MetaInfo } from '../models/metaInfo/metaInfo';
 
 export class FileSystemHelper {
@@ -18,6 +16,17 @@ export class FileSystemHelper {
 	public static isValidPath(path : string): boolean {
 		const regExp = /^[A-z0-9./!$%&;:{}=\-_`~()]+$/g;
 		return regExp.test(path);
+	}
+
+	/**
+	 * Позволяется избавиться от тильды в сокращенном пути к пользовательской директории.
+	 * @param homePath Пусть к пользовательской директории
+	 * @param username Полное имя пользователя для замены.
+	 * @returns 
+	 */
+	public static resolveTildeWindowsUserHomePath(homePath : string, username: string): string {
+		const resolvedPath = homePath.replace(/\\[A-Za-z0-9]+~1\\/, `\\${username}\\`);
+		return resolvedPath;
 	}
 
 	public static async getLinesCount(filePath: string) : Promise<number> {
