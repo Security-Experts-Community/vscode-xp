@@ -85,8 +85,10 @@ export class ShowTestResultsDiffCommand extends Command {
 		}
 
 		const actualEvents = actualEventsString.split(os.EOL).filter(l => l);
+
 		// Отбираем ожидаемое событие по имени правила
-		const actualFilteredEvents = TestHelper.filterCorrelationEvents(actualEvents, ruleName);
+		// const actualFilteredEvents = TestHelper.filterCorrelationEvents(actualEvents, ruleName);
+		const actualFilteredEvents = actualEvents;
 
 		// Если мы не получили сработки нашей корреляции, тогда покажем те события, который отработали.
 		let formattedActualEvent = "";
