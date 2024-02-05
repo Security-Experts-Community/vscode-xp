@@ -1,5 +1,6 @@
 import { addEventListenerOnChangeToToggleSwitch } from "../../../shared/ui/toggleSwitch/js/toggleSwitch.js";
 import { jqDropdownRulesTleRows, jqDropdownAssetGridTleRows } from "../store/htmlStore.js";
+import { idRecordSizeMaxInputIdSelector, idRecordSizeTypicalInputIdSelector, table } from "./dataInsertionBehavior.js";
 import { addSpinersToAssetGridFields, addSpinersToRulesFields, disableRulesFieldsSpiners, enableRulesFieldsSpiners } from "./spinnerBehavior.js";
 import { checkIfInvalidInputsExist, validateAllInputs } from "./validation.js";
 
@@ -83,6 +84,13 @@ const _addOnChangeEventListenerToTypeDropdown = () => {
 	$(_typeDropdownIdSelector)[0].addEventListener("change", function () {
 		console.log(this.value)
 		insertTleRows(this.value);
+
+    if (!table.fillType) {
+      // для нового табличного списка при смене типа списка подставялем значения по-умолчанию
+      $(idRecordSizeTypicalInputIdSelector).val(table.typicalSize ?? "");
+      $(idRecordSizeMaxInputIdSelector).val(table.maxSize ?? "");
+      validateAllInputs();
+    }
 	})
 }
 
