@@ -118,15 +118,16 @@ export class MetaInfo {
 			metaInfo.ContentLabels = metaDict.ContentLabels as string[];
 		}
 
-		let attackDict = metaInfoAsInFile?.ATTACK;
-		if (useExpertContext) {
-			try {
-				attackDict = metaInfoAsInFile.ContentRelations.Implements.ATTACK;
-			}
-			catch (e) {
-				if (!(e instanceof TypeError)) throw e;
-			}
+		let attackDict = {};
+		// Обратная совместимость
+		if (metaInfoAsInFile?.ATTACK) {
+			attackDict = metaInfoAsInFile.ATTACK;
 		}
+		
+		if (metaInfoAsInFile?.ContentRelations?.Implements?.ATTACK) {
+			attackDict = metaInfoAsInFile.ContentRelations.Implements.ATTACK;
+		}
+		
 		if (attackDict) {
 			metaInfo.ATTACK = Object.keys(attackDict).map(
 				tactic => {
@@ -174,7 +175,7 @@ export class MetaInfo {
 		return this.Created;
 	}
 
-	public setUpdatedDate(date: Date) {
+	public setUpdatedDate(date: Date) : void {
 		this.Updated = date;
 		this.FormattedUpdated = DateHelper.dateToString(date);
 	}
@@ -183,7 +184,7 @@ export class MetaInfo {
 		return this.Updated;
 	}
 
-	public setName(name: string) {
+	public setName(name: string)  : void {
 		this.Name = name;
 	}
 
@@ -191,7 +192,7 @@ export class MetaInfo {
 		return this.Name;
 	}
 
-	public setObjectId(objectId: string) {
+	public setObjectId(objectId: string) : void {
 		this.ObjectId = objectId;
 	}
 
@@ -199,7 +200,7 @@ export class MetaInfo {
 		return this.ObjectId;
 	}
 
-	public setUseCases(usecase: string[]) {
+	public setUseCases(usecase: string[]) : void {
 		if (!usecase) {
 			this.Usecases = [];
 			return;
@@ -217,7 +218,7 @@ export class MetaInfo {
 		return this.Usecases;
 	}
 
-	public setKnowledgeHolders(knowledgeHolders: string[]) {
+	public setKnowledgeHolders(knowledgeHolders: string[]) : void {
 		if (!knowledgeHolders) {
 			this.KnowledgeHolders = [];
 			return;
@@ -235,7 +236,7 @@ export class MetaInfo {
 		return this.KnowledgeHolders;
 	}
 
-	public setImprovements(improvements: string[]) {
+	public setImprovements(improvements: string[]) : void {
 		if (!improvements) {
 			this.Improvements = [];
 			return;
@@ -253,7 +254,7 @@ export class MetaInfo {
 		return this.Improvements;
 	}
 
-	public setDataSources(dataSources: DataSource[]) {
+	public setDataSources(dataSources: DataSource[]) : void {
 		if (!dataSources) {
 			this.DataSources = [];
 			return;
@@ -266,7 +267,7 @@ export class MetaInfo {
 		return this.DataSources;
 	}
 
-	public setFalsePositives(falsepositives: string[]) {
+	public setFalsePositives(falsepositives: string[]) : void {
 		if (!falsepositives) {
 			this.Falsepositives = [];
 			return;
@@ -284,7 +285,7 @@ export class MetaInfo {
 		return this.Falsepositives;
 	}
 
-	public setReferences(references: string[]) {
+	public setReferences(references: string[]) : void {
 		if (!references) {
 			this.References = [];
 			return;
@@ -306,7 +307,7 @@ export class MetaInfo {
 		return this.ATTACK;
 	}
 
-	public setAttacks(attacks: Attack[]) {
+	public setAttacks(attacks: Attack[]) : void {
 		this.ATTACK = attacks;
 	}
 
