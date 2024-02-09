@@ -69,7 +69,8 @@ export class SaveTableListCommand implements TableListCommand {
 					await fs.promises.rmdir(prevTableDirPath, {recursive: true});
 				}
 
-				this._newTable.setName(tableObject.name);
+				this._newTable.setName(newTableName);
+				this._newTable.getMetaInfo().setName(newTableName);
 			}
 		} else {
 			// Создаем табличный список с нуля
