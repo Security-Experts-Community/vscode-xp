@@ -52,19 +52,24 @@ export class SaveTableListCommand implements TableListCommand {
 
 		// Либо редактируем существующий табличный список, либо создаём новый.
 		const tableObject = JSON.parse(this._message.data) as TableView;
+
+		if(!tableObject?.fillType) {
+			throw new XpException("Не задан тип табличного списка. Выберете тип из списка и повторите");
+		}
+
 		if(webView.getTable()) {
 			// Редактируем существующий
 			this._newTable = webView.getTable();
 
 			// Имя табличного списка изменилось
-			const prevTableName = tableObject.name;
-			if(this._newTable.getName() !== prevTableName) {
-				this._newTable.setName(tableObject.name);
-
-				const tableDirPath = this._newTable.getDirectoryPath();
-				if(fs.existsSync(tableDirPath)) {
-					await fs.promises.rmdir(tableDirPath, {recursive: true});
+			const newTableName = tableObject.name;
+			if(this._newTable.getName() !== newTableName) {
+				const prevTableDirPath = this._newTable.getDirectoryPath();
+				if(fs.existsSync(prevTableDirPath)) {
+					await fs.promises.rmdir(prevTableDirPath, {recursive: true});
 				}
+
+				this._newTable.setName(tableObject.name);
 			}
 		} else {
 			// Создаем табличный список с нуля
