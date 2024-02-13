@@ -1,8 +1,8 @@
 import { addEventListenerOnChangeToToggleSwitch } from "../../../shared/ui/toggleSwitch/js/toggleSwitch.js";
 import { jqDropdownRulesTleRows, jqDropdownAssetGridTleRows } from "../store/htmlStore.js";
-import { idRecordSizeMaxInputIdSelector, idRecordSizeTypicalInputIdSelector, table } from "./dataInsertionBehavior.js";
+import { idRecordSizeMaxInputIdSelector, idRecordSizeTypicalInputIdSelector, table, timeDayInputClassSelector, timeHourInputClassSelector, timeMinuteInputClassSelector } from "./dataInsertionBehavior.js";
 import { addSpinersToAssetGridFields, addSpinersToRulesFields, disableRulesFieldsSpiners, enableRulesFieldsSpiners } from "./spinnerBehavior.js";
-import { checkIfInvalidInputsExist, validateAllInputs } from "./validation.js";
+import { validateAllInputs } from "./validation.js";
 
 const _registryTypeString = 'Registry';
 const _correlationRuleTypeString = 'CorrelationRule';
@@ -34,9 +34,25 @@ const _disableTimeInputsAndRemoveValidationClassAndRemoveInsertedValues = () => 
 }
 
 export const enableOrDisableTimeInputs = (isSwitchChecked) => {
+	console.log('enableOrDisableTimeInputs  isSwitchChecked:', isSwitchChecked);
+
 	if (isSwitchChecked) {
 		_enableTimeInputsAndAddValidationClass()
 		enableRulesFieldsSpiners();
+		if (!table.fillType && table.ttl) {
+			// для нового табличного списка подставялем значения по-умолчанию
+			try {
+				const days = Math.floor(table.ttl / (3600*24));
+				const hours = Math.floor(table.ttl % (3600*24) / 3600);
+				const minutes = Math.floor(table.ttl % 3600 / 60);
+				
+				$(timeDayInputClassSelector).val(days || 0);
+				$(timeHourInputClassSelector).val(hours || 0);
+				$(timeMinuteInputClassSelector).val(minutes || 0);
+			} catch (err) {
+				console.log('enableOrDisableTimeInputs', err)
+			}
+	  }
 	} else {
 		_disableTimeInputsAndRemoveValidationClassAndRemoveInsertedValues();
 		disableRulesFieldsSpiners();
@@ -85,12 +101,24 @@ const _addOnChangeEventListenerToTypeDropdown = () => {
 		console.log(this.value)
 		insertTleRows(this.value);
 
-    if (!table.fillType) {
-      // для нового табличного списка при смене типа списка подставялем значения по-умолчанию
-      $(idRecordSizeTypicalInputIdSelector).val(table.typicalSize ?? "");
-      $(idRecordSizeMaxInputIdSelector).val(table.maxSize ?? "");
-      validateAllInputs();
-    }
+    	if (!table.fillType) {
+      		// для нового табличного списка при смене типа списка подставялем значения по-умолчанию
+      		$(idRecordSizeTypicalInputIdSelector).val(table.typicalSize ?? "");
+      		$(idRecordSizeMaxInputIdSelector).val(table.maxSize ?? "");
+			if (table.ttl !== 0) {
+				$(_timeSwitchIdSelector).trigger('change');
+				enableOrDisableTimeInputs(true)
+	
+				const days = Math.floor(table.ttl / (3600*24));
+				const hours = Math.floor(table.ttl % (3600*24) / 3600);
+				const minutes = Math.floor(table.ttl % 3600 / 60);
+	
+				$(timeDayInputClassSelector).val(days || 0);
+				$(timeHourInputClassSelector).val(hours || 0);
+				$(timeMinuteInputClassSelector).val(minutes || 0);
+			}
+      		validateAllInputs();
+    	}
 	})
 }
 

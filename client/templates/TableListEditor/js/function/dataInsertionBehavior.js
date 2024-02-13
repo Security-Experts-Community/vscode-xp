@@ -17,9 +17,9 @@ const nullableCheckboxClassSelector = '.jqNullableCheckbox';
 
 export const idRecordSizeTypicalInputIdSelector = '#jqRecordSizeTypicalInput';
 export const idRecordSizeMaxInputIdSelector = '#jqRecordSizeMaxInput';
-const timeDayInputClassSelector = '.jqTimeDayInput';
-const timeHourInputClassSelector = '.jqTimeHourInput';
-const timeMinuteInputClassSelector = '.jqTimeMinuteInput';
+export const timeDayInputClassSelector = '.jqTimeDayInput';
+export const timeHourInputClassSelector = '.jqTimeHourInput';
+export const timeMinuteInputClassSelector = '.jqTimeMinuteInput';
 const timeSwitchIdSelector = '#jqTimeSwitch';
 
 export let currentObjectId;
