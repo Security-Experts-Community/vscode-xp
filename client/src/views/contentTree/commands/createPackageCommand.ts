@@ -15,7 +15,7 @@ export class CreatePackageCommand {
 
 	static CommandName = "SiemContentEditor.createPackageCommand";
 
-	public async execute(selectedItem: RuleBaseItem) {
+	public async execute(selectedItem: RuleBaseItem) : Promise<void> {
 
 		const userInput = await vscode.window.showInputBox(
 			{

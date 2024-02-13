@@ -129,7 +129,7 @@ export class Correlation extends RuleBaseItem {
 		return correlation;
 	}
 
-	public async duplicate(newName: string, newParentPath?: string) : Promise<Correlation> {
+	public async duplicate(newName: string, newParentPath?: string) : Promise<RuleBaseItem> {
 		// Дублируем правило без цикличных зависимостей
 		const copy: Correlation = JSON.parse(JSON.stringify(this, (key, value) => {
 			const filterList = ['_rule', 'command'];
@@ -143,6 +143,8 @@ export class Correlation extends RuleBaseItem {
 				title: "Open File",
 				arguments: [duplicatedRule]
 			});
+
+		duplicatedRule.getRuleFilePath();
 
 		// Если задан новый родительский каталог, то обновляем соответствующий параметр
 		if (!newParentPath){
@@ -173,6 +175,9 @@ export class Correlation extends RuleBaseItem {
 		duplicatedRule.setIntegrationTests(fixedIntegrationTests);
 
 		const fixedMetainfo = Object.assign(MetaInfo.create(duplicatedRule), duplicatedRule.getMetaInfo()) as MetaInfo;
+		// Обновление ObjectId
+		fixedMetainfo.setObjectId(duplicatedRule.generateObjectId());
+
 		const fixedCreatedDate = Object.assign(new Date(), fixedMetainfo.getCreatedDate()) as Date;
 		fixedMetainfo.setCreatedDate(fixedCreatedDate);
 		const fixedUpdatedDate = Object.assign(new Date(), fixedMetainfo.getUpdatedDate()) as Date;
@@ -293,7 +298,7 @@ export class Correlation extends RuleBaseItem {
 			// Модифицируем код, если он есть
 			if (ruleCode) {
 				const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode(newRuleName, ruleCode);
-				await this.setRuleCode(newRuleCode);
+				await this.setRuleCode(newRuleCode, false);
 			}
 		}
 

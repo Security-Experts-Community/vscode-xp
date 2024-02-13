@@ -7,7 +7,7 @@ export class OpenKnowledgebaseCommand {
 
 	static openKnowledgebaseCommand = "SiemContentEditor.openKnowledgebaseCommand";
 
-	public async execute() {
+	public async execute() : Promise<void> {
 
 		const showOpenDialogUris = await vscode.window.showOpenDialog({
 			canSelectMany: false, 

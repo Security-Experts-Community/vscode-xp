@@ -32,7 +32,7 @@ export class ContentVerifierCommand {
 		private readonly _config: Configuration
 	) { }
 
-	async execute(parentItem: ContentTreeBaseItem) {
+	async execute(parentItem: ContentTreeBaseItem) : Promise<void> {
 		this._integrationTestTmpFilesPath = this._config.getRandTmpSubDirectoryPath();
 
 		return await vscode.window.withProgress({

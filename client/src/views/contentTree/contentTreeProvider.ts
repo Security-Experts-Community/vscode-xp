@@ -37,6 +37,7 @@ import { ContentVerifierCommand } from './commands/ruleVerifierCommand';
 import { BuildLocalizationsCommand } from './commands/buildLocalizationsCommand';
 import { BuildWldCommand } from './commands/buildWldCommand';
 import { BuildNormalizationsCommand } from './commands/buildNormalizationsCommand';
+import { DuplicateTreeItemCommand } from './commands/duplicateTreeItemCommand';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeBaseItem> {
 
@@ -155,8 +156,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			vscode.commands.registerCommand(
 				CreateSubFolderCommand.CommandName,
 				async (item: RuleBaseItem) => {
-					const createSubFolderCommand = new CreateSubFolderCommand();
-					createSubFolderCommand.execute(item);
+					const command = new CreateSubFolderCommand();
+					command.execute(item);
 				},
 				this
 			)
@@ -167,8 +168,20 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			vscode.commands.registerCommand(
 				RenameTreeItemCommand.CommandName,
 				async (item: RuleBaseItem) => {
-					const renameRuleCommand = new RenameTreeItemCommand();
-					renameRuleCommand.execute(item);
+					const command = new RenameTreeItemCommand(config);
+					command.execute(item);
+				},
+				this
+			)
+		);
+
+		// Дублирование правила.
+		context.subscriptions.push(
+			vscode.commands.registerCommand(
+				DuplicateTreeItemCommand.CommandName,
+				async (item: RuleBaseItem) => {
+					const command = new DuplicateTreeItemCommand(config);
+					command.execute(item);
 				},
 				this
 			)
@@ -179,8 +192,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			vscode.commands.registerCommand(
 				DeleteContentItemCommand.CommandName,
 				async (item: RuleBaseItem) => {
-					const deleteSubFolderCommand = new DeleteContentItemCommand();
-					deleteSubFolderCommand.execute(item);
+					const command = new DeleteContentItemCommand();
+					command.execute(item);
 				},
 				this
 			)
@@ -191,8 +204,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			vscode.commands.registerCommand(
 				CreatePackageCommand.CommandName,
 				async (item: RuleBaseItem) => {
-					const createPackageCommand = new CreatePackageCommand();
-					createPackageCommand.execute(item);
+					const command = new CreatePackageCommand();
+					command.execute(item);
 				},
 				this
 			)

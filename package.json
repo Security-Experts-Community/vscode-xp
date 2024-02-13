@@ -5,7 +5,7 @@
   "author": "Dmitry Fedosov (@DmitryOffsec)",
   "icon": "resources/xp.png",
   "license": "MIT",
-  "version": "3.11.17",
+  "version": "3.11.18",
   "repository": {
     "type": "git",
     "url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -398,6 +398,11 @@
           "group": "ZCommonItems@2"
         },
         {
+          "command": "SiemContentEditor.duplicateTreeItemCommand",
+          "when": "view == KnowledgebaseTree && viewItem == Correlation",
+          "group": "ZCommonItems@3"
+        },
+        {
           "command": "SiemContentEditor.deleteContentItemCommand",
           "when": "view == KnowledgebaseTree",
           "group": "ZCommonItems@4"
@@ -520,6 +525,11 @@
       {
         "command": "SiemContentEditor.renameTreeItemCommand",
         "title": "%vscode-xp.views.knowledgebaseTree.renameCommand%",
+        "category": "Редактор XP"
+      },
+      {
+        "command": "SiemContentEditor.duplicateTreeItemCommand",
+        "title": "%vscode-xp.views.knowledgebaseTree.duplicateCommand%",
         "category": "Редактор XP"
       },
       {

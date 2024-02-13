@@ -12,6 +12,7 @@
 	"vscode-xp.views.knowledgebaseTree.verifyFolderCommand": "Проверить",
 	"vscode-xp.views.knowledgebaseTree.deleteCommand": "Удалить",
 	"vscode-xp.views.knowledgebaseTree.renameCommand": "Переименовать",
+	"vscode-xp.views.knowledgebaseTree.duplicateCommand": "Дублировать",
 
 	"vscode-xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Интеграционные тесты",
 	"vscode-xp.views.knowledgebaseTree.showMetainfoCommand": "Метаинформация",

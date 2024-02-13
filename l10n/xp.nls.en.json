@@ -5,6 +5,8 @@
     "NoPathSelected": "No path selected",
     "TheKnowledgeBaseIsNotInitialized": "The knowledge base is not initialized. Create required folders for {0} format?",
 
+    "NameOfNewRule": "Name of the new rule",
+
     "Test": "Test", 
     "SaveAll" : "Save all",
     "RunAllTests" : "Run all tests",

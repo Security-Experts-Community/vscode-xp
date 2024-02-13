@@ -5,6 +5,8 @@
     "NoPathSelected": "Путь не выбран",
     "TheKnowledgeBaseIsNotInitialized": "База знаний не проинициализирована. Создать необходимые папки для формата {0}?",
 
+    "NameOfNewRule": "Название нового правила",
+
     "Test": "Тест", 
     "SaveAll" : "Сохранить все",
     "RunAllTests" : "Запустить все тесты",
