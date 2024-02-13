@@ -293,18 +293,28 @@
 								el.innerHTML = prevHTML;
 								setCaret(pos + difference < 0 ? pos : pos + difference);
 							}
-						}
+						} else if (e.key === 'Enter') {
+							const newLine = '\n';
+							undos.push(el.innerHTML)
+							const pos = caret() + newLine.length;
+							const range = window.getSelection().getRangeAt(0);
+							range.deleteContents();
+							document.execCommand("InsertHTML", false, newLine);
+							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
+							setCaret(pos);
+							e.preventDefault();
+    					}
 					});
 
 					// Обработка вставки символа с поддержкой выделения на Ctrl+A.
 					el.addEventListener('keyup', e => {
-						if ((e.keyCode >= 0x30 || e.keyCode == 0x20 || e.code === 'Delete' || e.code === 'Backspace' || e.code === 'Enter') && !(e.ctrlKey && e.code == 'KeyA') && !(e.ctrlKey && e.code == 'KeyZ') && !(e.ctrlKey && e.code == 'KeyY')) {
+						if ((e.keyCode >= 0x30 || e.keyCode == 0x20 || e.code === 'Delete' || e.code === 'Backspace') && !(e.ctrlKey && e.code == 'KeyA') && !(e.ctrlKey && e.code == 'KeyZ') && !(e.ctrlKey && e.code == 'KeyY')) {
 							const pos = caret();
 							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
-							setCaret(e.code === 'Enter' ? pos + 1 : pos);
-						}
+							setCaret(pos);
+    					}
 					});
-
+					
 				};
 
 			function toggleTextarea(arrow) {
@@ -438,6 +448,8 @@
 			window.addEventListener(
 				'message', 
 				(event) => {
+					console.log('event:', event);
+
 					const message = event.data; 
 					switch (message.command) {
 						case 'updateRawEvents': {
@@ -665,6 +677,8 @@
 					// Получаем значения.
 					const testObject = baseTestElement.data("test");
 					const testCode = baseTestElement.find('[name="expect"]').text();
+					console.log('testCode:', testCode);
+
 
 					vscode.postMessage({
 						command: 'cleanTestCode',
