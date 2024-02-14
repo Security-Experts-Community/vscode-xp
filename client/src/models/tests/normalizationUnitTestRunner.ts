@@ -49,7 +49,9 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 		let expectationObject = {};
 		try {
 			expectationObject = JSON.parse(unitTest.getTestExpectation());
-			expectationObject = this.clearIrrelevantFields(expectationObject);
+			if(!JsHelper.isEmptyObj(expectationObject)) {
+				expectationObject = this.clearIrrelevantFields(expectationObject);
+			}
 		}
 		catch(error) {
 			throw new XpException("Ожидаемый результат содержит некорректный JSON. Скорректируйте его и повторите", error);

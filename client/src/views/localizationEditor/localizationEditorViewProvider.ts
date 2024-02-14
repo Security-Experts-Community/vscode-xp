@@ -252,12 +252,12 @@ export class LocalizationEditorViewProvider {
 	private async saveLocalization(localization : any, informUser : boolean) {
 		// Получаем описание на русском
 		let ruDescription = localization.RuDescription as string;
-		ruDescription = StringHelper.textToOneLineAndTrim(ruDescription);
+		ruDescription = ruDescription.trim();
 		this._rule.setRuDescription(ruDescription);
 
 		// Получаем описание на английском
 		let enDescription = localization.EnDescription as string;
-		enDescription = StringHelper.textToOneLineAndTrim(enDescription);
+		enDescription = enDescription.trim();
 		this._rule.setEnDescription(enDescription);
 
 		// Получаем нужные данные из вебвью и тримим их.
