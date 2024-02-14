@@ -157,8 +157,22 @@
 			const redos = [];
 			const undos = [];
 
+			function normalizeTestCode (testCode) {
+				if (!testCode || typeof testCode !== 'string') return testCode;
+
+				const pattern = /(expect.*$)/m;
+				const pos = testCode.search(pattern)
+
+				if (pos > 1 && testCode.charAt(pos - 1) !== '\n') {
+					// встявляем перенос строки перед expect
+					return testCode.substr(0, pos) + '\n' + testCode.substr(pos)
+				}
+				
+				return testCode;
+			}
+
 			// Сохраняем все тесты.
-			function saveAllTests() {					
+			function saveAllTests() {	
 				const tests = [];
 				$(document).find("[name='test']").each(function () {
 					// Получаем поля теста.
@@ -171,7 +185,7 @@
 					}
 
 					const rawEvents = $(this).find('[name="raw_events"]').text();
-					const testCode = $(this).find('[name="expect"]').text();
+					const testCode = normalizeTestCode($(this).find('[name="expect"]').text());
 					const normEvents = $(this).find('[name="norm_event"]').text();
 
 					tests.push({
@@ -254,8 +268,6 @@
 					el.addEventListener('keydown', e => {
 						// Обработка символа табуляции
 						if (e.which === 9) {
-							console.log('Tab pressed');
-
 							undos.push(el.innerHTML)
 							const pos = caret() + tab.length;
 							const range = window.getSelection().getRangeAt(0);
@@ -265,13 +277,24 @@
 							setCaret(pos);
 							e.preventDefault();
 							return;
-						}
-
-						// Обработка enter, так как новая строка не формируется в html
-						if (e.which === 13) {
-							console.log('Enter pressed');
-
-							const newLine = '\n\n';
+						} else if (e.ctrlKey && e.code == 'KeyZ') {
+							const prevHTML = undo(redos, undos, el.innerHTML)
+							if (prevHTML) {
+								const difference = (el.innerHTML.length - prevHTML.length) || 0;
+								const pos = caret();
+								el.innerHTML = prevHTML;
+								setCaret(pos - difference < 0 ? pos : pos - difference);
+							}
+						} else if (e.ctrlKey && e.code == 'KeyY') {
+							const prevHTML = redo(redos, undos, el.innerHTML)
+							if (prevHTML) {
+								const difference = (prevHTML.length - el.innerHTML.length) || 0;
+								const pos = caret();
+								el.innerHTML = prevHTML;
+								setCaret(pos + difference < 0 ? pos : pos + difference);
+							}
+						} else if (e.key === 'Enter') {
+							const newLine = '\n';
 							undos.push(el.innerHTML)
 							const pos = caret() + newLine.length;
 							const range = window.getSelection().getRangeAt(0);
@@ -280,40 +303,18 @@
 							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
 							setCaret(pos);
 							e.preventDefault();
-							return;
     					}
 					});
 
 					// Обработка вставки символа с поддержкой выделения на Ctrl+A.
 					el.addEventListener('keyup', e => {
-						if ((e.keyCode >= 0x30 || e.keyCode == 0x20) && !(e.ctrlKey && e.code == 'KeyA') && !(e.ctrlKey && e.code == 'KeyZ') && !(e.ctrlKey && e.code == 'KeyY')) {
+						if ((e.keyCode >= 0x30 || e.keyCode == 0x20 || e.code === 'Delete' || e.code === 'Backspace') && !(e.ctrlKey && e.code == 'KeyA') && !(e.ctrlKey && e.code == 'KeyZ') && !(e.ctrlKey && e.code == 'KeyY')) {
 							const pos = caret();
 							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
 							setCaret(pos);
-						}
+    					}
 					});
-
-					el.addEventListener('keydown', e => {
-						if (e.ctrlKey && e.code == 'KeyZ') {
-							const prevHTML = undo(redos, undos, el.innerHTML)
-							if (prevHTML) {
-								el.innerHTML = prevHTML
-								const pos = caret();
-								setCaret(pos);
-							}
-						}
-					});
-
-					el.addEventListener('keydown', e => {
-						if (e.ctrlKey && e.code == 'KeyY') {
-							const prevHTML = redo(redos, undos, el.innerHTML)
-							if (prevHTML) {
-								el.innerHTML = prevHTML
-								const pos = caret();
-								setCaret(pos);
-							}
-						}
-					});
+					
 				};
 
 			function toggleTextarea(arrow) {
@@ -447,6 +448,8 @@
 			window.addEventListener(
 				'message', 
 				(event) => {
+					console.log('event:', event);
+
 					const message = event.data; 
 					switch (message.command) {
 						case 'updateRawEvents': {
@@ -674,6 +677,8 @@
 					// Получаем значения.
 					const testObject = baseTestElement.data("test");
 					const testCode = baseTestElement.find('[name="expect"]').text();
+					console.log('testCode:', testCode);
+
 
 					vscode.postMessage({
 						command: 'cleanTestCode',

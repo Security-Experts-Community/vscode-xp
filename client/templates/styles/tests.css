@@ -152,6 +152,7 @@ textarea {
 	min-height: 100px;
 	color: var(--vscode-input-foreground);
 	font-family: var(--vscode-editor-font-family);	
+	padding: 1px;
 }
 
 #correlated_events {
