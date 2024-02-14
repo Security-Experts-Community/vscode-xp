@@ -7,7 +7,7 @@
 
 ## 3.11.18 (Pre-Release)
 
-- добавлена функция дублирования правила корреляции (special thanks @g4n8g).
+- добавлена функция [#145](https://github.com/Security-Experts-Community/vscode-xp/issues/145) дублирования правила корреляции (special thanks @g4n8g).
 
 ## 3.11.17 (Pre-Release)
 
