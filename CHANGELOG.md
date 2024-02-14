@@ -1,5 +1,21 @@
 # Change Log
 
+## 3.13.X (Pre-Release)
+
+- реализована фича [#81](https://github.com/Security-Experts-Community/vscode-xp/issues/81) - частичная проверка заполнения полей в модульных тестах (special thanks @Ideas4Life).
+
+## 3.12.0 (Release)
+
+- реализована фича [#171](https://github.com/Security-Experts-Community/vscode-xp/issues/171) - описание функций и полей таксономии при наведении на них мышки;
+- начато добавление поддержки английского языка (special thanks @DuckDarkwing);
+- добавлено автоматическое сохранение при обновлении ожидаемого и сырого события в модульных тестах с повторным запуском теста (special thanks @zatraahali);
+- реализован фича [#156](https://github.com/Security-Experts-Community/vscode-xp/issues/156) - создание и редактирование структуры табличных списков (special thanks @iam_bdoxhn);
+- добавлена поддержка вложенности подправил (subrules) произвольной глубины (special thanks @bstvld);
+- добавлен бинарный модуль (исходный код [тут](https://github.com/Security-Experts-Community/rust-evtx-convert)) для преобразования evtx-файлов в нужный формат (special thanks @anfinogenov);
+- добавлена возможность пересобрать граф нормализаций (Дерево контента → ... → Компилировать все нормализации);
+- полностью переработано окно модульных тестов нормализаций и корреляций (special thanks @iam_bdoxhn);
+- добавлена функция [#145](https://github.com/Security-Experts-Community/vscode-xp/issues/145) дублирования правила корреляции (special thanks @g4n8g).
+
 ## 3.11.19 (Pre-Release)
 
 - добавлена возможность использовать новые строки в описании правил и табличных списков;

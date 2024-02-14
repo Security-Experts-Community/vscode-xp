@@ -70,6 +70,22 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 			throw new XpException("Возвращенное нормализатором событие не является корректным JSON. Проверьте и скорректируйте входное событие после чего повторите", error);
 		}
 
+		// Подсчитываем количество ожидаемых полей, которые существуют и равны фактическим.
+		let equalFieldCounter = 0;
+		for(const fieldName in expectationObject) {
+			if(clearActualEventObject[fieldName] && expectationObject[fieldName] === clearActualEventObject[fieldName]) {
+				++equalFieldCounter;
+				continue;
+			}
+			break;
+		}
+
+		// Случай, когда тест корректно покрывает часть полей.
+		if(equalFieldCounter === Object.keys(expectationObject).length) {
+			unitTest.setStatus(TestStatus.Success);
+			return unitTest;
+		}
+		
 		const difference = diffJson(expectationObject, clearActualEventObject);
 		
 		// let eventsDiff = "";
