@@ -1,8 +1,10 @@
 # Change Log
 
-## 3.13.X (Pre-Release)
+## 3.13.0 (Pre-Release)
 
-- реализована фича [#81](https://github.com/Security-Experts-Community/vscode-xp/issues/81) - частичная проверка заполнения полей в модульных тестах (special thanks @Ideas4Life).
+- реализована фича [#81](https://github.com/Security-Experts-Community/vscode-xp/issues/81) - частичная проверка заполнения полей в модульных тестах (special thanks @Ideas4Life);
+- добавлены значения полей по умолчанию при создании табличных списков: максимальный и типичный размер, время записи (special thanks @antonmantsurov);
+- исправлена двойная вставка символа новой строки при редактировании интеграционных тестов (special thanks @antonmantsurov).
 
 ## 3.12.0 (Release)
 
