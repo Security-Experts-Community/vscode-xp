@@ -139,7 +139,46 @@ export class MetaInfo {
 			);
 		}
 
+		// Локализации если есть, для макросов
+		// Filter:
+		// 	Name:
+		// 		ru: 'Проверяет специфичное значение для событий вайтлистинга, связанных с ...'
+		// 		en: 'Checks a specific value for ... events according to the whitelisting system'
+		// 	Description:
+		// 		ru: 'Данный фильтр используется для сокращения повторяющейся части проверки через систему табличных списков'
+		// 		en: 'This filter is used to reduce the repetitive part of the check through the table list system'
+		// 	UseAsEventName: false
+		const filter = metaDict?.Filter;
+		if(filter) {
+			const ruDescription = filter?.Name?.ru;
+			if(ruDescription) {
+				metaInfo.setRuDescription(ruDescription);
+			}
+
+			const enDescription = filter?.Name?.en;
+			if(enDescription) {
+				metaInfo.setEnDescription(enDescription);
+			}
+		}
+
 		return metaInfo;
+	}
+
+	/// Описания правила.
+	public setRuDescription(description: string) : void {
+		this._ruDescription = description;
+	}
+
+	public setEnDescription(description: string) : void {
+		this._enDescription = description;
+	}
+
+	public getRuDescription() : string {
+		return this._ruDescription;
+	}
+
+	public getEnDescription() : string {
+		return this._enDescription;
 	}
 
 	public async toObject(): Promise<any> {
@@ -412,6 +451,17 @@ export class MetaInfo {
 			delete metaInfoObject["ExpertContext"]["DataSources"];
 		}
 
+		// Локализация макроса, которая хранится в метаинформации.
+		const ruDescription = this.getRuDescription();
+		if(ruDescription) {
+			metaInfoObject["Filter"]["Name"]["ru"] = ruDescription;
+		}
+
+		const enDescription = this.getEnDescription();
+		if(enDescription) {
+			metaInfoObject["Filter"]["Name"]["en"] = enDescription;
+		}
+
 		let yamlContent = YamlHelper.stringify(metaInfoObject);
 		yamlContent = this.correctEventIds(yamlContent);
 
@@ -438,6 +488,8 @@ export class MetaInfo {
 	public static METAINFO_FILENAME = "metainfo.yaml";
 
 	private _directoryPath: string;
+	private _ruDescription : string;
+	private _enDescription : string;
 
 	private Created: Date;
 	private Updated: Date;

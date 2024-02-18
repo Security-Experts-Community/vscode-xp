@@ -369,13 +369,13 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			return;
 		}
 
-		const explorerCorrelation = await ContentTreeProvider.createContentElement(ruleDirectoryPath);
+		const rule = await ContentTreeProvider.createContentElement(ruleDirectoryPath);
 		// Директории не выделяем в дереве контента
-		if(explorerCorrelation.isFolder()) {
+		if(rule.isFolder()) {
 			return;
 		}
 
-		return kbTree.reveal(explorerCorrelation,
+		return kbTree.reveal(rule,
 		{
 			focus: true,
 			expand: false,
@@ -598,7 +598,9 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		const parentDirName = path.basename(parentPath);
 
 		// Дошли до уровня пакета.
-		if(directoryName === ContentTreeProvider.PACKAGES_DIRNAME || parentDirName === "") {
+		if(directoryName === ContentTreeProvider.PACKAGES_DIRNAME ||
+          directoryName ===  ContentTreeProvider.MACROS_DIRNAME ||
+          parentDirName === "") {
 			const packageFolder = await ContentFolder.create(parentPath, ContentFolderType.ContentRoot);
 			return Promise.resolve(packageFolder);
 		}
@@ -661,6 +663,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 	private _gitAPI : API;
 
 	public static readonly PACKAGES_DIRNAME = "packages";
+	public static readonly MACROS_DIRNAME = "common";
 	
 	public static readonly KnowledgebaseTreeId = 'KnowledgebaseTree';
 	

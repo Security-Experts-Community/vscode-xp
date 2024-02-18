@@ -388,6 +388,11 @@
           "group": "Macros@1"
         },
         {
+          "command": "LocalizationView.showLocalizationEditor",
+          "when": "view == KnowledgebaseTree && viewItem == Macros",
+          "group": "Macros@2"
+        },
+        {
           "command": "ModularTestsListView.removeTest",
           "when": "view == ModularTestsListView",
           "group": "ModularTest@4"

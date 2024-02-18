@@ -5,7 +5,8 @@
 - реализована фича [#81](https://github.com/Security-Experts-Community/vscode-xp/issues/81) - частичная проверка заполнения проверяемых полей в модульных тестах (special thanks @Ideas4Life);
 - добавлены значения полей по умолчанию при создании табличных списков: максимальный и типичный размер, время записи (special thanks @antonmantsurov);
 - исправлена двойная вставка символа новой строки при редактировании интеграционных тестов (special thanks @antonmantsurov);
-- добавлена фича [#167](https://github.com/Security-Experts-Community/vscode-xp/issues/167) - возможность запускать массовую проверку правила нормализации.
+- добавлена фича [#167](https://github.com/Security-Experts-Community/vscode-xp/issues/167) - возможность запускать массовую проверку правил нормализации;
+- добавлена возможность редактирования описания макроса.
 
 ## 3.12.0 (Release)
 

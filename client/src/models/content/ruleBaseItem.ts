@@ -232,11 +232,11 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 		return this._localizationExamples;
 	}
 
+	/// Описания правила.
 	public setRuDescription(description: string) : void {
 		this._ruDescription = description;
 	}
 
-	/// Описания правила.
 	public setEnDescription(description: string) : void {
 		this._enDescription = description;
 	}
@@ -554,7 +554,6 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 
 	private _ruWhitelistingDescriptions : any;
 	private _enWhitelistingDescriptions : any;
-	
 
 	private _localizations: Localization [] = [];
 	private _localizationExamples : LocalizationExample [] = [];
@@ -564,8 +563,6 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 	
 	private _ruDescription : string;
 	private _enDescription : string;
-
-
 
 	private _status : ContentItemStatus;
 	protected _ruleCode = "";
