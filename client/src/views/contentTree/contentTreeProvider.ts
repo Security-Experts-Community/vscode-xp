@@ -33,7 +33,7 @@ import { InitKBRootCommand } from './commands/initKnowledgebaseRootCommand';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { ContentTreeBaseItem } from '../../models/content/contentTreeBaseItem';
 import { LocalizationEditorViewProvider } from '../localizationEditor/localizationEditorViewProvider';
-import { ContentVerifierCommand } from './commands/ruleVerifierCommand';
+import { ContentVerifierCommand } from './commands/contentVerifierCommand';
 import { BuildLocalizationsCommand } from './commands/buildLocalizationsCommand';
 import { BuildWldCommand } from './commands/buildWldCommand';
 import { BuildNormalizationsCommand } from './commands/buildNormalizationsCommand';
