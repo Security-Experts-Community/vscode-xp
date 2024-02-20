@@ -16,6 +16,8 @@ import { RegExpHelper } from '../../../helpers/regExpHelper';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { YamlHelper } from '../../../helpers/yamlHelper';
 import { Log } from '../../../extension';
+import { ContentFolder } from '../../../models/content/contentFolder';
+import { Localization } from '../../../models/content/localization';
 
 export class UnpackKbCommand {
 	constructor(private _config: Configuration) {
@@ -112,6 +114,8 @@ export class UnpackKbCommand {
 
 			// TODO: Убрать этот фикс, когда починят экспорт из PTKB
 			ContentHelper.fixTables(outputDirPath);
+
+			// Корректировка имени для пакетов без заданного системного имени, в таком случае оно является GUID.
 			await this.correctPackageNameFromLocalizationFile(outputDirPath);
 
 			// Если внутри несколько пакетов.
@@ -154,12 +158,12 @@ export class UnpackKbCommand {
 		for (const packageName of packageNames) {
 			const regExp = /[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{12}/g;
 			if(regExp.test(packageName)) {
-				const metaDirPath = path.join(packagesPath, packageName, "_meta");
+				const metaDirPath = path.join(packagesPath, packageName, ContentFolder.PACKAGE_METAINFO_DIRNAME);
 				if(!fs.existsSync(metaDirPath)) {
 					continue;
 				}
 
-				const packageLocalizationPath = path.join(metaDirPath, "i18n", "i18n_en.yaml");
+				const packageLocalizationPath = path.join(metaDirPath, Localization.LOCALIZATIONS_DIRNAME, Localization.EN_LOCALIZATION_FILENAME);
 				if(!fs.existsSync(packageLocalizationPath)) {
 					continue;
 				}
@@ -170,7 +174,10 @@ export class UnpackKbCommand {
 					continue;
 				}
 
-				const packageLocalizationName = localizationObject.Name;
+				// Убираем пробелы на всякий случай
+				let packageLocalizationName = localizationObject.Name;
+				packageLocalizationName = packageLocalizationName.replace(/[ ]+/gm);
+
 				const existPackagePath = path.join(packagesPath, packageName);
 				const correctedPackagePath = path.join(packagesPath, packageLocalizationName);
 
@@ -182,7 +189,6 @@ export class UnpackKbCommand {
 	private readonly SUCCESS_SUBSTRING = "Knowledge base unpacking completed successfully";
 
 	private readonly ROOT_USERS_CONTENT_UNPACKED_DIRNAME = "objects";
-	private readonly CONTRACTS_UNPACKED_DIRNAME = "contracts";
 	private readonly MACRO_DIRNAME = "common";
 }
 

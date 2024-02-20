@@ -677,6 +677,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 
 	public static readonly PACKAGES_DIRNAME = "packages";
 	public static readonly MACROS_DIRNAME = "common";
+	public static readonly CONTRACTS_UNPACKED_DIRNAME = "contracts";
 	
 	public static readonly KnowledgebaseTreeId = 'KnowledgebaseTree';
 	

@@ -11,6 +11,7 @@ import { ProcessHelper } from '../../../helpers/processHelper';
 import { Configuration } from '../../../models/configuration';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
+import { ContentTreeProvider } from '../contentTreeProvider';
 
 export class PackSIEMAllPackagesAction {
 	constructor(private config: Configuration) {}
@@ -78,7 +79,7 @@ export class PackSIEMAllPackagesAction {
 				}
 
 				// Нужна ссылка в 
-				const contractsDirPath = path.join(tmpSubDirectoryPath, "contracts");
+				const contractsDirPath = path.join(tmpSubDirectoryPath, ContentTreeProvider.CONTRACTS_UNPACKED_DIRNAME);
 				await fs.promises.mkdir(contractsDirPath, {recursive: true});
 
 				// Проверяем путь к контрактам и копируем их.
@@ -172,7 +173,7 @@ export class PackKbAction {
 				}
 
 				// Создаем contracts
-				const contractsDirPath = path.join(tmpSubDirectoryPath, "contracts");
+				const contractsDirPath = path.join(tmpSubDirectoryPath, ContentTreeProvider.CONTRACTS_UNPACKED_DIRNAME);
 				await fs.promises.mkdir(contractsDirPath, {recursive: true});
 				
 				// Создаем contracts\origins
