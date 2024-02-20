@@ -323,11 +323,6 @@
           "group": "create@3"
         },
         {
-          "command": "xp.contentTree.createMacroCommand",
-          "when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == Macros)",
-          "group": "create@4"
-        },
-        {
           "command": "xp.contentTree.verifyFolder",
           "when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
           "group": "verify@1"
@@ -336,6 +331,11 @@
           "command": "TableListsEditorView.createTableList",
           "when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
           "group": "create@4"
+        },
+        {
+          "command": "xp.contentTree.createMacroCommand",
+          "when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == Macros)",
+          "group": "create@5"
         },
         {
           "command": "IntegrationTestEditorView.showEditor",

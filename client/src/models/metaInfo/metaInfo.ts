@@ -453,13 +453,36 @@ export class MetaInfo {
 
 		// Локализация макроса, которая хранится в метаинформации.
 		const ruDescription = this.getRuDescription();
-		if(ruDescription) {
-			metaInfoObject["Filter"]["Name"]["ru"] = ruDescription;
-		}
-
 		const enDescription = this.getEnDescription();
-		if(enDescription) {
-			metaInfoObject["Filter"]["Name"]["en"] = enDescription;
+		if(ruDescription || enDescription) {
+			metaInfoObject.Filter = {};
+			metaInfoObject.Filter.Name = {};
+
+			// Определены оба описания
+			if(ruDescription && enDescription) {
+				metaInfoObject.Filter = {};
+				metaInfoObject.Filter.Name = {};
+				metaInfoObject.Filter.Name.ru = ruDescription;
+				metaInfoObject.Filter.Name.en = enDescription;
+			}
+
+			// Определена только английское описание
+			if(ruDescription && !enDescription) {
+				metaInfoObject.Filter = {};
+				metaInfoObject.Filter.Name = {};
+				metaInfoObject.Filter.Name.ru = ruDescription;
+			}
+
+			// Определена только английская описание
+			if(enDescription && !ruDescription) {
+				metaInfoObject.Filter = {};
+				metaInfoObject.Filter.Name = {};
+				metaInfoObject.Filter.Name.en = enDescription;
+			}
+		} else {
+			if(metaInfoObject.Filter.Name) {
+				delete metaInfoObject.Filter;
+			}
 		}
 
 		let yamlContent = YamlHelper.stringify(metaInfoObject);
