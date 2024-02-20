@@ -480,7 +480,7 @@ export class MetaInfo {
 				metaInfoObject.Filter.Name.en = enDescription;
 			}
 		} else {
-			if(metaInfoObject.Filter.Name) {
+			if(metaInfoObject?.Filter?.Name) {
 				delete metaInfoObject.Filter;
 			}
 		}
