@@ -276,7 +276,7 @@ export class FileSystemHelper {
         return files;
     }
 
-    public static readFilesNameFilter(filePath: string, regExp: RegExp) {
+    public static readFilesNameFilter(filePath: string, regExp: RegExp): string[] {
 
         const files = fs.readdirSync(filePath, { withFileTypes: true })
             .filter(entity => entity.isFile())

@@ -12,6 +12,10 @@ import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem
 import { ContentHelper } from '../../../helpers/contentHelper';
 import { XpException } from '../../../models/xpException';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
+import { RegExpHelper } from '../../../helpers/regExpHelper';
+import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
+import { YamlHelper } from '../../../helpers/yamlHelper';
+import { Log } from '../../../extension';
 
 export class UnpackKbCommand {
 	constructor(private _config: Configuration) {
@@ -102,16 +106,18 @@ export class UnpackKbCommand {
 				
 
 			if(!executeResult.output.includes(this.SUCCESS_SUBSTRING)) {
-				DialogHelper.showError(`Не удалось распаковать пакет. Подробности приведены в панели Output.`);
+				DialogHelper.showError(`Не удалось распаковать пакет. Смотри Output`);
 				return;
 			} 
 
 			// TODO: Убрать этот фикс, когда починят экспорт из PTKB
 			ContentHelper.fixTables(outputDirPath);
+			await this.correctPackageNameFromLocalizationFile(outputDirPath);
 
 			// Если внутри несколько пакетов.
 			const packagesPackagePath = path.join(outputDirPath, ContentTreeProvider.PACKAGES_DIRNAME);
 			if(fs.existsSync(packagesPackagePath)) {
+				Log.info("Копирование распакованного пакета в целевую директорию");
 				await fse.copy(packagesPackagePath, packageDirPath, { overwrite: true });
 			}
 			
@@ -138,6 +144,39 @@ export class UnpackKbCommand {
 			await ContentTreeProvider.refresh();
 			DialogHelper.showInfo(`Пакет успешно распакован`);
 		});
+	}
+
+	private async correctPackageNameFromLocalizationFile(unpackPackageDirPath: string) : Promise<void> {
+		const packagesPath = path.join(unpackPackageDirPath, ContentTreeProvider.PACKAGES_DIRNAME);
+		const packageNames = FileSystemHelper.readSubDirectoryNames(packagesPath);
+
+		// Выбираем пакеты, именованные как идентификаторы
+		for (const packageName of packageNames) {
+			const regExp = /[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{12}/g;
+			if(regExp.test(packageName)) {
+				const metaDirPath = path.join(packagesPath, packageName, "_meta");
+				if(!fs.existsSync(metaDirPath)) {
+					continue;
+				}
+
+				const packageLocalizationPath = path.join(metaDirPath, "i18n", "i18n_en.yaml");
+				if(!fs.existsSync(packageLocalizationPath)) {
+					continue;
+				}
+
+				const localizationString = await FileSystemHelper.readContentFile(packageLocalizationPath);
+				const localizationObject = YamlHelper.parse(localizationString);
+				if(!localizationObject.Name) {
+					continue;
+				}
+
+				const packageLocalizationName = localizationObject.Name;
+				const existPackagePath = path.join(packagesPath, packageName);
+				const correctedPackagePath = path.join(packagesPath, packageLocalizationName);
+
+				await fse.move(existPackagePath, correctedPackagePath, {overwrite : true});
+			}
+		}
 	}
 
 	private readonly SUCCESS_SUBSTRING = "Knowledge base unpacking completed successfully";

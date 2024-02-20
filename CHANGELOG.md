@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.13.2 (Pre-Release)
+
+- добавлена возможность при распаковке пакета считывать его локализованное имя из метаданных вместо идентификатора (special thanks @r0mka_Ch).
+
 ## 3.13.1 (Pre-Release)
 
 - добавлена фича [#112](https://github.com/Security-Experts-Community/vscode-xp/issues/112) - создание макросов.
