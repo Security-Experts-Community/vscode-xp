@@ -54,8 +54,7 @@ export class BuildLocalizationsCommand {
 				);
 
 				// Добавляем новые строки, чтобы разделить разные запуски утилиты
-				this._config.getOutputChannel().append('\n\n\n');
-				this._config.getOutputChannel().show();
+				this._config.getOutputChannel().append('\n\n');
 
 				// Разбираем вывод siemJ и корректируем начало строки с диагностикой (исключаем пробельные символы)
 				const result = await this._outputParser.parse(siemJOutput.output);
