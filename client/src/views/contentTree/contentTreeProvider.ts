@@ -38,6 +38,7 @@ import { BuildLocalizationsCommand } from './commands/buildLocalizationsCommand'
 import { BuildWldCommand } from './commands/buildWldCommand';
 import { BuildNormalizationsCommand } from './commands/buildNormalizationsCommand';
 import { DuplicateTreeItemCommand } from './commands/duplicateTreeItemCommand';
+import { CreateMacroCommand } from './commands/createMacrosCommand';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeBaseItem> {
 
@@ -157,6 +158,18 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 				CreateSubFolderCommand.CommandName,
 				async (item: RuleBaseItem) => {
 					const command = new CreateSubFolderCommand();
+					command.execute(item);
+				},
+				this
+			)
+		);
+
+		// Создание макроса
+		context.subscriptions.push(
+			vscode.commands.registerCommand(
+				CreateMacroCommand.CommandName,
+				async (item: RuleBaseItem) => {
+					const command = new CreateMacroCommand(config);
 					command.execute(item);
 				},
 				this

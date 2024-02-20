@@ -108,6 +108,43 @@ export class Macros extends RuleBaseItem {
 		return marcos;
 	}
 
+	public static async create(name: string, parentDirectoryPath?: string) : Promise<Macros> {
+		const marco = new Macros(name, parentDirectoryPath);
+		
+		// Добавляем команду на открытие.
+		marco.setCommand({ 
+			command: ContentTreeProvider.onRuleClickCommand,  
+			title: "Open File", 
+			arguments: [marco] 
+		});
+
+		marco.setRuleCode(
+`filter ${name}(string $name) {
+	filter::NotFromCorrelator()
+	# and (
+	# 	filter::ProcessStart_Windows($name)
+	# 	or (
+	# 		object == "process"
+	# 		and action == "start"
+	# 		and not in_list([
+	# 			"windows",
+	# 			"endpoint_monitor",
+	# 			"sysmon"
+	# 			], event_src.title)
+	# 	)
+	# )
+	# and match(object.name, $name)
+}`);
+
+		// Метаданные по умолчанию.
+		const metaInfo = MetaInfo.create({
+			
+		});
+
+		marco.setMetaInfo(metaInfo);
+		return marco;
+	}
+
 	public getRuleFilePath(): string {
 		return path.join(this.getDirectoryPath(), this.getFileName());
 	}

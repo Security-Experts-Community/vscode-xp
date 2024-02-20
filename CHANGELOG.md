@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.13.1 (Pre-Release)
+
+- добавлена фича [#112](https://github.com/Security-Experts-Community/vscode-xp/issues/112) - создание макросов.
+
 ## 3.13.0 (Pre-Release)
 
 - реализована фича [#81](https://github.com/Security-Experts-Community/vscode-xp/issues/81) - частичная проверка заполнения проверяемых полей в модульных тестах (special thanks @Ideas4Life);

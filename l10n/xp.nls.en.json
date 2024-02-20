@@ -31,5 +31,13 @@
     "Falsepositives": "False positives",
     "Improvements": "Improvements", 
     "References": "References",
-    "DataSources": "Data sources"
+    "DataSources": "Data sources",
+
+    "MacroName": "Macro name",
+
+    "EmptyName": "The name cannot be empty",
+    "NameContainsInvalidCharacters": "The name contains invalid characters",
+    "NameReserved": "This name is reserved and cannot be used",
+    "NameValidCharacters": "Use only lowercase English letters, numbers and underscores",
+    "AlreadyExists": "This name already exists"
 }
