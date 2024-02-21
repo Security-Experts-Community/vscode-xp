@@ -10,7 +10,7 @@ export class CreateSubFolderCommand {
 
 	static CommandName = "SiemContentEditor.createSubFolderCommand";
 
-	public async execute(selectedItem: RuleBaseItem) {
+	public async execute(selectedItem: RuleBaseItem) : Promise<void> {
 
 		const userInput = await vscode.window.showInputBox(
 			{

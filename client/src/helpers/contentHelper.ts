@@ -11,6 +11,8 @@ import { Normalization } from '../models/content/normalization';
 import { YamlHelper } from './yamlHelper';
 import { KbHelper } from './kbHelper';
 import { RuleBaseItem } from '../models/content/ruleBaseItem';
+import { Table } from '../models/content/table';
+import { Macros } from '../models/content/macros';
 
 export class ContentHelper {
 
@@ -20,7 +22,7 @@ export class ContentHelper {
      * @returns локализуемое ли правило
      */
 	public static isLocalizableRule(rule: RuleBaseItem): boolean {
-		if (rule instanceof Enrichment) {
+		if (rule instanceof Enrichment || rule instanceof Table || rule instanceof Macros) {
 			return false;
 		}
 
@@ -49,6 +51,12 @@ export class ContentHelper {
 
 				// Если не удалось, тогда возвращаем с именем правила нормализации.
 				return `id = "${rule.getName()}"`;
+			}
+            // Правила без локализации
+            case "Macros": 
+			case "Table": 
+            case "Enrichment": {
+				return ``;
 			}
 			default: {
 				throw new XpException("Данный тип правил не поддерживается");

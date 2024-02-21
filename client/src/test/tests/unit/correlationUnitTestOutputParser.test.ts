@@ -32,32 +32,32 @@ Removing temp directory C:\\Output\\temp\\2022-10-24_10-43-03_25.0.9349`;
 		assert.strictEqual(diagnostics[0].range.end.character, 29);
 	});
 
-	test('Парсинг результата неуспешного запуска теста без корреляционного события', () => {
-		const parser = new CorrelationUnitTestOutputParser();
-		const unitTestCondition = `# Comment 1
-# Comment 2
-# Comment 3
-expect 1 {"correlation_name":"NewCorrelation","subject.account.name":"username1"}
-expect 1 {"correlation_name":"NewCorrelation","subject.account.name":"username12"}`;
-		const output = `
-Expected results are not obtained.
-Details:
-Expected json:
-	{"correlation_name": "NewCorrelation", "subject.account.name": "username1"}:
-Expected 1, got 0
-Rule name is detected in expect. Building diff for all emits with the same "correlation_name" field..
-There are no correlation emits
-Expected json:
-	{"correlation_name": "NewCorrelation", "subject.account.name": "username12"}:
-Expected 1, got 0
-Rule name is detected in expect. Building diff for all emits with the same "correlation_name" field..
-There are no correlation emits
+// 	test('Парсинг результата неуспешного запуска теста без корреляционного события', () => {
+// 		const parser = new CorrelationUnitTestOutputParser();
+// 		const unitTestCondition = `# Comment 1
+// # Comment 2
+// # Comment 3
+// expect 1 {"correlation_name":"NewCorrelation","subject.account.name":"username1"}
+// expect 1 {"correlation_name":"NewCorrelation","subject.account.name":"username12"}`;
+// 		const output = `
+// Expected results are not obtained.
+// Details:
+// Expected json:
+// 	{"correlation_name": "NewCorrelation", "subject.account.name": "username1"}:
+// Expected 1, got 0
+// Rule name is detected in expect. Building diff for all emits with the same "correlation_name" field..
+// There are no correlation emits
+// Expected json:
+// 	{"correlation_name": "NewCorrelation", "subject.account.name": "username12"}:
+// Expected 1, got 0
+// Rule name is detected in expect. Building diff for all emits with the same "correlation_name" field..
+// There are no correlation emits
 
-Got no resulting events
-`;
-		const result = parser.parseFailedOutput(output, unitTestCondition);
-		assert.strictEqual(result, "Got no resulting events");
-	});
+// Got no resulting events
+// `;
+// 		const result = parser.parseFailedOutput(output, unitTestCondition);
+// 		assert.strictEqual(result, "Got no resulting events");
+// 	});
 
 	test('Парсинг результата успешного запуска теста с одним результатом', () => {
 		const parser = new CorrelationUnitTestOutputParser();

@@ -41,9 +41,9 @@ suite('Корреляции', () => {
 			assert.strictEqual(unitTest.getTestsDirPath(), rule.getTestsPath());
 		});
 
-		rule.getIntegrationTests().forEach((interationTest) => {
-			assert.strictEqual(interationTest.getRuleDirectoryPath(), rule.getDirectoryPath());
-			assert.strictEqual(interationTest.getRuleFullPath(), rule.getFilePath());
+		rule.getIntegrationTests().forEach((integrationTest) => {
+			assert.strictEqual(integrationTest.getRuleDirectoryPath(), rule.getDirectoryPath());
+			assert.strictEqual(integrationTest.getRuleFullPath(), rule.getFilePath());
 		});
 
 		const expectedCommand = {

@@ -28,7 +28,7 @@ export class LogErrorCommand extends WebViewCommand {
 		super(LogErrorCommand.name, message);
 	}
 
-	public async execute(controller: BaseWebViewController) {
+	public async execute(controller: BaseWebViewController) : Promise<void> {
 		const message = this.message.params as string;
 		Log.error(`frontend: ${message}`);
 	}

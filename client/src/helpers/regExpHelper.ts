@@ -41,7 +41,7 @@ export class RegExpHelper {
 	}
 
 	public static getSingleExpectEvent(text: string) : string {
-		const result = /expect\s*1\s*({.*})/gm.exec(text);
+		const result = /expect\s*\d+\s*({.*})/gm.exec(text);
 
 		if(result.length !== 2) {
 			throw new Error("Не удалось извлечь ожидаемое событие из кода теста");

@@ -318,10 +318,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		}
 
 		Log.info(`Расширение '${Configuration.getExtensionDisplayName()}' активировано`);
-
-		// TODO: тест сервиса локализации
-		// const message = Configuration.get().getLocalizationService().getMessage("TheKnowledgeBaseIsNotInitialized", "3543");
-		// Log.info(message);
 	}
 	catch (error) {
 		ExceptionHelper.show(error, `Расширение '${Configuration.getExtensionDisplayName()}' не удалось активировать`);

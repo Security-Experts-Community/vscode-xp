@@ -8,7 +8,7 @@ import { ContentTreeProvider } from '../contentTreeProvider';
 export class DeleteContentItemCommand {
 	static CommandName = "SiemContentEditor.deleteContentItemCommand";
 
-	public async execute(selectedItem: RuleBaseItem) {
+	public async execute(selectedItem: RuleBaseItem) : Promise<void> {
 		const folderToDeletePath = selectedItem.getDirectoryPath();
 
 		try {

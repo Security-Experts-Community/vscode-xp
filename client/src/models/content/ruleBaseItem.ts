@@ -232,11 +232,11 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 		return this._localizationExamples;
 	}
 
+	/// Описания правила.
 	public setRuDescription(description: string) : void {
 		this._ruDescription = description;
 	}
 
-	/// Описания правила.
 	public setEnDescription(description: string) : void {
 		this._enDescription = description;
 	}
@@ -473,7 +473,7 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 	 * Изменяет код правила в памяти и на диске, если правило уже сохранено.
 	 * @param code новый код правила
 	 */
-	public setRuleCode(code: string): Promise<void> {
+	public setRuleCode(code: string, autosave = true): Promise<void> {
 		if(code === undefined) {
 			throw new XpException("Код правила не задан.");
 		}
@@ -482,13 +482,22 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 
 		// Меняем код правила на диске, если он там есть.
 		const ruleFilePath = this.getRuleFilePath();
-		if(fs.existsSync(ruleFilePath)) {
+		if(fs.existsSync(ruleFilePath) && autosave) {
 			return FileSystemHelper.writeContentFileIfChanged(ruleFilePath, code);
 		}
 	}
 
 	public async save(fullPath?: string) : Promise<void> {
-		throw new XpException("Сохранение данного типа контента не реализовано.");
+		throw new XpException("Сохранение данного типа контента не реализовано");
+	}
+
+	/**
+	 * Создает копию правила с новым именем и ObjectId.
+	 * @param newName новое имя правила
+	 * @param newParentPath новый путь
+	 */
+	public async duplicate(newName: string, newParentPath?: string) : Promise<RuleBaseItem> {
+		throw new XpException("Дублирование данного типа контента не реализовано");
 	}
 
 	public setStatus(status: ContentItemStatus, tooltip?: string) : void {
@@ -545,7 +554,6 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 
 	private _ruWhitelistingDescriptions : any;
 	private _enWhitelistingDescriptions : any;
-	
 
 	private _localizations: Localization [] = [];
 	private _localizationExamples : LocalizationExample [] = [];
@@ -555,8 +563,6 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 	
 	private _ruDescription : string;
 	private _enDescription : string;
-
-
 
 	private _status : ContentItemStatus;
 	protected _ruleCode = "";

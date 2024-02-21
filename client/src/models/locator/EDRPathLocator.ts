@@ -108,15 +108,15 @@ export class EDRPathHelper extends PathLocator {
 	}
 
 	public getRequiredRootDirectories(): string[]{
-		return [path.join("common", "rules_filters"), path.join('rules', "windows"), path.join('rules', "linux")];
+		return [path.join("resources", "build-resources", "common", "rules_filters"), path.join('rules', "windows"), path.join('rules', "linux")];
 	}
 
 	public isKbOpened() : boolean {
 		const kbPath = EDRPathHelper.get();
-		const requredFolders = kbPath.getContentRoots();
-		requredFolders.concat(kbPath.getRulesDirFilters());
-		for (const folder of requredFolders){
-			if (!fs.existsSync(folder)){
+		const requiredFolders = kbPath.getContentRoots();
+		requiredFolders.concat(kbPath.getRulesDirFilters());
+		for (const folder of requiredFolders){
+			if (!fs.existsSync(folder)) {
 				return false;
 			}
 		}

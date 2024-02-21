@@ -1,4 +1,3 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
@@ -8,9 +7,9 @@ import { DialogHelper } from '../../../helpers/dialogHelper';
 import { ContentHelper } from '../../../helpers/contentHelper';
 import { Configuration } from '../../../models/configuration';
 
-export class RenameTreeItemCommand {
+export class DuplicateTreeItemCommand {
 
-	static CommandName = "SiemContentEditor.renameTreeItemCommand";
+	static CommandName = "SiemContentEditor.duplicateTreeItemCommand";
 
 	constructor(private _config: Configuration) {
 	}
@@ -40,8 +39,8 @@ export class RenameTreeItemCommand {
 			{
 				ignoreFocusOut: true,
 				value : oldRuleName,
-				placeHolder: 'Новое название правила',
-				prompt: 'Новое название правила',
+				placeHolder: this._config.getMessage("NameOfNewRule"),
+				prompt: this._config.getMessage("NameOfNewRule"),
 				validateInput: (v) => {
 					return ContentHelper.validateContentItemName(v);
 				}
@@ -53,27 +52,16 @@ export class RenameTreeItemCommand {
 		}
 		
 		try {
-			// Получаем директорию для исходного правила, дабы удалить её после переименования.
-			const oldRuleDirectoryPath = selectedItem.getDirectoryPath();
-
 			const newRuleName = userInput.trim();
-			await selectedItem.rename(newRuleName);
-			await selectedItem.save();
+			const duplicate = await selectedItem.duplicate(newRuleName);
+			await duplicate.save();
 
-			// Если мы меняем не имя правила, а его регистр, то удалять правило не надо. 
-			// Иначе в Windows мы удалим новое правило.
-			const oldRuleNameLowerCase = oldRuleName.toLocaleLowerCase();
-			if(newRuleName.toLocaleLowerCase() !== oldRuleNameLowerCase) {
-				// Удаляем старое правило и сохраняем новое.
-				await fs.promises.rmdir(oldRuleDirectoryPath, { recursive: true });
-			}
-	
 			// Обновить дерево и открыть корреляцию.
-			await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
-			await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, selectedItem);
+			vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
+			vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, duplicate);
 		}
 		catch(error) {
-			DialogHelper.showInfo("Не удалось переименовать объект");
+			DialogHelper.showInfo("Не удалось дублировать правило");
 			return;
 		}
 	}

@@ -35,7 +35,7 @@ export class LocalizationEditorViewProvider {
 		private readonly _templatePath: string
 	) { }
 
-	public static init(config: Configuration) {
+	public static init(config: Configuration): void {
 
 		const templateFilePath = path.join(
 			config.getExtensionPath(), "client", "templates", "LocalizationEditor.html");
@@ -53,7 +53,7 @@ export class LocalizationEditorViewProvider {
 	}
 
 	public static showLocalizationEditorCommand = "LocalizationView.showLocalizationEditor";
-	public async showLocalizationEditor(rule: RuleBaseItem, keepTmpFiles = false) {
+	public async showLocalizationEditor(rule: RuleBaseItem, keepTmpFiles = false) : Promise<void> {
 
 		// Если открыта еще одна локализация, то закрываем её перед открытием новой.
 		if (this._view) {
@@ -128,7 +128,7 @@ export class LocalizationEditorViewProvider {
 	/**
 	 * Обновляем визуализацию правила
 	 */
-	public async updateView() {
+	public async updateView() : Promise<void> {
 		const localizations = this._rule.getLocalizations();
 
 		const plainLocalizations = localizations.map(
@@ -183,7 +183,7 @@ export class LocalizationEditorViewProvider {
 		this._view.webview.html = htmlContent;
 	}
 
-	async receiveMessageFromWebView(message: any) {
+	async receiveMessageFromWebView(message: any) : Promise<string> {
 		switch (message.command) {
 			case 'buildLocalizations': {
 				try {
@@ -197,7 +197,7 @@ export class LocalizationEditorViewProvider {
 					await ContentTreeProvider.refresh(this._rule);
 	
 					const localizations = message.localizations;
-					await this.saveLocalization(localizations);
+					await this.saveLocalization(localizations, false);
 					
 					const locExamples = await this.getLocalizationExamples();
 
@@ -240,7 +240,7 @@ export class LocalizationEditorViewProvider {
 			case 'saveLocalizations': {
 				try {
 					const localizations = message.localizations;
-					await this.saveLocalization(localizations);
+					await this.saveLocalization(localizations, true);
 				}
 				catch (error) {
 					ExceptionHelper.show(error, "Не удалось сохранить правила локализации");
@@ -249,15 +249,15 @@ export class LocalizationEditorViewProvider {
 		}
 	}
 
-	private async saveLocalization(localization : any) {
+	private async saveLocalization(localization : any, informUser : boolean) {
 		// Получаем описание на русском
 		let ruDescription = localization.RuDescription as string;
-		ruDescription = StringHelper.textToOneLineAndTrim(ruDescription);
+		ruDescription = ruDescription.trim();
 		this._rule.setRuDescription(ruDescription);
 
 		// Получаем описание на английском
 		let enDescription = localization.EnDescription as string;
-		enDescription = StringHelper.textToOneLineAndTrim(enDescription);
+		enDescription = enDescription.trim();
 		this._rule.setEnDescription(enDescription);
 
 		// Получаем нужные данные из вебвью и тримим их.
@@ -292,7 +292,9 @@ export class LocalizationEditorViewProvider {
 		}
 
 		await this._rule.saveMetaInfoAndLocalizations();
-		DialogHelper.showInfo(`Правила локализации для ${this._rule.getName()} сохранены`);
+		if(informUser) {
+			DialogHelper.showInfo(`Правила локализации для ${this._rule.getName()} сохранены`);
+		}
 	}
 
 	private async getLocalizationExamples(): Promise<LocalizationExample[]> {

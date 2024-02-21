@@ -5,7 +5,7 @@
   "author": "Dmitry Fedosov (@DmitryOffsec)",
   "icon": "resources/xp.png",
   "license": "MIT",
-  "version": "3.11.11",
+  "version": "3.13.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -207,11 +207,11 @@
     "viewsWelcome": [
       {
         "view": "KnowledgebaseTree",
-        "contents": "%vscode-xp.views.knowledgebaseTree.defaultContent%"
+        "contents": "%xp.views.knowledgebaseTree.defaultContent%"
       },
       {
         "view": "ModularTestsListView",
-        "contents": "%vscode-xp.views.modularTestsListView.defaultContent%"
+        "contents": "%xp.views.modularTestsListView.defaultContent%"
       }
     ],
     "viewsContainers": {
@@ -227,13 +227,13 @@
       "Content": [
         {
           "id": "KnowledgebaseTree",
-          "name": "%vscode-xp.views.knowledgebaseTree.title%",
-          "contextualTitle": "%vscode-xp.views.knowledgebaseTree.title%"
+          "name": "%xp.views.knowledgebaseTree.title%",
+          "contextualTitle": "%xp.views.knowledgebaseTree.title%"
         },
         {
           "id": "ModularTestsListView",
-          "name": "%vscode-xp.views.modularTestsListView.title%",
-          "contextualTitle": "%vscode-xp.views.modularTestsListView.title%"
+          "name": "%xp.views.modularTestsListView.title%",
+          "contextualTitle": "%xp.views.modularTestsListView.title%"
         }
       ]
     },
@@ -371,6 +371,11 @@
           "group": "create@4"
         },
         {
+          "command": "xp.contentTree.createMacroCommand",
+          "when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == Macros)",
+          "group": "create@5"
+        },
+        {
           "command": "IntegrationTestEditorView.showEditor",
           "when": "view == KnowledgebaseTree && viewItem == Correlation",
           "group": "Correlation@1"
@@ -421,6 +426,16 @@
           "group": "Enrichment@3"
         },
         {
+          "command": "MetaInfoView.showMetaInfoEditor",
+          "when": "view == KnowledgebaseTree && viewItem == Macros",
+          "group": "Macros@1"
+        },
+        {
+          "command": "LocalizationView.showLocalizationEditor",
+          "when": "view == KnowledgebaseTree && viewItem == Macros",
+          "group": "Macros@2"
+        },
+        {
           "command": "ModularTestsListView.removeTest",
           "when": "view == ModularTestsListView",
           "group": "ModularTest@4"
@@ -436,6 +451,11 @@
           "group": "ZCommonItems@2"
         },
         {
+          "command": "SiemContentEditor.duplicateTreeItemCommand",
+          "when": "view == KnowledgebaseTree && viewItem == Correlation",
+          "group": "ZCommonItems@3"
+        },
+        {
           "command": "SiemContentEditor.deleteContentItemCommand",
           "when": "view == KnowledgebaseTree",
           "group": "ZCommonItems@4"
@@ -449,6 +469,11 @@
           "command": "TableListsEditorView.showView",
           "when": "view == KnowledgebaseTree && viewItem == Table",
           "group": "Table@2"
+        },
+        {
+          "command": "LocalizationView.showLocalizationEditor",
+          "when": "view == KnowledgebaseTree && viewItem == Table",
+          "group": "Table@3"
         }
       ]
     },
@@ -476,7 +501,7 @@
       },
       {
         "command": "xp.retroCorrelationShow",
-        "title": "%vscode-xp.views.knowledgebaseTree.showRetroCorrelationCommand%",
+        "title": "%xp.views.knowledgebaseTree.showRetroCorrelationCommand%",
         "category": "Редактор XP"
       },
       {
@@ -486,44 +511,49 @@
       },
       {
         "command": "SiemContentEditor.openKnowledgebaseCommand",
-        "title": "%vscode-xp.views.knowledgebaseTree.openKnowledgebaseCommand%",
+        "title": "%xp.views.knowledgebaseTree.openKnowledgebaseCommand%",
         "category": "Редактор XP",
         "icon": "$(folder-opened)"
       },
       {
         "command": "SiemContentEditor.refreshKbTree",
-        "title": "%vscode-xp.views.knowledgebaseTree.refreshContentTreeCommand%",
+        "title": "%xp.views.knowledgebaseTree.refreshContentTreeCommand%",
         "icon": "$(refresh)"
       },
       {
         "command": "SiemContentEditor.createPackageCommand",
-        "title": "%vscode-xp.views.knowledgebaseTree.createPackageCommand%",
+        "title": "%xp.views.knowledgebaseTree.createPackageCommand%",
         "category": "Редактор XP"
       },
       {
         "command": "KnowledgebaseTree.showCreateCorrelationView",
-        "title": "%vscode-xp.views.knowledgebaseTree.createCorrelationCommand%",
+        "title": "%xp.views.knowledgebaseTree.createCorrelationCommand%",
         "category": "Редактор XP",
         "icon": "$(file-add)"
       },
       {
         "command": "KnowledgebaseTree.showCreateEnrichmentView",
-        "title": "%vscode-xp.views.knowledgebaseTree.createEnrichmentCommand%",
+        "title": "%xp.views.knowledgebaseTree.createEnrichmentCommand%",
         "category": "Редактор XP"
       },
       {
         "command": "KnowledgebaseTree.showCreateNormalizationView",
-        "title": "%vscode-xp.views.knowledgebaseTree.createNormalizationCommand%",
+        "title": "%xp.views.knowledgebaseTree.createNormalizationCommand%",
+        "category": "Редактор XP"
+      },
+      {
+        "command": "xp.contentTree.createMacroCommand",
+        "title": "%xp.views.knowledgebaseTree.createMacroCommand%",
         "category": "Редактор XP"
       },
       {
         "command": "TableListsEditorView.createTableList",
-        "title": "%vscode-xp.views.knowledgebaseTree.createTableListsCommand%",
+        "title": "%xp.views.knowledgebaseTree.createTableListsCommand%",
         "category": "Редактор XP"
       },
       {
         "command": "TableListsEditorView.showView",
-        "title": "%vscode-xp.views.knowledgebaseTree.showTableListsEditorCommand%",
+        "title": "%xp.views.knowledgebaseTree.showTableListsEditorCommand%",
         "category": "Редактор XP"
       },
       {
@@ -533,40 +563,40 @@
       },
       {
         "command": "KnowledgebaseTree.runningCorrelationGraph",
-        "title": "%vscode-xp.views.knowledgebaseTree.correlateEventsCommand%",
+        "title": "%xp.views.knowledgebaseTree.correlateEventsCommand%",
         "category": "Редактор XP",
         "icon": "$(outline-view-icon)"
       },
       {
         "command": "xp.contentTree.buildAll",
-        "title": "%vscode-xp.views.knowledgebaseTree.buildAllGraphsCommand%",
+        "title": "%xp.views.knowledgebaseTree.buildAllGraphsCommand%",
         "category": "Редактор XP",
         "icon": "$(debug-start)"
       },
       {
         "command": "xp.contentTree.buildLocalizations",
-        "title": "%vscode-xp.views.knowledgebaseTree.buildAllLocalizationsCommand%",
+        "title": "%xp.views.knowledgebaseTree.buildAllLocalizationsCommand%",
         "category": "Редактор XP"
       },
       {
         "command": "xp.contentTree.buildNormalizations",
-        "title": "%vscode-xp.views.knowledgebaseTree.buildAllNormalizationsCommand%",
+        "title": "%xp.views.knowledgebaseTree.buildAllNormalizationsCommand%",
         "category": "Редактор XP"
       },
       {
         "command": "xp.contentTree.buildWld",
-        "title": "%vscode-xp.views.knowledgebaseTree.buildAllWldsCommand%",
+        "title": "%xp.views.knowledgebaseTree.buildAllWldsCommand%",
         "category": "Редактор XP"
       },
       {
         "command": "KnowledgebaseTree.unpackKbPackage",
-        "title": "%vscode-xp.views.knowledgebaseTree.importKbFileCommand%",
+        "title": "%xp.views.knowledgebaseTree.importKbFileCommand%",
         "category": "Редактор XP",
         "icon": "$(package)"
       },
       {
         "command": "KnowledgebaseTree.buildKbPackage",
-        "title": "%vscode-xp.views.knowledgebaseTree.exportKbFileCommand%",
+        "title": "%xp.views.knowledgebaseTree.exportKbFileCommand%",
         "category": "Редактор XP",
         "icon": "$(debug-start)"
       },
@@ -577,29 +607,34 @@
       },
       {
         "command": "SiemContentEditor.createSubFolderCommand",
-        "title": "%vscode-xp.views.knowledgebaseTree.createFolderCommand%",
+        "title": "%xp.views.knowledgebaseTree.createFolderCommand%",
         "category": "Редактор XP",
         "icon": "$(new-folder)"
       },
       {
         "command": "SiemContentEditor.renameTreeItemCommand",
-        "title": "%vscode-xp.views.knowledgebaseTree.renameCommand%",
+        "title": "%xp.views.knowledgebaseTree.renameCommand%",
+        "category": "Редактор XP"
+      },
+      {
+        "command": "SiemContentEditor.duplicateTreeItemCommand",
+        "title": "%xp.views.knowledgebaseTree.duplicateCommand%",
         "category": "Редактор XP"
       },
       {
         "command": "SiemContentEditor.deleteContentItemCommand",
-        "title": "%vscode-xp.views.knowledgebaseTree.deleteCommand%",
+        "title": "%xp.views.knowledgebaseTree.deleteCommand%",
         "category": "Редактор XP",
         "icon": "$(notebook-delete-cell)"
       },
       {
         "command": "MetaInfoView.showMetaInfoEditor",
-        "title": "%vscode-xp.views.knowledgebaseTree.showMetainfoCommand%",
+        "title": "%xp.views.knowledgebaseTree.showMetainfoCommand%",
         "category": "Редактор XP"
       },
       {
         "command": "LocalizationView.showLocalizationEditor",
-        "title": "%vscode-xp.views.knowledgebaseTree.showLocalizationCommand%",
+        "title": "%xp.views.knowledgebaseTree.showLocalizationCommand%",
         "category": "Редактор XP"
       },
       {
@@ -633,7 +668,7 @@
       },
       {
         "command": "IntegrationTestEditorView.showEditor",
-        "title": "%vscode-xp.views.knowledgebaseTree.showIntegrationTestsCommand%",
+        "title": "%xp.views.knowledgebaseTree.showIntegrationTestsCommand%",
         "category": "Редактор XP"
       },
       {
@@ -648,7 +683,7 @@
       },
       {
         "command": "xp.contentTree.verifyFolder",
-        "title": "%vscode-xp.views.knowledgebaseTree.verifyFolderCommand%"
+        "title": "%xp.views.knowledgebaseTree.verifyFolderCommand%"
       }
     ],
     "keybindings": [

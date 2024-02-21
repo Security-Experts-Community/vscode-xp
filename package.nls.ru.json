@@ -1,38 +1,40 @@
 {
-	"vscode-xp.views.knowledgebaseTree.title": "Дерево контента",
-	"vscode-xp.views.knowledgebaseTree.refreshContentTreeCommand": "Обновить дерево контента",
-	"vscode-xp.views.knowledgebaseTree.openKnowledgebaseCommand": "Открыть базу знаний",
-	"vscode-xp.views.knowledgebaseTree.createPackageCommand": "Создать новый пакет",
-	"vscode-xp.views.knowledgebaseTree.createCorrelationCommand": "Создать правило корреляции",
-	"vscode-xp.views.knowledgebaseTree.createEnrichmentCommand": "Создать правило обогащения",
-	"vscode-xp.views.knowledgebaseTree.createNormalizationCommand": "Создать правило нормализации",
-	"vscode-xp.views.knowledgebaseTree.createTableListsCommand": "Создать табличный список",
-	"vscode-xp.views.knowledgebaseTree.createFolderCommand": "Создать директорию",
+	"xp.views.knowledgebaseTree.title": "Дерево контента",
+	"xp.views.knowledgebaseTree.refreshContentTreeCommand": "Обновить дерево контента",
+	"xp.views.knowledgebaseTree.openKnowledgebaseCommand": "Открыть базу знаний",
+	"xp.views.knowledgebaseTree.createPackageCommand": "Создать новый пакет",
+	"xp.views.knowledgebaseTree.createCorrelationCommand": "Создать правило корреляции",
+	"xp.views.knowledgebaseTree.createEnrichmentCommand": "Создать правило обогащения",
+	"xp.views.knowledgebaseTree.createNormalizationCommand": "Создать правило нормализации",
+	"xp.views.knowledgebaseTree.createTableListsCommand": "Создать табличный список",
+	"xp.views.knowledgebaseTree.createMacroCommand": "Создать макрос",
+	"xp.views.knowledgebaseTree.createFolderCommand": "Создать директорию",
 
-	"vscode-xp.views.knowledgebaseTree.verifyFolderCommand": "Проверить",
-	"vscode-xp.views.knowledgebaseTree.deleteCommand": "Удалить",
-	"vscode-xp.views.knowledgebaseTree.renameCommand": "Переименовать",
+	"xp.views.knowledgebaseTree.verifyFolderCommand": "Проверить",
+	"xp.views.knowledgebaseTree.deleteCommand": "Удалить",
+	"xp.views.knowledgebaseTree.renameCommand": "Переименовать",
+	"xp.views.knowledgebaseTree.duplicateCommand": "Дублировать",
 
-	"vscode-xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Интеграционные тесты",
-	"vscode-xp.views.knowledgebaseTree.showMetainfoCommand": "Метаинформация",
-	"vscode-xp.views.knowledgebaseTree.showLocalizationCommand": "Локализации",
-	"vscode-xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Ретро коррелятор",
-	"vscode-xp.views.knowledgebaseTree.showTableListsEditorCommand": "Редактировать",
-	"vscode-xp.views.knowledgebaseTree.showDefaultValuesEditorCommand": "Редактировать значения по умолчанию",
+	"xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Интеграционные тесты",
+	"xp.views.knowledgebaseTree.showMetainfoCommand": "Метаинформация",
+	"xp.views.knowledgebaseTree.showLocalizationCommand": "Локализации",
+	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Ретро коррелятор",
+	"xp.views.knowledgebaseTree.showTableListsEditorCommand": "Редактировать",
+	"xp.views.knowledgebaseTree.showDefaultValuesEditorCommand": "Редактировать значения по умолчанию",
 
-	"vscode-xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все графы",
-	"vscode-xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Компилировать все локализации",
-	"vscode-xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Компилировать все нормализации",
+	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все графы",
+	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Компилировать все локализации",
+	"xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Компилировать все нормализации",
 	
-	"vscode-xp.views.knowledgebaseTree.buildAllWldsCommand": "Компилировать wld-файлы",
+	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Компилировать wld-файлы",
 
-	"vscode-xp.views.knowledgebaseTree.importKbFileCommand": "Импортировать пакеты из kb-файла",
-	"vscode-xp.views.knowledgebaseTree.exportKbFileCommand": "Экспортировать пакет в kb-файл",
-	"vscode-xp.views.knowledgebaseTree.correlateEventsCommand": "Коррелировать события",
+	"xp.views.knowledgebaseTree.importKbFileCommand": "Импортировать пакеты из kb-файла",
+	"xp.views.knowledgebaseTree.exportKbFileCommand": "Экспортировать пакет в kb-файл",
+	"xp.views.knowledgebaseTree.correlateEventsCommand": "Коррелировать события",
 
-	"vscode-xp.views.knowledgebaseTree.defaultContent": "Добро пожаловать! Это расширение поможет в разработке правил на языке eXtraction and Processing (XP). Чтобы начать, откройте базу знаний.\n[Открыть базу знаний](command:SiemContentEditor.openKnowledgebaseCommand)\nПриятной работы!",
+	"xp.views.knowledgebaseTree.defaultContent": "Добро пожаловать! Это расширение поможет в разработке правил на языке eXtraction and Processing (XP). Чтобы начать, откройте базу знаний.\n[Открыть базу знаний](command:SiemContentEditor.openKnowledgebaseCommand)\nПриятной работы!",
 
-	"vscode-xp.views.modularTestsListView.title": "Модульные тесты",
-	"vscode-xp.views.modularTestsListView.defaultContent": "Модульные тесты отсутствуют"
+	"xp.views.modularTestsListView.title": "Модульные тесты",
+	"xp.views.modularTestsListView.defaultContent": "Модульные тесты отсутствуют"
 }
 

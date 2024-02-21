@@ -43,33 +43,50 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 		if(!normalizedEventResult || normalizedEventResult.length != 1) {
 			throw new XpException("Нормализатор не вернул никакого события. Некорректен код нормализации или входные данные. Смотри Output");
 		}
-		const normalizedEvent = normalizedEventResult[0];
+		const actualEvent = normalizedEventResult[0];
 
 		// Проверяем ожидаемое событие
 		let expectationObject = {};
 		try {
 			expectationObject = JSON.parse(unitTest.getTestExpectation());
-			expectationObject = this.clearIrrelevantFields(expectationObject);
+			if(!JsHelper.isEmptyObj(expectationObject)) {
+				expectationObject = this.clearIrrelevantFields(expectationObject);
+			}
 		}
 		catch(error) {
 			throw new XpException("Ожидаемый результат содержит некорректный JSON. Скорректируйте его и повторите", error);
 		}
 
-		// Проверяем ожидаемое событие
-		let actualEventObject = {};
+		let clearActualEventObject = {};
 		try {
-			actualEventObject = JSON.parse(normalizedEvent);
-			actualEventObject = this.clearIrrelevantFields(actualEventObject);
+			const actualEventObject = JSON.parse(actualEvent);
+			// Сохраняем фактическое события для последующего обновления ожидаемого.
+			const actualEventString = JsHelper.formatJsonObject(actualEventObject);
+			unitTest.setActualEvent(actualEventString);
+
+			clearActualEventObject = this.clearIrrelevantFields(actualEventObject);
 		}
 		catch(error) {
 			throw new XpException("Возвращенное нормализатором событие не является корректным JSON. Проверьте и скорректируйте входное событие после чего повторите", error);
 		}
 
-		// Сохраняем фактическое события для последующего обновления ожидаемого.
-		const actualEventString = JsHelper.formatJsonObject(actualEventObject);
-		unitTest.setActualEvent(actualEventString);
+		// Подсчитываем количество ожидаемых полей, которые существуют и равны фактическим.
+		let equalFieldCounter = 0;
+		for(const fieldName in expectationObject) {
+			if(clearActualEventObject[fieldName] && expectationObject[fieldName] === clearActualEventObject[fieldName]) {
+				++equalFieldCounter;
+				continue;
+			}
+			break;
+		}
+
+		// Случай, когда тест корректно покрывает часть полей.
+		if(equalFieldCounter === Object.keys(expectationObject).length) {
+			unitTest.setStatus(TestStatus.Success);
+			return unitTest;
+		}
 		
-		const difference = diffJson(expectationObject, actualEventObject);
+		const difference = diffJson(expectationObject, clearActualEventObject);
 		
 		// let eventsDiff = "";
 		// for (const part of difference) {

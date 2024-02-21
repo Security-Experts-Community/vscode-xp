@@ -25,7 +25,7 @@ export class CorrelateEventsCommand extends WebViewCommand {
 		super(CorrelateEventsCommand.name, message);
 	}
 
-	public async execute(controller: BaseWebViewController) {
+	public async execute(controller: BaseWebViewController) : Promise<void> {
         const params = (this.message.params as any);
         const tmpDirPath = params.tmpDirPath;
 
@@ -112,11 +112,11 @@ export class CorrelateEventsCommand extends WebViewCommand {
                         cancellationToken: cancellationToken,
 
                         forceNormalizationsGraphBuilding: false,
-                        forceTablesSchemaBuilding: false,
-                        forceTablesDbBuilding: false,
-                        forceCorrelationsGraphBuilding: false,
-                        forceEnrichmentsGraphBuilding: false,
-                        forceLocalizationsBuilding: false
+                        forceTablesSchemaBuilding: true,
+                        forceTablesDbBuilding: true,
+                        forceCorrelationsGraphBuilding: true,
+                        forceEnrichmentsGraphBuilding: true,
+                        forceLocalizationsBuilding: true
                     });
                     let correlatedEventsString = await runner.run(rootPath, envelopedEventsFilePath);
 
@@ -160,9 +160,9 @@ export class CorrelateEventsCommand extends WebViewCommand {
 
                     // Отдаем события во front-end.
                     const formattedEvents = TestHelper.formatTestCodeAndEvents(correlatedEventsString);
-                    const cleanedEvents = TestHelper.cleanTestCode(formattedEvents);
+                    const cleanedEvents = TestHelper.cleanRetroCorrelations(formattedEvents);
 					
-                    controller.view.webview.postMessage({
+                    controller.postMessage({
                         command : "correlatedEvents",
                         events : cleanedEvents            
                     });

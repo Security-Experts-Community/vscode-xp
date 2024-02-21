@@ -134,7 +134,7 @@ export abstract class ContentTreeBaseItem extends vscode.TreeItem {
 		return path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
 	}
 
-	public setMetaInfo(metaInfo : MetaInfo) {
+	public setMetaInfo(metaInfo : MetaInfo): void {
 		this._metaInfo = metaInfo;
 	}
 

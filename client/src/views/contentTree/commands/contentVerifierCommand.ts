@@ -21,6 +21,9 @@ import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 import { Enrichment } from '../../../models/content/enrichment';
 import { Log } from '../../../extension';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
+import { Normalization } from '../../../models/content/normalization';
+import { TestStatus } from '../../../models/tests/testStatus';
+import { BaseUnitTest } from '../../../models/tests/baseUnitTest';
 
 /**
  * Проверяет контент по требованиям. В настоящий момент реализована только проверка интеграционных тестов и локализаций.
@@ -32,7 +35,7 @@ export class ContentVerifierCommand {
 		private readonly _config: Configuration
 	) { }
 
-	async execute(parentItem: ContentTreeBaseItem) {
+	async execute(parentItem: ContentTreeBaseItem) : Promise<void> {
 		this._integrationTestTmpFilesPath = this._config.getRandTmpSubDirectoryPath();
 
 		return await vscode.window.withProgress({
@@ -53,8 +56,8 @@ export class ContentVerifierCommand {
 			// TODO: Обновление статуса ведет к обновлению дерева и утраты управления состоянием узлов.
 			// for(const rule of rules) {
 			// 	rule.setStatus(ContentItemStatus.Default);
-			//  await ContentTreeProvider.refresh(parentItem);
 			// }
+			// ContentTreeProvider.refresh(parentItem);
 
 			Log.info(`В ${parentItem.getName()} директории начата проверка ${rules.length} правил`);
 			try {
@@ -84,6 +87,39 @@ export class ContentVerifierCommand {
 		const ruleTmpFilesRuleName = path.join(this._integrationTestTmpFilesPath, rule.getName());
 		if(!fs.existsSync(ruleTmpFilesRuleName)) {
 			await fs.promises.mkdir(ruleTmpFilesRuleName, {recursive: true});
+		}
+
+		// Тестирование нормализаций
+		if(rule instanceof Normalization) {
+			const tests = rule.getUnitTests();
+
+			// Сбрасываем результаты предыдущих тестов.
+			tests.forEach(t => t.setStatus(TestStatus.Unknown));
+			const testHandler = async (unitTest : BaseUnitTest) => {
+				const rule = unitTest.getRule();
+				const testRunner = rule.getUnitTestRunner();
+				return testRunner.run(unitTest);
+			};
+	
+			// Запускаем все тесты
+			for (let test of tests) {
+				try {
+					test = await testHandler(test);
+				}
+				catch(error) {
+					test.setStatus(TestStatus.Failed);
+					Log.error(error);
+				} 
+			}
+
+			// Проверяем результаты тестов и меняем статус в UI.
+			if(tests.every(t => t.getStatus() === TestStatus.Success)) {
+				rule.setStatus(ContentItemStatus.Verified, "Тесты прошли проверку");
+				return;
+			}
+			rule.setStatus(ContentItemStatus.Unverified, "Тесты не прошли проверку");
+
+			ContentTreeProvider.refresh(rule);
 		}
 
 		if(rule instanceof Correlation || rule instanceof Enrichment) {

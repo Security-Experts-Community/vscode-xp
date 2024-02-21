@@ -13,7 +13,7 @@ export class InitKBRootCommand {
 
 	static Name = "xpContentEditor.initKBRoot";
 
-	static async init(config: Configuration) {
+	static async init(config: Configuration) : Promise<void> {
 		const context = config.getContext();
 		const command = vscode.commands.registerCommand(
 			this.Name, 
@@ -24,7 +24,7 @@ export class InitKBRootCommand {
 		context.subscriptions.push(command);
 	}
 
-	static async execute(config: Configuration, rootFolder: string) {
+	static async execute(config: Configuration, rootFolder: string) : Promise<void> {
 		const requiredRootDirectories = config.getRequiredRootDirectories();
 		for(const dir of requiredRootDirectories){
 			fs.promises.mkdir(path.join(rootFolder, dir), {recursive: true});

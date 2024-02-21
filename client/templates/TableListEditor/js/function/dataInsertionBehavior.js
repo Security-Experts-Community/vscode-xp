@@ -15,11 +15,11 @@ const idCheckboxClassSelector = '.jqIdCheckbox'
 const nullableCheckboxParentClassSelector = '.jqNullableCheckboxParent';
 const nullableCheckboxClassSelector = '.jqNullableCheckbox';
 
-const idRecordSizeTypicalInputIdSelector = '#jqRecordSizeTypicalInput';
-const idRecordSizeMaxInputIdSelector = '#jqRecordSizeMaxInput';
-const timeDayInputClassSelector = '.jqTimeDayInput';
-const timeHourInputClassSelector = '.jqTimeHourInput';
-const timeMinuteInputClassSelector = '.jqTimeMinuteInput';
+export const idRecordSizeTypicalInputIdSelector = '#jqRecordSizeTypicalInput';
+export const idRecordSizeMaxInputIdSelector = '#jqRecordSizeMaxInput';
+export const timeDayInputClassSelector = '.jqTimeDayInput';
+export const timeHourInputClassSelector = '.jqTimeHourInput';
+export const timeMinuteInputClassSelector = '.jqTimeMinuteInput';
 const timeSwitchIdSelector = '#jqTimeSwitch';
 
 export let currentObjectId;
@@ -30,11 +30,11 @@ const _insertDataFromBackend = (data) => {
 	console.log(table);
 
 
-	currentObjectId = table.metainfo.objectId ?? '';
+	currentObjectId = table.metainfo?.objectId ?? '';
 
 	$(_nameInputClassSelector).val(table.name ?? '');
-	$(_ruDescriptionClassSelector).val(table.metainfo.ruDescription ?? '');
-	$(_enDescriptionClassSelector).val(table.metainfo.enDescription ?? '');
+	$(_ruDescriptionClassSelector).val(table.metainfo?.ruDescription ?? '');
+	$(_enDescriptionClassSelector).val(table.metainfo?.enDescription ?? '');
 	$(fillTypeIdSelector).val(table.fillType ?? '')
 
 	if (table.fillType == 'CorrelationRule' || table.fillType == 'EnrichmentRule') {

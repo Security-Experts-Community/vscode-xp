@@ -12,6 +12,12 @@ import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem
 import { ContentHelper } from '../../../helpers/contentHelper';
 import { XpException } from '../../../models/xpException';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
+import { RegExpHelper } from '../../../helpers/regExpHelper';
+import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
+import { YamlHelper } from '../../../helpers/yamlHelper';
+import { Log } from '../../../extension';
+import { ContentFolder } from '../../../models/content/contentFolder';
+import { Localization } from '../../../models/content/localization';
 
 export class UnpackKbCommand {
 	constructor(private _config: Configuration) {
@@ -102,16 +108,20 @@ export class UnpackKbCommand {
 				
 
 			if(!executeResult.output.includes(this.SUCCESS_SUBSTRING)) {
-				DialogHelper.showError(`Не удалось распаковать пакет. Подробности приведены в панели Output.`);
+				DialogHelper.showError(`Не удалось распаковать пакет. Смотри Output`);
 				return;
 			} 
 
 			// TODO: Убрать этот фикс, когда починят экспорт из PTKB
 			ContentHelper.fixTables(outputDirPath);
 
+			// Корректировка имени для пакетов без заданного системного имени, в таком случае оно является GUID.
+			await this.correctPackageNameFromLocalizationFile(outputDirPath);
+
 			// Если внутри несколько пакетов.
 			const packagesPackagePath = path.join(outputDirPath, ContentTreeProvider.PACKAGES_DIRNAME);
 			if(fs.existsSync(packagesPackagePath)) {
+				Log.info("Копирование распакованного пакета в целевую директорию");
 				await fse.copy(packagesPackagePath, packageDirPath, { overwrite: true });
 			}
 			
@@ -140,10 +150,45 @@ export class UnpackKbCommand {
 		});
 	}
 
+	private async correctPackageNameFromLocalizationFile(unpackPackageDirPath: string) : Promise<void> {
+		const packagesPath = path.join(unpackPackageDirPath, ContentTreeProvider.PACKAGES_DIRNAME);
+		const packageNames = FileSystemHelper.readSubDirectoryNames(packagesPath);
+
+		// Выбираем пакеты, именованные как идентификаторы
+		for (const packageName of packageNames) {
+			const regExp = /[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{12}/g;
+			if(regExp.test(packageName)) {
+				const metaDirPath = path.join(packagesPath, packageName, ContentFolder.PACKAGE_METAINFO_DIRNAME);
+				if(!fs.existsSync(metaDirPath)) {
+					continue;
+				}
+
+				const packageLocalizationPath = path.join(metaDirPath, Localization.LOCALIZATIONS_DIRNAME, Localization.EN_LOCALIZATION_FILENAME);
+				if(!fs.existsSync(packageLocalizationPath)) {
+					continue;
+				}
+
+				const localizationString = await FileSystemHelper.readContentFile(packageLocalizationPath);
+				const localizationObject = YamlHelper.parse(localizationString);
+				if(!localizationObject.Name) {
+					continue;
+				}
+
+				// Убираем пробелы на всякий случай
+				let packageLocalizationName = localizationObject.Name;
+				packageLocalizationName = packageLocalizationName.replace(/[ ]+/gm);
+
+				const existPackagePath = path.join(packagesPath, packageName);
+				const correctedPackagePath = path.join(packagesPath, packageLocalizationName);
+
+				await fse.move(existPackagePath, correctedPackagePath, {overwrite : true});
+			}
+		}
+	}
+
 	private readonly SUCCESS_SUBSTRING = "Knowledge base unpacking completed successfully";
 
 	private readonly ROOT_USERS_CONTENT_UNPACKED_DIRNAME = "objects";
-	private readonly CONTRACTS_UNPACKED_DIRNAME = "contracts";
 	private readonly MACRO_DIRNAME = "common";
 }
 

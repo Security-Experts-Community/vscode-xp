@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import * as os from 'os';
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as vscode from 'vscode';
@@ -10,6 +11,7 @@ import { ProcessHelper } from '../../../helpers/processHelper';
 import { Configuration } from '../../../models/configuration';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
+import { ContentTreeProvider } from '../contentTreeProvider';
 
 export class PackSIEMAllPackagesAction {
 	constructor(private config: Configuration) {}
@@ -77,7 +79,7 @@ export class PackSIEMAllPackagesAction {
 				}
 
 				// Нужна ссылка в 
-				const contractsDirPath = path.join(tmpSubDirectoryPath, "contracts");
+				const contractsDirPath = path.join(tmpSubDirectoryPath, ContentTreeProvider.CONTRACTS_UNPACKED_DIRNAME);
 				await fs.promises.mkdir(contractsDirPath, {recursive: true});
 
 				// Проверяем путь к контрактам и копируем их.
@@ -144,7 +146,13 @@ export class PackKbAction {
 				const packageName = path.basename(packageDirPath);
 				progress.report({message: `Сборка пакета '${packageName}'`});
 
-				const tmpSubDirectoryPath = this._config.getRandTmpSubDirectoryPath();
+				// Исправляем системный путь с тильдой, утилита такого пути не понимает
+				let tmpSubDirectoryPath = this._config.getRandTmpSubDirectoryPath();
+				const username = os.userInfo().username;
+				tmpSubDirectoryPath = FileSystemHelper.resolveTildeWindowsUserHomePath(
+					tmpSubDirectoryPath,
+					username);
+				
 				await fs.promises.mkdir(tmpSubDirectoryPath, {recursive: true});
 
 				// Очищаем окно Output.
@@ -165,7 +173,7 @@ export class PackKbAction {
 				}
 
 				// Создаем contracts
-				const contractsDirPath = path.join(tmpSubDirectoryPath, "contracts");
+				const contractsDirPath = path.join(tmpSubDirectoryPath, ContentTreeProvider.CONTRACTS_UNPACKED_DIRNAME);
 				await fs.promises.mkdir(contractsDirPath, {recursive: true});
 				
 				// Создаем contracts\origins
