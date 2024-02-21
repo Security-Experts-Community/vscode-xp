@@ -495,7 +495,7 @@
       },
       {
         "command": "xp.openTLPreview",
-        "title": "%vscode-xp.views.knowledgebaseTree.showDefaultValuesEditorCommand%",
+        "title": "%xp.views.knowledgebaseTree.showDefaultValuesEditorCommand%",
         "category": "Редактор XP",
         "icon": "$(open-preview)"
       },
@@ -554,11 +554,6 @@
       {
         "command": "TableListsEditorView.showView",
         "title": "%xp.views.knowledgebaseTree.showTableListsEditorCommand%",
-        "category": "Редактор XP"
-      },
-      {
-        "command": "",
-        "title": "%vscode-xp.views.knowledgebaseTree.showDefaultValuesEditorCommand%",
         "category": "Редактор XP"
       },
       {
