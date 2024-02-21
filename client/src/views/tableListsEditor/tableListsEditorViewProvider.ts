@@ -261,12 +261,6 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 				});
 			});
 	
-			const openInTextEditorCommand = vscode.commands.registerCommand("xp.openTLInTextEditor", () => {
-				// printChannelOutput("openInTextEditor command called", true);
-				vscode.commands.executeCommand('workbench.action.reopenTextEditor', document?.uri);
-			});
-	
-			this.context.subscriptions.push(openInTextEditorCommand);
 			this.context.subscriptions.push(deleteCommand);
 			this.context.subscriptions.push(addLOCCommand);
 			this.context.subscriptions.push(addPTCommand);

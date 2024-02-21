@@ -18,6 +18,7 @@
 	"vscode-xp.views.knowledgebaseTree.showLocalizationCommand": "Localization",
 	"vscode-xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Retro correlation",
 	"vscode-xp.views.knowledgebaseTree.showTableListsEditorCommand": "Edit",
+	"vscode-xp.views.knowledgebaseTree.showDefaultValuesEditorCommand": "Edit default values",
 
 	"vscode-xp.views.knowledgebaseTree.buildAllGraphsCommand": "Build all graphs",
 	"vscode-xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Build all localizations",

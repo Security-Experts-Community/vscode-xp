@@ -36,6 +36,7 @@ import { LogLevel, Logger } from './logger';
 import { RetroCorrelationViewController } from './views/retroCorrelation/retroCorrelationViewProvider';
 import { XpHoverProvider } from './providers/xpHoverProvider';
 import { DialogMessage } from './l10n/messages';
+import { DialogHelper } from './helpers/dialogHelper';
 
 export let Log: Logger;
 let client: LanguageClient;
@@ -129,14 +130,22 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
 		const openPreviewCommand = vscode.commands.registerCommand("xp.openTLPreview", () => {
 			const editor = vscode.window.activeTextEditor;
-			if (YamlHelper.parse(editor.document.getText()).fillType == 'Registry'){
-				vscode.commands.executeCommand('vscode.openWith',
-					editor?.document?.uri,
-					"xp.default-tl-value-editor",
-					{
-						preview: true,
-						viewColumn: vscode.ViewColumn.Beside
-					});
+			if (editor.document.fileName.endsWith(".tl")) {
+				if (YamlHelper.parse(editor.document.getText()).fillType == 'Registry'){
+					vscode.commands.executeCommand('vscode.openWith',
+						editor?.document?.uri,
+						"xp.default-tl-value-editor",
+						{
+							preview: true,
+							viewColumn: vscode.ViewColumn.Beside
+						});
+				}
+				else {
+					DialogHelper.showError(`Для данного типа табличных списков не пддерживается создание значений по умолчанию`);
+				}
+			}
+			else {
+				DialogHelper.showError(`Для редактирования значений по умолчанию откройте табличный список типа "Справочник"`);	
 			}
 		});
 		context.subscriptions.push(openPreviewCommand);

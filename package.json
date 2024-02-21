@@ -246,11 +246,6 @@
       ],
       "editor/title": [
         {
-          "command": "xp.openTLInTextEditor",
-          "when": "activeCustomEditorId == 'xp.default-tl-value-editor' && activeEditorIsNotPreview == false",
-          "group": "navigation@1"
-        },
-        {
           "command": "xp.openTLPreview",
           "when": "(resourceExtname == '.tl') && activeEditor == 'workbench.editors.files.textFileEditor'",
           "group": "navigation@1"
@@ -268,15 +263,7 @@
         {
           "command": "xp.AddPTTLRowCommand",
           "when": "activeCustomEditorId == 'xp.default-tl-value-editor'"
-        },
-        {
-          "command": "xp.openTLInTextEditor",
-          "when": "activeCustomEditorId == 'xp.default-tl-value-editor'"
-        },
-        {
-          "command": "xp.openTLPreview",
-          "when": "false"
-        } 
+        }
       ],
       "editor/context": [
         {
@@ -472,27 +459,20 @@
         "category": "Редактор XP"
       },
       {
-        "command": "xp.AddTLRowCommand",
-        "title": "Add TL Row",
+        "command": "xp.AddLOCTLRowCommand",
+        "title": "Add LOC TL Row",
         "category": "Редактор XP"
       },
       {
-        "command": "xp.openTLInTextEditor",
-        "title": "Open in Text Editor",
-        "category": "Редактор XP",
-        "icon": "$(notebook-open-as-text)"
+        "command": "xp.AddPTTLRowCommand",
+        "title": "Add PT TL Row",
+        "category": "Редактор XP"
       },
       {
         "command": "xp.openTLPreview",
-        "title": "Open Preview",
+        "title": "%vscode-xp.views.knowledgebaseTree.showDefaultValuesEditorCommand%",
         "category": "Редактор XP",
         "icon": "$(open-preview)"
-      },
-      {
-        "command": "xp.openTLInDefultEditor",
-        "title": "Open in Default TL Editor",
-        "category": "Редактор XP",
-        "icon": "$(notebook-render-output)"
       },
       {
         "command": "xp.retroCorrelationShow",
@@ -544,6 +524,11 @@
       {
         "command": "TableListsEditorView.showView",
         "title": "%vscode-xp.views.knowledgebaseTree.showTableListsEditorCommand%",
+        "category": "Редактор XP"
+      },
+      {
+        "command": "",
+        "title": "%vscode-xp.views.knowledgebaseTree.showDefaultValuesEditorCommand%",
         "category": "Редактор XP"
       },
       {
