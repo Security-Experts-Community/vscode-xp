@@ -2,7 +2,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/vscode-xp/badge/?version=latest)](https://vscode-xp.readthedocs.io/ru/latest/?badge=latest) [![Telegram chat](https://img.shields.io/static/v1?label=chat&message=Telegram&color=blue&logo=telegram)](https://t.me/s3curity_experts_community/75) [![Telegram chat](https://img.shields.io/matrix/vscode-xp:matrix.org?color=g&label=matrix&logo=matrix&logoColor=green)](https://matrix.to/#/#vscode-xp:matrix.org)
 
-Язык eXtraction and Processing (XP) используется для создания правил преобразования данных в процессе обработки событий. На языке XP вы можете разрабатывать правила нормализации, корреляции и обогащения событий.
+Язык [eXtraction and Processing (XP)](https://help.ptsecurity.com/projects/siem/7.0/en-US/help/1566366731) используется для создания детектирующих правил на основе анализа событий c конечных точек. На языке XP вы можете разрабатывать правила нормализации событий, их корреляции и обогащения.
 
 Настоящее расширение разработано [Dmitry Fedosov](https://github.com/DmitryOffsec) и [контрибьютерами](https://github.com/Security-Experts-Community/vscode-xp/graphs/contributors), оно позволяет разрабатывать и тестировать правила в VSCode и VSCodium, а также публиковать их в необходимый для вашего продукта формат.
 
@@ -16,7 +16,7 @@
 - Создание из шаблонов правил корреляции, обогащения и нормализации.
 - Просмотр, редактирование, создание интеграционных и модульных тестов для правил корреляции, обогащения и нормализации.
 - Запуск интеграционных и модульных тестов для правил корреляции, обогащения и нормализации.
-- Автоматическое дополнение ключевых слов, функций и типовых конструкций языка XP и полей таксономии.
+- Автоматическое дополнение ключевых слов, функций, типовых конструкций языка XP и полей таксономии.
 - Статическая валидация исходного кода на типичные ошибки.
 - Заполнение метаданных правил.
 - Создание и редактирование правил локализации правил.
