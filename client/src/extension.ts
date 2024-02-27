@@ -22,7 +22,7 @@ import { Configuration } from './models/configuration';
 import { XpCompletionItemProvider } from './providers/xpCompletionItemProvider';
 import { ContentTreeProvider } from './views/contentTree/contentTreeProvider';
 import { RunningCorrelationGraphProvider } from './views/correlationGraph/runningCorrelationGraphProvider';
-import { TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
+import { DefaultTLValuesEditorViewProvider, TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
 import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvider';
 import { TestsFormatContentMenuExtension } from './ext/contextMenuExtension';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
@@ -36,6 +36,7 @@ import { LogLevel, Logger } from './logger';
 import { RetroCorrelationViewController } from './views/retroCorrelation/retroCorrelationViewProvider';
 import { XpHoverProvider } from './providers/xpHoverProvider';
 import { DialogMessage } from './l10n/messages';
+import { DialogHelper } from './helpers/dialogHelper';
 
 export let Log: Logger;
 let client: LanguageClient;
@@ -126,6 +127,33 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		SetContentTypeCommand.init(config);
 		InitKBRootCommand.init(config);
 		RetroCorrelationViewController.init(config);
+
+		const openPreviewCommand = vscode.commands.registerCommand("xp.openTLPreview", () => {
+			const editor = vscode.window.activeTextEditor;
+			if (editor.document.fileName.endsWith(".tl")) {
+				if (YamlHelper.parse(editor.document.getText()).fillType == 'Registry'){
+					vscode.commands.executeCommand('vscode.openWith',
+						editor?.document?.uri,
+						"xp.default-tl-value-editor",
+						{
+							preview: true,
+							viewColumn: vscode.ViewColumn.Beside
+						});
+				}
+				else {
+					DialogHelper.showError(`Для данного типа табличных списков не пддерживается создание значений по умолчанию`);
+				}
+			}
+			else {
+				DialogHelper.showError(`Для редактирования значений по умолчанию откройте табличный список типа "Справочник"`);	
+			}
+		});
+		context.subscriptions.push(openPreviewCommand);
+		const templateFilePath = path.join(
+			config.getExtensionPath(),
+			"client", "templates", "TableListEditor", "html", "TableListEditor.html"
+		);
+		context.subscriptions.push(DefaultTLValuesEditorViewProvider.register(context, templateFilePath, config));
 
 		siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(XPPackingTaskProvider.Type, new XPPackingTaskProvider(config));
 

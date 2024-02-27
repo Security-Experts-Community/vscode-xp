@@ -39,6 +39,17 @@
     "definitionProvider": "true"
   },
   "contributes": {
+    "customEditors": [
+      {
+        "viewType": "xp.default-tl-value-editor",
+        "displayName": "Default TL Value Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.tl"
+          }
+        ]
+      }
+    ],
     "taskDefinitions": [
       {
         "type": "XP",
@@ -227,6 +238,33 @@
       ]
     },
     "menus": {
+      "webview/context": [
+        {
+          "command": "xp.DeleteTLRowCommand",
+          "when": "activeCustomEditorId == 'xp.default-tl-value-editor'"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "xp.openTLPreview",
+          "when": "(resourceExtname == '.tl') && activeEditor == 'workbench.editors.files.textFileEditor'",
+          "group": "navigation@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "xp.DeleteTLRowCommand",
+          "when": "false"
+        },
+        {
+          "command": "xp.AddLOCTLRowCommand",
+          "when": "activeCustomEditorId == 'xp.default-tl-value-editor'"
+        }, 
+        {
+          "command": "xp.AddPTTLRowCommand",
+          "when": "activeCustomEditorId == 'xp.default-tl-value-editor'"
+        }
+      ],
       "editor/context": [
         {
           "when": "resourceLangId == test",
@@ -440,6 +478,27 @@
       ]
     },
     "commands": [
+      {
+        "command": "xp.DeleteTLRowCommand",
+        "title": "Delete TL Row",
+        "category": "Редактор XP"
+      },
+      {
+        "command": "xp.AddLOCTLRowCommand",
+        "title": "Add LOC TL Row",
+        "category": "Редактор XP"
+      },
+      {
+        "command": "xp.AddPTTLRowCommand",
+        "title": "Add PT TL Row",
+        "category": "Редактор XP"
+      },
+      {
+        "command": "xp.openTLPreview",
+        "title": "%xp.views.knowledgebaseTree.showDefaultValuesEditorCommand%",
+        "category": "Редактор XP",
+        "icon": "$(open-preview)"
+      },
       {
         "command": "xp.retroCorrelationShow",
         "title": "%xp.views.knowledgebaseTree.showRetroCorrelationCommand%",

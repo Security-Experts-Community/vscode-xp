@@ -37,6 +37,14 @@ const serverConfig = {
 	external: ["vscode"],
 };
 
+const webviewConfig = {
+	...baseConfig,
+	target: "es2020",
+	format: "esm",
+	entryPoints: ["./client/templates/TableListEditor/js/tableListDefaultsEditor.js"],
+	outfile: "./out/tableListDefaultsEditor.js",
+  };
+
 const watchConfig = {
 	watch: {
 		onRebuild(error, result) {
@@ -70,6 +78,10 @@ const watchConfig = {
 				...serverConfig,
 				...watchConfig,
 			});
+			await build({
+				...webviewConfig,
+				...watchConfig,
+			});
 			console.log("\x1b[33m[watch] \x1b[34mclient\x1b[37m, \x1b[35mui-toolkit\x1b[37m, \x1b[36mserver \x1b[37mbuild \x1b[32mfinished\x1b[0m\n");
 		} else {
 			await build(clientConfig);
@@ -77,7 +89,9 @@ const watchConfig = {
 			await build(uiConfig);
 			console.log("\x1b[32m✓ \x1b[35mui-toolkit \x1b[37mbuild \x1b[32mcomplete\x1b[0m");
 			await build(serverConfig);
-			console.log("\x1b[32m✓ \x1b[36mserver \x1b[37mbuild \x1b[32mcomplete\x1b[0m\n");
+			console.log("\x1b[32m✓ \x1b[36mserver \x1b[37mbuild \x1b[32mcomplete\x1b[0m");
+			await build(webviewConfig);
+			console.log("\x1b[32m✓ \x1b[36mwebview \x1b[37mbuild \x1b[32mcomplete\x1b[0m\n");
 		}
 	} catch (err) {
 		process.stderr.write(err.stderr);
