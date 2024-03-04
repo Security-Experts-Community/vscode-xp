@@ -20,6 +20,7 @@
 	"xp.views.knowledgebaseTree.showLocalizationCommand": "Localization",
 	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Retro correlation",
 	"xp.views.knowledgebaseTree.showTableListsEditorCommand": "Edit",
+	"xp.views.knowledgebaseTree.showDefaultValuesEditorCommand": "Edit default values",
 
 	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Build all graphs",
 	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Build all localizations",
