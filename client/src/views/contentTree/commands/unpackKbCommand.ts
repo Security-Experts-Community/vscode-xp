@@ -67,9 +67,6 @@ export class UnpackKbCommand {
 				return;
 			}
 
-			// Очищаем и показываем окно Output.
-			this._config.getOutputChannel().clear();
-
 			const unpackPackagePath = this._config.getRandTmpSubDirectoryPath();
 			await fs.promises.mkdir(unpackPackagePath, {recursive: true});
 

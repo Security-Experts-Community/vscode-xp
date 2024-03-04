@@ -24,7 +24,6 @@ import { DeleteContentItemCommand } from './commands/deleteContentItemCommand';
 import { CreatePackageCommand } from './commands/createPackageCommand';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { BuildAllGraphCommand } from './commands/buildAllGraphCommand';
-import { PackKbAction } from './actions/packSIEMAllPackagesAction';
 import { UnpackKbCommand } from './commands/unpackKbCommand';
 import { ContentType } from '../../contentType/contentType';
 import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';
@@ -39,6 +38,7 @@ import { BuildWldCommand } from './commands/buildWldCommand';
 import { BuildNormalizationsCommand } from './commands/buildNormalizationsCommand';
 import { DuplicateTreeItemCommand } from './commands/duplicateTreeItemCommand';
 import { CreateMacroCommand } from './commands/createMacrosCommand';
+import { PackKbCommand } from './commands/packKbCommand';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeBaseItem> {
 
@@ -298,7 +298,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 						return;
 					}
 					
-					const pkba = new PackKbAction(config);
+					const packCommand = new PackKbCommand(config);
 
 					// Выбираем директорию для выгрузки пакета.
 					const packageName = selectedPackage.getName();
@@ -314,7 +314,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 
 					// Удаление существующего файла.
 					const unpackKbFilePath = fileInfos.fsPath; 
-					await pkba.run(selectedPackage, unpackKbFilePath);
+					await packCommand.execute(selectedPackage, unpackKbFilePath);
 				}
 			)
 		);

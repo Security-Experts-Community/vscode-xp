@@ -46,13 +46,24 @@ export class OriginsManager {
 		// ]
 		const configuration = config.getConfiguration();
 		const origin = configuration.get<any>("origin");
-		const id = origin.id;
-		const ru = origin.ru;
-		const en = origin.en;
-		const contentPrefix = origin.contentPrefix;
+		const id = origin?.id;
+		if(!id) {
+			throw OriginsManager.getParamException("id");
+		}
 
+		const ru = origin?.ru;
+		if(!ru) {
+			throw OriginsManager.getParamException("ru");
+		}
+
+		const en = origin?.en;
+		if(!en) {
+			throw OriginsManager.getParamException("en");
+		}
+
+		const contentPrefix = origin?.contentPrefix;
 		if(!contentPrefix) {
-			throw new XpException(`Не задан поставщик для экспорта KB-файла. Задайте параметр [contentPrefix](command:workbench.action.openSettings?["xpConfig.origin"]) и повторите`);
+			throw OriginsManager.getParamException("contentPrefix");
 		}
 
 		return [
@@ -73,5 +84,10 @@ export class OriginsManager {
 				"Revision": 1
 			}
 		];
+	}
+
+	private static getParamException(paramName: string): XpException {
+		return new XpException(
+			`Не задан поставщик для экспорта KB-файла. Задайте параметр [${paramName}](command:workbench.action.openSettings?["xpConfig.origin"]) и повторите`);
 	}
 }
