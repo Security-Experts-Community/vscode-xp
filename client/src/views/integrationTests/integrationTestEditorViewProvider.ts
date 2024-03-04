@@ -91,7 +91,7 @@ export class IntegrationTestEditorViewProvider {
 		this._rule = rule;
 
 		// Создать и показать панель.
-		const viewTitle = `Тесты '${this._rule.getName()}'`;
+		const viewTitle = this._config.getMessage("View.IntegrationTests", this._rule.getName());
 		this._view = vscode.window.createWebviewPanel(
 			IntegrationTestEditorViewProvider.viewId,
 			viewTitle,

@@ -70,9 +70,9 @@ export class CreateRuleViewProvider {
         const templateNames = ContentHelper.getTemplateNames(this._config, ContentHelper.CORRELATIONS_DIRECTORY_NAME);
 
         this.showCreateRuleView(
-            "Создать правило корреляции",
+            this._config.getMessage("View.CreateCorrelation"),
             "createCorrelation", 
-            "правила корреляции", 
+            this._config.getMessage("View.CreateCorrelation"),
             ruleFullPath,
             templateNames);
     }
@@ -81,9 +81,9 @@ export class CreateRuleViewProvider {
         const templateNames = ContentHelper.getTemplateNames(this._config, ContentHelper.ENRICHMENTS_DIRECTORY_NAME);
 
         this.showCreateRuleView(
-            "Создать правило обогащения",
+            this._config.getMessage("View.CreateEnrichment"),
             "createEnrichment", 
-            "правила обогащения", 
+            this._config.getMessage("View.CreateEnrichment"),
             ruleFullPath,
             templateNames);
     }
@@ -92,9 +92,9 @@ export class CreateRuleViewProvider {
         const templateNames = ContentHelper.getTemplateNames(this._config, ContentHelper.NORMALIZATIONS_DIRECTORY_NAME);
 
         this.showCreateRuleView(
-            "Создать формулу нормализации",
+            this._config.getMessage("View.CreateNormalization"),
             "createNormalization", 
-            "формулы нормализации", 
+            this._config.getMessage("View.CreateNormalization"), 
             ruleFullPath,
             templateNames);
     }
@@ -110,7 +110,7 @@ export class CreateRuleViewProvider {
     private showCreateRuleView(
         viewTitle: string, 
         commandName: string, 
-        ruleTypeLocalization: string,
+        createNewRule: string,
         ruleFullPath: string,
         templateNames?: string[]) {
 
@@ -136,7 +136,12 @@ export class CreateRuleViewProvider {
             const templateDefaultContent = {
                 "ruleFullPath" : ruleFullPath,
                 "commandName" : commandName,
-                "ruleTypeLocalization" : ruleTypeLocalization,
+
+                "CreateNewRule" : createNewRule,
+                "NameOfNewRule" : this._config.getMessage("NameOfNewRule"),
+                "Template" : this._config.getMessage("View.CreateRule.Template"),
+                "Create" : this._config.getMessage("Create"),
+
                 "extensionBaseUri" : extensionBaseUri,
                 "templateNames" : templateNames
             };
@@ -163,7 +168,7 @@ export class CreateRuleViewProvider {
         return packagesPaths.includes(parentPath) ? path.join(parentPath, defaultFolder) : parentPath;
     }
 
-    async receiveMessageFromWebView(message: any) {
+    async receiveMessageFromWebView(message: any) : Promise<void> {
 
         // Парсим и проверяем полученные параметры.
         const [ruleName, templateName, ruleParentPath] = this.parseMessageFromFrontEnd(message);

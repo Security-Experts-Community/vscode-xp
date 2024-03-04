@@ -4,14 +4,16 @@
     "Save": "Save",
     "NoPathSelected": "No path selected",
     "TheKnowledgeBaseIsNotInitialized": "The knowledge base is not initialized. Create required folders for {0} format?",
+    "Create": "Create",
 
     "NameOfNewRule": "Name of the new rule",
 
+    "View.IntegrationTests": "{0} tests",
     "Test": "Test", 
     "SaveAll" : "Save all",
     "RunAllTests" : "Run all tests",
     "RawEvents" : "Raw events",
-    "WordWrap" : "word wrap",
+    "WordWrap" : "Word wrap",
     "WrapRawEventsInAnEnvelope" : "Wrap raw events in an envelope",
     "Normalize" : "Normalize",
     "NormalizeAndEnrich" : "Normalize and enrich",
@@ -24,6 +26,7 @@
     "ExpectedEventWasSuccessfullyUpdated": "The expected event in the test code was successfully updated. Adjust if necessary and save the test",
     "UnableGetExpectedEvent": "Unable to get expected event for test that failed",
 
+    "View.Metainfo": "Metainfo {0}",
     "KnowledgeHolders" : "Authors",
     "Created": "Created",
     "Updated": "Updated",
@@ -39,5 +42,16 @@
     "NameContainsInvalidCharacters": "The name contains invalid characters",
     "NameReserved": "This name is reserved and cannot be used",
     "NameValidCharacters": "Use only lowercase English letters, numbers and underscores",
-    "AlreadyExists": "This name already exists"
+    "AlreadyExists": "This name already exists",
+
+    "View.LogCorrelation": "Log file correlation",
+
+    "View.Localization": "Localization {0}",
+
+    "View.TableList": "Editing a table list",
+
+    "View.CreateCorrelation": "Create a correlation rule",
+    "View.CreateEnrichment": "Create a enrichment rule",
+    "View.CreateNormalization": "Create a normalization rule",
+    "View.CreateRule.Template": "Template"
 }

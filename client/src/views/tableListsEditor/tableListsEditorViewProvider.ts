@@ -121,9 +121,10 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 			this._view = undefined;
 		}
 
+		const title = this._config.getMessage("View.TableList");
 		this._view = vscode.window.createWebviewPanel(
 			TableListsEditorViewProvider.viewId,
-			'Редактирование табличного списка',
+			title,
 			vscode.ViewColumn.One,
 			{ retainContextWhenHidden: true });
 

@@ -56,9 +56,10 @@ export class MetainfoViewProvider {
 		this._rule = rule;
 
 		// Создать и показать панель.
+		const title = this._config.getMessage("View.Metainfo", rule.getName());
 		this._view = vscode.window.createWebviewPanel(
 			MetainfoViewProvider.viewId,
-			`Метаданные '${rule.getName()}'`,
+			title,
 			vscode.ViewColumn.One,
 			{ retainContextWhenHidden: true });
 

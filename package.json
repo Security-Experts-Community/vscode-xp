@@ -648,11 +648,36 @@
           "description": "Таймаут работы коррелятора в секундах",
           "default": 180
         },
-        "xpConfig.contentPrefix": {
-          "scope": "window",
-          "type": "string",
-          "default": "LOC",
-          "description": "Префикс ObjectId для определения типа создаваемого контента. Если префикс не задан, ObjectId не генерируется для создаваемых правил."
+        "xpConfig.company": {
+          "type": "object",
+          "order": 2,
+          "description": "An example numeric object setting.",
+          "properties": {
+            "contentPrefix": {
+              "scope": "window",
+              "type": "string",
+              "description": "Префикс ObjectId для определения типа создаваемого контента. Если префикс не задан, ObjectId не генерируется для создаваемых правил."
+            },
+            "ru": {
+              "type": "string",
+              "description": "Описание на русском языке"
+            },
+            "en": {
+              "type": "string",
+              "description": "English description"
+            },
+            "id": {
+              "type": "string",
+              "description": "Supplier ID"
+            }
+          },
+          "additionalProperties": false,
+          "default": {
+            "ru": "Security Experts Community",
+            "en": "Security Experts Community",
+            "contentPrefix" : "SEC",
+            "id" : ""
+          }
         },
         "languageServer.maxNumberOfProblems": {
           "scope": "resource",

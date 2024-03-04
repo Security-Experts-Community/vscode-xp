@@ -70,9 +70,10 @@ export class LocalizationEditorViewProvider {
 
 		try {
 			// Создать и показать панель.
+			const title = this._config.getMessage("View.Localization", rule.getName());
 			this._view = vscode.window.createWebviewPanel(
 				LocalizationEditorViewProvider.viewId,
-				`Правила локализации '${rule.getName()}'`,
+				title,
 				vscode.ViewColumn.One,
 				{
 					retainContextWhenHidden: true, 

@@ -11,11 +11,8 @@ import { CorrelateEventsCommand } from './correlateEventsCommand';
 import { AppendEventMessage, AppendEventsCommand } from './appendEventCommand';
 
 
-
-
 export class RetroCorrelationViewController extends BaseWebViewController {
 
-	public static viewTitle = 'Ретро коррелятор';
     public static viewId = 'xp.retroCorrelation';
     public static showViewCommand = 'xp.retroCorrelationShow';
 
@@ -37,7 +34,7 @@ export class RetroCorrelationViewController extends BaseWebViewController {
 				config : config,
 				templatePath: createCorrelationTemplateFilePath,
 				viewId: RetroCorrelationViewController.viewId,
-				viewTitle: RetroCorrelationViewController.viewTitle,
+				viewTitle: config.getMessage("View.LogCorrelation"),
 				webViewOptions: {
 					retainContextWhenHidden: true,
 					enableCommandUris : true,

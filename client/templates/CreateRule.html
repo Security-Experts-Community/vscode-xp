@@ -7,19 +7,18 @@
 	<link rel="stylesheet" href="{{{extensionBaseUri}}}/client/templates/styles/new_rule.css">
 	
 	<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
-	<title>Создать правило</title>
 </head>
 	<body>
-		<h3>Создание {{{ruleTypeLocalization}}}</h3>
+		<h3>{{{CreateNewRule}}}</h3>
 		<table>
 			<tr>
-				<td class="labels">Название {{{ruleTypeLocalization}}}</td>
+				<td class="labels">{{{NameOfNewRule}}}</td>
 				<td class="userinput">
 					<input id="Name" type="text" pattern="[A-Z][A-Za-z0-9_]+" required autofocus>
 				</td>
 			</tr>
 			<tr>
-				<td class="labels">Шаблон</td>
+				<td class="labels">{{Template}}</td>
 				<td class="userinput">
 					<select id="TemplateType">
 						{{#templateNames}}
@@ -31,7 +30,7 @@
 			</tr>
 		</table>
 
-		<input name="saveOptions" onclick="createCorrelation()" type="submit" value="Создать">
+		<input name="saveOptions" onclick="createCorrelation()" type="submit" value="{{Create}}">
 	</body>
 
 	<script>

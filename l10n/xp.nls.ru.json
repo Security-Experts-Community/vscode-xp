@@ -4,14 +4,16 @@
     "Save": "Сохранить",
     "NoPathSelected": "Путь не выбран",
     "TheKnowledgeBaseIsNotInitialized": "База знаний не проинициализирована. Создать необходимые папки для формата {0}?",
+    "Create": "Создать",
 
-    "NameOfNewRule": "Название нового правила",
+    "NameOfNewRule": "Имя нового правила",
 
+    "View.IntegrationTests": "Тесты {0}",
     "Test": "Тест", 
     "SaveAll" : "Сохранить все",
     "RunAllTests" : "Запустить все тесты",
     "RawEvents" : "Сырые события",
-    "WordWrap" : "переносить по словам",
+    "WordWrap" : "Переносить по словам",
     "WrapRawEventsInAnEnvelope" : "Обернуть в конверт сырые события",
     "Normalize" : "Нормализовать",
     "NormalizeAndEnrich" : "Нормализовать и обогатить",
@@ -24,6 +26,7 @@
     "ExpectedEventWasSuccessfullyUpdated": "Ожидаемое событие в коде теста успешно обновлено. Скорректируйте если необходимо и сохраните тест",
     "UnableGetExpectedEvent": "Невозможно получить ожидаемое событие для теста, который завершился неуспешно",
 
+    "View.Metainfo": "Метаданные {0}",
     "KnowledgeHolders" : "Авторы",
     "Created": "Создано",
     "Updated": "Обновлено",
@@ -39,5 +42,16 @@
     "NameContainsInvalidCharacters": "Имя содержит недопустимые символы",
     "NameReserved": "Данное имя зарезервировано и не может быть использовано",
     "NameValidCharacters": "Используйте только строчные английские буквы, цифры и символ подчеркивания",
-    "AlreadyExists": "Такое имя уже существует"
+    "AlreadyExists": "Такое имя уже существует",
+
+    "View.LogCorrelation": "Корреляция лог-файлов",
+
+    "View.Localization": "Локализация {0}",
+
+    "View.TableList": "Редактирование табличного списка",
+
+    "View.CreateCorrelation": "Создать правило корреляции",
+    "View.CreateEnrichment": "Создать правило обогащения",
+    "View.CreateNormalization": "Создать правило нормализации",
+    "View.CreateRule.Template": "Шаблон"
 }
