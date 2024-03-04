@@ -271,7 +271,7 @@ export class Configuration {
 			case OsType.Windows: appName = "siemkb_tests.exe"; break;
 			case OsType.Linux: appName = "siemkb_tests"; break;
 
-			default: throw new XpException("Платформа не поддерживается.");
+			default: throw new XpException("Платформа не поддерживается");
 		}
 
 		const fullPath = path.join(this.getKbtBaseDirectory(), "build-tools", appName);
@@ -286,7 +286,7 @@ export class Configuration {
 			case OsType.Windows: appName = "normalizer-cli.exe"; break;
 			case OsType.Linux: appName = "normalizer-cli"; break;
 
-			default: throw new XpException("Платформа не поддеживается.");
+			default: throw new XpException("Платформа не поддерживается");
 		}
 
 		const fullPath = path.join(this.getKbtBaseDirectory(), "xp-sdk", "cli", appName);
@@ -301,7 +301,7 @@ export class Configuration {
 			case OsType.Windows: appName = "normalize.exe"; break;
 			case OsType.Linux: appName = "normalize"; break;
 
-			default: throw new XpException("Платформа не поддеживается.");
+			default: throw new XpException("Платформа не поддерживается");
 		}
 
 		const fullPath = path.join(this.getKbtBaseDirectory(), "build-tools", appName);
@@ -525,7 +525,7 @@ export class Configuration {
 	}
 
 	/**
-	 * Возращает путь к директории с таксономией. 
+	 * Возвращает путь к директории с таксономией. 
 	 * @returns путь к директории с таксономией.
 	 */
 	public getTaxonomyDirPath() : string {
@@ -558,9 +558,9 @@ export class Configuration {
 	 * @returns путь к файлу описания контрактов табличных списков.
 	 */
 	public getTablesContract() : string {
-		const tabulatContractsFileName = "tables_contract.yaml";
-		const fullPath = path.join(this.getContractsDirectory(), "tabular_lists", tabulatContractsFileName);
-		this.checkKbtToolPath(tabulatContractsFileName, fullPath);
+		const tabularContractsFileName = "tables_contract.yaml";
+		const fullPath = path.join(this.getContractsDirectory(), "tabular_lists", tabularContractsFileName);
+		this.checkKbtToolPath(tabularContractsFileName, fullPath);
 		
 		return fullPath;
 	}
@@ -570,14 +570,18 @@ export class Configuration {
 	 * @returns префикс создаваемого контента.
 	 */
 	public getContentPrefix() : string {
-		const configuration = vscode.workspace.getConfiguration("xpConfig");
-		const taxonomyFullPath = configuration.get<string>("contentPrefix");
+		const configuration = this.getConfiguration();
+		const taxonomyFullPath = configuration.get<string>("origin.contentPrefix");
 		return taxonomyFullPath;
 	}
 
 	public async setContentPrefix(prefix: string) : Promise<void> {
-		const configuration = vscode.workspace.getConfiguration("xpConfig");
+		const configuration = this.getConfiguration();
 		await configuration.update("contentPrefix", prefix, true, false);
+	}
+
+	public getConfiguration() : vscode.WorkspaceConfiguration {
+		return vscode.workspace.getConfiguration(this.CONFIGURATION_PREFIX);
 	}
 
 	/**
@@ -585,13 +589,13 @@ export class Configuration {
 	 * @returns 
 	 */
 	public getСorrelatorTimeoutPerSecond() : number {
-		const configuration = vscode.workspace.getConfiguration("xpConfig");
+		const configuration = this.getConfiguration();
 		const correlatorTimeout = configuration.get<number>("correlatorTimeout");
 		return correlatorTimeout;
 	}
 
 	public getBaseOutputDirectoryPath() : string {
-		const extensionSettings = vscode.workspace.getConfiguration("xpConfig");
+		const extensionSettings = this.getConfiguration();
 		const outputDirectoryPath = extensionSettings.get<string>("outputDirectoryPath");
 
 		if (!outputDirectoryPath || outputDirectoryPath === ""){
@@ -639,7 +643,7 @@ export class Configuration {
 
 	public static get() : Configuration {
 		if(!this._instance) {
-			throw new XpException("Конфигурация расширения не получена. Возможно, она не была инициализирована.");
+			throw new XpException("Конфигурация расширения не получена. Возможно, она не была инициализирована");
 		}
         return this._instance;
     }
@@ -657,6 +661,8 @@ export class Configuration {
 	private _diagnosticCollection: vscode.DiagnosticCollection;
 	private _localizationService: LocalizationService;
 	
+
+	private CONFIGURATION_PREFIX = "xpConfig";
 	private BUILD_TOOLS_DIR_NAME = "build-tools";
 
 	public static readonly SIEMJ_CONFIG_FILENAME = "siemj.conf";	

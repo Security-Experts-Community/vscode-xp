@@ -12,6 +12,7 @@ import { Configuration } from '../../../models/configuration';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
 import { ContentTreeProvider } from '../contentTreeProvider';
+import { OriginsManager } from '../../../models/content/originsManager';
 
 export class PackSIEMAllPackagesAction {
 	constructor(private config: Configuration) {}
@@ -187,6 +188,7 @@ export class PackKbAction {
 				await fse.copy(сontractsDirectoryPath, taxonomyPath);
 
 				// Копируем origins из шаблона
+				// const origin = OriginsManager.getCurrentOrigin(this._config);
 				const originsSrcFilePath = this._config.getOriginsFilePath();
 				const originsDstDirPath = path.join(originsDirPath, "origins.json");
 				await fs.promises.copyFile(originsSrcFilePath, originsDstDirPath);

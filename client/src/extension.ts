@@ -35,8 +35,8 @@ import { XpEnumValuesCompletionItemProvider } from './providers/xpEnumValuesComp
 import { LogLevel, Logger } from './logger';
 import { RetroCorrelationViewController } from './views/retroCorrelation/retroCorrelationViewProvider';
 import { XpHoverProvider } from './providers/xpHoverProvider';
-import { DialogMessage } from './l10n/messages';
 import { DialogHelper } from './helpers/dialogHelper';
+import { OriginsManager } from './models/content/originsManager';
 
 export let Log: Logger;
 let client: LanguageClient;
@@ -55,6 +55,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
 		Log.info(`Начата активация расширения '${Configuration.getExtensionDisplayName()}'`);
 
+		await OriginsManager.init(config);
 
 		// Конфигурирование LSP.
 		const serverModule = context.asAbsolutePath(

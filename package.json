@@ -707,27 +707,27 @@
           "description": "Таймаут работы коррелятора в секундах",
           "default": 180
         },
-        "xpConfig.company": {
+        "xpConfig.origin": {
           "type": "object",
           "order": 2,
-          "description": "An example numeric object setting.",
+          "description": "Информация о поставщике. Используется при упаковке контента в KB-файл ",
           "properties": {
             "contentPrefix": {
               "scope": "window",
               "type": "string",
-              "description": "Префикс ObjectId для определения типа создаваемого контента. Если префикс не задан, ObjectId не генерируется для создаваемых правил."
+              "description": "Префикс ObjectId, а также системный префикс для задания поставщика контента. Например, пользовательские правила с возможностью редактирования имеют префикс LOC, системные PT. Если префикс не задан, ObjectId не генерируется для создаваемых правил."
             },
             "ru": {
               "type": "string",
-              "description": "Описание на русском языке"
+              "description": "Отображаемое имя (RU)"
             },
             "en": {
               "type": "string",
-              "description": "English description"
+              "description": "Display Name (EN)"
             },
             "id": {
               "type": "string",
-              "description": "Supplier ID"
+              "description": "Уникальный идентификатор поставщика"
             }
           },
           "additionalProperties": false,
