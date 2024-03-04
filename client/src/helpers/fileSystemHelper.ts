@@ -25,7 +25,7 @@ export class FileSystemHelper {
      * @returns 
      */
     public static resolveTildeWindowsUserHomePath(homePath : string, username: string): string {
-        const resolvedPath = homePath.replace(/\\[A-Za-z0-9]+~1\\/, `\\${username}\\`);
+        const resolvedPath = homePath.replace(/\\[^\\]+~1[^\\]*\\/, `\\${username}\\`);
         return resolvedPath;
     }
 
