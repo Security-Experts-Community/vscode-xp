@@ -39,9 +39,8 @@
     "MacroName": "Macro name",
 
     "EmptyName": "The name cannot be empty",
-    "NameContainsInvalidCharacters": "The name contains invalid characters",
+    "NameContainsInvalidCharacters": "The name contains invalid characters. Use only lowercase English letters, numbers and underscores",
     "NameReserved": "This name is reserved and cannot be used",
-    "NameValidCharacters": "Use only lowercase English letters, numbers and underscores",
     "AlreadyExists": "This name already exists",
 
     "View.LogCorrelation": "Log file correlation",

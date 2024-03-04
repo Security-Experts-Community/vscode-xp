@@ -214,6 +214,8 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 		if(!localeDescription) {
 			return "";
 		}
+
+		return localeDescription;
 	}
 
 	public getLocalizations() : Localization[] {

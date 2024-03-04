@@ -20,7 +20,7 @@ export class CreateMacroCommand {
 				placeHolder: this._config.getMessage("MacroName"),
 				prompt: this._config.getMessage("MacroName"),
 				validateInput: (v) => {
-					return NameValidator.validateMacro(v, parentItem, this._config);
+					return NameValidator.validate(v, parentItem, this._config);
 				}
 			}
 		);
