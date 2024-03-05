@@ -10,12 +10,15 @@ import { XpException } from '../../../models/xpException';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { Log } from '../../../extension';
 import { SiemjManager } from '../../../models/siemj/siemjManager';
+import { ViewCommand } from './viewCommand';
 
 /**
  * Команда выполняющая сборку всех графов: нормализации, агрегации, обогащения и корреляции.
  */
-export class BuildAllGraphCommand {
-	constructor(private _config: Configuration, private _outputParser: SiemJOutputParser) {}
+export class BuildAllGraphCommand extends ViewCommand {
+	constructor(private config: Configuration, private outputParser: SiemJOutputParser) {
+		super();
+	}
 
 	public async execute() : Promise<void> {
 		Log.info("Запущена компиляция всех графов и табличных списков");
@@ -26,12 +29,12 @@ export class BuildAllGraphCommand {
 			title: `Компиляция всех графов и табличных списков`
 		}, async (progress, cancellationToken: vscode.CancellationToken) => {
 
-			await SiemjConfigHelper.clearArtifacts(this._config);
+			await SiemjConfigHelper.clearArtifacts(this.config);
 			
 			// Если в правиле используются сабрули, тогда собираем весь граф корреляций.
-			const siemjConfContents = this.getParamsForAllRoots(this._config);
+			const siemjConfContents = this.getParamsForAllRoots(this.config);
 			
-			this._config.getDiagnosticCollection().clear();
+			this.config.getDiagnosticCollection().clear();
 			
 			for (const siemjConfContentEntity of siemjConfContents) {
 
@@ -42,14 +45,14 @@ export class BuildAllGraphCommand {
 						throw new XpException("Не удалось сгенерировать siemj.conf для заданного правила и тестов.");
 					}
 
-					const siemjManager = new SiemjManager(this._config, cancellationToken);
-					const contentRootPath = path.join(this._config.getKbFullPath(), rootFolder);
+					const siemjManager = new SiemjManager(this.config, cancellationToken);
+					const contentRootPath = path.join(this.config.getKbFullPath(), rootFolder);
 					const siemjExecutionResult = await siemjManager.executeSiemjConfig(contentRootPath, siemjConfContent);
-					const result = await this._outputParser.parse(siemjExecutionResult.output);
+					const result = await this.outputParser.parse(siemjExecutionResult.output);
 
 					// Выводим ошибки и замечания для тестируемого правила.
 					for (const rfd of result.fileDiagnostics) {
-						this._config.getDiagnosticCollection().set(rfd.uri, rfd.diagnostics);
+						this.config.getDiagnosticCollection().set(rfd.uri, rfd.diagnostics);
 					}
 
 					if(result.statusMessage) {
@@ -60,7 +63,7 @@ export class BuildAllGraphCommand {
 					DialogHelper.showInfo(`Компиляция всех графов и табличных списков успешно завершена`);
 				}
 				finally {
-					const tmpPath = this._config.getTmpDirectoryPath(rootFolder);
+					const tmpPath = this.config.getTmpDirectoryPath(rootFolder);
 					try {
 						// Очищаем временные файлы.
 						if (fs.lstatSync(tmpPath).isDirectory()) {

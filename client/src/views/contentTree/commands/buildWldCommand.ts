@@ -10,24 +10,29 @@ import { SiemjConfBuilder } from '../../../models/siemj/siemjConfigBuilder';
 import { XpException } from '../../../models/xpException';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { SiemjManager } from '../../../models/siemj/siemjManager';
+import { ViewCommand } from './viewCommand';
 
-export class BuildWldCommand {
-	constructor(private _config: Configuration, private _outputParser: SiemJOutputParser) {}
+/**
+ * Команда выполняющая сборку формул нормализации
+ */
+export class BuildWldCommand extends ViewCommand {
+	constructor(private config: Configuration, private outputParser: SiemJOutputParser) {
+		super();
+	}
 
 	public async execute() : Promise<void> {
-
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: false,
 			title: `Компиляция wld-файлов`
 		}, async (progress, cancellationToken: vscode.CancellationToken) => {
 
-			await SiemjConfigHelper.clearArtifacts(this._config);
+			await SiemjConfigHelper.clearArtifacts(this.config);
 			
 			// Если в правиле используются сабрули, тогда собираем весь граф корреляций.
-			const siemjConfContents = this.getParamsForAllRoots(this._config);
+			const siemjConfContents = this.getParamsForAllRoots(this.config);
 			
-			this._config.getDiagnosticCollection().clear();
+			this.config.getDiagnosticCollection().clear();
 			
 			for (const siemjConfContentEntity of siemjConfContents) {
 
@@ -39,17 +44,17 @@ export class BuildWldCommand {
 				// Для сборки WLD нам нужен файл схемы, собираем его.
 				const rootFolder = siemjConfContentEntity['packagesRoot'];
 
-				const siemjManager = new SiemjManager(this._config, cancellationToken);
-				const contentRootPath = path.join(this._config.getKbFullPath(), rootFolder);
+				const siemjManager = new SiemjManager(this.config, cancellationToken);
+				const contentRootPath = path.join(this.config.getKbFullPath(), rootFolder);
 				const siemjExecutionResult = await siemjManager.executeSiemjConfig(contentRootPath, siemjConfContent);
-				const result = await this._outputParser.parse(siemjExecutionResult.output);
+				const result = await this.outputParser.parse(siemjExecutionResult.output);
 
 				// Типовая команда выглядит так:
 				// .\ptsiem-sdk\release-26.0\26.0.11839\vc150\x86_64\win\cli/rcc.exe --lang w --taxonomy=.\taxonomy\release-26.0\26.0.215\any\any\any/taxonomy.json --schema=.\gui_output/schema.json -o c:\tmp\whitelisting_graph.json .\knowledgebase\packages
-				const rccCli = this._config.getRccCli();
-				const taxonomyPath = this._config.getTaxonomyFullPath();
-				const schemaPath = this._config.getSchemaFullPath(rootFolder);
-				const whitelistingPath = this._config.getWhitelistingPath(rootFolder);
+				const rccCli = this.config.getRccCli();
+				const taxonomyPath = this.config.getTaxonomyFullPath();
+				const schemaPath = this.config.getSchemaFullPath(rootFolder);
+				const whitelistingPath = this.config.getWhitelistingPath(rootFolder);
 				const rootPath = siemjConfContentEntity['rootPath'];
 				const executionResult = await ProcessHelper.execute(
 					rccCli,[
@@ -66,7 +71,7 @@ export class BuildWldCommand {
 					],
 					{
 						encoding: "utf-8",
-						outputChannel: this._config.getOutputChannel()
+						outputChannel: this.config.getOutputChannel()
 					}
 				);
 

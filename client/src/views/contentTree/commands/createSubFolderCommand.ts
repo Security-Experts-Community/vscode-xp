@@ -5,12 +5,16 @@ import * as path from 'path';
 import { KbHelper } from '../../../helpers/kbHelper';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { ContentTreeProvider } from '../contentTreeProvider';
+import { ViewCommand } from './viewCommand';
+import { Configuration } from '../../../models/configuration';
 
-export class CreateSubFolderCommand {
+export class CreateSubFolderCommand extends ViewCommand {
 
-	static CommandName = "SiemContentEditor.createSubFolderCommand";
+	public constructor(private config: Configuration, private selectedItem: RuleBaseItem) {
+		super();
+	}
 
-	public async execute(selectedItem: RuleBaseItem) : Promise<void> {
+	public async execute() : Promise<void> {
 
 		const userInput = await vscode.window.showInputBox(
 			{
@@ -40,7 +44,7 @@ export class CreateSubFolderCommand {
 					}
 
 					// Невозможность создать уже созданную директорию.
-					const newFolderPath = path.join(selectedItem.getParentPath(), trimmed);
+					const newFolderPath = path.join(this.selectedItem.getParentPath(), trimmed);
 					if(fs.existsSync(newFolderPath))
 						return "Такая папка уже существует";
 				}
@@ -54,7 +58,7 @@ export class CreateSubFolderCommand {
 		const newFolderName = userInput.trim();
 
 		// Создаем директорию.
-		const selectedItemDirPath = selectedItem.getDirectoryPath();
+		const selectedItemDirPath = this.selectedItem.getDirectoryPath();
 		const newFolderPath = path.join(selectedItemDirPath, newFolderName);
 		fs.mkdirSync(newFolderPath, {recursive: true});
 

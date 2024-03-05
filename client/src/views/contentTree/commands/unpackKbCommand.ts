@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as fse from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 import * as vscode from 'vscode';
 
 import { DialogHelper } from '../../../helpers/dialogHelper';
@@ -10,26 +11,26 @@ import { Configuration } from '../../../models/configuration';
 import { ContentTreeProvider } from '../contentTreeProvider';
 import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
 import { ContentHelper } from '../../../helpers/contentHelper';
-import { XpException } from '../../../models/xpException';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
-import { RegExpHelper } from '../../../helpers/regExpHelper';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { YamlHelper } from '../../../helpers/yamlHelper';
 import { Log } from '../../../extension';
 import { ContentFolder } from '../../../models/content/contentFolder';
 import { Localization } from '../../../models/content/localization';
+import { ViewCommand } from './viewCommand';
 
-export class UnpackKbCommand {
-	constructor(private _config: Configuration) {
+export class UnpackKbCommand extends ViewCommand {
+	constructor(private config: Configuration, private selectedPackage : ContentTreeBaseItem) {
+		super();
 	}
 
-	public async execute(selectedPackage : ContentTreeBaseItem) : Promise<void> {
+	public async execute() : Promise<void> {
 
 		// Проверка наличия утилиты сборки kb-файлов.
-		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();
+		const knowledgeBasePackagerCli = this.config.getKbPackFullPath();
 		if(!fs.existsSync(knowledgeBasePackagerCli)) {
 			DialogHelper.showError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку.");
-			await VsCodeApiHelper.openSettings(this._config.getExtensionSettingsPrefix());
+			await VsCodeApiHelper.openSettings(this.config.getExtensionSettingsPrefix());
 			return;
 		}
 
@@ -59,7 +60,7 @@ export class UnpackKbCommand {
 			const kbFilePath = kbUris[0].fsPath; 
 
 			// Получаем путь к директории пакетов.
-			const packageDirPath = selectedPackage.getContentRootPath(Configuration.get());
+			const packageDirPath = this.selectedPackage.getContentRootPath(Configuration.get());
 			const rootContentDirPath = path.dirname(packageDirPath);
 
 			if(!fs.existsSync(packageDirPath)) {
@@ -67,11 +68,17 @@ export class UnpackKbCommand {
 				return;
 			}
 
-			const unpackPackagePath = this._config.getRandTmpSubDirectoryPath();
+			// Полезно, если путь к директории временных файлов (в домашней директории) будет сокращен тильдой.
+			const username = os.userInfo().username;
+			Log.info("Username:", username);
+
+			const unpackPackagePath = this.config.getRandTmpSubDirectoryPath();
 			await fs.promises.mkdir(unpackPackagePath, {recursive: true});
 
+			
 			const kbFileName = path.parse(kbFilePath).name;
 			const outputDirPath = path.join(unpackPackagePath, kbFileName);
+			Log.info("OutputDirPath: ", outputDirPath);
 
 			// Типовая команда выглядит так:
 			// dotnet kbpack.dll unpack -s c:\tmp\pack\esc.kb -o c:\tmp\pack\unpack\doesn_t_exist_folder
@@ -92,7 +99,7 @@ export class UnpackKbCommand {
 					params,
 					{	
 						encoding: 'utf-8',
-						outputChannel: this._config.getOutputChannel(),
+						outputChannel: this.config.getOutputChannel(),
 						checkCommandBeforeExecution: true,
 						cancellationToken: cancellationToken
 					}
@@ -123,7 +130,7 @@ export class UnpackKbCommand {
 			}
 			
 			// Пользовательские правила и директории, которые просто лежат в корне KB.
-			const objectsPackagePath = path.join(outputDirPath, this.ROOT_USERS_CONTENT_UNPACKED_DIRNAME);
+			const objectsPackagePath = path.join(outputDirPath, ContentTreeProvider.ROOT_USERS_CONTENT_UNPACKED_DIRNAME);
 			if(fs.existsSync(objectsPackagePath)) {
 				await fse.copy(objectsPackagePath, packageDirPath, { overwrite: true });
 			}
@@ -136,9 +143,9 @@ export class UnpackKbCommand {
 			// }
 
 			// Обновляем макросы
-			const macroPackagePath = path.join(outputDirPath, this.MACRO_DIRNAME);
+			const macroPackagePath = path.join(outputDirPath, ContentTreeProvider.MACRO_DIRNAME);
 			if(fs.existsSync(macroPackagePath)) {
-				const marcoDirPath = path.join(rootContentDirPath, this.MACRO_DIRNAME);
+				const marcoDirPath = path.join(rootContentDirPath, ContentTreeProvider.MACRO_DIRNAME);
 				await fse.copy(macroPackagePath, marcoDirPath);
 			}
 
@@ -184,8 +191,5 @@ export class UnpackKbCommand {
 	}
 
 	private readonly SUCCESS_SUBSTRING = "Knowledge base unpacking completed successfully";
-
-	private readonly ROOT_USERS_CONTENT_UNPACKED_DIRNAME = "objects";
-	private readonly MACRO_DIRNAME = "common";
 }
 

@@ -274,7 +274,7 @@
       ],
       "view/title": [
         {
-          "command": "SiemContentEditor.openKnowledgebaseCommand",
+          "command": "xp.contentTree.openKnowledgebaseCommand",
           "when": "view == KnowledgebaseTree",
           "group": "navigation@1"
         },
@@ -289,7 +289,7 @@
           "group": "navigation@3"
         },
         {
-          "command": "SiemContentEditor.refreshKbTree",
+          "command": "xp.contentTree.refreshTree",
           "when": "view == KnowledgebaseTree",
           "group": "navigation@4"
         },
@@ -331,7 +331,7 @@
       ],
       "view/item/context": [
         {
-          "command": "SiemContentEditor.createPackageCommand",
+          "command": "xp.contentTree.createPackageCommand",
           "when": "view == KnowledgebaseTree && viewItem == ContentRoot",
           "group": "ContentRoot@1"
         },
@@ -441,22 +441,22 @@
           "group": "ModularTest@4"
         },
         {
-          "command": "SiemContentEditor.createSubFolderCommand",
+          "command": "xp.contentTree.createSubFolderCommand",
           "when": "view == KnowledgebaseTree && (viewItem == AnotherFolder ||viewItem == PackageFolder || viewItem == ContentRoot)",
           "group": "ZCommonItems@1"
         },
         {
-          "command": "SiemContentEditor.renameTreeItemCommand",
+          "command": "xp.contentTree.renameItemCommand",
           "when": "view == KnowledgebaseTree && (viewItem == Correlation || viewItem == Normalization || viewItem == Enrichment)",
           "group": "ZCommonItems@2"
         },
         {
-          "command": "SiemContentEditor.duplicateTreeItemCommand",
+          "command": "xp.contentTree.duplicateItemCommand",
           "when": "view == KnowledgebaseTree && viewItem == Correlation",
           "group": "ZCommonItems@3"
         },
         {
-          "command": "SiemContentEditor.deleteContentItemCommand",
+          "command": "xp.contentTree.deleteItemCommand",
           "when": "view == KnowledgebaseTree",
           "group": "ZCommonItems@4"
         },
@@ -510,18 +510,18 @@
         "category": "Редактор XP"
       },
       {
-        "command": "SiemContentEditor.openKnowledgebaseCommand",
+        "command": "xp.contentTree.openKnowledgebaseCommand",
         "title": "%xp.views.knowledgebaseTree.openKnowledgebaseCommand%",
         "category": "Редактор XP",
         "icon": "$(folder-opened)"
       },
       {
-        "command": "SiemContentEditor.refreshKbTree",
+        "command": "xp.contentTree.refreshTree",
         "title": "%xp.views.knowledgebaseTree.refreshContentTreeCommand%",
         "icon": "$(refresh)"
       },
       {
-        "command": "SiemContentEditor.createPackageCommand",
+        "command": "xp.contentTree.createPackageCommand",
         "title": "%xp.views.knowledgebaseTree.createPackageCommand%",
         "category": "Редактор XP"
       },
@@ -601,23 +601,23 @@
         "category": "Internal"
       },
       {
-        "command": "SiemContentEditor.createSubFolderCommand",
+        "command": "xp.contentTree.createSubFolderCommand",
         "title": "%xp.views.knowledgebaseTree.createFolderCommand%",
         "category": "Редактор XP",
         "icon": "$(new-folder)"
       },
       {
-        "command": "SiemContentEditor.renameTreeItemCommand",
+        "command": "xp.contentTree.renameItemCommand",
         "title": "%xp.views.knowledgebaseTree.renameCommand%",
         "category": "Редактор XP"
       },
       {
-        "command": "SiemContentEditor.duplicateTreeItemCommand",
+        "command": "xp.contentTree.duplicateItemCommand",
         "title": "%xp.views.knowledgebaseTree.duplicateCommand%",
         "category": "Редактор XP"
       },
       {
-        "command": "SiemContentEditor.deleteContentItemCommand",
+        "command": "xp.contentTree.deleteItemCommand",
         "title": "%xp.views.knowledgebaseTree.deleteCommand%",
         "category": "Редактор XP",
         "icon": "$(notebook-delete-cell)"

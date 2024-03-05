@@ -10,12 +10,15 @@ import { Configuration } from '../../../models/configuration';
 import { YamlHelper } from '../../../helpers/yamlHelper';
 import { MetaInfo } from '../../../models/metaInfo/metaInfo';
 import { ContentFolder } from '../../../models/content/contentFolder';
+import { ViewCommand } from './viewCommand';
 
-export class CreatePackageCommand {
+export class CreatePackageCommand extends ViewCommand {
 
-	static CommandName = "SiemContentEditor.createPackageCommand";
-
-	public async execute(selectedItem: RuleBaseItem) : Promise<void> {
+	public constructor(private config: Configuration, private selectedItem: RuleBaseItem) {
+		super();
+	}
+	
+	public async execute() : Promise<void> {
 
 		const userInput = await vscode.window.showInputBox(
 			{
@@ -45,7 +48,7 @@ export class CreatePackageCommand {
 					}
 
 					// Невозможность создать уже созданную директорию.
-					const newFolderPath = path.join(selectedItem.getParentPath(), trimmed);
+					const newFolderPath = path.join(this.selectedItem.getParentPath(), trimmed);
 					if(fs.existsSync(newFolderPath))
 						return "Пакет с таким названием уже существует";
 				}
@@ -57,7 +60,7 @@ export class CreatePackageCommand {
 		}
 
 		const packageName = userInput.trim();
-		const selectedItemDirPath = selectedItem.getDirectoryPath();
+		const selectedItemDirPath = this.selectedItem.getDirectoryPath();
 
 		// Пакет
 		const newPackagePath = path.join(selectedItemDirPath, packageName);
@@ -102,6 +105,6 @@ export class CreatePackageCommand {
 		const defaultMetainfoContent = YamlHelper.stringify(defaultMetainfoObject);
 		await FileSystemHelper.writeContentFile(metainfoPath, defaultMetainfoContent);
 
-		await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
+		await ContentTreeProvider.refresh();
 	}
 }

@@ -7,12 +7,8 @@ import { Correlation } from '../../../models/content/correlation';
 import { ContentItemStatus, RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { ContentTreeProvider } from '../contentTreeProvider';
 import { TestHelper } from '../../../helpers/testHelper';
-import { LocalizationExample } from '../../../models/content/localization';
 import { SiemjManager } from '../../../models/siemj/siemjManager';
-import { XpException } from '../../../models/xpException';
 import { Configuration } from '../../../models/configuration';
-import { LocalizationEditorViewProvider } from '../../localizationEditor/localizationEditorViewProvider';
-import { OperationCanceledException } from '../../../models/operationCanceledException';
 import { RunIntegrationTestDialog } from '../../runIntegrationDialog';
 import { SiemJOutputParser } from '../../../models/siemj/siemJOutputParser';
 import { IntegrationTestRunner } from '../../../models/tests/integrationTestRunner';
@@ -24,19 +20,20 @@ import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { Normalization } from '../../../models/content/normalization';
 import { TestStatus } from '../../../models/tests/testStatus';
 import { BaseUnitTest } from '../../../models/tests/baseUnitTest';
+import { ViewCommand } from './viewCommand';
 
 /**
  * Проверяет контент по требованиям. В настоящий момент реализована только проверка интеграционных тестов и локализаций.
  * TODO: учесть обновление дерева контента пользователем во время операции.
  * TODO: после обновления дерева статусы item-ам присваиваться не будут, нужно обновить список обрабатываемых рулей.
  */
-export class ContentVerifierCommand {
-	constructor(
-		private readonly _config: Configuration
-	) { }
+export class ContentVerifierCommand extends ViewCommand {
+	constructor(private readonly config: Configuration, private parentItem: ContentTreeBaseItem) {
+		super();
+	}
 
-	async execute(parentItem: ContentTreeBaseItem) : Promise<void> {
-		this._integrationTestTmpFilesPath = this._config.getRandTmpSubDirectoryPath();
+	async execute() : Promise<void> {
+		this._integrationTestTmpFilesPath = this.config.getRandTmpSubDirectoryPath();
 
 		return await vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
@@ -46,10 +43,10 @@ export class ContentVerifierCommand {
 			// Сбрасываем статус правил в исходный
 			// TODO: Добавить поддержку других типов
 			// const items = parentItem.getChildren();
-			const totalChildItems = this.getChildrenRecursively(parentItem);
+			const totalChildItems = this.getChildrenRecursively(this.parentItem);
 			const rules = totalChildItems.filter(i => (i instanceof RuleBaseItem)).map<RuleBaseItem>(r => r as RuleBaseItem);
 			if(rules.length === 0) {
-				DialogHelper.showInfo(`В директории ${parentItem.getName()} не найдено контента для проверки`);
+				DialogHelper.showInfo(`В директории ${this.parentItem.getName()} не найдено контента для проверки`);
 				return;
 			}
 
@@ -59,7 +56,7 @@ export class ContentVerifierCommand {
 			// }
 			// ContentTreeProvider.refresh(parentItem);
 
-			Log.info(`В ${parentItem.getName()} директории начата проверка ${rules.length} правил`);
+			Log.info(`В ${this.parentItem.getName()} директории начата проверка ${rules.length} правил`);
 			try {
 				for(const rule of rules) {
 					progress.report({ message: `Проверка правила ${rule.getName()}`});
@@ -67,7 +64,7 @@ export class ContentVerifierCommand {
 					await ContentTreeProvider.refresh(rule);
 				}
 
-				DialogHelper.showInfo(`Проверка директории ${parentItem.getName()} завершена`);
+				DialogHelper.showInfo(`Проверка директории ${this.parentItem.getName()} завершена`);
 			}
 			catch(error) {
 				ExceptionHelper.show(error, "Неожиданная ошибка проверки контента");
@@ -124,13 +121,13 @@ export class ContentVerifierCommand {
 
 		if(rule instanceof Correlation || rule instanceof Enrichment) {
 			progress.report({ message: `Получение зависимостей правила ${rule.getName()} для корректной сборки графа корреляций` });
-			const ritd = new RunIntegrationTestDialog(this._config, ruleTmpFilesRuleName);
+			const ritd = new RunIntegrationTestDialog(this.config, ruleTmpFilesRuleName);
 			const options = await ritd.getIntegrationTestRunOptions(rule);
 			options.cancellationToken = cancellationToken;
 	
 			progress.report({ message: `Проверка интеграционных тестов правила ${rule.getName()}`});
 			const outputParser = new SiemJOutputParser();
-			const testRunner = new IntegrationTestRunner(this._config, outputParser);
+			const testRunner = new IntegrationTestRunner(this.config, outputParser);
 	
 			// TODO: исключить лишнюю сборку артефактов
 			const siemjResult = await testRunner.run(rule, options);
@@ -146,7 +143,7 @@ export class ContentVerifierCommand {
 		if(rule instanceof Correlation) {
 			progress.report({ message: `Проверка локализаций правила ${rule.getName()}`});
 			
-			const siemjManager = new SiemjManager(this._config);
+			const siemjManager = new SiemjManager(this.config);
 			const locExamples = await siemjManager.buildLocalizationExamples(rule, ruleTmpFilesRuleName);
 
 			if (locExamples.length === 0) {

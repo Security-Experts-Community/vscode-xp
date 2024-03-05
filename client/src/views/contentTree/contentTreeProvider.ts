@@ -93,8 +93,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			vscode.commands.registerCommand(
 				ContentTreeProvider.verifyFolderCommand,
 				async (item: ContentTreeBaseItem) => {
-					const lt = new ContentVerifierCommand(config);
-					await lt.execute(item);
+					const lt = new ContentVerifierCommand(config, item);
+					await lt.execute();
 				}
 			)
 		);
@@ -102,10 +102,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
-				OpenKnowledgebaseCommand.openKnowledgebaseCommand,
+				ContentTreeProvider.openKnowledgebaseCommand,
 				() => {
-					const openKnowledgebaseCommand = new OpenKnowledgebaseCommand();
-					openKnowledgebaseCommand.execute(); 
+					const command = new OpenKnowledgebaseCommand(config);
+					command.execute(); 
 				}
 			)
 		);
@@ -155,10 +155,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		// Создание поддиректории.
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
-				CreateSubFolderCommand.CommandName,
+				ContentTreeProvider.createSubFolderCommand,
 				async (item: RuleBaseItem) => {
-					const command = new CreateSubFolderCommand();
-					command.execute(item);
+					const command = new CreateSubFolderCommand(config, item);
+					command.execute();
 				},
 				this
 			)
@@ -167,10 +167,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		// Создание макроса
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
-				CreateMacroCommand.CommandName,
+				ContentTreeProvider.createMacroCommand,
 				async (item: RuleBaseItem) => {
-					const command = new CreateMacroCommand(config);
-					command.execute(item);
+					const command = new CreateMacroCommand(config, item);
+					command.execute();
 				},
 				this
 			)
@@ -179,10 +179,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		// Переименование правила.
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
-				RenameTreeItemCommand.CommandName,
+				ContentTreeProvider.renameItemCommand,
 				async (item: RuleBaseItem) => {
-					const command = new RenameTreeItemCommand(config);
-					command.execute(item);
+					const command = new RenameTreeItemCommand(config, item);
+					command.execute();
 				},
 				this
 			)
@@ -191,10 +191,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		// Дублирование правила.
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
-				DuplicateTreeItemCommand.CommandName,
+				ContentTreeProvider.duplicateTreeItemCommand,
 				async (item: RuleBaseItem) => {
-					const command = new DuplicateTreeItemCommand(config);
-					command.execute(item);
+					const command = new DuplicateTreeItemCommand(config, item);
+					command.execute();
 				},
 				this
 			)
@@ -203,10 +203,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		// Удаление сущности.
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
-				DeleteContentItemCommand.CommandName,
+				ContentTreeProvider.deleteItemCommand,
 				async (item: RuleBaseItem) => {
-					const command = new DeleteContentItemCommand();
-					command.execute(item);
+					const command = new DeleteContentItemCommand(config, item);
+					command.execute();
 				},
 				this
 			)
@@ -215,10 +215,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		// Удаление пакета.
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
-				CreatePackageCommand.CommandName,
+				ContentTreeProvider.createPackageCommand,
 				async (item: RuleBaseItem) => {
-					const command = new CreatePackageCommand();
-					command.execute(item);
+					const command = new CreatePackageCommand(config, item);
+					command.execute();
 				},
 				this
 			)
@@ -234,9 +234,9 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 						return DialogHelper.showInfo("Для распаковки KB-пакета нужно открыть базу знаний");
 					}
 					
-					const action = new UnpackKbCommand(config);
+					const action = new UnpackKbCommand(config, selectedItem);
 					try {
-						await action.execute(selectedItem);
+						await action.execute();
 					}
 					catch(error) {
 						ExceptionHelper.show(error, `Неожиданная ошибка распаковки kb-пакета`);
@@ -298,8 +298,6 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 						return;
 					}
 					
-					const packCommand = new PackKbCommand(config);
-
 					// Выбираем директорию для выгрузки пакета.
 					const packageName = selectedPackage.getName();
 					const fileInfos = await vscode.window.showSaveDialog({
@@ -312,9 +310,9 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 						return;
 					}
 
-					// Удаление существующего файла.
 					const unpackKbFilePath = fileInfos.fsPath; 
-					await packCommand.execute(selectedPackage, unpackKbFilePath);
+					const packCommand = new PackKbCommand(config, selectedPackage, unpackKbFilePath);
+					await packCommand.execute();
 				}
 			)
 		);
@@ -612,7 +610,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 
 		// Дошли до уровня пакета.
 		if(directoryName === ContentTreeProvider.PACKAGES_DIRNAME ||
-          directoryName ===  ContentTreeProvider.MACROS_DIRNAME ||
+          directoryName ===  ContentTreeProvider.MACRO_DIRNAME ||
           parentDirName === "") {
 			const packageFolder = await ContentFolder.create(parentPath, ContentFolderType.ContentRoot);
 			return Promise.resolve(packageFolder);
@@ -676,23 +674,35 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 	private _gitAPI : API;
 
 	public static readonly PACKAGES_DIRNAME = "packages";
-	public static readonly MACROS_DIRNAME = "common";
 	public static readonly CONTRACTS_UNPACKED_DIRNAME = "contracts";
+	public static readonly TAXONOMY_DIRNAME = "taxonomy";
+	public static readonly ROOT_USERS_CONTENT_UNPACKED_DIRNAME = "objects";
+	public static readonly MACRO_DIRNAME = "common";
 	
 	public static readonly KnowledgebaseTreeId = 'KnowledgebaseTree';
 	
 	public static readonly onRuleClickCommand = 'KnowledgebaseTree.onElementSelectionChange';
+
 	public static readonly buildAllCommand = 'xp.contentTree.buildAll';
 	public static readonly buildLocalizationsCommand = 'xp.contentTree.buildLocalizations';
 	public static readonly buildNormalizationsCommand = 'xp.contentTree.buildNormalizations';
 	public static readonly buildWldCommand = 'xp.contentTree.buildWld';
 	public static readonly buildKbPackageCommand = 'KnowledgebaseTree.buildKbPackage';
+
 	public static readonly unpackKbPackageCommand = 'KnowledgebaseTree.unpackKbPackage';
 	public static readonly verifyFolderCommand = 'xp.contentTree.verifyFolder';
 	
+	public static readonly openKnowledgebaseCommand = "xp.contentTree.openKnowledgebaseCommand";
+	public static readonly createMacroCommand = "xp.contentTree.createMacroCommand";
+	public static readonly createPackageCommand = "xp.contentTree.createPackageCommand";
+	public static readonly createSubFolderCommand = "xp.contentTree.createSubFolderCommand";
+	public static readonly deleteItemCommand = "xp.contentTree.deleteItemCommand";
+	public static readonly duplicateTreeItemCommand = "xp.contentTree.duplicateItemCommand";
+	public static readonly renameItemCommand = "xp.contentTree.renameItemCommand";
+	
 	private static _selectedItem : RuleBaseItem | Table | Macros;
 
-	public static readonly refreshTreeCommand = 'SiemContentEditor.refreshKbTree';
+	public static readonly refreshTreeCommand = 'xp.contentTree.refreshTree';
 	public static readonly refreshItemCommand = 'xp.contentTree.refreshItem';
 
 	private _onDidChangeTreeData: vscode.EventEmitter<ContentTreeBaseItem|undefined> = new vscode.EventEmitter<ContentTreeBaseItem|undefined>();

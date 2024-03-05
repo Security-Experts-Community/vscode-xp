@@ -5,22 +5,23 @@ import { ContentTreeProvider } from '../contentTreeProvider';
 import { Configuration } from '../../../models/configuration';
 import { NameValidator } from '../../../models/nameValidator';
 import { Macros } from '../../../models/content/macros';
+import { ViewCommand } from './viewCommand';
 
-export class CreateMacroCommand {
+export class CreateMacroCommand extends ViewCommand {
 
-	static CommandName = "xp.contentTree.createMacroCommand";
+	public constructor(private config: Configuration, private parentItem: RuleBaseItem) {
+		super();
+	}
 
-	public constructor(private _config: Configuration) {}
-
-	public async execute(parentItem: RuleBaseItem) : Promise<void> {
+	public async execute() : Promise<void> {
 
 		const userInput = await vscode.window.showInputBox(
 			{
 				ignoreFocusOut: true,
-				placeHolder: this._config.getMessage("MacroName"),
-				prompt: this._config.getMessage("MacroName"),
+				placeHolder: this.config.getMessage("MacroName"),
+				prompt: this.config.getMessage("MacroName"),
 				validateInput: (v) => {
-					return NameValidator.validate(v, parentItem, this._config);
+					return NameValidator.validate(v, this.parentItem, this.config);
 				}
 			}
 		);
@@ -30,7 +31,7 @@ export class CreateMacroCommand {
 		}
 
 		const name = userInput.trim();
-		const parentPath = parentItem.getDirectoryPath();
+		const parentPath = this.parentItem.getDirectoryPath();
 		const rule = await Macros.create(name, parentPath);
 
 		const metainfo = rule.getMetaInfo();
@@ -49,7 +50,7 @@ export class CreateMacroCommand {
 		});
 
 		await rule.save();
-		await ContentTreeProvider.refresh(parentItem);
+		await ContentTreeProvider.refresh(this.parentItem);
 		await ContentTreeProvider.selectItem(rule);
 	}
 }

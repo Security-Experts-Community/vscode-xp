@@ -7,17 +7,17 @@ import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { ContentHelper } from '../../../helpers/contentHelper';
 import { Configuration } from '../../../models/configuration';
+import { ViewCommand } from './viewCommand';
 
-export class RenameTreeItemCommand {
+export class RenameTreeItemCommand extends ViewCommand {
 
-	static CommandName = "SiemContentEditor.renameTreeItemCommand";
-
-	constructor(private _config: Configuration) {
+	constructor(private config: Configuration, private selectedItem: RuleBaseItem) {
+		super();
 	}
 
-	public async execute(selectedItem: RuleBaseItem): Promise<void> {
+	public async execute(): Promise<void> {
 
-		const ruleDirPath = selectedItem.getDirectoryPath();
+		const ruleDirPath = this.selectedItem.getDirectoryPath();
 
 		let stopExecution = false;
 		vscode.workspace.textDocuments.forEach( td => {
@@ -35,7 +35,7 @@ export class RenameTreeItemCommand {
 			return;
 		}
 
-		const oldRuleName = selectedItem.getName();
+		const oldRuleName = this.selectedItem.getName();
 		const userInput = await vscode.window.showInputBox( 
 			{
 				ignoreFocusOut: true,
@@ -54,11 +54,11 @@ export class RenameTreeItemCommand {
 		
 		try {
 			// Получаем директорию для исходного правила, дабы удалить её после переименования.
-			const oldRuleDirectoryPath = selectedItem.getDirectoryPath();
+			const oldRuleDirectoryPath = this.selectedItem.getDirectoryPath();
 
 			const newRuleName = userInput.trim();
-			await selectedItem.rename(newRuleName);
-			await selectedItem.save();
+			await this.selectedItem.rename(newRuleName);
+			await this.selectedItem.save();
 
 			// Если мы меняем не имя правила, а его регистр, то удалять правило не надо. 
 			// Иначе в Windows мы удалим новое правило.
@@ -70,7 +70,7 @@ export class RenameTreeItemCommand {
 	
 			// Обновить дерево и открыть корреляцию.
 			await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
-			await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, selectedItem);
+			await vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, this.selectedItem);
 		}
 		catch(error) {
 			DialogHelper.showInfo("Не удалось переименовать объект");

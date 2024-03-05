@@ -6,17 +6,17 @@ import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { ContentHelper } from '../../../helpers/contentHelper';
 import { Configuration } from '../../../models/configuration';
+import { ViewCommand } from './viewCommand';
 
-export class DuplicateTreeItemCommand {
+export class DuplicateTreeItemCommand extends ViewCommand {
 
-	static CommandName = "SiemContentEditor.duplicateTreeItemCommand";
-
-	constructor(private _config: Configuration) {
+	constructor(private config: Configuration, private selectedItem: RuleBaseItem) {
+		super();
 	}
 
-	public async execute(selectedItem: RuleBaseItem): Promise<void> {
+	public async execute(): Promise<void> {
 
-		const ruleDirPath = selectedItem.getDirectoryPath();
+		const ruleDirPath = this.selectedItem.getDirectoryPath();
 
 		let stopExecution = false;
 		vscode.workspace.textDocuments.forEach( td => {
@@ -34,13 +34,13 @@ export class DuplicateTreeItemCommand {
 			return;
 		}
 
-		const oldRuleName = selectedItem.getName();
+		const oldRuleName = this.selectedItem.getName();
 		const userInput = await vscode.window.showInputBox( 
 			{
 				ignoreFocusOut: true,
 				value : oldRuleName,
-				placeHolder: this._config.getMessage("NameOfNewRule"),
-				prompt: this._config.getMessage("NameOfNewRule"),
+				placeHolder: this.config.getMessage("NameOfNewRule"),
+				prompt: this.config.getMessage("NameOfNewRule"),
 				validateInput: (v) => {
 					return ContentHelper.validateContentItemName(v);
 				}
@@ -53,7 +53,7 @@ export class DuplicateTreeItemCommand {
 		
 		try {
 			const newRuleName = userInput.trim();
-			const duplicate = await selectedItem.duplicate(newRuleName);
+			const duplicate = await this.selectedItem.duplicate(newRuleName);
 			await duplicate.save();
 
 			// Обновить дерево и открыть корреляцию.

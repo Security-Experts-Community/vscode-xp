@@ -13,22 +13,32 @@ import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
 import { ContentTreeProvider } from '../contentTreeProvider';
 import { OriginsManager } from '../../../models/content/originsManager';
+import { ViewCommand } from './viewCommand';
+import { Log } from '../../../extension';
 
 
-export class PackKbCommand {
-	constructor(private _config: Configuration) {}
+export class PackKbCommand extends ViewCommand {
+	constructor(private config: Configuration, private selectedPackage : ContentTreeBaseItem, private unpackKbFilePath : string) {
+		super();
+	}
 
-	public async execute(selectedPackage : ContentTreeBaseItem, unpackKbFilePath : string) : Promise<void> {
-
-		if(fs.existsSync(unpackKbFilePath)) {
-			await fs.promises.unlink(unpackKbFilePath);
+	public async execute() : Promise<void> {
+		if(fs.existsSync(this.unpackKbFilePath)) {
+			await fs.promises.unlink(this.unpackKbFilePath);
 		}
 
 		// Проверка наличия утилиты сборки kb-файлов.
-		const knowledgeBasePackagerCli = this._config.getKbPackFullPath();
+		const knowledgeBasePackagerCli = this.config.getKbPackFullPath();
 		if(!fs.existsSync(knowledgeBasePackagerCli)) {
-			DialogHelper.showError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку");
+			DialogHelper.showError(`Путь к утилите сборки kb-файла задан не верно. Проверьте корректность [пути к KBT](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]) или загрузите актуальную версию [отсюда](https://github.com/vxcontrol/xp-kbt/releases)`);
 			return;
+		}
+
+		const packageObjectId = this.selectedPackage.getMetaInfo().getObjectId();
+		const currentContentPrefix = this.config.getContentPrefix();
+
+		if(packageObjectId !== currentContentPrefix) {
+			DialogHelper.showWarning(`Имя поставщика ${currentContentPrefix} не соответствует ObjectId пакета ${packageObjectId}, возможны проблемы при его установке в продукт. Смените имя поставщика или ObjectId пакета`);
 		}
 
 		return vscode.window.withProgress({
@@ -37,21 +47,24 @@ export class PackKbCommand {
 		}, async (progress) => {
 			try {
 				// Выводим описание задачи.
-				const packageDirPath = selectedPackage.getDirectoryPath();
+				const packageDirPath = this.selectedPackage.getDirectoryPath();
 				const packageName = path.basename(packageDirPath);
 				progress.report({message: `Сборка пакета '${packageName}'`});
 
-				// Исправляем системный путь с тильдой, утилита такого пути не понимает
-				let tmpSubDirectoryPath = this._config.getRandTmpSubDirectoryPath();
+				// Полезно, если путь к директории временных файлов (в домашней директории) будет сокращен тильдой.
 				const username = os.userInfo().username;
-				tmpSubDirectoryPath = FileSystemHelper.resolveTildeWindowsUserHomePath(
-					tmpSubDirectoryPath,
+				Log.info("Username:", username);
+
+				// Исправляем системный путь с тильдой, утилита такого пути не понимает
+				let tmpPackageDirectoryPath = this.config.getRandTmpSubDirectoryPath();
+				tmpPackageDirectoryPath = FileSystemHelper.resolveTildeWindowsUserHomePath(
+					tmpPackageDirectoryPath,
 					username);
 				
-				await fs.promises.mkdir(tmpSubDirectoryPath, {recursive: true});
+				await fs.promises.mkdir(tmpPackageDirectoryPath, {recursive: true});
 
 				// в objects положить пакет для сборке
-				const objectsPackageDirPath = path.join(tmpSubDirectoryPath, ContentTreeProvider.PACKAGES_DIRNAME, packageName);
+				const objectsPackageDirPath = path.join(tmpPackageDirectoryPath, ContentTreeProvider.PACKAGES_DIRNAME, packageName);
 				await fs.promises.mkdir(objectsPackageDirPath, {recursive: true});
 				await fse.copy(packageDirPath, objectsPackageDirPath);
 
@@ -64,7 +77,7 @@ export class PackKbCommand {
 				}
 
 				// Создаем contracts
-				const contractsDirPath = path.join(tmpSubDirectoryPath, ContentTreeProvider.CONTRACTS_UNPACKED_DIRNAME);
+				const contractsDirPath = path.join(tmpPackageDirectoryPath, ContentTreeProvider.CONTRACTS_UNPACKED_DIRNAME);
 				await fs.promises.mkdir(contractsDirPath, {recursive: true});
 				
 				// Создаем contracts\origins
@@ -72,30 +85,31 @@ export class PackKbCommand {
 				await fs.promises.mkdir(originsDirPath, {recursive: true});
 
 				// Проверяем путь к контрактам и копируем их.
-				const taxonomyPath = path.join(contractsDirPath, "taxonomy");
+				const taxonomyPath = path.join(contractsDirPath, ContentTreeProvider.TAXONOMY_DIRNAME);
 				await fs.promises.mkdir(taxonomyPath, {recursive: true});
-				const сontractsDirectoryPath = this._config.getTaxonomyDirPath();
+				const сontractsDirectoryPath = this.config.getTaxonomyDirPath();
 				await fse.copy(сontractsDirectoryPath, taxonomyPath);
 
 				// Копируем origins из настроек
-				const originObject = OriginsManager.getCurrentOrigin(this._config);
+				const originObject = OriginsManager.getCurrentOrigin(this.config);
 				const originString = JSON.stringify(originObject, null, 4);
 				const originsDstDirPath = path.join(originsDirPath, PackKbCommand.ORIGIN_FILENAME);
 				await fs.promises.writeFile(originsDstDirPath, originString);
 
 				// Типовая команда выглядит так:
 				// dotnet kbpack.dll pack -s "c:\tmp\pack" -o "c:\tmp\pack\Esc.kb"
+				Log.info("TmpPackageDirectoryPath: ", tmpPackageDirectoryPath);
 				const output = await ProcessHelper.execute(
 					"dotnet",
 					[
 						knowledgeBasePackagerCli, 
 						"pack", 
-						"-s", tmpSubDirectoryPath, 
-						"-o", unpackKbFilePath
+						"-s", tmpPackageDirectoryPath, 
+						"-o", this.unpackKbFilePath
 					],
 					{	
 						encoding: 'utf-8',
-						outputChannel: this._config.getOutputChannel()
+						outputChannel: this.config.getOutputChannel()
 					}
 				);
 
@@ -105,7 +119,7 @@ export class PackKbCommand {
 				} 
 
 				DialogHelper.showError(`Ошибка сборки пакета '${packageName}'. Смотри Output`);
-				this._config.getOutputChannel().show();
+				this.config.getOutputChannel().show();
 			}
 			catch(error) {
 				ExceptionHelper.show(error, "Внутренняя ошибка расширения");

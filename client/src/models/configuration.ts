@@ -13,6 +13,7 @@ import { OsType, PathLocator } from './locator/pathLocator';
 import { SIEMPathHelper } from './locator/SIEMPathLocator';
 import { FileDiagnostics } from './siemj/siemJOutputParser';
 import { LocalizationService } from '../l10n/localizationService';
+import { Origin } from './content/originsManager';
 
 export type EncodingType = "windows-1251" | "utf-8" | "utf-16"
 
@@ -571,13 +572,15 @@ export class Configuration {
 	 */
 	public getContentPrefix() : string {
 		const configuration = this.getConfiguration();
-		const taxonomyFullPath = configuration.get<string>("origin.contentPrefix");
-		return taxonomyFullPath;
+		const contentPrefix = configuration.get<string>("origin.contentPrefix");
+		return contentPrefix;
 	}
 
 	public async setContentPrefix(prefix: string) : Promise<void> {
 		const configuration = this.getConfiguration();
-		await configuration.update("contentPrefix", prefix, true, false);
+		const origin = configuration.get<Origin>("origin");
+		origin.contentPrefix = prefix;
+		await configuration.update("origin", origin, true, false);
 	}
 
 	public getConfiguration() : vscode.WorkspaceConfiguration {

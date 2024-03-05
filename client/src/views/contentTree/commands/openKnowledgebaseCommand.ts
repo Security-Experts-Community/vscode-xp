@@ -2,10 +2,14 @@ import * as fs from 'fs';
 import * as vscode from 'vscode';
 
 import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
+import { ViewCommand } from './viewCommand';
+import { Configuration } from '../../../models/configuration';
 
-export class OpenKnowledgebaseCommand {
+export class OpenKnowledgebaseCommand extends ViewCommand {
 
-	static openKnowledgebaseCommand = "SiemContentEditor.openKnowledgebaseCommand";
+	constructor(private config: Configuration) {
+		super();
+	}
 
 	public async execute() : Promise<void> {
 
