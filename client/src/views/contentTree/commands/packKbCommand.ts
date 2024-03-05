@@ -35,10 +35,16 @@ export class PackKbCommand extends ViewCommand {
 		}
 
 		const packageObjectId = this.selectedPackage.getMetaInfo().getObjectId();
-		const currentContentPrefix = this.config.getContentPrefix();
-
-		if(packageObjectId !== currentContentPrefix) {
-			DialogHelper.showWarning(`Имя поставщика ${currentContentPrefix} не соответствует ObjectId пакета ${packageObjectId}, возможны проблемы при его установке в продукт. Смените имя поставщика или ObjectId пакета`);
+		const packageContentPrefixRegExp = /^(\S+?)-/g.exec(packageObjectId);
+		if(packageContentPrefixRegExp.length == 2) {
+			const packageContentPrefix = packageContentPrefixRegExp[1];
+			const currentContentPrefix = this.config.getContentPrefix();
+	
+			if(packageContentPrefix !== currentContentPrefix) {
+				DialogHelper.showWarning(`Имя поставщика ${currentContentPrefix} не соответствует ObjectId пакета ${packageObjectId}, возможны проблемы при его установке в продукт. Смените имя поставщика или ObjectId пакета`);
+			}
+		} else {
+			DialogHelper.showWarning(`Не удалось выделить префикс контента из ObjectId пакета`);
 		}
 
 		return vscode.window.withProgress({

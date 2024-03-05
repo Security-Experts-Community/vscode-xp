@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.13.5 (Pre-Release)
+
+- исправлена ошибка валидации префикса контента и ObjectID пакета.
+
 ## 3.13.4 (Pre-Release)
 
 - реализована фича [#179](https://github.com/Security-Experts-Community/vscode-xp/issues/179) - возможность указания поставщика при упаковке контента в kb-файл;
