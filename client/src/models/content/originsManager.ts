@@ -25,7 +25,7 @@ export class OriginsManager {
 		return;
 	}
 
-	public static getCurrentOrigin(config : Configuration) : any {
+	public static async getCurrentOrigin(config : Configuration) : Promise<any> {
 		// [
 		// 	{
 		// 		"Id": "95a1cca9-50b5-4fae-91a2-26aa36648c3c",
@@ -45,10 +45,12 @@ export class OriginsManager {
 		// 	}
 		// ]
 		const configuration = config.getConfiguration();
-		const origin = configuration.get<any>("origin");
+		const origin = configuration.get<Origin>("origin");
 		const id = origin?.id;
-		if(!id) {
-			throw OriginsManager.getParamException("id");
+
+		const contentPrefix = origin?.contentPrefix;
+		if(!contentPrefix) {
+			throw OriginsManager.getParamException("contentPrefix");
 		}
 
 		const ru = origin?.ru;
@@ -61,9 +63,11 @@ export class OriginsManager {
 			throw OriginsManager.getParamException("en");
 		}
 
-		const contentPrefix = origin?.contentPrefix;
-		if(!contentPrefix) {
-			throw OriginsManager.getParamException("contentPrefix");
+		// Автоматически генерируем id 
+		if(!id) {
+			const newGuid = Guid.create().toString();
+			origin.id = newGuid;
+			await configuration.update("origin", origin, true, false);
 		}
 
 		return [

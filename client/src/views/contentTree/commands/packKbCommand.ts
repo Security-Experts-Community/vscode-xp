@@ -91,7 +91,7 @@ export class PackKbCommand extends ViewCommand {
 				await fse.copy(сontractsDirectoryPath, taxonomyPath);
 
 				// Копируем origins из настроек
-				const originObject = OriginsManager.getCurrentOrigin(this.config);
+				const originObject = await OriginsManager.getCurrentOrigin(this.config);
 				const originString = JSON.stringify(originObject, null, 4);
 				const originsDstDirPath = path.join(originsDirPath, PackKbCommand.ORIGIN_FILENAME);
 				await fs.promises.writeFile(originsDstDirPath, originString);
