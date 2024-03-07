@@ -49,8 +49,8 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 		);
 	}
 
-	public static showView = "TableListsEditorView.showView";
-	public static createTableList = "TableListsEditorView.createTableList";
+	public static showView = "xp.tableListsEditor.show";
+	public static createTableList = "xp.tableListsEditor.create"
 
 	public async createTableList(parentFolder: ContentFolder): Promise<void> {
 		// Сбрасываем состояние вьюшки.

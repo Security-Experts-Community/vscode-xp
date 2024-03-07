@@ -19,8 +19,7 @@
 	"xp.views.knowledgebaseTree.showMetainfoCommand": "Метаинформация",
 	"xp.views.knowledgebaseTree.showLocalizationCommand": "Локализации",
 	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Ретро коррелятор",
-	"xp.views.knowledgebaseTree.showTableListsEditorCommand": "Редактировать",
-	"xp.views.knowledgebaseTree.showDefaultValuesEditorCommand": "Редактировать значения по умолчанию",
+	"xp.views.knowledgebaseTree.showTableDefaultValuesCommand": "Значения по умолчанию",
 
 	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все графы",
 	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Компилировать все локализации",

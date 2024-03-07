@@ -180,9 +180,10 @@ export class Configuration {
 		let appName = "";
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "siemj.exe"; break;
+			case OsType.Mac: throw new XpException("Платформа поддерживается только с использованием веб-версии VSCode Workspace. С документацией можно ознакомится [тут](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#vscode-xp-workspace)");
 			case OsType.Linux: appName = "siemj"; break;
 
-			default: throw new XpException("Платформа не поддерживается.");
+			default: throw new XpException("Платформа не поддерживается");
 		}
 
 		const fullPath = path.join(this.getKbtBaseDirectory(), "extra-tools", "siemj", appName);
@@ -195,9 +196,10 @@ export class Configuration {
 		let appName = "";
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "siemkb_tests.exe"; break;
+			case OsType.Mac: throw new XpException("Платформа поддерживается только с использованием веб-версии VSCode Workspace. С документацией можно ознакомится [тут](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#vscode-xp-workspace)");
 			case OsType.Linux: appName = "siemkb_tests"; break;
 
-			default: throw new XpException("Платформа не поддерживается.");
+			default: throw new XpException("Платформа не поддерживается");
 		}
 
 		const fullPath = path.join(this.getKbtBaseDirectory(), this.BUILD_TOOLS_DIR_NAME, appName);
@@ -210,9 +212,10 @@ export class Configuration {
 		let appName = "";
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "rcc.exe"; break;
+			case OsType.Mac: throw new XpException("Платформа поддерживается только с использованием веб-версии VSCode Workspace. С документацией можно ознакомится [тут](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#vscode-xp-workspace)");
 			case OsType.Linux: appName = "rcc"; break;
 
-			default: throw new XpException("Платформа не поддерживается.");
+			default: throw new XpException("Платформа не поддерживается");
 		}
 
 		const fullPath = path.join(this.getKbtBaseDirectory(), "xp-sdk", "cli", appName);
@@ -225,9 +228,10 @@ export class Configuration {
 		let appName = "";
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "mktables.exe"; break;
+			case OsType.Mac: throw new XpException("Платформа поддерживается только с использованием веб-версии VSCode Workspace. С документацией можно ознакомится [тут](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#vscode-xp-workspace)");
 			case OsType.Linux: appName = "mktables"; break;
 
-			default: throw new XpException("Платформа не поддерживается.");
+			default: throw new XpException("Платформа не поддерживается");
 		}
 
 		const fullPath = path.join(this.getKbtBaseDirectory(), "build-tools", appName);
@@ -240,9 +244,10 @@ export class Configuration {
 		let appName = "";
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "fpta_filler.exe"; break;
+			case OsType.Mac: throw new XpException("Платформа поддерживается только с использованием веб-версии VSCode Workspace. С документацией можно ознакомится [тут](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#vscode-xp-workspace)");
 			case OsType.Linux: appName = "fpta_filler"; break;
 
-			default: throw new XpException("Платформа не поддерживается.");
+			default: throw new XpException("Платформа не поддерживается");
 		}
 
 		const fullPath = path.join(this.getKbtBaseDirectory(), "xp-sdk", appName);
@@ -255,9 +260,10 @@ export class Configuration {
 		let appName = "";
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "build_l10n_rules.exe"; break;
+			case OsType.Mac: throw new XpException("Платформа поддерживается только с использованием веб-версии VSCode Workspace. С документацией можно ознакомится [тут](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#vscode-xp-workspace)");
 			case OsType.Linux: appName = "build_l10n_rules"; break;
 			
-			default: throw new XpException("Платформа не поддерживается.");
+			default: throw new XpException("Платформа не поддерживается");
 		}
 
 		const fullPath = path.join(this.getKbtBaseDirectory(), "build-tools", appName);
@@ -270,6 +276,7 @@ export class Configuration {
 		let appName = "";
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "siemkb_tests.exe"; break;
+			case OsType.Mac: throw new XpException("Платформа поддерживается только с использованием веб-версии VSCode Workspace. С документацией можно ознакомится [тут](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#vscode-xp-workspace)");
 			case OsType.Linux: appName = "siemkb_tests"; break;
 
 			default: throw new XpException("Платформа не поддерживается");
@@ -285,6 +292,7 @@ export class Configuration {
 		let appName = "";
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "normalizer-cli.exe"; break;
+			case OsType.Mac: throw new XpException("Платформа поддерживается только с использованием веб-версии VSCode Workspace. С документацией можно ознакомится [тут](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#vscode-xp-workspace)");
 			case OsType.Linux: appName = "normalizer-cli"; break;
 
 			default: throw new XpException("Платформа не поддерживается");
@@ -300,6 +308,7 @@ export class Configuration {
 		let appName = "";
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "normalize.exe"; break;
+			case OsType.Mac: throw new XpException("Платформа поддерживается только с использованием веб-версии VSCode Workspace. С документацией можно ознакомится [тут](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#vscode-xp-workspace)");
 			case OsType.Linux: appName = "normalize"; break;
 
 			default: throw new XpException("Платформа не поддерживается");
@@ -328,6 +337,7 @@ export class Configuration {
 		let appName = "";
 		switch(this.getOsType()) {
 			case OsType.Windows: appName = "ecatest.exe"; break;
+			case OsType.Mac: throw new XpException("Платформа поддерживается только с использованием веб-версии VSCode Workspace. С документацией можно ознакомится [тут](https://vscode-xp.readthedocs.io/ru/latest/gstarted.html#vscode-xp-workspace)");
 			case OsType.Linux: appName = "ecatest"; break;
 
 			default: throw new XpException("Платформа не поддерживается");

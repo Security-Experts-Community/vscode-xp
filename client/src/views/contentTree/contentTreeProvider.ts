@@ -39,6 +39,7 @@ import { BuildNormalizationsCommand } from './commands/buildNormalizationsComman
 import { DuplicateTreeItemCommand } from './commands/duplicateTreeItemCommand';
 import { CreateMacroCommand } from './commands/createMacrosCommand';
 import { PackKbCommand } from './commands/packKbCommand';
+import { OpenTableCommand } from './commands/openTableCommand';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeBaseItem> {
 
@@ -145,6 +146,15 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 					return false;
 				}
 	
+				return true;
+			}
+		);
+
+		vscode.commands.registerCommand(
+			ContentTreeProvider.onTableClickCommand,
+			async (table: Table) : Promise<boolean> => {
+				const command = new OpenTableCommand(config, table);
+				command.execute();
 				return true;
 			}
 		);
@@ -360,7 +370,9 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 				async (e: vscode.TreeViewSelectionChangeEvent<ContentTreeBaseItem>) => {
 					if(e.selection && e.selection.length == 1) {
 						const selectedItem = e.selection[0];
-						return ContentTreeProvider.selectItem(selectedItem);
+						// Вызываем команду отображения выбранного элемента дерева.
+						// Для правил это открытие файла, для табличного списка - редактора его структуры.
+						vscode.commands.executeCommand(selectedItem.command.command, selectedItem.command.arguments);
 					}
 				}
 			)
@@ -652,7 +664,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		return ContentFolder.create(elementDirectoryPath, ContentFolderType.AnotherFolder);
 	}
 
-	private static setSelectedItem(selectedItem : RuleBaseItem | Table | Macros) : void {
+	public static setSelectedItem(selectedItem : RuleBaseItem | Table | Macros) : void {
 		this._selectedItem = selectedItem;
 	}
 
@@ -682,6 +694,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 	public static readonly KnowledgebaseTreeId = 'KnowledgebaseTree';
 	
 	public static readonly onRuleClickCommand = 'KnowledgebaseTree.onElementSelectionChange';
+	public static readonly onTableClickCommand = 'xp.contentTree.onTableSelectionChange';
 
 	public static readonly buildAllCommand = 'xp.contentTree.buildAll';
 	public static readonly buildLocalizationsCommand = 'xp.contentTree.buildLocalizations';
@@ -699,6 +712,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 	public static readonly deleteItemCommand = "xp.contentTree.deleteItemCommand";
 	public static readonly duplicateTreeItemCommand = "xp.contentTree.duplicateItemCommand";
 	public static readonly renameItemCommand = "xp.contentTree.renameItemCommand";
+	public static readonly showTableDefaultsCommand = "xp.contentTree.showTableDefaultValuesCommand";
 	
 	private static _selectedItem : RuleBaseItem | Table | Macros;
 

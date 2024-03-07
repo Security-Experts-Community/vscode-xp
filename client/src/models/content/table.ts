@@ -137,7 +137,7 @@ export class Table extends RuleBaseItem {
 
 		// Добавляем команду на открытие.
 		table.setCommand({
-			command: ContentTreeProvider.onRuleClickCommand,
+			command: ContentTreeProvider.onTableClickCommand,
 			title: "Open File",
 			arguments: [table]
 		});
@@ -215,7 +215,7 @@ export class Table extends RuleBaseItem {
 
 		// Добавляем команду на открытие.
 		table.setCommand({
-			command: ContentTreeProvider.onRuleClickCommand,
+			command: ContentTreeProvider.onTableClickCommand,
 			title: "Open File",
 			arguments: [table]
 		});

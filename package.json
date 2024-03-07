@@ -43,6 +43,7 @@
       {
         "viewType": "xp.default-tl-value-editor",
         "displayName": "Default TL Value Editor",
+        "priority": "option",
         "selector": [
           {
             "filenamePattern": "*.tl"
@@ -246,7 +247,7 @@
       ],
       "editor/title": [
         {
-          "command": "xp.openTLPreview",
+          "command": "xp.contentTree.showTableDefaultValuesCommand",
           "when": "(resourceExtname == '.tl') && activeEditor == 'workbench.editors.files.textFileEditor'",
           "group": "navigation@1"
         }
@@ -366,7 +367,7 @@
           "group": "verify@1"
         },
         {
-          "command": "TableListsEditorView.createTableList",
+          "command": "xp.tableListsEditor.create",
           "when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == PackageFolder)",
           "group": "create@4"
         },
@@ -463,17 +464,17 @@
         {
           "command": "MetaInfoView.showMetaInfoEditor",
           "when": "view == KnowledgebaseTree && viewItem == Table",
-          "group": "Table@1"
-        },
-        {
-          "command": "TableListsEditorView.showView",
-          "when": "view == KnowledgebaseTree && viewItem == Table",
-          "group": "Table@2"
+          "group": "Common@1"
         },
         {
           "command": "LocalizationView.showLocalizationEditor",
           "when": "view == KnowledgebaseTree && viewItem == Table",
-          "group": "Table@3"
+          "group": "Common@2"
+        },
+        {
+          "command": "xp.contentTree.showTableDefaultValuesCommand",
+          "when": "view == KnowledgebaseTree && viewItem == Table",
+          "group": "Table@1"
         }
       ]
     },
@@ -494,8 +495,8 @@
         "category": "Редактор XP"
       },
       {
-        "command": "xp.openTLPreview",
-        "title": "%xp.views.knowledgebaseTree.showDefaultValuesEditorCommand%",
+        "command": "xp.contentTree.showTableDefaultValuesCommand",
+        "title": "%xp.views.knowledgebaseTree.showTableDefaultValuesCommand%",
         "category": "Редактор XP",
         "icon": "$(open-preview)"
       },
@@ -547,13 +548,13 @@
         "category": "Редактор XP"
       },
       {
-        "command": "TableListsEditorView.createTableList",
+        "command": "xp.tableListsEditor.create",
         "title": "%xp.views.knowledgebaseTree.createTableListsCommand%",
         "category": "Редактор XP"
       },
       {
-        "command": "TableListsEditorView.showView",
-        "title": "%xp.views.knowledgebaseTree.showTableListsEditorCommand%",
+        "command": "xp.tableListsEditor.show",
+        "title": "Show table list structure",
         "category": "Редактор XP"
       },
       {

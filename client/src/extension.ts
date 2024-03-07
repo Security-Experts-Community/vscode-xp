@@ -37,6 +37,9 @@ import { RetroCorrelationViewController } from './views/retroCorrelation/retroCo
 import { XpHoverProvider } from './providers/xpHoverProvider';
 import { DialogHelper } from './helpers/dialogHelper';
 import { OriginsManager } from './models/content/originsManager';
+import { VsCodeApiHelper } from './helpers/vsCodeApiHelper';
+import { OpenTableDefaultsCommand } from './views/contentTree/commands/openTableDefaultValuesCommand';
+import { Table } from './models/content/table';
 
 export let Log: Logger;
 let client: LanguageClient;
@@ -129,27 +132,15 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		InitKBRootCommand.init(config);
 		RetroCorrelationViewController.init(config);
 
-		const openPreviewCommand = vscode.commands.registerCommand("xp.openTLPreview", () => {
-			const editor = vscode.window.activeTextEditor;
-			if (editor.document.fileName.endsWith(".tl")) {
-				if (YamlHelper.parse(editor.document.getText()).fillType == 'Registry'){
-					vscode.commands.executeCommand('vscode.openWith',
-						editor?.document?.uri,
-						"xp.default-tl-value-editor",
-						{
-							preview: true,
-							viewColumn: vscode.ViewColumn.Beside
-						});
+		context.subscriptions.push(
+			vscode.commands.registerCommand(
+				ContentTreeProvider.showTableDefaultsCommand,
+				async (table: Table) => {
+					const command = new OpenTableDefaultsCommand(config, table);
+					command.execute();
 				}
-				else {
-					DialogHelper.showError(`Для данного типа табличных списков не пддерживается создание значений по умолчанию`);
-				}
-			}
-			else {
-				DialogHelper.showError(`Для редактирования значений по умолчанию откройте табличный список типа "Справочник"`);	
-			}
-		});
-		context.subscriptions.push(openPreviewCommand);
+			)
+		);
 		const templateFilePath = path.join(
 			config.getExtensionPath(),
 			"client", "templates", "TableListEditor", "html", "TableListEditor.html"

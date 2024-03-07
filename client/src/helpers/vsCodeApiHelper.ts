@@ -12,6 +12,14 @@ export class VsCodeApiHelper {
 		return new vscode.Range(firstLine.range.start, lastLine.range.end);
 	}
 
+	public static openWith(fileUri: vscode.Uri, viewId: string, columnOrOptions: any) : Thenable<unknown> {
+		return vscode.commands.executeCommand('vscode.openWith',
+			fileUri,
+			viewId,
+			columnOrOptions
+		);
+	}
+
 	public static closeActiveEditor() : Thenable<unknown>{
 		return vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 	}

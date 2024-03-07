@@ -26,24 +26,7 @@ export class OriginsManager {
 	}
 
 	public static async getCurrentOrigin(config : Configuration) : Promise<any> {
-		// [
-		// 	{
-		// 		"Id": "95a1cca9-50b5-4fae-91a2-26aa36648c3c",
-		// 		"SystemName": "SEC",
-		// 		"Nickname": "SEC",
-		// 		"DisplayName": [
-		// 			{
-		// 				"Locale": "ru",
-		// 				"Value": "Security Experts Community"
-		// 			},
-		// 			{
-		// 				"Locale": "en",
-		// 				"Value": "Security Experts Community"
-		// 			}
-		// 		],
-		// 		"Revision": 1
-		// 	}
-		// ]
+
 		const configuration = config.getConfiguration();
 		const origin = configuration.get<Origin>("origin");
 		const id = origin?.id;
@@ -69,6 +52,25 @@ export class OriginsManager {
 			origin.id = newGuid;
 			await configuration.update("origin", origin, true, false);
 		}
+
+		// [
+		// 	{
+		// 		"Id": "95a1cca9-50b5-4fae-91a2-26aa36648c3c",
+		// 		"SystemName": "SEC",
+		// 		"Nickname": "SEC",
+		// 		"DisplayName": [
+		// 			{
+		// 				"Locale": "ru",
+		// 				"Value": "Security Experts Community"
+		// 			},
+		// 			{
+		// 				"Locale": "en",
+		// 				"Value": "Security Experts Community"
+		// 			}
+		// 		],
+		// 		"Revision": 1
+		// 	}
+		// ]
 
 		return [
 			{
