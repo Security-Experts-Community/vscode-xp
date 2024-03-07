@@ -46,6 +46,7 @@ export class OpenTableDefaultsCommand extends ViewCommand {
 		const yamlObject = YamlHelper.parse(tableFileContent);
 		if(yamlObject?.fillType !== 'Registry') {
 			DialogHelper.showError(`Для данного типа табличных списков не поддерживается значения по умолчанию`);
+			return;
 		}
 
 		VsCodeApiHelper.openWith(

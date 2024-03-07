@@ -18,7 +18,7 @@
 	"xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Integration tests",
 	"xp.views.knowledgebaseTree.showMetainfoCommand": "Meta information",
 	"xp.views.knowledgebaseTree.showLocalizationCommand": "Localization",
-	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Retro correlation",
+	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Correlate log files",
 	"xp.views.knowledgebaseTree.showTableDefaultValuesCommand": "Edit defaults",
 
 	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Build all graphs",

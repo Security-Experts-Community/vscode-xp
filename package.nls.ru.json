@@ -18,7 +18,7 @@
 	"xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Интеграционные тесты",
 	"xp.views.knowledgebaseTree.showMetainfoCommand": "Метаинформация",
 	"xp.views.knowledgebaseTree.showLocalizationCommand": "Локализации",
-	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Ретро коррелятор",
+	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Коррелировать лог-файлы",
 	"xp.views.knowledgebaseTree.showTableDefaultValuesCommand": "Значения по умолчанию",
 
 	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все графы",
