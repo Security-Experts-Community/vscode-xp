@@ -210,7 +210,14 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 
 	public static register(context: vscode.ExtensionContext, templatePath: string, config: Configuration): vscode.Disposable {
 		const provider = new DefaultTLValuesEditorViewProvider(context, templatePath, config);
-		const providerRegistration = vscode.window.registerCustomEditorProvider(DefaultTLValuesEditorViewProvider.viewType, provider);
+		const providerRegistration = vscode.window.registerCustomEditorProvider(DefaultTLValuesEditorViewProvider.viewType, provider, 
+			{
+				webviewOptions : {
+					enableFindWidget: true
+				}
+			}
+		);
+		
 		// printChannelOutput("ResX Editor custom editor provider registered.", true);
 		return providerRegistration;
 	}
