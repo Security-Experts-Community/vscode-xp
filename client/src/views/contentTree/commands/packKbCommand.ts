@@ -36,7 +36,7 @@ export class PackKbCommand extends ViewCommand {
 
 		const packageObjectId = this.selectedPackage.getMetaInfo().getObjectId();
 		const packageContentPrefixRegExp = /^(\S+?)-/g.exec(packageObjectId);
-		if(packageContentPrefixRegExp.length == 2) {
+		if(packageContentPrefixRegExp && packageContentPrefixRegExp.length == 2) {
 			const packageContentPrefix = packageContentPrefixRegExp[1];
 			const currentContentPrefix = this.config.getContentPrefix();
 	

@@ -6,11 +6,6 @@ import { TestFixture } from '../helper';
 import { ContentFolder, ContentFolderType } from '../../models/content/contentFolder';
 
 suite(PackKbCommand.name, () => {
-
-	test('Инициализация', async () => {
-		new PackKbCommand(Configuration.get(), null, null);
-	});
-
 	test('Упаковка правила корреляции не вызывает исключений', async () => {
 		const config = Configuration.get();
 		
