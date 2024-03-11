@@ -34,7 +34,7 @@ export class RetroCorrelationViewController extends BaseWebViewController {
 				config : config,
 				templatePath: createCorrelationTemplateFilePath,
 				viewId: RetroCorrelationViewController.viewId,
-				viewTitle: config.getMessage("View.LogCorrelation"),
+				viewTitle: config.getMessage("View.CorrelateLogFiles"),
 				webViewOptions: {
 					retainContextWhenHidden: true,
 					enableCommandUris : true,
@@ -67,7 +67,10 @@ export class RetroCorrelationViewController extends BaseWebViewController {
         const resourcesUri = this._descriptor.config.getExtensionUri();
 		const extensionBaseUri = this.view.webview.asWebviewUri(resourcesUri);
 		const templateDefaultContent = {
-			"ExtensionBaseUri" : extensionBaseUri
+			"ExtensionBaseUri" : extensionBaseUri,
+			"AddEventFiles": this._descriptor.config.getMessage("View.CorrelateLogFiles.AddEventFiles"),
+			"CorrelateEvents": this._descriptor.config.getMessage("View.CorrelateLogFiles.CorrelateEvents"),
+			"CorrelationEvents": this._descriptor.config.getMessage("View.CorrelateLogFiles.CorrelationEvents")
 		};
 
 		const htmlContent = this._formatter.format(templateDefaultContent);

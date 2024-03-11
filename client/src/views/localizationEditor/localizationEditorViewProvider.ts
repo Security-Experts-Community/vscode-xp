@@ -70,7 +70,7 @@ export class LocalizationEditorViewProvider {
 
 		try {
 			// Создать и показать панель.
-			const title = this._config.getMessage("View.Localization", rule.getName());
+			const title = this._config.getMessage("View.Localization.Title", rule.getName());
 			this._view = vscode.window.createWebviewPanel(
 				LocalizationEditorViewProvider.viewId,
 				title,
@@ -156,7 +156,7 @@ export class LocalizationEditorViewProvider {
 				"Criteria": criteria,
 				"LocalizationId": locId,
 				"RuLocalization": ruLocalizationText,
-				"EnLocalization": enLocalizationText,
+				"EnLocalization": enLocalizationText
 			};
 		});
 
@@ -173,7 +173,16 @@ export class LocalizationEditorViewProvider {
 			"LocalizationExamples": locExamples,
 			"IsLocalizableRule": ContentHelper.isLocalizableRule(this._rule),
 			"IsTestedLocalizationsRule" : TestHelper.isTestedLocalizationsRule(this._rule),
-			"DefaultLocalizationCriteria" : await ContentHelper.getDefaultLocalizationCriteria(this._rule)
+			"DefaultLocalizationCriteria" : await ContentHelper.getDefaultLocalizationCriteria(this._rule),
+
+			"Locale": {
+				"CheckLocalizations" : this._config.getMessage("View.Localization.CheckLocalizations"),
+				"Description" : this._config.getMessage("View.Localization.Description"),
+				"LocalizationСriteria" : this._config.getMessage("View.Localization.LocalizationСriteria"),
+				"Сriteria" : this._config.getMessage("View.Localization.Сriteria"),
+				"LocalizationExamples" : this._config.getMessage("View.Localization.LocalizationExamples"),
+				"Save" : this._config.getMessage("Save")
+			}
 		};
 
 		// Подгружаем шаблон и шаблонизируем данные.

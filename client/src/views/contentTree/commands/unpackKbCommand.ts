@@ -109,7 +109,6 @@ export class UnpackKbCommand extends ViewCommand {
 				ExceptionHelper.show(error, `Ошибка выполнения команды ${cmd}. Возможно, не был установлены [.NET Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) или не добавлен путь к нему в переменную PATH.`);
 				return;
 			}
-				
 
 			if(!executeResult.output.includes(this.SUCCESS_SUBSTRING)) {
 				DialogHelper.showError(`Не удалось распаковать пакет. Смотри Output`);
@@ -145,6 +144,7 @@ export class UnpackKbCommand extends ViewCommand {
 			// Обновляем макросы
 			const macroPackagePath = path.join(outputDirPath, ContentTreeProvider.MACRO_DIRNAME);
 			if(fs.existsSync(macroPackagePath)) {
+				Log.info("Распаковка макросов из пакета");
 				const marcoDirPath = path.join(rootContentDirPath, ContentTreeProvider.MACRO_DIRNAME);
 				await fse.copy(macroPackagePath, marcoDirPath);
 			}
@@ -156,6 +156,10 @@ export class UnpackKbCommand extends ViewCommand {
 
 	private async correctPackageNameFromLocalizationFile(unpackPackageDirPath: string) : Promise<void> {
 		const packagesPath = path.join(unpackPackageDirPath, ContentTreeProvider.PACKAGES_DIRNAME);
+		if(!fs.existsSync(packagesPath)) {
+			return;
+		}
+
 		const packageNames = FileSystemHelper.readSubDirectoryNames(packagesPath);
 
 		// Выбираем пакеты, именованные как идентификаторы

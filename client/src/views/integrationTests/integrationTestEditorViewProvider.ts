@@ -91,7 +91,7 @@ export class IntegrationTestEditorViewProvider {
 		this._rule = rule;
 
 		// Создать и показать панель.
-		const viewTitle = this._config.getMessage("View.IntegrationTests", this._rule.getName());
+		const viewTitle = this._config.getMessage("View.IntegrationTests.Title", this._rule.getName());
 		this._view = vscode.window.createWebviewPanel(
 			IntegrationTestEditorViewProvider.viewId,
 			viewTitle,
@@ -150,19 +150,19 @@ export class IntegrationTestEditorViewProvider {
 
 			// Локализация вьюшки
 			"Locale" : {
-				"Test" : this._config.getMessage('Test'),
-				"SaveAll" : this._config.getMessage('SaveAll'),
-				"RunAllTests" : this._config.getMessage('RunAllTests'),
-				"RawEvents" : this._config.getMessage('RawEvents'),
-				"WordWrap" : this._config.getMessage('WordWrap'),
-				"WrapRawEvents" : this._config.getMessage('WrapRawEventsInAnEnvelope'),
-				"Normalize" : this._config.getMessage('Normalize'),
-				"NormalizeAndEnrich" : this._config.getMessage('NormalizeAndEnrich'),
-				"NormalizedEvents" : this._config.getMessage('NormalizedEvents'),
-				"TestCondition" : this._config.getMessage('ConditionForPassingTheTest'),
-				"GetExpectedEvent" : this._config.getMessage('GetExpectedEvent'),
-				"CompareResults" : this._config.getMessage('CompareYourResults'),
-				"ClearExpectedEvent" : this._config.getMessage('ClearExpectedEvent'),
+				"Test" : this._config.getMessage('View.IntegrationTests.Test'),
+				"SaveAll" : this._config.getMessage('View.IntegrationTests.SaveAll'),
+				"RunAllTests" : this._config.getMessage('View.IntegrationTests.RunAllTests'),
+				"RawEvents" : this._config.getMessage('View.IntegrationTests.RawEvents'),
+				"WordWrap" : this._config.getMessage('View.IntegrationTests.WordWrap'),
+				"WrapRawEvents" : this._config.getMessage('View.IntegrationTests.WrapRawEventsInAnEnvelope'),
+				"Normalize" : this._config.getMessage('View.IntegrationTests.Normalize'),
+				"NormalizeAndEnrich" : this._config.getMessage('View.IntegrationTests.NormalizeAndEnrich'),
+				"NormalizedEvents" : this._config.getMessage('View.IntegrationTests.NormalizedEvents'),
+				"TestCondition" : this._config.getMessage('View.IntegrationTests.ConditionForPassingTheTest'),
+				"GetExpectedEvent" : this._config.getMessage('View.IntegrationTests.GetExpectedEvent'),
+				"CompareResults" : this._config.getMessage('View.IntegrationTests.CompareYourResults'),
+				"ClearExpectedEvent" : this._config.getMessage('View.IntegrationTests.ClearExpectedEvent'),
 			}
 		};
 

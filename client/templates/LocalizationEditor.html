@@ -14,23 +14,21 @@
 	<link rel="stylesheet" href="{{{ExtensionBaseUri}}}/client/templates/styles/localization.css">
 	<script src="{{{ExtensionBaseUri}}}/client/templates/js/jquery-3.6.0.min.js"></script>
 	
-	<title>Правила локализации</title>
-
 </head>
 	<body>
 		
 		<div id="header" class="header__localization">
 			{{#IsTestedLocalizationsRule}}
 			<div id="navigation">
-				<input id="build_loc"  class="run" type="button" value="&#9654;   Проверить локализации  ">
+				<input id="build_loc"  class="run" type="button" value="&#9654;   {{Locale.CheckLocalizations}}  ">
 			</div>
 			{{/IsTestedLocalizationsRule}}
-			<input id="save_loc" class="save" type="button" value="Сохранить">
+			<input id="save_loc" class="save" type="button" value="{{Locale.Save}}">
 		</div>
 
 		<div id="main-body">
 			{{#LocalizationExamples.0}}
-			<h2>Примеры локализации:</h2>
+			<h2>{{Locale.LocalizationExamples}}:</h2>
 			<hr />
 			<div id="loc-results" class="loc-example">
 				<div class="loc-example__row">
@@ -51,22 +49,20 @@
 			</div>
 			{{/LocalizationExamples.0}}
 
-			<h2>Описание:</h2>
+			<h2>{{Locale.Description}}:</h2>
 			<hr />
 	
 			<div class="language">
 				<h3>RU: </h3>
-				<label for="ruDescription">Описание:</label>
 				<textarea id="ruDescription" rows="3">{{RuDescription}}</textarea>
 			</div>
 			<div class="language">
 				<h3>EN: </h3>
-				<label for="enDescription">Description:</label>
 				<textarea id="enDescription" rows="3">{{EnDescription}}</textarea>
 			</div>
 
 			{{#IsLocalizableRule}}
-				<h2>Правила локализации:</h2>
+				<h2>{{Locale.LocalizationСriteria}}:</h2>
 				<hr />
 				<div id="localizations">
 				
@@ -74,7 +70,7 @@
 				<div class="common">	
 					<div class="common">
 						<input class="delete_value" type="button" value="-" onclick="deleteLoc(this)">
-						<label for="criteria">Критерий:</label>
+						<label for="criteria">{{Locale.Сriteria}}:</label>
 						<textarea rows="1" name="criteria" class="criteria">{{Criteria}}</textarea>
 						<input type="hidden" name="localizationId" value="{{LocalizationId}}">
 					</div>	
@@ -102,7 +98,7 @@
 					<div class="common">	
 						<div class="common">
 							<input class="delete_value" type="button" value="-" onclick="deleteLoc(this)">
-							<label for="criteria">Критерий:</label>
+							<label for="criteria">{{Locale.Сriteria}}:</label>
 							<textarea rows="1" class="criteria">{{DefaultLocalizationCriteria}}</textarea>
 							<input type="hidden" value="{{LocalizationId}}">
 						</div>	

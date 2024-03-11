@@ -97,14 +97,14 @@ export class MetainfoViewProvider {
 			// Локализация
 			Localization: {
 				Save: this._config.getMessage("Save"),
-				KnowledgeHolders : this._config.getMessage("KnowledgeHolders"),
-				Created: this._config.getMessage("Created"),
-				Updated: this._config.getMessage("Updated"),
-				Usecases: this._config.getMessage("Usecases"),
-				Falsepositives: this._config.getMessage("Falsepositives"),
-				Improvements: this._config.getMessage("Improvements"),
-				References: this._config.getMessage("References"),
-				DataSources: this._config.getMessage("DataSources"),
+				KnowledgeHolders : this._config.getMessage("View.Metainfo.KnowledgeHolders"),
+				Created: this._config.getMessage("View.Metainfo.Created"),
+				Updated: this._config.getMessage("View.Metainfo.Updated"),
+				Usecases: this._config.getMessage("View.Metainfo.Usecases"),
+				Falsepositives: this._config.getMessage("View.Metainfo.Falsepositives"),
+				Improvements: this._config.getMessage("View.Metainfo.Improvements"),
+				References: this._config.getMessage("View.Metainfo.References"),
+				DataSources: this._config.getMessage("View.Metainfo.DataSources"),
 			}
 		});
 		this._view.webview.html = metainfoHtml;

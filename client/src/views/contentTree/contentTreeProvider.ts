@@ -111,7 +111,6 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			)
 		);
 		
-
 		// Изменение выбора правила с открытием визуализации нужных данных.
 		vscode.commands.registerCommand(
 			ContentTreeProvider.onRuleClickCommand,
@@ -372,7 +371,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 						const selectedItem = e.selection[0];
 						// Вызываем команду отображения выбранного элемента дерева.
 						// Для правил это открытие файла, для табличного списка - редактора его структуры.
-						vscode.commands.executeCommand(selectedItem.command.command, selectedItem.command.arguments);
+						vscode.commands.executeCommand(selectedItem.command.command, selectedItem);
 					}
 				}
 			)

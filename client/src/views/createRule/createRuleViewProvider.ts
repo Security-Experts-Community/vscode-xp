@@ -70,9 +70,9 @@ export class CreateRuleViewProvider {
         const templateNames = ContentHelper.getTemplateNames(this._config, ContentHelper.CORRELATIONS_DIRECTORY_NAME);
 
         this.showCreateRuleView(
-            this._config.getMessage("View.CreateCorrelation"),
+            this._config.getMessage("View.CreateRule.CreateCorrelationTitle"),
             "createCorrelation", 
-            this._config.getMessage("View.CreateCorrelation"),
+            this._config.getMessage("View.CreateRule.CreateCorrelationHeader"),
             ruleFullPath,
             templateNames);
     }
@@ -81,9 +81,9 @@ export class CreateRuleViewProvider {
         const templateNames = ContentHelper.getTemplateNames(this._config, ContentHelper.ENRICHMENTS_DIRECTORY_NAME);
 
         this.showCreateRuleView(
-            this._config.getMessage("View.CreateEnrichment"),
+            this._config.getMessage("View.CreateRule.CreateEnrichmentTitle"),
             "createEnrichment", 
-            this._config.getMessage("View.CreateEnrichment"),
+            this._config.getMessage("View.CreateRule.CreateEnrichmentHeader"),
             ruleFullPath,
             templateNames);
     }
@@ -92,9 +92,9 @@ export class CreateRuleViewProvider {
         const templateNames = ContentHelper.getTemplateNames(this._config, ContentHelper.NORMALIZATIONS_DIRECTORY_NAME);
 
         this.showCreateRuleView(
-            this._config.getMessage("View.CreateNormalization"),
+            this._config.getMessage("View.CreateRule.CreateNormalizationTitle"),
             "createNormalization", 
-            this._config.getMessage("View.CreateNormalization"), 
+            this._config.getMessage("View.CreateRule.CreateNormalizationHeader"), 
             ruleFullPath,
             templateNames);
     }
@@ -138,7 +138,7 @@ export class CreateRuleViewProvider {
                 "commandName" : commandName,
 
                 "CreateNewRule" : createNewRule,
-                "NameOfNewRule" : this._config.getMessage("NameOfNewRule"),
+                "NameLabel" : this._config.getMessage("View.CreateRule.NameLabel"),
                 "Template" : this._config.getMessage("View.CreateRule.Template"),
                 "Create" : this._config.getMessage("Create"),
 

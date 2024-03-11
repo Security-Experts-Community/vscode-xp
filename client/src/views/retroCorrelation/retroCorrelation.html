@@ -25,8 +25,8 @@
 		<!-- Common Panel -->
 		<div id="header">
 			<div id="navigation">
-				<input id="addEventFiles" class="run" name="full_test" type="button" value="Добавить файлы с событиями  ">
-				<input id="runFullGraph" class="run" name="full_test" type="button" value="&#9654;   Коррелировать события  ">
+				<input id="addEventFiles" class="run" name="full_test" type="button" value="{{AddEventFiles}}  ">
+				<input id="runFullGraph" class="run" name="full_test" type="button" value="&#9654;   {{CorrelateEvents}}  ">
 			</div>
 	    </div>
 
@@ -35,7 +35,7 @@
 			<div class="test_block">
 				<div class="block_header">
 					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
-					<label for="norm_event" class="label">Корреляционные события:</label>
+					<label for="norm_event" class="label">{{CorrelationEvents}}:</label>
 				</div>
 				<div class="text">
 					<div contenteditable="true" id="correlated_events" name="correlated_events">
