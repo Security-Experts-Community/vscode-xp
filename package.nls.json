@@ -1,6 +1,6 @@
 {
-	"xp.views.knowledgebaseTree.title": "Content tree",
-	"xp.views.knowledgebaseTree.refreshContentTreeCommand": "Refresh content tree",
+	"xp.views.knowledgebaseTree.title": "Object tree",
+	"xp.views.knowledgebaseTree.refreshContentTreeCommand": "Refresh tree",
 	"xp.views.knowledgebaseTree.openKnowledgebaseCommand": "Open knowledge base",
 	"xp.views.knowledgebaseTree.createPackageCommand": "Create new package",
 	"xp.views.knowledgebaseTree.createCorrelationCommand": "Create a correlation rule",
@@ -8,7 +8,7 @@
 	"xp.views.knowledgebaseTree.createNormalizationCommand": "Create a normalization rule",
 	"xp.views.knowledgebaseTree.createTableListsCommand": "Create a tabular list",
 	"xp.views.knowledgebaseTree.createMacroCommand": "Create a macro",
-	"xp.views.knowledgebaseTree.createFolderCommand": "Create folder",
+	"xp.views.knowledgebaseTree.createFolderCommand": "Create a folder",
 
 	"xp.views.knowledgebaseTree.verifyFolderCommand": "Verify",
 	"xp.views.knowledgebaseTree.deleteCommand": "Delete",
