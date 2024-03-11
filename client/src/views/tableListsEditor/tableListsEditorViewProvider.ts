@@ -58,7 +58,8 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 		this._table = undefined;
 
 		try {
-			await this.createView();
+			const title = this._config.getMessage("View.TableList.CreateTitle");
+			await this.createView(title);
 		}
 		catch (error) {
 			DialogHelper.showError(`Не удалось открыть табличный список`, error);
@@ -71,7 +72,9 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 		this._table = table;
 
 		try {
-			await this.createView();
+			const tableName = table.getName();
+			const title = this._config.getMessage("View.TableList.OpenTitle", tableName);
+			await this.createView(title);
 
 			// TODO: отладочный код
 			// setTimeout(() => this.receiveMessageFromWebView({ command: "documentIsReady" }), 1000);
@@ -115,13 +118,12 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
 		}
 	}
 
-	private async createView() {
+	private async createView(title: string) {
 		if (this._view) {
 			this._view.dispose();
 			this._view = undefined;
 		}
 
-		const title = this._config.getMessage("View.TableList");
 		this._view = vscode.window.createWebviewPanel(
 			TableListsEditorViewProvider.viewId,
 			title,

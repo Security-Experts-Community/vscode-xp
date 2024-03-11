@@ -22,9 +22,8 @@
     "View.IntegrationTests.GetExpectedEvent" : "Get expected event",
     "View.IntegrationTests.CompareYourResults": "Compare your results",
     "View.IntegrationTests.ClearExpectedEvent": "Clear expected event", 
-
-    "ExpectedEventWasSuccessfullyUpdated": "The expected event in the test code was successfully updated. Adjust if necessary and save the test",
-    "UnableGetExpectedEvent": "Unable to get expected event for test that failed",
+    "View.IntegrationTests.ExpectedEventWasSuccessfullyUpdated": "The expected event in the test code was successfully updated. Adjust if necessary and save the test",
+    "View.IntegrationTests.UnableGetExpectedEvent": "Unable to get expected event for test that failed",
 
     "View.Metainfo": "Metainfo {0}",
     "View.Metainfo.KnowledgeHolders" : "Authors",
@@ -55,7 +54,8 @@
     "View.Localization.LocalizationСriteria": "Localization criteria",
     "View.Localization.Сriteria": "Сriteria",
 
-    "View.TableList": "Editing a table list",
+    "View.TableList.CreateTitle": "Create a table list",
+    "View.TableList.OpenTitle": "{0}",
 
     "View.CreateRule.CreateCorrelationTitle": "Creating a correlation rule",
     "View.CreateRule.CreateEnrichmentTitle": "Creating a correlation rule",

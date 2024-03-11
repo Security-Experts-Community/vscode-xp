@@ -6,25 +6,24 @@
     "TheKnowledgeBaseIsNotInitialized": "База знаний не проинициализирована. Создать необходимые папки для формата {0}?",
     "Create": "Создать",
 
-    "NameOfNewRule": "Имя нового правила",
+    "NameOfNewRule": "Название нового правила",
 
-    "View.IntegrationTests.Title": "Тесты {0}",
+    "View.IntegrationTests.Title": "Тесты для {0}",
     "View.IntegrationTests.Test": "Тест", 
     "View.IntegrationTests.SaveAll" : "Сохранить все",
-    "View.IntegrationTests.RunAllTests" : "Запустить все тесты",
-    "View.IntegrationTests.RawEvents" : "Сырые события",
+    "View.IntegrationTests.RunAllTests" : "Запустить все",
+    "View.IntegrationTests.RawEvents" : "Необработанные события",
     "View.IntegrationTests.WordWrap" : "Переносить по словам",
-    "View.IntegrationTests.WrapRawEventsInAnEnvelope" : "Обернуть в конверт сырые события",
+    "View.IntegrationTests.WrapRawEventsInAnEnvelope" : "Обернуть в конверт",
     "View.IntegrationTests.Normalize" : "Нормализовать",
     "View.IntegrationTests.NormalizeAndEnrich" : "Нормализовать и обогатить",
     "View.IntegrationTests.NormalizedEvents" : "Нормализованные события",
-    "View.IntegrationTests.ConditionForPassingTheTest" : "Условие прохождение теста",
+    "View.IntegrationTests.ConditionForPassingTheTest" : "Условия теста",
     "View.IntegrationTests.GetExpectedEvent" : "Получить ожидаемое событие",
     "View.IntegrationTests.CompareYourResults": "Сравнить полученные результаты",
     "View.IntegrationTests.ClearExpectedEvent": "Очистить ожидаемое событие",
-
-    "ExpectedEventWasSuccessfullyUpdated": "Ожидаемое событие в коде теста успешно обновлено. Скорректируйте если необходимо и сохраните тест",
-    "UnableGetExpectedEvent": "Невозможно получить ожидаемое событие для теста, который завершился неуспешно",
+    "View.IntegrationTests.ExpectedEventWasSuccessfullyUpdated": "Ожидаемое событие в коде теста успешно обновлено. Скорректируйте если необходимо и сохраните тест",
+    "View.IntegrationTests.UnableGetExpectedEvent": "Невозможно получить ожидаемое событие для теста, который завершился неуспешно",
 
     "View.Metainfo": "Метаданные {0}",
     "View.Metainfo.KnowledgeHolders" : "Авторы",
@@ -55,7 +54,8 @@
     "View.Localization.LocalizationСriteria": "Критерии локализации",
     "View.Localization.Сriteria": "Критерий",
 
-    "View.TableList": "Редактирование табличного списка",
+    "View.TableList.CreateTitle": "Создать табличный список",
+    "View.TableList.OpenTitle": "{0}",
 
     "View.CreateRule.CreateCorrelationTitle": "Создание правила корреляции",
     "View.CreateRule.CreateEnrichmentTitle": "Создание правила обогащения",
@@ -64,5 +64,5 @@
     "View.CreateRule.CreateEnrichmentHeader": "Создать правило обогащения",
     "View.CreateRule.CreateNormalizationHeader": "Создать правило нормализации",
     "View.CreateRule.Template": "Шаблон",
-    "View.CreateRule.NameLabel": "Имя"
+    "View.CreateRule.NameLabel": "Название"
 }
