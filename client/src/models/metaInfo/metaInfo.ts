@@ -375,15 +375,7 @@ export class MetaInfo {
 		this.EventDescriptions = [];
 	}
 
-	public async save(ruleDirectoryFullPath?: string): Promise<void> {
-
-		let metaInfoFullPath: string;
-		if (ruleDirectoryFullPath) {
-			metaInfoFullPath = path.join(ruleDirectoryFullPath, MetaInfo.METAINFO_FILENAME);
-		} else {
-			metaInfoFullPath = path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
-		}
-
+	public toString(): string {
 		this.setUpdatedDate(new Date());
 
 		// Если дата создания не задана, то будет текущая.
@@ -404,13 +396,32 @@ export class MetaInfo {
 		metaInfoObject["ExpertContext"]["Created"] = DateHelper.dateToString(this.Created);
 		metaInfoObject["ExpertContext"]["Updated"] = DateHelper.dateToString(this.Updated);
 
-		if (this.ObjectId) metaInfoObject["ObjectId"] = this.ObjectId;
-		if (this.KnowledgeHolders.length != 0) metaInfoObject["ExpertContext"]["KnowledgeHolders"] = this.KnowledgeHolders;
-		if (this.Usecases.length != 0) metaInfoObject["ExpertContext"]["Usecases"] = this.Usecases;
-		if (this.Falsepositives.length != 0) metaInfoObject["ExpertContext"]["Falsepositives"] = this.Falsepositives;
-		if (this.References.length != 0) metaInfoObject["ExpertContext"]["References"] = this.References;
-		if (this.Improvements.length != 0) metaInfoObject["ExpertContext"]["Improvements"] = this.Improvements;
-		if (this.ContentLabels.length != 0) metaInfoObject["ContentLabels"] = this.ContentLabels;
+		if (this.ObjectId) {
+			metaInfoObject["ObjectId"] = this.ObjectId;
+		}
+			
+		if (this.KnowledgeHolders) {
+			metaInfoObject["ExpertContext"]["KnowledgeHolders"] = this.KnowledgeHolders;
+		}
+
+		if (this.Usecases) {
+			metaInfoObject["ExpertContext"]["Usecases"] = this.Usecases;
+		}
+
+		if (this.Falsepositives) {
+			metaInfoObject["ExpertContext"]["Falsepositives"] = this.Falsepositives;
+		}
+
+		if (this.References) {
+			metaInfoObject["ExpertContext"]["References"] = this.References;
+		}
+
+		if (this.Improvements) {
+			metaInfoObject["ExpertContext"]["Improvements"] = this.Improvements;
+		}
+		if (this.ContentLabels) {
+			metaInfoObject["ContentLabels"] = this.ContentLabels;
+		} 
 
 		if (this.EventDescriptions.length != 0) {
 			metaInfoObject["EventDescriptions"] =
@@ -487,7 +498,18 @@ export class MetaInfo {
 
 		let yamlContent = YamlHelper.stringify(metaInfoObject);
 		yamlContent = this.correctEventIds(yamlContent);
+		return yamlContent;
+	}
 
+	public async save(ruleDirectoryFullPath?: string): Promise<void> {
+		let metaInfoFullPath: string;
+		if (ruleDirectoryFullPath) {
+			metaInfoFullPath = path.join(ruleDirectoryFullPath, MetaInfo.METAINFO_FILENAME);
+		} else {
+			metaInfoFullPath = path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
+		}
+
+		const yamlContent = this.toString();
 		await FileSystemHelper.writeContentFileIfChanged(metaInfoFullPath, yamlContent);
 	}
 
@@ -521,10 +543,10 @@ export class MetaInfo {
 	private Name: string | undefined = undefined;
 	private ObjectId: string | undefined = undefined;
 
-	private KnowledgeHolders: string[] = [];
-	private Usecases: string[] = [];
-	private References: string[] = [];
-	private Falsepositives: string[] = [];
+	private KnowledgeHolders: string[];
+	private Usecases: string[];
+	private References: string[];
+	private Falsepositives: string[];
 	private Improvements: string[] = [];
 
 	private DataSources: DataSource[] = [];

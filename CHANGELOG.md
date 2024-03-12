@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.13.9 (Pre-Release)
+
+- исправлена ошибка удаления полей метаинформации (special thanks @g4n8g).
+
 ## 3.13.8 (Pre-Release)
 
 - исправлена ошибка распаковки kb-файла с контентом без пакетов экспертизы (special thanks @FedosovaOA);

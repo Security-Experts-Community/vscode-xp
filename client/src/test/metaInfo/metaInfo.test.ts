@@ -11,6 +11,18 @@ import { Attack } from '../../models/metaInfo/attack';
 
 suite('MetaInfo', () => {
 
+	test('Очищение поля Improvements', () => {
+		const metaInfo = new MetaInfo();
+		metaInfo.setImprovements([
+			"first improvements",
+			"second improvements"
+		]);
+		metaInfo.setImprovements([]);
+
+		const metainfoString = metaInfo.toString();
+		assert.ok(metainfoString.includes("Improvements: []"));
+	});
+
 	test('EventID без кавычек для Windows', async () => {
 
 		const metaInfo = new MetaInfo();
@@ -92,7 +104,7 @@ suite('MetaInfo', () => {
 		const savePath = TestFixture.getTmpPath();
 		await metaInfo.save(savePath);
 
-		// Проверяем, что нас устраиват формат сохранения.
+		// Проверяем, что нас устраивает формат сохранения.
 		const metaInfoPath = path.join(savePath, MetaInfo.METAINFO_FILENAME);
 		const metaInfoPlain = await TestFixture.readYamlFile(metaInfoPath);
 
