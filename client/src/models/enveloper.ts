@@ -46,7 +46,7 @@ export class Enveloper {
 	public static async streamEnvelopeForXmlEvents(rawEventsFilePath: string, envelopedEventsFilePath: string): Promise<number> {
 		
 		if(!rawEventsFilePath) {
-			throw new XpException("В тест не добавлены сырые события. Добавьте их и повторите действие.");
+			throw new XpException("В тест не добавлены сырые события. Добавьте их и повторите действие");
 		}
 
 		// Проверяем, если исходное событие в формате xml (EventViewer)

@@ -42,7 +42,7 @@ export class BuildNormalizationsCommand extends ViewCommand {
 				const siemjConfContent = siemjConfContentEntity['configContent'];
 				try {
 					if(!siemjConfContent) {
-						throw new XpException("Не удалось сгенерировать siemj.conf для заданного правила и тестов.");
+						throw new XpException("Не удалось сгенерировать siemj.conf для заданного правила и тестов");
 					}
 
 					const siemjManager = new SiemjManager(this.config, cancellationToken);

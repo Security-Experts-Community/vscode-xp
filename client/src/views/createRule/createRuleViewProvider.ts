@@ -150,7 +150,7 @@ export class CreateRuleViewProvider {
             this._view.webview.html = htmlContent;
         }
         catch (error) {
-            DialogHelper.showError("Не удалось отобразить шаблон правила корреляции.", error);
+            DialogHelper.showError("Не удалось отобразить шаблон правила корреляции", error);
         }
     }
 
@@ -174,17 +174,17 @@ export class CreateRuleViewProvider {
         const [ruleName, templateName, ruleParentPath] = this.parseMessageFromFrontEnd(message);
 
         if(!ruleName) {
-            DialogHelper.showError("Не задано название правила корреляции.");
+            DialogHelper.showError("Не задано название правила корреляции");
             return;
         }
 
         if(!templateName) {
-            DialogHelper.showError("Не задана информация о типе шаблона. Выберите шаблон и повторите действие.");
+            DialogHelper.showError("Не задана информация о типе шаблона. Выберите шаблон и повторите действие");
             return;
         }
 
         if(!fs.existsSync(ruleParentPath)) {
-            DialogHelper.showError("Путь для создания правила корреляции не найден. Возможно репозиторий поврежден.");
+            DialogHelper.showError("Путь для создания правила корреляции не найден. Возможно репозиторий поврежден");
             return;
         }
 
@@ -243,7 +243,7 @@ export class CreateRuleViewProvider {
         await vscode.commands.executeCommand(ContentTreeProvider.refreshTreeCommand);
         await ContentTreeProvider.selectItem(rule);
         
-        DialogHelper.showInfo(`Правило ${ruleName} создано.`);
+        DialogHelper.showInfo(`Правило ${ruleName} создано`);
         this._view.dispose();
     }
 
@@ -254,7 +254,7 @@ export class CreateRuleViewProvider {
         ruleName = ruleName.trim();
 
         if(ruleName.includes(" ")) {
-            DialogHelper.showError("Название правила не должно содержать пробел.");
+            DialogHelper.showError("Название правила не должно содержать пробел");
             return;
         }
 

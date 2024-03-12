@@ -397,7 +397,7 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 
 		// Если уже есть такая локализация
 		if (this.alreadyHaveSuchALocalization(localization)){
-			throw new XpException("Не могу добавить локализацию. Такой критерий уже присутствует.");
+			throw new XpException("Не могу добавить локализацию. Такой критерий уже присутствует");
 		}
 
 		let locId = localization.getLocalizationId();
@@ -481,7 +481,7 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 	 */
 	public setRuleCode(code: string, autosave = true): Promise<void> {
 		if(code === undefined) {
-			throw new XpException("Код правила не задан.");
+			throw new XpException("Код правила не задан");
 		}
 		
 		this._ruleCode = code;

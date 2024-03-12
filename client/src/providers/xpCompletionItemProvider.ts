@@ -40,7 +40,7 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 
 				autocompleteSignatures = autocompleteSignatures.concat(functionsSignatures);
 			} else {
-				Log.warn("Не было считано ни одного описания функций.");
+				Log.warn("Не было считано ни одного описания функций");
 			}
 		}
 		catch (error) {
@@ -88,11 +88,11 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 			autocompleteSignatures = autocompleteSignatures.concat(keywords);
 
 			if (keywords.length == 0) {
-				Log.warn("Не было считано ни одного описания функций.");
+				Log.warn("Не было считано ни одного описания функций");
 			}
 		}
 		catch (error) {
-			Log.warn("Ошибка при считывании." + error.message);
+			Log.warn("Ошибка при считывании: " + error.message);
 		}
 
 		return new XpCompletionItemProvider(autocompleteSignatures);

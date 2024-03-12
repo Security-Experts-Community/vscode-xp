@@ -387,7 +387,7 @@ export class TestHelper {
 	public static compressJsonRawEvents(rawEvents: string): string {
 
 		if (!rawEvents) {
-			throw new Error("Переданный список событий пуст.");
+			throw new Error("Переданный список событий пуст");
 		}
 
 		// TODO: надо поддержать упаковку любых json-ов

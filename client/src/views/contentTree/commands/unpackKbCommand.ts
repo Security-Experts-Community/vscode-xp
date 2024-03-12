@@ -29,14 +29,14 @@ export class UnpackKbCommand extends ViewCommand {
 		// Проверка наличия утилиты сборки kb-файлов.
 		const knowledgeBasePackagerCli = this.config.getKbPackFullPath();
 		if(!fs.existsSync(knowledgeBasePackagerCli)) {
-			DialogHelper.showError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку.");
+			DialogHelper.showError("Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку");
 			await VsCodeApiHelper.openSettings(this.config.getExtensionSettingsPrefix());
 			return;
 		}
 
 		const config = Configuration.get();
 		if(!config.isKbOpened()) {
-			DialogHelper.showInfo("Для распаковки пакетов нужно открыть базу знаний.");
+			DialogHelper.showInfo("Для распаковки пакетов нужно открыть базу знаний");
 			return;
 		}
 
@@ -64,7 +64,7 @@ export class UnpackKbCommand extends ViewCommand {
 			const rootContentDirPath = path.dirname(packageDirPath);
 
 			if(!fs.existsSync(packageDirPath)) {
-				DialogHelper.showError(`Не существует такой папки для пакетов.`);
+				DialogHelper.showError(`Не существует такой папки для пакетов`);
 				return;
 			}
 
@@ -106,7 +106,7 @@ export class UnpackKbCommand extends ViewCommand {
 				);
 			} 
 			catch(error) {
-				ExceptionHelper.show(error, `Ошибка выполнения команды ${cmd}. Возможно, не был установлены [.NET Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) или не добавлен путь к нему в переменную PATH.`);
+				ExceptionHelper.show(error, `Ошибка выполнения команды ${cmd}. Возможно, не был установлены [.NET Runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0) или не добавлен путь к нему в переменную PATH`);
 				return;
 			}
 

@@ -35,7 +35,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 		}
 
 		if(!this._config.isKbOpened()) {
-			DialogHelper.showError("Не выбрана база знаний.");
+			DialogHelper.showError("Не выбрана база знаний");
 			return;
 		}
 

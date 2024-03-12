@@ -20,7 +20,7 @@ export class XpSignatureHelpProvider implements vscode.SignatureHelpProvider {
 		const parser = new FunctionNameParser();
 		const signaturesPlain = JSON.parse(signaturesFileContent);
 		if(!signaturesPlain) {
-			Log.warn("Не было считано ни одного описания функций.");
+			Log.warn("Не было считано ни одного описания функций");
 			return new XpSignatureHelpProvider(parser, []);
 		}
 

@@ -74,7 +74,7 @@ export class TestsFormatContentMenuExtension {
 				const activeEditor = vscode.window.activeTextEditor;
 				const currDocument = activeEditor?.document;
 				if (!currDocument) {
-					await DialogHelper.showInfo("Документ для форматирования не открыт.");
+					await DialogHelper.showInfo("Документ для форматирования не открыт");
 					return;
 				}
 

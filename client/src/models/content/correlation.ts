@@ -262,7 +262,7 @@ export class Correlation extends RuleBaseItem {
 		} else {
 			const parentPath = this.getParentPath();
 			if (!parentPath) {
-				throw new XpException("Не задан путь для сохранения корреляции.");
+				throw new XpException("Не задан путь для сохранения корреляции");
 			}
 
 			corrDirPath = this.getDirectoryPath();

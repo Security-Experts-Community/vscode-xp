@@ -243,7 +243,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
 
     this.updateExpectationInView(testResult);
     DialogHelper.showInfo(
-      "Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти."
+      "Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти"
     );
   }
 

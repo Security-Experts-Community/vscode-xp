@@ -99,7 +99,7 @@ export class Normalization extends RuleBaseItem {
 		} else {
 			const parentPath = this.getParentPath();
 			if (!parentPath) {
-				throw new XpException("Не задан путь для сохранения нормализации.");
+				throw new XpException("Не задан путь для сохранения нормализации");
 			}
 			rulePath = this.getDirectoryPath();
 		}

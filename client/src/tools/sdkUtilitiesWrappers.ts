@@ -820,7 +820,7 @@ export class SDKUtilitiesWrappers {
 // 				}
 // 				if (!await this.make_correlations(rule.getDirectoryPath())){throw new Error("Ошибка сбора графов!");}
 // 				if (!await this.make_localizations(rule.getDirectoryPath())){throw new Error("Ошибка сбора графов!");}
-// 				ExtensionHelper.showUserInfo("Все графы успешно собраны.");					
+// 				ExtensionHelper.showUserInfo("Все графы успешно собраны");					
 // 			}
 // 			catch(error) {
 // 				ExtensionHelper.showUserError(`Произошла неожиданная ошибка: ${error}`);

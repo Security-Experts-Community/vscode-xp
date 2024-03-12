@@ -78,7 +78,7 @@ export class RunningCorrelationGraphProvider {
             this._view.webview.html = htmlContent;
         }
         catch (error) {
-            DialogHelper.showError("Не удалось отобразить шаблон правила корреляции.", error);
+            DialogHelper.showError("Не удалось отобразить шаблон правила корреляции", error);
         }
     }
 
@@ -88,7 +88,7 @@ export class RunningCorrelationGraphProvider {
                 const rawEvents = message.rawEvents;
 
                 if(!rawEvents) {
-                    DialogHelper.showError("Добавьте сырые события и повторите действие.");
+                    DialogHelper.showError("Добавьте сырые события и повторите действие");
                     return;
                 }             
 				await this.corrGraphRun(rawEvents);
@@ -181,7 +181,7 @@ export class RunningCorrelationGraphProvider {
 			envelopedRawEventsString = envelopedEvents.join(RunningCorrelationGraphProvider.TEXTAREA_END_OF_LINE);
 		}
 		catch(error) {
-			ExceptionHelper.show(error, "Ошибка добавления конверта.");
+			ExceptionHelper.show(error, "Ошибка добавления конверта");
 			return;
 		}
 

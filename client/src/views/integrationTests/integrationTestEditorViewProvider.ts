@@ -482,7 +482,7 @@ export class IntegrationTestEditorViewProvider {
 
 	private async cleanTestCode(message: any) {
 		if (!message.test) {
-			DialogHelper.showInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие.");
+			DialogHelper.showInfo("Сохраните тест перед запуском нормализации сырых событий и повторите действие");
 			return;
 		}
 
@@ -490,7 +490,7 @@ export class IntegrationTestEditorViewProvider {
 		try {
 			const testCode = message?.testCode;
 			if (!testCode) {
-				throw new Error("Не удалось получить условия выполнения теста из интерфейса редактирования интеграционных тестов.");
+				throw new Error("Не удалось получить условия выполнения теста из интерфейса редактирования интеграционных тестов");
 			}
 
 			test = IntegrationTest.convertFromObject(message.test);
@@ -516,7 +516,7 @@ export class IntegrationTestEditorViewProvider {
 			envelopedRawEventsString = envelopedEvents.join(IntegrationTestEditorViewProvider.TEXTAREA_END_OF_LINE);
 		}
 		catch (error) {
-			ExceptionHelper.show(error, "Ошибка добавления конверта.");
+			ExceptionHelper.show(error, "Ошибка добавления конверта");
 			return;
 		}
 

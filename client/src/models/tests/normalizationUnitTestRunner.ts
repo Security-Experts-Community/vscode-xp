@@ -24,7 +24,7 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 		const wrapper = new SDKUtilitiesWrappers(this._config);
 		const utilityOutput = await wrapper.testNormalization(unitTest);
 		if(!utilityOutput) {
-			throw new XpException("Нормализатор не вернул никакого события. Исправьте правило нормализации и повторите.");
+			throw new XpException("Нормализатор не вернул никакого события. Исправьте правило нормализации и повторите");
 		}
 		
 		unitTest.setOutput(utilityOutput);

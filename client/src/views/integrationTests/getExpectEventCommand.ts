@@ -85,7 +85,7 @@ export class GetExpectedEventCommand  {
 		try {
 			normalizedEvents = this.params.test.getNormalizedEvents();
 			if(!normalizedEvents) {
-				throw new XpException("Для запуска быстрого теста нужно хотя бы одно нормализованное событие. Нормализуйте сырые события и повторите действие.");
+				throw new XpException("Для запуска быстрого теста нужно хотя бы одно нормализованное событие. Нормализуйте сырые события и повторите действие");
 			}
 
 			// Временно создать модульный тест путём добавления к интеграционному нормализованного события в конец файла.
@@ -95,7 +95,7 @@ export class GetExpectedEventCommand  {
 
 			// Проверку на наличие expect not {} в тесте, в этом случае невозможно получить ожидаемое событие.
 			if(TestHelper.isNegativeTest(integrationTestContent)) {
-				throw new XpException("Невозможно получить ожидаемого события для теста с кодом expect not {}. Скорректируйте код теста если это необходимо, сохраните его и повторите.");
+				throw new XpException("Невозможно получить ожидаемого события для теста с кодом expect not {}. Скорректируйте код теста если это необходимо, сохраните его и повторите");
 			}
 			integrationTestSimplifiedContent = integrationTestContent.replace(
 				RegExpHelper.getExpectSectionRegExp(),

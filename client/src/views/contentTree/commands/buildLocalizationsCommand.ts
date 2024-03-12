@@ -40,7 +40,7 @@ export class BuildLocalizationsCommand extends ViewCommand {
 				const siemjConfContent = siemjConfContentEntity['configContent'];
 
 				if(!siemjConfContent) {
-					throw new XpException("Не удалось сгенерировать siemj.conf для заданного правила и тестов.");
+					throw new XpException("Не удалось сгенерировать siemj.conf для заданного правила и тестов");
 				}
 
 				// Сохраняем конфигурационный файл для siemj.

@@ -42,7 +42,7 @@ export class SiemjManager {
 
 		const schemaFilePath = this._config.getSchemaFullPath(contentRootFolder);
 		if(!fs.existsSync(schemaFilePath)) {
-			throw new XpException("Ошибка компиляции схемы БД. Результирующий файл не создан.");
+			throw new XpException("Ошибка компиляции схемы БД. Результирующий файл не создан");
 		}
 
 		return schemaFilePath;
@@ -51,12 +51,12 @@ export class SiemjManager {
 	public async normalize(rule: RuleBaseItem, rawEventsFilePath: string) : Promise<string> {
 
 		if(!fs.existsSync(rawEventsFilePath)) {
-			throw new FileSystemException(`Файл сырых событий '${rawEventsFilePath}' не существует.`);
+			throw new FileSystemException(`Файл сырых событий '${rawEventsFilePath}' не существует`);
 		}
 
 		const contentFullPath = rule.getPackagePath(this._config);
 		if(!fs.existsSync(contentFullPath)) {
-			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует.`);
+			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует`);
 		}
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
@@ -81,14 +81,14 @@ export class SiemjManager {
 
 		const normEventsFilePath = this._config.getNormalizedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(normEventsFilePath)) {
-			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан.");
+			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан");
 		}
 
 		let normEventsContent = await FileSystemHelper.readContentFile(normEventsFilePath);
 		normEventsContent = TestHelper.removeFieldsFromJsonl(normEventsContent, 'body');
 
 		if(!normEventsContent) {
-			throw new XpException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
+			throw new XpException("Нормализатор вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента");
 		}
 
 		return normEventsContent;
@@ -96,12 +96,12 @@ export class SiemjManager {
 
 	public async normalizeAndEnrich(rule: RuleBaseItem, rawEventsFilePath: string) : Promise<string> {
 		if(!fs.existsSync(rawEventsFilePath)) {
-			throw new FileSystemException(`Файл сырых событий '${rawEventsFilePath}' не существует.`);
+			throw new FileSystemException(`Файл сырых событий '${rawEventsFilePath}' не существует`);
 		}
 
 		const contentFullPath = rule.getPackagePath(this._config);
 		if(!fs.existsSync(contentFullPath)) {
-			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует.`);
+			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует`);
 		}
 
 		await SiemjConfigHelper.clearArtifacts(this._config);
@@ -129,14 +129,14 @@ export class SiemjManager {
 		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(contentRootFolder);
 		
 		if(!fs.existsSync(enrichEventsFilePath)) {
-			throw new XpException("Ошибка нормализации и обогащения событий. Файл с результирующим событием не создан.");
+			throw new XpException("Ошибка нормализации и обогащения событий. Файл с результирующим событием не создан");
 		}
 
 		let enrichEventsContent = await FileSystemHelper.readContentFile(enrichEventsFilePath);
 		enrichEventsContent = TestHelper.removeFieldsFromJsonl(enrichEventsContent, 'body');
 		
 		if(!enrichEventsContent) {
-			throw new XpException("Обогатитель вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента.");
+			throw new XpException("Обогатитель вернул пустое событие. Проверьте наличие правильного конверта события и наличие необходимой нормализации в дереве контента");
 		}
 
 		return enrichEventsContent;
@@ -218,7 +218,7 @@ export class SiemjManager {
 	public async buildLocalizationExamples(rule: RuleBaseItem, integrationTestsTmpDirPath : string) : Promise<LocalizationExample[]> {
 		const contentFullPath = rule.getPackagePath(this._config);
 		if(!fs.existsSync(contentFullPath)) {
-			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует.`);
+			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует`);
 		}
 
 		if(!fs.existsSync(integrationTestsTmpDirPath)) {
@@ -361,7 +361,7 @@ export class SiemjManager {
 	private processOutput(siemjOutput: string) {
 		if(siemjOutput.includes(this.ERROR_SUBSTRING)) {
 			this._config.getOutputChannel().show();
-			throw new XpException("Ошибка выполнения siemj. Смотри Output.");
+			throw new XpException("Ошибка выполнения siemj. Смотри Output");
 		}
 	}
 

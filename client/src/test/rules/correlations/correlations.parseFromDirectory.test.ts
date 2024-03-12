@@ -126,7 +126,7 @@ expect not {"correlation_name": "Active_Directory_Snapshot"}`;
 		assert.rejects(async () => 
 			await Correlation.parseFromDirectory(rulePath), 
 			Error, 
-			"Наборы идентификаторов локализаций в файле метаинформации и файлах локализаций не совпадают."
+			"Наборы идентификаторов локализаций в файле метаинформации и файлах локализаций не совпадают"
 		);
 	});
 

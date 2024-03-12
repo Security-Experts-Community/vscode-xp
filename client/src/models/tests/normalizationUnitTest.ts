@@ -108,7 +108,7 @@ export class NormalizationUnitTest extends BaseUnitTest {
 
 	public async save() : Promise<void> {
 		if(!this.getTestsDirPath()) {
-			throw new XpException("Не задан путь для сохранения.");
+			throw new XpException("Не задан путь для сохранения");
 		}
 
 		if(!this.getNumber()) {

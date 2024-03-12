@@ -343,7 +343,7 @@ export class LocalizationEditorViewProvider {
 				const siemjResult = await testRunner.run(this._rule, options);
 
 				if (!siemjResult.testsStatus) {
-					throw new XpException("Не все интеграционные тесты прошли. Для получения тестовых локализации необходимо чтобы успешно проходили все интеграционные тесты.");
+					throw new XpException("Не все интеграционные тесты прошли. Для получения тестовых локализации необходимо чтобы успешно проходили все интеграционные тесты");
 				}
 			}
 

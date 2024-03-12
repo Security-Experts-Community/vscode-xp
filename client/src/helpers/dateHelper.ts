@@ -12,7 +12,7 @@ export class DateHelper {
 
 	public static parseDate(dateString: string) : Date {
 		if(!dateString || dateString.length == 0) {
-			throw new Error("Передана пустая строка, которая не может быть разобрана.");
+			throw new Error("Передана пустая строка, которая не может быть разобрана");
 		}
 		
 		const pattern = /(\d{2})\.(\d{2})\.(\d{4})/;

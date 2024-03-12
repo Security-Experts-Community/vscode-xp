@@ -132,7 +132,7 @@ export class Configuration {
 			case "win32" : return OsType.Windows;
 			case "linux" : return OsType.Linux;
 			case "darwin" : return OsType.Mac;
-			default: throw new Error("Платформа не поддерживается.");
+			default: throw new Error("Платформа не поддерживается");
 		}
 	}
 
@@ -141,7 +141,7 @@ export class Configuration {
 			case OsType.Windows: return "windows-1251";
 			case OsType.Linux: return "utf-8";
 			case OsType.Mac: return "utf-8";
-			default: throw new XpException("Платформа не поддерживается.");
+			default: throw new XpException("Платформа не поддерживается");
 		}
 	}
 

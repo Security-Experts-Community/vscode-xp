@@ -122,7 +122,7 @@ export class IntegrationTest {
 		}
 
 		if(this._rawEvents == undefined) {
-			throw new XpException("Сырые события не заданы.");
+			throw new XpException("Сырые события не заданы");
 		}
 
 		if(!this.getRuleDirectoryPath()) {
