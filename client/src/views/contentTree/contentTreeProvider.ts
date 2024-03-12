@@ -371,7 +371,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 						const selectedItem = e.selection[0];
 						// Вызываем команду отображения выбранного элемента дерева.
 						// Для правил это открытие файла, для табличного списка - редактора его структуры.
-						vscode.commands.executeCommand(selectedItem.command.command, selectedItem);
+						const selectedItemCommand = selectedItem?.command?.command;
+						if(selectedItemCommand) {
+							vscode.commands.executeCommand(selectedItemCommand, selectedItem);
+						}
 					}
 				}
 			)

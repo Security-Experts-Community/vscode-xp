@@ -22,7 +22,7 @@ import { Configuration } from './models/configuration';
 import { XpCompletionItemProvider } from './providers/xpCompletionItemProvider';
 import { ContentTreeProvider } from './views/contentTree/contentTreeProvider';
 import { RunningCorrelationGraphProvider } from './views/correlationGraph/runningCorrelationGraphProvider';
-import { DefaultTLValuesEditorViewProvider, TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
+import { TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
 import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvider';
 import { TestsFormatContentMenuExtension } from './ext/contextMenuExtension';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
@@ -40,6 +40,7 @@ import { OriginsManager } from './models/content/originsManager';
 import { VsCodeApiHelper } from './helpers/vsCodeApiHelper';
 import { OpenTableDefaultsCommand } from './views/contentTree/commands/openTableDefaultValuesCommand';
 import { Table } from './models/content/table';
+import { DefaultTLValuesEditorViewProvider } from './views/defaultTLValues/defaultTLValuesEditorViewProvider';
 
 export let Log: Logger;
 let client: LanguageClient;

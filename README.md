@@ -2,7 +2,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/vscode-xp/badge/?version=latest)](https://vscode-xp.readthedocs.io/ru/latest/?badge=latest) [![Telegram chat](https://img.shields.io/static/v1?label=chat&message=Telegram&color=blue&logo=telegram)](https://t.me/s3curity_experts_community/75) [![Telegram chat](https://img.shields.io/matrix/vscode-xp:matrix.org?color=g&label=matrix&logo=matrix&logoColor=green)](https://matrix.to/#/#vscode-xp:matrix.org)
 
-Язык [eXtraction and Processing (XP)](https://help.ptsecurity.com/projects/siem/7.0/en-US/help/1566366731) используется для создания детектирующих правил на основе анализа событий c конечных точек. На языке XP вы можете разрабатывать правила нормализации событий, их корреляции и обогащения.
+Язык [eXtraction and Processing (XP)](https://help.ptsecurity.com/projects/maxpatrol10/26.2/ru-RU/help/1566293515) используется для создания детектирующих правил на основе анализа событий c конечных точек. На языке XP вы можете разрабатывать правила нормализации событий, их корреляции и обогащения.
 
 Настоящее расширение разработано [Dmitry Fedosov](https://github.com/DmitryOffsec) и [контрибьютерами](https://github.com/Security-Experts-Community/vscode-xp/graphs/contributors), оно позволяет разрабатывать и тестировать правила в VSCode и VSCodium, а также публиковать их в необходимый для вашего продукта формат.
 

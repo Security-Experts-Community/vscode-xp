@@ -9,6 +9,7 @@ import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { ViewCommand } from './viewCommand';
 import { Table } from '../../../models/content/table';
 import { Log } from '../../../extension';
+import { DefaultTLValuesEditorViewProvider } from '../../defaultTLValues/defaultTLValuesEditorViewProvider';
 
 export class OpenTableDefaultsCommand extends ViewCommand {
 
@@ -51,8 +52,7 @@ export class OpenTableDefaultsCommand extends ViewCommand {
 
 		VsCodeApiHelper.openWith(
 			tableUri, 
-			// TODO: Вынести в переменную.
-			"xp.default-tl-value-editor", {
+			DefaultTLValuesEditorViewProvider.viewType, {
 				preview: true
 			}
 		);
