@@ -8,8 +8,10 @@ import { XpException } from '../xpException';
 import { MetaInfo } from '../metaInfo/metaInfo';
 
 export enum ContentFolderType {
-	ContentRoot = 			"ContentRoot",
-	PackageFolder = 		"PackageFolder", 				// Директория пакета
+	KbRoot = 				"KbRoot",					// Корень открытой базы знаний
+	ContentRoot = 			"ContentRoot",				// Директория с пакетами или пакеты под системы для EDR
+	AuxiliaryFolder =		"AuxiliaryFolder", 			// Директории корня kb, в которых нет правил.
+	PackageFolder = 		"PackageFolder", 			// Директория пакета
 	CorrelationsFolder = 	"CorrelationsFolder", 		// Директория, с базовой директорией correlation_rules
 	EnrichmentsFolder = 	"EnrichmentsFolder", 		// Директория, с базовой директорией enrichment_rules
 	AggregationsFolder = 	"AggregationsFolder", 		// Директория, с базовой директорией aggregation_rules

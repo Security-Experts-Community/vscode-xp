@@ -431,7 +431,6 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		}
 
 		if(!element) {
-			
 			// Проверка наличия workspace.
 			if(!this._knowledgebaseDirectoryPath) {
 				return Promise.resolve([]);
@@ -447,7 +446,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 				return [packagesFolder];
 			}
 
-			const packagesFolder = await ContentFolder.create(this._knowledgebaseDirectoryPath, ContentFolderType.AnotherFolder);
+			const packagesFolder = await ContentFolder.create(this._knowledgebaseDirectoryPath, ContentFolderType.KbRoot);
 			return [packagesFolder];
 		}
 
@@ -474,13 +473,12 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 				continue;
 			}
 
-			// Пакеты.
-			const parentFolder = path.basename(subFolderPath).toLocaleLowerCase();
-			const directoryPath = path.join(subFolderPath, dirName);
+
 
 			// Если ошибка в текущем элементе, продолжаем парсить остальные
+			const directoryPath = path.join(subFolderPath, dirName);
 			try {
-				const contentItem = await ContentTreeProvider.createContentElement(directoryPath);
+				const contentItem = await ContentTreeProvider.createContentElement(directoryPath, this._knowledgebaseDirectoryPath);
 				if(contentItem instanceof RuleBaseItem) {
 					if(await LocalizationEditorViewProvider.provider.updateRule(contentItem)) {
 						DialogHelper.showInfo(`Правило ${contentItem.getName()} было обновлено в редакторе локализаций`);
@@ -490,7 +488,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 				childrenItems.push(contentItem);
 			}
 			catch (error) {
-				ExceptionHelper.show(error, `Ошибка парсинга директории ${directoryPath}`);
+				ExceptionHelper.show(error, `Ошибка разбора содержимого директории ${directoryPath}`);
 			}
 		}
 
@@ -617,24 +615,27 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			return null;
 		}
 
-		const fullPath = element.getDirectoryPath();
-		const directoryName = path.basename(fullPath);
-		const parentPath = path.dirname(fullPath);
+		const dirFullPath = element.getDirectoryPath();
+		const directoryName = path.basename(dirFullPath);
+		const parentPath = path.dirname(dirFullPath);
 		const parentDirName = path.basename(parentPath);
 
 		// Дошли до уровня пакета.
 		if(directoryName === ContentTreeProvider.PACKAGES_DIRNAME ||
           directoryName ===  ContentTreeProvider.MACRO_DIRNAME ||
           parentDirName === "") {
-			const packageFolder = await ContentFolder.create(parentPath, ContentFolderType.ContentRoot);
-			return Promise.resolve(packageFolder);
+			return ContentFolder.create(parentPath, ContentFolderType.ContentRoot);
+		}
+
+		if(dirFullPath === this._knowledgebaseDirectoryPath) {
+			return ContentFolder.create(parentPath, ContentFolderType.KbRoot);
 		}
 
 		const parentFolder = ContentFolder.create(parentPath, ContentFolderType.AnotherFolder);
 		return Promise.resolve(parentFolder);
 	}
 
-	public static async createContentElement(elementDirectoryPath: string) : Promise<RuleBaseItem|ContentFolder|Table|Aggregation|Macros> {
+	public static async createContentElement(elementDirectoryPath: string, knowledgebaseDirectoryPath?: string) : Promise<RuleBaseItem|ContentFolder|Table|Aggregation|Macros> {
 
 		// Маппинг типов файлов на функции создания экземпляра
 		const entityCreators = { 
@@ -663,6 +664,16 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			return ContentFolder.create(elementDirectoryPath, ContentFolderType.PackageFolder);	
 		}
 
+		// TODO: переделать логику так, чтобы если базовая директория Auxiliary, то и её дочерний узел такой же.
+		// TODO: учесть структуру контента EDR.
+		// Вспомогательные директории в корне базы знаний кроме директории с пакетами.
+		// const baseDirPath = path.dirname(elementDirectoryPath);
+		// const dirName = path.basename(elementDirectoryPath);
+		// if(knowledgebaseDirectoryPath && knowledgebaseDirectoryPath === baseDirPath && dirName != ContentTreeProvider.MACRO_DIRNAME) {
+		// 	return await ContentFolder.create(elementDirectoryPath, ContentFolderType.AuxiliaryFolder);
+		// }
+
+		// Любая другая директория внутри экспертизы
 		return ContentFolder.create(elementDirectoryPath, ContentFolderType.AnotherFolder);
 	}
 
@@ -694,6 +705,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 	public static readonly MACRO_DIRNAME = "common";
 	
 	public static readonly KnowledgebaseTreeId = 'KnowledgebaseTree';
+
 	
 	public static readonly onRuleClickCommand = 'KnowledgebaseTree.onElementSelectionChange';
 	public static readonly onTableClickCommand = 'xp.contentTree.onTableSelectionChange';

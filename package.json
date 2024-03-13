@@ -373,7 +373,7 @@
         },
         {
           "command": "xp.contentTree.createMacroCommand",
-          "when": "view == KnowledgebaseTree && (viewItem == AnotherFolder || viewItem == Macros)",
+          "when": "view == KnowledgebaseTree && (viewItem == AnotherFolder)",
           "group": "create@5"
         },
         {
@@ -458,7 +458,7 @@
         },
         {
           "command": "xp.contentTree.deleteItemCommand",
-          "when": "view == KnowledgebaseTree",
+          "when": "view == KnowledgebaseTree && viewItem != KbRoot",
           "group": "ZCommonItems@4"
         },
         {
