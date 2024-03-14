@@ -27,6 +27,7 @@ export class SetContentTypeCommand {
 					return await setContentTypeCommand.updateContentTypeStatusBarItem(contentTypeStatusBarItem, config, newContentType);
 				}
 				const selectedContentType = await vscode.window.showQuickPick(["SIEM", "EDR"], {
+					// TODO: добавить локализацию
 					placeHolder: `Select Content Type`
 				});
 
@@ -58,6 +59,7 @@ export class SetContentTypeCommand {
 		// Централизованно обновляем тип контента
 		config.setContentType(contentType);
 
+		// TODO: добавить локализацию
 		item.text = `Тип целевого продукта: ${contentType}`;
 		item.show();
 	}

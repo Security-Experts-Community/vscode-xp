@@ -127,7 +127,7 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 					return;
 				}
 			case 'log':
-				DialogHelper.showInfo(e.message);
+				// DialogHelper.showInfo(e.message);
 				return;
 			case 'error':
 				DialogHelper.showError(e.message);
