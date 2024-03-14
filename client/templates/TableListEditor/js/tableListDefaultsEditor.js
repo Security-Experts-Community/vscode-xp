@@ -29,6 +29,9 @@ let currentRowIndex = null;
     const pt_grid = document.getElementById("pt-defs");
     initEditableDataGrid(loc_grid);
     initEditableDataGrid(pt_grid);
+    vscode.postMessage({
+        type: 'refresh'
+    });
 
     function initEditableDataGrid(grid) {
         grid.oncontextmenu = cellRightClick;
@@ -80,6 +83,12 @@ let currentRowIndex = null;
                 syncCellChanges(cell);
                 unsetCellEditable(cell);
             }
+            else {
+                if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+                  syncCellChanges(cell);
+                  unsetCellEditable(cell);
+               }
+            }
         }
     }
 
@@ -105,7 +114,6 @@ let currentRowIndex = null;
 
             if (originalValue !== newValue) {
                 row[column.columnDataKey] = newValue;
-                sendLog("Value changed...Original value: " + originalValue + "; " + "New value: " + newValue);
                 refreshResxData();
             }
         }
@@ -121,7 +129,7 @@ let currentRowIndex = null;
     window.addEventListener('message', event => {
         const message = event.data;
         switch (message.type) {
-            case 'update':
+            case 'update_view':
                 const text = message.text;
                 if (text !== vscode.getState()?.text) {
                     updateContent(text);
@@ -157,7 +165,7 @@ let currentRowIndex = null;
 					obj[values[i]] = "-"
 				}
 				// eslint-disable-next-line @typescript-eslint/naming-convention
-				loc_grid.rowsData.push(obj);
+				loc_grid.rowsData.unshift(obj);
 				refreshResxData();
                 return;
 			}
@@ -168,7 +176,7 @@ let currentRowIndex = null;
 					obj[values[i]] = "-"
 				}
 				// eslint-disable-next-line @typescript-eslint/naming-convention
-				pt_grid.rowsData.push(obj);
+				pt_grid.rowsData.unshift(obj);
 				refreshResxData();
                 return;
 			}
@@ -187,7 +195,7 @@ let currentRowIndex = null;
 
         vscode.setState({ text: JSON.stringify(obj) });
         vscode.postMessage({
-            type: 'update',
+            type: 'update_file',
             json: JSON.stringify(obj)
         });
     }

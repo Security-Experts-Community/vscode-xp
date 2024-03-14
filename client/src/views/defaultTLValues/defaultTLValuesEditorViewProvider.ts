@@ -67,7 +67,7 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 						type: 'add_pt'
 					});
 				});
-		
+				
 				this.context.subscriptions.push(deleteCommand);
 				this.context.subscriptions.push(addLOCCommand);
 				this.context.subscriptions.push(addPTCommand);
@@ -90,24 +90,24 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 			data['pt']  = json['defaults']['PT'];
 
 			webviewPanel.webview.postMessage({
-				type: 'update',
+				type: 'update_view',
 				text: JSON.stringify(data)
 			});
 		}
 	
-		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-			if (e.document.uri.toString() === document.uri.toString()) {
-				updateWebview();
-			}
-		});
+		// const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
+		// 	if (e.document.uri.toString() === document.uri.toString()) {
+		// 		updateWebview();
+		// 	}
+		// });
 	
-		webviewPanel.onDidDispose(() => {
-			changeDocumentSubscription.dispose();
-		});
+		// webviewPanel.onDidDispose(() => {
+		// 	changeDocumentSubscription.dispose();
+		// });
 	
 		webviewPanel.webview.onDidReceiveMessage(e => {
 			switch (e.type) {
-			case 'update':
+			case 'update_file':
 				{
 					const data = YamlHelper.parse(document.getText());
 					const yaml = YamlHelper.parse(YamlHelper.jsonToYaml(e.json));
@@ -126,14 +126,14 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 					this.updateTextDocument(document, YamlHelper.stringify(data));
 					return;
 				}
-			case 'log':
-				// DialogHelper.showInfo(e.message);
+			case 'info':
+				DialogHelper.showInfo(e.message);
 				return;
 			case 'error':
 				DialogHelper.showError(e.message);
 				return;
-			case 'info':
-				DialogHelper.showInfo(e.message);
+			case 'refresh':
+				updateWebview();
 				return;
 			case 'add_loc':
 				vscode.commands.executeCommand("xp.AddLOCTLRowCommand");
@@ -190,17 +190,17 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 					</head>
 					<body>
 					  <h2>LOC:</h2>
-					  <vscode-data-grid id="loc-defs" aria-label="Basic" generate-header="sticky" aria-label="Sticky Header"></vscode-data-grid>
 					  <vscode-button id="add-loc-value-button">
 						Add new LOC row
 					  </vscode-button>
+					  <vscode-data-grid id="loc-defs" aria-label="Basic" generate-header="sticky" aria-label="Sticky Header"></vscode-data-grid>
 					  <hr>
 					<h2>PT:</h2>
-					<vscode-data-grid id="pt-defs" aria-label="Basic" generate-header="sticky" aria-label="Sticky Header"></vscode-data-grid>
 					<vscode-button id="add-pt-value-button">
 						Add new PT row
-					  </vscode-button>
-					  <script type="module" nonce="${nonce}" src="${webviewUri}"></script>
+					</vscode-button>
+					<vscode-data-grid id="pt-defs" aria-label="Basic" generate-header="sticky" aria-label="Sticky Header"></vscode-data-grid>
+					<script type="module" nonce="${nonce}" src="${webviewUri}"></script>
 					</body>
 				  </html>
 				`;
