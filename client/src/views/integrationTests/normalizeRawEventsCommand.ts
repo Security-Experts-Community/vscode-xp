@@ -27,17 +27,17 @@ export class NormalizeRawEventsCommand extends Command {
 				const siemjManager = new SiemjManager(this.params.config);
 				let normEvents: string;
 				if (this.params.isEnrichmentRequired) {
-					progress.report({ message: `Нормализация и обогащение сырых событий для теста №${this.params.test.getNumber()}`});
+					progress.report({message: `Нормализация и обогащение сырых событий для теста №${this.params.test.getNumber()}`});
 					normEvents = await siemjManager.normalizeAndEnrich(this.params.rule, rawEventsFilePath);
 				} else {
-					progress.report({ message: `Нормализация сырых событий для теста №${this.params.test.getNumber()}`});
+					progress.report({message: `Нормализация сырых событий для теста №${this.params.test.getNumber()}`});
 					normEvents = await siemjManager.normalize(this.params.rule, rawEventsFilePath);
 				}
 
 				this.params.test.setNormalizedEvents(normEvents);
 			}
 			catch (error) {
-				DialogHelper.showError("Не удалось нормализовать событие", error);
+				DialogHelper.showError("Не удалось нормализовать событие. Возможны следующие варианты: исходное событие некорректного формата, в текущей базе знаний нет соответствующей нормализации", error);
 				return;
 			}
 
