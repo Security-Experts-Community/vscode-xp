@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as os from 'os';
 
 import { Configuration } from '../../models/configuration';
 import { YamlHelper } from '../../helpers/yamlHelper';
