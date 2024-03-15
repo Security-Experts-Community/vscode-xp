@@ -19,6 +19,7 @@ export interface TableView {
 	name: string;
 	fillType: TableListType;
 	type: number;
+	ttl: number;
 	maxSize: number|undefined;
 	typicalSize: number|undefined
 	userCanEditContent: boolean;

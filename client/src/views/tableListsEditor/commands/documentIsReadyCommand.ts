@@ -16,8 +16,8 @@ export class DocumentIsReadyCommand implements TableListCommand {
 	async execute(webView: TableListsEditorViewProvider): Promise<boolean> {
 		const table = webView.getTable();
 
-		// Либо открываем таблицу, либо передаем значения по умолчанию для новой.
 		let tableObject = {};
+		// Либо открываем таблицу, либо передаем значения по умолчанию для новой.
 		if(table) {
 			tableObject = await this.tableToEditorJsonView(table);
 		} else {

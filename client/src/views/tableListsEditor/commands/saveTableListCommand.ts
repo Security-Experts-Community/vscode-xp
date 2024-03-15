@@ -33,8 +33,8 @@ export class SaveTableListCommand implements TableListCommand {
 			throw new XpException(`Не задано описание табличного списка. Задайте хотя бы описание на одном языке и повторите`);
 		}
 
-		if(tableObject.typicalSize && tableObject.maxSize && tableObject.typicalSize > tableObject.maxSize) {
-			throw new XpException(`Не может быть типичный размер табличного списка больше максимального. Исправьте данные параметры и повторите`);
+		if(tableObject.typicalSize && tableObject.maxSize && tableObject.typicalSize >= tableObject.maxSize) {
+			throw new XpException(`Не может типичный размер табличного списка быть больше или равен максимальному. Исправьте данные параметры и повторите`);
 		}
 
 		// Проверяем уникальность полей
