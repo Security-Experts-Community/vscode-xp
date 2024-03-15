@@ -115,12 +115,13 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 					if(yaml.loc.length != 0){
 						data.defaults['LOC'] = yaml['loc'];
 					} else {
+						// TODO: проверить, что LOC не пусто
 						delete data.defaults.LOC;
 					}
 					if (yaml.pt.length != 0) {
 						data['defaults']['PT'] = yaml['pt'];
 					} else {
-						// проверить, что PT не пусто
+						// TODO: проверить, что PT не пусто
 						delete data.defaults.PT;
 					}
 					let updatedTableFileContent = YamlHelper.stringify(data);
