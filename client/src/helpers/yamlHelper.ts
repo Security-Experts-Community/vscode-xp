@@ -5,7 +5,7 @@ import * as os from 'os';
 export class YamlHelper {
 	public static configure(
 		dumpOptions: js_yaml.DumpOptions,
-		loadOptions?: js_yaml.LoadOptions) {
+		loadOptions?: js_yaml.LoadOptions): void {
 		this.dumpOptions = dumpOptions;
 		this.loadOptions = loadOptions;
 	}

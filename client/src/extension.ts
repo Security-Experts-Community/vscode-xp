@@ -11,7 +11,6 @@ import {
 	TransportKind
 } from 'vscode-languageclient/node';
 
-import { LocalizationEditorViewProvider } from './views/localizationEditor/localizationEditorViewProvider';
 import { XpSignatureHelpProvider } from './providers/signature/xpSignatureHelpProvider';
 import { XpRenameProvide } from './providers/xpRenameProvider';
 import { UnitTestContentEditorViewProvider } from './views/unitTestEditor/unitTestEditorViewProvider';
@@ -41,6 +40,7 @@ import { VsCodeApiHelper } from './helpers/vsCodeApiHelper';
 import { OpenTableDefaultsCommand } from './views/contentTree/commands/openTableDefaultValuesCommand';
 import { Table } from './models/content/table';
 import { DefaultTLValuesEditorViewProvider } from './views/defaultTLValues/defaultTLValuesEditorViewProvider';
+import { LocalizationEditorViewProvider } from './views/localization/localizationEditorViewProvider';
 
 export let Log: Logger;
 let client: LanguageClient;

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as os from 'os';
 
 import { Configuration } from '../../models/configuration';
 import { YamlHelper } from '../../helpers/yamlHelper';
@@ -123,7 +124,13 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 						// проверить, что PT не пусто
 						delete data.defaults.PT;
 					}
-					this.updateTextDocument(document, YamlHelper.stringify(data));
+					let updatedTableFileContent = YamlHelper.stringify(data);
+					// Пустые значения типа value: при сериализации превращаются в value: null из-за чего изменяется всё заполнение ТС.
+					// Хорошо это видно по ТС Windows_Hacktools.
+					// Чтобы этого избежать подпираем костыликом и меняем нулы на пустоту.
+					// TODO: сделать красиво
+					updatedTableFileContent = updatedTableFileContent.replace(/: null$/gm, ": ");
+					this.updateTextDocument(document, updatedTableFileContent);
 					return;
 				}
 			case 'info':

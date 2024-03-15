@@ -31,7 +31,6 @@ import { GitHooks } from './gitHooks';
 import { InitKBRootCommand } from './commands/initKnowledgebaseRootCommand';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { ContentTreeBaseItem } from '../../models/content/contentTreeBaseItem';
-import { LocalizationEditorViewProvider } from '../localizationEditor/localizationEditorViewProvider';
 import { ContentVerifierCommand } from './commands/contentVerifierCommand';
 import { BuildLocalizationsCommand } from './commands/buildLocalizationsCommand';
 import { BuildWldCommand } from './commands/buildWldCommand';
@@ -40,6 +39,7 @@ import { DuplicateTreeItemCommand } from './commands/duplicateTreeItemCommand';
 import { CreateMacroCommand } from './commands/createMacrosCommand';
 import { PackKbCommand } from './commands/packKbCommand';
 import { OpenTableCommand } from './commands/openTableCommand';
+import { LocalizationEditorViewProvider } from '../localization/localizationEditorViewProvider';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeBaseItem> {
 
