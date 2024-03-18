@@ -45,7 +45,10 @@ export class YamlHelper {
 		return yamlContent.replace(/\n/g, os.EOL);
 	}
 
-	public static stringify(object: any): string {
+	public static stringify(object: any, styles?: any): string {
+		if (styles !== undefined){
+			this.dumpOptions.styles = styles;
+		}
 		let yamlContent = js_yaml.dump(object, this.dumpOptions);
 
 		yamlContent = prettier.format(
