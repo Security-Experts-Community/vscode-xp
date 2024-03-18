@@ -21,4 +21,14 @@ export class StringHelper {
 			.split('\n')
 			.filter(l => l);
 	}
+
+	/**
+	 * Заменяем нерегулярные юникод-символы, например, неразрывный пробел u00a0 на их регулярный эквивалент.
+	 * Позволяет спасти зависимые библиотеки от неожиданного строчного входа.
+	 * @param str 
+	 * @returns 
+	 */
+	public static replaceIrregularSymbols(str: string) : string {
+		return str.replace(/\u00a0/gm, ' ');
+	}
 }

@@ -14,8 +14,7 @@ export class Enveloper {
 	 * @param mimeType тип конверта для не обертнутых событий
 	 * @returns события без конверта обёрнуты в конверт и разложены в одну строку каждое
 	 */
-	public static async addEnvelope(rawEvents: string, mimeType : EventMimeType) {
-		
+	public static addEnvelope(rawEvents: string, mimeType : EventMimeType): string[] {
 		if(!rawEvents) {
 			throw new XpException("В тест не добавлены сырые события. Добавьте их и повторите действие");
 		}
@@ -27,7 +26,7 @@ export class Enveloper {
 		// Проверяем, если исходное событие в формате xml (EventViewer)
 		let rawEventsTrimmed = rawEvents.trim();
 		if(this.isRawEventXml(rawEventsTrimmed)) {
-			rawEventsTrimmed = this.сonvertEventLogXmlRawEventsToJson(rawEventsTrimmed);
+			rawEventsTrimmed = this.convertEventLogXmlRawEventsToJson(rawEventsTrimmed);
 		}
 
 		// Сжимаем json-события.
@@ -175,53 +174,39 @@ export class Enveloper {
 		return envelopedEvents;
 	}
 
-	public static сonvertEventLogXmlRawEventsToJson(xmlRawEvent : string) : string {
-
-        const events = [];
+	public static convertEventLogXmlRawEventsToJson(xmlRawEvent : string) : string {
         let xmlRawEventCorrected = xmlRawEvent
-            .replace(/^- <Event/gm, "<Event")
-            .replace(/^- <System>/gm, "<System>")
-            .replace(/^- <EventData>/gm, "<EventData>");
+            .replace(/- <Event/gm, "<Event")
+            .replace(/- <System>/gm, "<System>")
+            .replace(/- <EventData>/gm, "<EventData>");
         const xmlEventsRegex = /<Event [\s\S]*?<\/Event>/g;
         
         const allXmlEvents = xmlRawEventCorrected.match(xmlEventsRegex);
         for (const xmlEvent of allXmlEvents) {
-            
-			// const xmlEventsRegex = /<Data>[\s\S]*?<\/Data>/g;
-			// const dataResult = xmlEvent.match(xmlEventsRegex);
-
-			let jsonEventString = "";
-			// TODO: возможность не потерять символы новых строк для событий MSSQL
-            // if (dataResult && dataResult.length == 1) {
-			// 	const originalData = dataResult[0];
-			// 	const escapedData = StringHelper.escapeSpecialChars(originalData);
-			// 	const xmlEventEscapeSpecSymbols = xmlEvent.replace(originalData, escapedData);
-
-			// 	const jsonEventObject = xml2json_light.xml2json(xmlEventEscapeSpecSymbols);
-			// 	jsonEventString = JSON.stringify(jsonEventObject);
-			// 	jsonEventString = jsonEventString.replace(/\\\\n/gm, '\\n');
-			// } else {
-				// Конвертируем xml в json.
-				const jsonEventObject = xml2json_light.xml2json(xmlEvent);
-				jsonEventString = JSON.stringify(jsonEventObject);
-			// }
-
             // Результирующий json.
-            const resultXmlRawEvent = jsonEventString.replace(/_@ttribute/gm, "text");
+            const resultXmlRawEvent = this.convertSingleEventLogXmlRawEventToJson(xmlEvent);
             xmlRawEventCorrected = xmlRawEventCorrected.replace(xmlEvent, resultXmlRawEvent);
         }
         return xmlRawEventCorrected;
 	}
 
-	public static async streamConvertXmlRawEventsToJson(xmlFilePath : string, envelopedJsonEventsFilePath: string) : Promise<number> {
+	public static convertSingleEventLogXmlRawEventToJson(xmlEvent : string) : string {
+		let jsonEventString = "";
+		const jsonEventObject = xml2json_light.xml2json(xmlEvent);
+		jsonEventString = JSON.stringify(jsonEventObject);
 
+		// Результирующий json.
+		const resultJsonEvent = jsonEventString.replace(/_@ttribute/gm, "text");
+		return resultJsonEvent;
+	}
+
+	public static async streamConvertXmlRawEventsToJson(xmlFilePath : string, envelopedJsonEventsFilePath: string) : Promise<number> {
 		const xmlEvents = (await fs.promises.readFile(xmlFilePath)).toString();
         const xmlEventsRegex = /<Event [\s\S]*?<\/Event>/g;
         
         const allXmlEvents = xmlEvents.match(xmlEventsRegex);
 		let eventsCounter = 0;
         for (const xmlEvent of allXmlEvents) {
-            
 			// Переводим в json-строку
 			const jsonEventObject = xml2json_light.xml2json(xmlEvent);
 			const jsonEventString = JSON.stringify(jsonEventObject);

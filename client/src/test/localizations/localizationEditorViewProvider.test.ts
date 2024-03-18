@@ -4,9 +4,9 @@ import * as fs from 'fs';
 import { TestFixture } from '../helper';
 import { Localization } from '../../models/content/localization';
 import { Correlation } from '../../models/content/correlation';
-import { LocalizationEditorViewProvider } from '../../views/localizationEditor/localizationEditorViewProvider';
 import { Configuration } from '../../models/configuration';
 import { ContentHelper } from '../../helpers/contentHelper';
+import { LocalizationEditorViewProvider } from '../../views/localization/localizationEditorViewProvider';
 
 suite('LocalizationEditorViewProvider', () => {
 

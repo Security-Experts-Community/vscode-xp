@@ -4,6 +4,14 @@ import { StringHelper } from '../../helpers/stringHelper';
 
 suite('StringHelper', () => {
 
+	test('Удаление неразрывного проблема ', () => {
+		const actual = StringHelper.replaceIrregularSymbols(`test string\u00a0with no no-break space`);
+
+		assert.strictEqual(
+			actual,
+			`test string with no no-break space`);
+	});
+
 	test('Сохранение новой строки \\n с присутствием \\n', () => {
 		const actual = StringHelper.escapeSpecialChars(
 `session_server_principal_name:rf\\Administrator

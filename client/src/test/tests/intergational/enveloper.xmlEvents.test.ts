@@ -1,80 +1,7 @@
 import assert = require('assert');
 import { Enveloper } from '../../../models/enveloper';
-import { XpException } from '../../../models/xpException';
-import { StringHelper } from '../../../helpers/stringHelper';
-
 suite('Enveloper', () => {
 
-// TODO: Проверить корректность обработки событий и либо убрать, либо оставить.
-// 	test('Xml-событие от MSSQLSERVER', async () => {
-// 		const events =
-// `- <Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
-// - <System>
-//   <Provider Name="MSSQLSERVER" /> 
-//   <EventID Qualifiers="16384">33205</EventID> 
-//   <Level>0</Level> 
-//   <Task>5</Task> 
-//   <Keywords>0xa0000000000000</Keywords> 
-//   <TimeCreated SystemTime="2023-08-11T14:49:05.592435300Z" /> 
-//   <EventRecordID>9894</EventRecordID> 
-//   <Channel>Application</Channel> 
-//   <Computer>db-mysql.rf.plat.form</Computer> 
-//   <Security /> 
-//   </System>
-// - <EventData>
-//   <Data>Audit event: audit_schema_version:1
-// event_time:2023-08-11 14:49:05.4662406
-// sequence_number:1
-// action_id:BCM 
-// succeeded:true
-// is_column_permission:false
-// session_id:68
-// server_principal_id:259
-// database_principal_id:1
-// target_server_principal_id:0
-// target_database_principal_id:0
-// object_id:1
-// user_defined_event_id:0
-// transaction_id:0
-// class_type:DB
-// duration_milliseconds:0
-// response_rows:1
-// affected_rows:1
-// client_tls_version:0
-// database_transaction_id:0
-// ledger_start_sequence_number:0
-// client_ip:local machine
-// permission_bitmask:00000000000000000000000000000000
-// sequence_group_id:02BE335D-A7DF-4380-87C1-FC1CD4F0A0A1
-// session_server_principal_name:rf\\Administrator
-// server_principal_name:rf\\Administrator
-// server_principal_sid:01050000000000051500000067b15af061b134046d027e18f4010000
-// database_principal_name:dbo
-// target_server_principal_name:
-// target_server_principal_sid:
-// target_database_principal_name:
-// server_instance_name:db-mysql
-// database_name:master
-// schema_name:
-// object_name:master
-// statement:select IS_SRVROLEMEMBER('sysadmin')
-// additional_information:
-// user_defined_information:
-// application_name:Microsoft SQL Server Management Studio - Query
-// connection_id:908F4A9F-4462-46B8-AF64-0F2DE69D250C
-// data_sensitivity_information:
-// host_name:DB-MYSQL
-// session_context:
-// client_tls_version_name:
-// external_policy_permissions_checked:</Data> 
-//   </EventData>
-//   </Event>`;
-
-// 		const envelopedEvents = await Enveloper.addEnvelope(events, "application/x-pt-eventlog");
-
-// 		assert.strictEqual(envelopedEvents.length, 1);
-// 		assert.ok(envelopedEvents[0].includes('\\n'));
-// 	});
 
 	test('К событию в конверте добавляется xml-событие из журнала Windows', async () => {
 		const events =
@@ -115,7 +42,7 @@ suite('Enveloper', () => {
   </EventData>
   </Event>`;
 
-		const envelopedEvents = await Enveloper.addEnvelope(events, "application/x-pt-eventlog");
+		const envelopedEvents = Enveloper.addEnvelope(events, "application/x-pt-eventlog");
 
 		assert.strictEqual(envelopedEvents.length, 2);
 		const json1 = JSON.parse(envelopedEvents[0]);
@@ -235,7 +162,7 @@ suite('Enveloper', () => {
 </Event>
 `;
 
-		const envelopedEvents = await Enveloper.addEnvelope(xmlEvent, "application/x-pt-eventlog");
+		const envelopedEvents = Enveloper.addEnvelope(xmlEvent, "application/x-pt-eventlog");
 
 		assert.strictEqual(envelopedEvents.length, 3);
 		const envelopedEvent = JSON.parse(envelopedEvents[0]);
@@ -284,7 +211,7 @@ suite('Enveloper', () => {
 </EventData>
 </Event>`;
 
-		const envelopedEvents = await Enveloper.addEnvelope(xmlEvent, "application/x-pt-eventlog");
+		const envelopedEvents = Enveloper.addEnvelope(xmlEvent, "application/x-pt-eventlog");
 
 		assert.strictEqual(envelopedEvents.length, 1);
 		const envelopedEvent = JSON.parse(envelopedEvents[0]);
@@ -333,7 +260,7 @@ suite('Enveloper', () => {
 </EventData>
 </Event>`;
 
-		const envelopedEvents = await Enveloper.addEnvelope(xmlEvent, "application/x-pt-eventlog");
+		const envelopedEvents = Enveloper.addEnvelope(xmlEvent, "application/x-pt-eventlog");
 		assert.strictEqual(envelopedEvents.length, 1);
 
 		const envelopedEvent = JSON.parse(envelopedEvents[0]);
@@ -426,7 +353,7 @@ suite('Enveloper', () => {
 </EventData>
 </Event>`;
 
-		const jsonEvent = Enveloper.сonvertEventLogXmlRawEventsToJson(xmlEvent);
+		const jsonEvent = Enveloper.convertEventLogXmlRawEventsToJson(xmlEvent);
 
 		assert.ok(jsonEvent);
 		// assert.ok(jsonEvent.Event);
@@ -482,7 +409,7 @@ suite('Enveloper', () => {
 </EventData>
 </Event>`;
 
-		const jsonEvent = Enveloper.сonvertEventLogXmlRawEventsToJson(xmlEvent);
+		const jsonEvent = Enveloper.convertEventLogXmlRawEventsToJson(xmlEvent);
 
 		assert.ok(jsonEvent);
 		// assert.ok(jsonEvent.Event);

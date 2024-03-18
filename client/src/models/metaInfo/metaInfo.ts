@@ -547,7 +547,7 @@ export class MetaInfo {
 	private Usecases: string[];
 	private References: string[];
 	private Falsepositives: string[];
-	private Improvements: string[] = [];
+	private Improvements: string[];
 
 	private DataSources: DataSource[] = [];
 	private ATTACK: Attack[] = [];

@@ -21,6 +21,7 @@ import { ShowTestResultsDiffCommand } from './showTestResultsDiffCommand';
 import { RunIntegrationTestsCommand } from './runIntegrationTestsCommand';
 import { NormalizeRawEventsCommand } from './normalizeRawEventsCommand';
 import { GetExpectedEventCommand } from './getExpectEventCommand';
+import { StringHelper } from '../../helpers/stringHelper';
 
 export class IntegrationTestEditorViewProvider {
 
@@ -317,7 +318,8 @@ export class IntegrationTestEditorViewProvider {
 			}
 
 			case 'addEnvelope': {
-				const rawEvents = message?.rawEvents as string;
+				let rawEvents = message?.rawEvents as string;
+				rawEvents = StringHelper.replaceIrregularSymbols(rawEvents);
 				const mimeType = message?.mimeType as EventMimeType;
 
 				return vscode.window.withProgress({
@@ -508,11 +510,10 @@ export class IntegrationTestEditorViewProvider {
 		}
 	}
 
-	public async addEnvelope(rawEvents: string, mimeType: EventMimeType) {
-
+	public async addEnvelope(rawEvents: string, mimeType: EventMimeType): Promise<void> {
 		let envelopedRawEventsString: string;
 		try {
-			const envelopedEvents = await Enveloper.addEnvelope(rawEvents, mimeType);
+			const envelopedEvents = Enveloper.addEnvelope(rawEvents, mimeType);
 			envelopedRawEventsString = envelopedEvents.join(IntegrationTestEditorViewProvider.TEXTAREA_END_OF_LINE);
 		}
 		catch (error) {
@@ -520,10 +521,7 @@ export class IntegrationTestEditorViewProvider {
 			return;
 		}
 
-		this._view.webview.postMessage({
-			'command': 'updateRawEvents',
-			'rawEvents': envelopedRawEventsString
-		});
+		await this.updateCurrentTestRawEvent(envelopedRawEventsString);
 	}
 
 	async saveTest(message: any): Promise<IntegrationTest> {
@@ -549,6 +547,13 @@ export class IntegrationTestEditorViewProvider {
 			'command': 'updateTestCode',
 			'newTestCode': newTestCode,
 			'testNumber': testNumber
+		});
+	}
+
+	public async updateCurrentTestRawEvent(rawEvents: string): Promise<boolean> {
+		return this._view.webview.postMessage({
+			'command': 'updateRawEvents',
+			'rawEvents': rawEvents
 		});
 	}
 

@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { Configuration } from '../../models/configuration';
 import { YamlHelper } from '../../helpers/yamlHelper';
 import { DialogHelper } from '../../helpers/dialogHelper';
+import { TableView } from '../tableListsEditor/commands/tableListCommandBase';
 
 export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEditorProvider {
 
@@ -109,7 +110,7 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 			switch (e.type) {
 			case 'update_file':
 				{
-					const data = YamlHelper.parse(document.getText());
+					const data : TableView = YamlHelper.parse(document.getText());
 					const yaml = YamlHelper.parse(YamlHelper.jsonToYaml(e.json));
 
 					if(yaml.loc.length != 0){
