@@ -10,6 +10,17 @@ let currentRowIndex = null;
 
     var addNewLOCButton = document.getElementById("add-loc-value-button");
     var addNewPTButton = document.getElementById("add-pt-value-button");
+    var updateFileButton = document.getElementById("update-file-button");
+    var highlightErrorsButton = document.getElementById("highlight-errors-button");
+
+    highlightErrorsButton.disabled = false;
+    updateFileButton.disabled = true;
+
+    addNewLOCButton.onclick = () => {
+        vscode.postMessage({
+            type: 'add_loc'
+        });
+    }; 
 
     addNewLOCButton.onclick = () => {
         vscode.postMessage({
@@ -23,15 +34,22 @@ let currentRowIndex = null;
         });
     };
 
+    highlightErrorsButton.onclick = () => {
+        HighlightErrors();
+    }; 
 
-	var values = [];
+    var fields = null;
     const loc_grid = document.getElementById("loc-defs");
     const pt_grid = document.getElementById("pt-defs");
     initEditableDataGrid(loc_grid);
     initEditableDataGrid(pt_grid);
-    vscode.postMessage({
-        type: 'refresh'
-    });
+    if (checkTable()){
+        var updateFileButton = document.getElementById("update-file-button");
+        updateFileButton.disabled = false;
+        vscode.postMessage({
+            type: 'refresh'
+        });
+    }
 
     function initEditableDataGrid(grid) {
         grid.oncontextmenu = cellRightClick;
@@ -83,11 +101,12 @@ let currentRowIndex = null;
                 syncCellChanges(cell);
                 unsetCellEditable(cell);
             }
-            else {
-                if ((e.ctrlKey || e.metaKey) && e.key === "s") {
-                  syncCellChanges(cell);
-                  unsetCellEditable(cell);
-               }
+            if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+                syncCellChanges(cell);
+                unsetCellEditable(cell);
+            }
+            if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+                e.preventDefault();
             }
         }
     }
@@ -95,11 +114,32 @@ let currentRowIndex = null;
     // Make a given cell editable
     function setCellEditable(cell) {
         cell.setAttribute("contenteditable", "true");
+        selectCellText(cell);
     }
 
     // Make a given cell non-editable
     function unsetCellEditable(cell) {
         cell.setAttribute("contenteditable", "false");
+        deselectCellText();
+    }
+
+    // Select the text of an editable cell
+    function selectCellText(cell) {
+        const selection = window.getSelection();
+        if (selection) {
+            const range = document.createRange();
+            range.selectNodeContents(cell);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+    }
+
+    // Deselect the text of a cell that was previously editable
+    function deselectCellText() {
+        const selection = window.getSelection();
+        if (selection) {
+            selection.removeAllRanges();
+        }
     }
 
     // Syncs changes made in an editable cell with the
@@ -161,6 +201,7 @@ let currentRowIndex = null;
             case 'add_loc':
 			{
 				const obj = {};
+                const values = getFields(fields);
 				for (var i = 0; i < values.length; i++){
 					obj[values[i]] = "-"
 				}
@@ -172,6 +213,7 @@ let currentRowIndex = null;
 			case 'add_pt':
 			{
 				const obj = {};
+                const values = getFields(fields);
 				for (var i = 0; i < values.length; i++){
 					obj[values[i]] = "-"
 				}
@@ -183,28 +225,196 @@ let currentRowIndex = null;
         }
     });
 
-    function refreshResxData() {
+    function getType(col_name) {
+        return fields[col_name].type;
+    }
+
+    function checkNullableError(key, value) {
+        return !fields[key].nullable && value === null;
+    }
+
+    function checkRegEx(pattern) {
+        var isValid = true;
+        try {
+            new RegExp(pattern);
+        } catch(e) {
+            isValid = false;
+        }
+        return isValid;
+    }
+
+    function checkFields(row) {
+        var status = true;
+        for (const [key, value] of Object.entries(row)) {
+            if (checkNullableError(key, value)){
+                const msg = `Null value for not nullable column ${key}: '${value}'`;
+                sendError(msg);
+                status = false;
+                break;
+            }
+            var col_type = getType(key)
+            switch (col_type) {
+                case 'Number':
+                  if (isNaN(value)){
+                    const msg = `Invalid value for type ${col_type} in column ${key}: '${value}'`;
+                    sendError(msg);
+                    status = false;
+                  }
+                  break;
+                case 'Regex':
+                    if (!checkRegEx(value)){
+                        const msg = `Invalid value for type ${col_type} in column ${key}: '${value}'`;
+                        sendError(msg);
+                        status = false;
+                    }
+                  break;
+                default:
+                break;
+              }
+            if (!status){
+                break;
+            }
+        }
+        return status;
+    }
+
+    function checkTable(){
+        //try{
+            var status = true;
+            var obj = {'loc':[], 'pt': [],};
+            for (var i = 0; i < loc_grid.rowsData.length; i++) {
+                Object.keys(loc_grid.rowsData[i]).forEach(function(key, index) {
+                    if(loc_grid.rowsData[i][key] === '') {loc_grid.rowsData[i][key] = null}
+                });
+                //loc_grid._rowElements[i+1]._cellElements.forEach((cell) => cell.style.backgroundColor = "#381010");
+                if (!checkFields(loc_grid.rowsData[i])){status = false;}
+                //loc_grid._rowElements[i+1]._cellElements.forEach((cell) => cell.style.backgroundColor = "");
+                //obj['loc'].push(loc_grid.rowsData[i]);
+            }
+                
+            for (var i = 0; i < pt_grid.rowsData.length; i++) {
+                Object.keys(pt_grid.rowsData[i]).forEach(function(key, index) {
+                    if(pt_grid.rowsData[i][key] === '') {pt_grid.rowsData[i][key] = null}
+                });
+                //pt_grid._rowElements[i+1]._cellElements.forEach((cell) => cell.style.backgroundColor = "#381010");
+                if (!checkFields(pt_grid.rowsData[i])){status = false;}
+                //pt_grid._rowElements[i+1]._cellElements.forEach((cell) => cell.style.backgroundColor = "");
+                //obj['pt'].push(pt_grid.rowsData[i]);
+            }
+
+            return status;
+        //}
+        //catch(e) {
+        //    return false;
+        //} 
+    }
+
+    function refreshResxData(highlight=false) {
+        var updateFileButton = document.getElementById("update-file-button");
+        updateFileButton.disabled = false;
+
         var obj = {'loc':[], 'pt': [],};
         for (var i = 0; i < loc_grid.rowsData.length; i++) {
+            Object.keys(loc_grid.rowsData[i]).forEach(function(key, index) {
+                if(loc_grid.rowsData[i][key] === '') {loc_grid.rowsData[i][key] = null}
+                if (loc_grid.rowsData[i][key] !== null && !isNaN(loc_grid.rowsData[i][key])){
+                    loc_grid.rowsData[i][key] = Number(loc_grid.rowsData[i][key])
+                }
+            });
+        
+            if (!checkFields(loc_grid.rowsData[i]))
+            { 
+                updateFileButton.disabled = true;
+                if(highlight)
+                {loc_grid._rowElements[i+1]._cellElements.forEach((cell) => cell.style.backgroundColor = "#381010");}
+            }
+            else{
+                loc_grid._rowElements[i+1]._cellElements.forEach((cell) => cell.style.backgroundColor = "");
+            }
             obj['loc'].push(loc_grid.rowsData[i]);
         }
-		    
-		for (var i = 0; i < pt_grid.rowsData.length; i++) {
+            
+        for (var i = 0; i < pt_grid.rowsData.length; i++) {
+            Object.keys(pt_grid.rowsData[i]).forEach(function(key, index) {
+                if(pt_grid.rowsData[i][key] === '') {pt_grid.rowsData[i][key] = null}
+                if (pt_grid.rowsData[i][key] !== null && !isNaN(pt_grid.rowsData[i][key])){
+                    pt_grid.rowsData[i][key] = Number(pt_grid.rowsData[i][key])
+                    }
+            });
+            
+            if (!checkFields(pt_grid.rowsData[i]))
+            { 
+                updateFileButton.disabled = true;
+                if (highlight)
+                {pt_grid._rowElements[i+1]._cellElements.forEach((cell) => cell.style.backgroundColor = "#381010");}
+            }
+            else {
+                pt_grid._rowElements[i+1]._cellElements.forEach((cell) => cell.style.backgroundColor = "") 
+            }
             obj['pt'].push(pt_grid.rowsData[i]);
         }
 
         vscode.setState({ text: JSON.stringify(obj) });
+
+        if (!updateFileButton.disabled){
+            vscode.postMessage({
+                type: 'update_file',
+                json: JSON.stringify(obj)
+            });
+        }
+    }
+
+    function HighlightErrors() {
+        var obj = {'loc':[], 'pt': [],};
+        for (var i = 0; i < loc_grid.rowsData.length; i++) {
+            Object.keys(loc_grid.rowsData[i]).forEach(function(key, index) {
+                if(loc_grid.rowsData[i][key] === '') {loc_grid.rowsData[i][key] = null}
+                if (loc_grid.rowsData[i][key] !== null && !isNaN(loc_grid.rowsData[i][key])){
+                    loc_grid.rowsData[i][key] = Number(loc_grid.rowsData[i][key])
+                }
+            });
+        
+            if (!checkFields(loc_grid.rowsData[i])) { 
+                loc_grid._rowElements[i+1]._cellElements.forEach((cell) => cell.style.backgroundColor = "#381010");
+            }
+            else{
+                loc_grid._rowElements[i+1]._cellElements.forEach((cell) => cell.style.backgroundColor = "");
+            }
+        }
+            
+        for (var i = 0; i < pt_grid.rowsData.length; i++) {
+            Object.keys(pt_grid.rowsData[i]).forEach(function(key, index) {
+                if(pt_grid.rowsData[i][key] === '') {pt_grid.rowsData[i][key] = null}
+                if (pt_grid.rowsData[i][key] !== null && !isNaN(pt_grid.rowsData[i][key])){
+                    pt_grid.rowsData[i][key] = Number(pt_grid.rowsData[i][key])
+                    }
+            });
+            if (!checkFields(pt_grid.rowsData[i])) { 
+                pt_grid._rowElements[i+1]._cellElements.forEach((cell) => cell.style.backgroundColor = "#381010");
+            }
+            else {
+                pt_grid._rowElements[i+1]._cellElements.forEach((cell) => cell.style.backgroundColor = "") 
+            }
+        }
+    }
+
+    function sendError(message) {
         vscode.postMessage({
-            type: 'update_file',
-            json: JSON.stringify(obj)
+            type: 'error',
+            message: message
         });
     }
 
-    function sendLog(message) {
-        vscode.postMessage({
-            type: 'log',
-            message: message
-        });
+    function getFields(object) {
+        return Object.keys(object).filter((f) => (f != 'complex_key'));
+    }
+
+    function getDict(array){
+        var temp = {};
+        for (var o of array) {
+            temp = {...temp, ...o};
+        }
+        return temp;
     }
 
     function updateContent(/** @type {string} **/ text) {
@@ -223,7 +433,7 @@ let currentRowIndex = null;
                 return;
             }
 
-			values = json['fields']
+            fields = getDict(json['fields']);
 
             for (const node in json['loc']  || []) {
                 if (node) {

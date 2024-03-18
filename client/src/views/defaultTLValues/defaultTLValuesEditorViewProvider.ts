@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-
+import * as os from 'os';
 import { Configuration } from '../../models/configuration';
 import { YamlHelper } from '../../helpers/yamlHelper';
 import { DialogHelper } from '../../helpers/dialogHelper';
@@ -85,7 +85,7 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 		async function updateWebview() {
 			const json = JSON.parse(YamlHelper.yamlToJson(document.getText()));
 
-			const data = {'fields': getFields(json), 'loc':[], 'pt': [],};
+			const data = {'fields': json['fields'].filter(f => f !== "complex_key"), 'loc':[], 'pt': [],};
 
 			data['loc'] = json['defaults']['LOC'];
 			data['pt']  = json['defaults']['PT'];
@@ -114,23 +114,31 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 					const yaml = YamlHelper.parse(YamlHelper.jsonToYaml(e.json));
 
 					if(yaml.loc.length != 0){
-						data.defaults['LOC'] = yaml['loc'];
+						// это костыль чтобы сохранить разные отступы 
+						// в дефлотных значениях и остальном документе
+						data.defaults['LOC'] = '<LOC>';
 					} else {
 						// TODO: проверить, что LOC не пусто
 						delete data.defaults.LOC;
 					}
 					if (yaml.pt.length != 0) {
-						data['defaults']['PT'] = yaml['pt'];
+						// это костыль чтобы сохранить разные отступы 
+						// в дефлотных значениях и остальном документе
+						data['defaults']['PT'] = '<PT>';
 					} else {
 						// TODO: проверить, что PT не пусто
 						delete data.defaults.PT;
 					}
-					let updatedTableFileContent = YamlHelper.stringify(data);
-					// Пустые значения типа value: при сериализации превращаются в value: null из-за чего изменяется всё заполнение ТС.
-					// Хорошо это видно по ТС Windows_Hacktools.
-					// Чтобы этого избежать подпираем костыликом и меняем нулы на пустоту.
-					// TODO: сделать красиво
-					updatedTableFileContent = updatedTableFileContent.replace(/: null$/gm, ": ");
+					let updatedTableFileContent =  YamlHelper.stringify(data, {'!!null': 'empty'});
+					
+					// это костыль чтобы сохранить разные отступы 
+					// в дефлотных значениях и остальном документе
+					const margin = '    ';
+					const loc = YamlHelper.stringify(yaml['loc'], {'!!null': 'empty'}).split(os.EOL).filter(Boolean).map((l) => `${margin}${l}`).join(os.EOL);
+					updatedTableFileContent = updatedTableFileContent.replace('<LOC>', `${os.EOL}${loc}`);
+					const pt = YamlHelper.stringify(yaml['pt'], {'!!null': 'empty'}).split(os.EOL).filter(Boolean).map((l) => `${margin}${l}`).join(os.EOL);
+					updatedTableFileContent = updatedTableFileContent.replace('<PT>', `${os.EOL}${pt}`);
+					
 					this.updateTextDocument(document, updatedTableFileContent);
 					return;
 				}
@@ -197,6 +205,12 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 					  />
 					</head>
 					<body>
+					<vscode-button id="update-file-button">
+						Update file
+					</vscode-button>&nbsp;&nbsp;&nbsp;<vscode-button id="highlight-errors-button">
+						Highlight errors
+					</vscode-button>
+					  <hr>
 					  <h2>LOC:</h2>
 					  <vscode-button id="add-loc-value-button">
 						Add new LOC row
