@@ -2,6 +2,8 @@
 	"xp.views.knowledgebaseTree.title": "Дерево объектов",
 	"xp.views.knowledgebaseTree.refreshContentTreeCommand": "Обновить",
 	"xp.views.knowledgebaseTree.openKnowledgebaseCommand": "Открыть базу знаний",
+	"xp.views.knowledgebaseTree.correlateEventsCommand": "Коррелировать события",
+
 	"xp.views.knowledgebaseTree.createPackageCommand": "Создать пакет экспертизы",
 	"xp.views.knowledgebaseTree.createCorrelationCommand": "Создать правило корреляции",
 	"xp.views.knowledgebaseTree.createEnrichmentCommand": "Создать правило обогащения",
@@ -18,18 +20,17 @@
 	"xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Интеграционные тесты",
 	"xp.views.knowledgebaseTree.showMetainfoCommand": "Метаинформация",
 	"xp.views.knowledgebaseTree.showLocalizationCommand": "Локализации",
-	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Корреляция событий",
 	"xp.views.knowledgebaseTree.showTableDefaultValuesCommand": "Значения по умолчанию",
 
 	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все правила и списки",
 	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Компилировать все правила локализации",
 	"xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Компилировать все правила нормализации",
+	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Коррелировать событий из лог-файлов",
 	
 	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Компилировать все файлы .wld",
 
 	"xp.views.knowledgebaseTree.importKbFileCommand": "Импортировать из файла .kb",
 	"xp.views.knowledgebaseTree.exportKbFileCommand": "Экспортировать в файл .kb",
-	"xp.views.knowledgebaseTree.correlateEventsCommand": "Запустить корреляцию",
 
 	"xp.views.knowledgebaseTree.defaultContent": "Это расширение помогает разрабатывать правила для обработки событий на языке eXtraction and Processing (XP).\nЧтобы начать, [откройте базу знаний](command:SiemContentEditor.openKnowledgebaseCommand) или создайте новую.\nПриятной работы!",
 

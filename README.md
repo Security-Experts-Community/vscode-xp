@@ -6,7 +6,7 @@
 
 Настоящее расширение разработано [Dmitry Fedosov](https://github.com/DmitryOffsec) и [контрибьютерами](https://github.com/Security-Experts-Community/vscode-xp/graphs/contributors), оно позволяет разрабатывать и тестировать правила в VSCode и VSCodium, а также публиковать их в необходимый для вашего продукта формат.
 
-Руководство по работе с расширением: [https://vscode-xp.readthedocs.io/](https://vscode-xp.readthedocs.io/)
+Руководство по работе с расширением (частично устарела, идёт процесс актуализации): [https://vscode-xp.readthedocs.io/](https://vscode-xp.readthedocs.io/)
 
 ## Основные возможности
 
