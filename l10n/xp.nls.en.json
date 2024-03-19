@@ -3,10 +3,15 @@
     "No": "No",
     "Save": "Save",
     "NoPathSelected": "No path selected",
-    "TheKnowledgeBaseIsNotInitialized": "The knowledge base is not initialized. Create required folders for {0} format?",
     "Create": "Create",
 
     "NameOfNewRule": "Name of the new rule",
+
+    "View.ObjectTree.Message.TheKnowledgeBaseIsNotInitialized": "The knowledge base is not initialized. Create required folders for {0} format?",
+    "View.ObjectTree.Message.Create": "Create",
+    "View.ObjectTree.Message.Cancel": "Cancel",
+    "View.ObjectTree.Message.TheCurrentKbFormatEDRDoesNotMatchTargetSIEM": "The knowledge base format (EDR) does not match the current target product (SIEM). Incorrect configuration will prevent the package from being built. Choose another product?",
+    "View.ObjectTree.Message.TheCurrentKbFormatSIEMDoesNotMatchTargetEDR": "The knowledge base format (SIEM) does not match the current target product (EDR). Incorrect configuration will prevent the package from being built. Choose another product?",
 
     "View.IntegrationTests.Title": "{0} tests",
     "View.IntegrationTests.Test": "Test", 

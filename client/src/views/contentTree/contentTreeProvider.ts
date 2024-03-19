@@ -538,9 +538,9 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		
 		if(!actualContentType){
 			const answer = await DialogHelper.showInfo(
-				this._config.getMessage("TheKnowledgeBaseIsNotInitialized", configContentType),
-				this._config.getMessage("Yes"),
-				this._config.getMessage("No")
+				this._config.getMessage("View.ObjectTree.Message.TheKnowledgeBaseIsNotInitialized", configContentType),
+				this._config.getMessage("View.ObjectTree.Message.Create"),
+				this._config.getMessage("View.ObjectTree.Message.Cancel"),
 			);
 			
 			if (answer === this._config.getMessage("Yes")) {		
@@ -556,7 +556,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 
 		if(actualContentType == ContentType.EDR && configContentType == ContentType.SIEM) {
 			const answer = await DialogHelper.showInfo(
-				"Формат базы знаний (EDR) не соответствует текущему целевому продукту (SIEM). Выбрать другой продукт? Неправильная настройка не позволит собрать пакет",
+				this._config.getMessage("View.ObjectTree.Message.TheCurrentKbFormatEDRDoesNotMatchTargetSIEM"),
 				this._config.getMessage("Yes"),
 				this._config.getMessage("No")
 			);
@@ -568,7 +568,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 
 		if(actualContentType == ContentType.SIEM && configContentType == ContentType.EDR) {
 			const answer = await DialogHelper.showInfo(
-				"Формат базы знаний (SIEM) не соответствует текущему целевому продукту (EDR). Выбрать другой продукт? Неправильная настройка не позволит собрать пакет",
+				this._config.getMessage("View.ObjectTree.Message.TheCurrentKbFormatSIEMDoesNotMatchTargetEDR"),
 				this._config.getMessage("Yes"),
 				this._config.getMessage("No")
 			);
