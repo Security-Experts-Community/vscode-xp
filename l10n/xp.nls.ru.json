@@ -3,7 +3,7 @@
     "No": "Нет",
     "Save": "Сохранить",
     "NoPathSelected": "Путь не выбран",
-    "TheKnowledgeBaseIsNotInitialized": "База знаний не проинициализирована. Создать необходимые папки для формата {0}?",
+    "TheKnowledgeBaseIsNotInitialized": "База знаний не найдена. Создать стандартные папки для продукта {0}?",
     "Create": "Создать",
 
     "NameOfNewRule": "Название нового правила",

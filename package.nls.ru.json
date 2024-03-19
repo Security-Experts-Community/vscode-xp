@@ -1,6 +1,6 @@
 {
 	"xp.views.knowledgebaseTree.title": "Дерево объектов",
-	"xp.views.knowledgebaseTree.refreshContentTreeCommand": "Обновить дерево",
+	"xp.views.knowledgebaseTree.refreshContentTreeCommand": "Обновить",
 	"xp.views.knowledgebaseTree.openKnowledgebaseCommand": "Открыть базу знаний",
 	"xp.views.knowledgebaseTree.createPackageCommand": "Создать пакет экспертизы",
 	"xp.views.knowledgebaseTree.createCorrelationCommand": "Создать правило корреляции",
@@ -13,25 +13,25 @@
 	"xp.views.knowledgebaseTree.verifyFolderCommand": "Проверить объекты",
 	"xp.views.knowledgebaseTree.deleteCommand": "Удалить",
 	"xp.views.knowledgebaseTree.renameCommand": "Переименовать",
-	"xp.views.knowledgebaseTree.duplicateCommand": "Дублировать",
+	"xp.views.knowledgebaseTree.duplicateCommand": "Создать копию",
 
 	"xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Интеграционные тесты",
 	"xp.views.knowledgebaseTree.showMetainfoCommand": "Метаинформация",
 	"xp.views.knowledgebaseTree.showLocalizationCommand": "Локализации",
-	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Коррелировать лог-файлы",
+	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Корреляция событий",
 	"xp.views.knowledgebaseTree.showTableDefaultValuesCommand": "Значения по умолчанию",
 
-	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все графы",
-	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Компилировать все локализации",
-	"xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Компилировать все нормализации",
+	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все правила и списки",
+	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Компилировать все правила локализации",
+	"xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Компилировать все правила нормализации",
 	
-	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Компилировать wld-файлы",
+	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Компилировать все файлы .wld",
 
 	"xp.views.knowledgebaseTree.importKbFileCommand": "Импортировать из файла .kb",
 	"xp.views.knowledgebaseTree.exportKbFileCommand": "Экспортировать в файл .kb",
-	"xp.views.knowledgebaseTree.correlateEventsCommand": "Коррелировать события",
+	"xp.views.knowledgebaseTree.correlateEventsCommand": "Запустить корреляцию",
 
-	"xp.views.knowledgebaseTree.defaultContent": "Добро пожаловать! Это расширение поможет в разработке правил на языке eXtraction and Processing (XP). Чтобы начать, откройте базу знаний.\n[Открыть базу знаний](command:SiemContentEditor.openKnowledgebaseCommand)\nПриятной работы!",
+	"xp.views.knowledgebaseTree.defaultContent": "Это расширение помогает разрабатывать правила для обработки событий на языке eXtraction and Processing (XP).\nЧтобы начать, [откройте базу знаний](command:SiemContentEditor.openKnowledgebaseCommand) или создайте новую.\nПриятной работы!",
 
 	"xp.views.modularTestsListView.title": "Модульные тесты",
 	"xp.views.modularTestsListView.defaultContent": "Модульные тесты отсутствуют"
