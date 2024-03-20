@@ -10,6 +10,8 @@
     "View.ObjectTree.Message.TheKnowledgeBaseIsNotInitialized": "The knowledge base is not initialized. Create required folders for {0} format?",
     "View.ObjectTree.Message.Create": "Create",
     "View.ObjectTree.Message.Cancel": "Cancel",
+    "View.ObjectTree.Message.SelectTargetProduct" : "Select target product",
+    "View.ObjectTree.Message.CurrentTargetProduct" : "Target product {0}",
     "View.ObjectTree.Message.TheCurrentKbFormatEDRDoesNotMatchTargetSIEM": "The knowledge base format (EDR) does not match the current target product (SIEM). Incorrect configuration will prevent the package from being built. Choose another product?",
     "View.ObjectTree.Message.TheCurrentKbFormatSIEMDoesNotMatchTargetEDR": "The knowledge base format (SIEM) does not match the current target product (EDR). Incorrect configuration will prevent the package from being built. Choose another product?",
 
