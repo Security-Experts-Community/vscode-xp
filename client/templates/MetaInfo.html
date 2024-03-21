@@ -206,7 +206,8 @@
 							<input name="techniques" type="text" value="{{.}}" title="{{.}}" required> -->
 						<div class="dropdown-group">
 							<vscode-dropdown name="tactic" value="{{Tactic}}" aria-required="true" class="vscode-dropdown">
-  								<vscode-option>reconnaissance</vscode-option>
+								<!-- Enterprise MITRE -->
+								<vscode-option>reconnaissance</vscode-option>
 								<vscode-option>resource-development</vscode-option>
 								<vscode-option>initial-access</vscode-option>
 								<vscode-option>execution</vscode-option>
@@ -219,7 +220,11 @@
 								<vscode-option>collection</vscode-option>
 								<vscode-option>command-and-control</vscode-option>
 								<vscode-option>exfiltration</vscode-option>
-								<vscode-option>impact</vscode-option>
+
+								<!-- ICS MITRE -->
+								<vscode-option>evasion</vscode-option>
+								<vscode-option>inhibit-response-function</vscode-option>
+								<vscode-option>impair-process-control</vscode-option>
 							</vscode-dropdown>
 							<input name="techniques" type="text" value="{{.}}" title="{{.}}" required>
 						</div>
