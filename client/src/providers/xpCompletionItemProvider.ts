@@ -53,7 +53,7 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 			autocompleteSignatures = autocompleteSignatures.concat(taxonomySignatures);
 		}
 		catch (error) {
-			DialogHelper.showError(`Не удалось считать описания полей таксономии. Их автодополнение работать не будет.`, error);
+			Log.warn(`Не удалось считать описания полей таксономии. Их автодополнение работать не будет.`, error);
 		}
 
 		try {
@@ -69,7 +69,6 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 				// общие для контента
 				"event", "key",
 				"query", "from", "qhandler", "limit", "skip",
-				"filter",
 
 				// агрегация
 				"aggregate",

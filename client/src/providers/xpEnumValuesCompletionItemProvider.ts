@@ -35,7 +35,7 @@ export class XpEnumValuesCompletionItemProvider implements vscode.CompletionItem
 			}
 		}
 		catch (error) {
-			DialogHelper.showError(`Не удалось считать описания полей таксономии. Автодополнение значений enum работать не будет.`, error);
+			Log.warn(`Не удалось считать описания полей таксономии. Автодополнение значений enum работать не будет.`, error);
 		}
 
 		return new XpEnumValuesCompletionItemProvider(taxonomySignatures);

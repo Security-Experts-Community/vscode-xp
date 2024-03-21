@@ -14,6 +14,7 @@ import { SIEMPathHelper } from './locator/SIEMPathLocator';
 import { FileDiagnostics } from './siemj/siemJOutputParser';
 import { LocalizationService } from '../l10n/localizationService';
 import { Origin } from './content/originsManager';
+import { DialogHelper } from '../helpers/dialogHelper';
 
 export type EncodingType = "windows-1251" | "utf-8" | "utf-16"
 
@@ -613,13 +614,13 @@ export class Configuration {
 
 		if (!outputDirectoryPath || outputDirectoryPath === ""){
 			throw new FileSystemException(
-				`Выходная директория не задана. Задайте путь к [ней](command:workbench.action.openSettings?["xpConfig.outputDirectoryPath"])`,
+				`Выходная директория не задана. Задайте путь к [ней]${this.OUTPUT_DIR_SHOW_SETTING_COMMAND}`,
 				outputDirectoryPath);
 		}
 
 		if (!fs.existsSync(outputDirectoryPath)){
 			throw new FileSystemException(
-				`Выходная директория не найдена по пути ${outputDirectoryPath}. Проверьте путь к [ней](command:workbench.action.openSettings?["xpConfig.outputDirectoryPath"])`,
+				`Выходная директория не найдена по пути ${outputDirectoryPath}. Проверьте путь к [ней]${this.OUTPUT_DIR_SHOW_SETTING_COMMAND}`,
 				outputDirectoryPath);
 		}
 
@@ -645,12 +646,48 @@ export class Configuration {
 	private checkKbtToolPath(name : string, fullPath : string) : void {
 		if (!fullPath || fullPath === "") {
 			throw new FileSystemException(
-				`Путь к '${name}' не найден. Проверьте [настройки](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"])`,
+				`Путь к '${name}' не найден. Проверьте [настройки]${this.KBT_BASE_DIR_SHOW_SETTING_COMMAND}`,
 				fullPath);
 		}
 
 		if (!fs.existsSync(fullPath)) {
 			throw FileSystemException.kbtToolNotFoundException(fullPath);
+		}
+	}
+
+	public checkUserSetting() : void {
+		const extensionConfig = this.getConfiguration();
+
+		// Порядок обратный по приоритету, так как вторая ошибка появится выше чем первая.
+		this.checkOutputSetting(extensionConfig);
+		this.checkKbtSetting(extensionConfig);
+	}
+
+	private checkKbtSetting(extensionConfig: vscode.WorkspaceConfiguration) {
+		const kbtBasePath = extensionConfig.get<string>("kbtBaseDirectory");
+		
+		if (!kbtBasePath){
+			DialogHelper.showError(`Путь к XP Knowledge Base Toolkit (KBT) не задан. ${this.KBT_CONFIG_INFO}`);
+			return;
+		}
+
+		if (!fs.existsSync(kbtBasePath)){
+			DialogHelper.showError(`Директория к XP Knowledge Base Toolkit (KBT) не найдена по пути ${kbtBasePath}. ${this.KBT_CONFIG_INFO}`);
+			return;
+		}
+	}
+
+	private checkOutputSetting(extensionConfig: vscode.WorkspaceConfiguration) {
+		const outputDirectoryPath = extensionConfig.get<string>("outputDirectoryPath");
+
+		if (!outputDirectoryPath){
+			DialogHelper.showError(`Выходная директория не задана. Задайте её [в настройках]${this.OUTPUT_DIR_SHOW_SETTING_COMMAND}`);
+			return;
+		}
+
+		if (!fs.existsSync(outputDirectoryPath)){
+			DialogHelper.showError(`Выходная директория не найдена по пути ${outputDirectoryPath}. Актуализируйте путь к выходной директории [в настройках]${this.OUTPUT_DIR_SHOW_SETTING_COMMAND}`);
+			return;
 		}
 	}
 
@@ -674,9 +711,13 @@ export class Configuration {
 	private _diagnosticCollection: vscode.DiagnosticCollection;
 	private _localizationService: LocalizationService;
 	
-
 	private CONFIGURATION_PREFIX = "xpConfig";
 	private BUILD_TOOLS_DIR_NAME = "build-tools";
+
+	private KBT_BASE_DIR_SHOW_SETTING_COMMAND = `(command:workbench.action.openSettings?["${this.CONFIGURATION_PREFIX}.kbtBaseDirectory"])`;
+	private KBT_CONFIG_INFO = `Загрузите актуальную версию [отсюда](https://github.com/vxcontrol/xp-kbt/releases), распакуйте архив и укажите [путь в настройках]${this.KBT_BASE_DIR_SHOW_SETTING_COMMAND}`;
+
+	private OUTPUT_DIR_SHOW_SETTING_COMMAND = `(command:workbench.action.openSettings?["${this.CONFIGURATION_PREFIX}.outputDirectoryPath"])`
 
 	public static readonly SIEMJ_CONFIG_FILENAME = "siemj.conf";	
 }

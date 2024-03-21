@@ -34,9 +34,7 @@ import { XpEnumValuesCompletionItemProvider } from './providers/xpEnumValuesComp
 import { LogLevel, Logger } from './logger';
 import { RetroCorrelationViewController } from './views/retroCorrelation/retroCorrelationViewProvider';
 import { XpHoverProvider } from './providers/xpHoverProvider';
-import { DialogHelper } from './helpers/dialogHelper';
 import { OriginsManager } from './models/content/originsManager';
-import { VsCodeApiHelper } from './helpers/vsCodeApiHelper';
 import { OpenTableDefaultsCommand } from './views/contentTree/commands/openTableDefaultValuesCommand';
 import { Table } from './models/content/table';
 import { DefaultTLValuesEditorViewProvider } from './views/defaultTLValues/defaultTLValuesEditorViewProvider';
@@ -56,8 +54,9 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		} else {
 			Log.setLogLevel(LogLevel.Info);
 		}
-
+		
 		Log.info(`Начата активация расширения '${Configuration.getExtensionDisplayName()}'`);
+		config.checkUserSetting();
 
 		await OriginsManager.init(config);
 
@@ -299,11 +298,12 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		}
 
 		// Очистка директории выходных файлов. Нужна для сохранения консистентности нормализаций.
-		const baseOutputDirectory = config.getBaseOutputDirectoryPath();
-		if(fs.existsSync(baseOutputDirectory)) {
+		const extensionSettings = config.getConfiguration();
+		const outputDirectoryPath = extensionSettings.get<string>("outputDirectoryPath");
+		if(fs.existsSync(outputDirectoryPath)) {
 			try {
-				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(baseOutputDirectory);
-				Log.info(`Директория выходных файлов '${baseOutputDirectory}' была успешно очищена`);
+				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(outputDirectoryPath);
+				Log.info(`Директория выходных файлов '${outputDirectoryPath}' была успешно очищена`);
 			}
 			catch (error) {
 				Log.warn('Ошибка очистки файлов из выходной директории', error);

@@ -586,10 +586,38 @@
 	},
 	"Макросы": {
 		"prefix": [
+			"filter",
 			"filter::"
 		],
 		"body": [
 			"filter::${1|Vendors_Without_SID,LoginAttempt_Windows_Endpoint,Check_Profile,Bruteforce_Supported_Vendors,Bruteforce_Attempted_Vendors,AuthVPN,ProcessStart_Linux_Shell,ProcessStart_Linux_Service_Restart,ProcessStart_Linux_Service_Disable,Explicit_FileRead_Linux,FileCreate_Linux,FileModify_Linux,Start_VPN_session,Loopback_Address,External_Address,AD_LDAP_Query,MSSQL_Query,RegexWithoutSpecialChars,AnonymousAccount_Windows,ComputerAccount_Windows,NotFromCorrelator,FileCreate_Windows,LoginSuccessful_Windows,LoginSuccessful_Unix,LoginFailed_Windows,LoginFailed_Unix,OperatingSystem_UNIXLike,ProcessStart,ProcessStart_Linux,ProcessStart_Windows,ProcessStart_Windows_any,ProcessStart_Windows_cmd_meta,ProcessStart_Windows_commandline,SystemAccount_Windows,UserAccount_Windows,Check_Network_Whitelist|}()"
+		]
+	},
+	"Инструкция filter": {
+		"prefix": [
+			"filter"
+		],
+		"body": [
+			"    filter {",
+			"        ${0}",
+			"    }"
+		]
+	},
+	"Инструкция key": {
+		"prefix": [
+			"key:"
+		],
+		"body": [
+			"    key: ",
+			"        ${0}"
+		]
+	},
+	"Ключевое слово key": {
+		"prefix": [
+			"key"
+		],
+		"body": [
+			"key:"
 		]
 	},
 	"Пустое правило": {
