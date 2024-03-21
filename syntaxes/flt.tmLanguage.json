@@ -104,7 +104,7 @@
                     "begin": "",
                     "end": "(",
                     "match": "\\b(match|lower|append|regex|regex_match|length|string|join|exec_query|select_query_first|in_list|in_subnet|find_substr|substr|mod|div|number|number16|strip|coalesce|maybe_ipv[46]{1}|submessage)\\b"
-                }, 
+                },
                 {
                     "name": "meta.filter.call.xp",
                     "match": "\\b(filter)::([^\\(]*)",
