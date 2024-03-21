@@ -28,8 +28,13 @@
     "EDR",
     "XP",
     "xplang",
-    "MaxPatrol 10",
-    "MP 10"
+    "MaxPatrol",
+    "Max Patrol EDR",
+    "Max Patrol XDR",
+    "Max Patrol SIEM",
+    "MP 10",
+    "MP SIEM",
+    "MP EDR"
   ],
   "engines": {
     "vscode": "^1.75.0"
