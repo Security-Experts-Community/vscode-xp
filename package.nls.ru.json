@@ -18,7 +18,7 @@
 	"xp.views.knowledgebaseTree.duplicateCommand": "Создать копию",
 
 	"xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Интеграционные тесты",
-	"xp.views.knowledgebaseTree.showMetainfoCommand": "Метаинформация",
+	"xp.views.knowledgebaseTree.showMetainfoCommand": "Метаданные",
 	"xp.views.knowledgebaseTree.showLocalizationCommand": "Локализации",
 	"xp.views.knowledgebaseTree.showTableDefaultValuesCommand": "Значения по умолчанию",
 

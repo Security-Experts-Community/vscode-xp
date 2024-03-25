@@ -16,7 +16,7 @@
 		<!-- Common Panel -->
 		<div id="header">
 			<div id="navigation">
-				<input id="run_tests" class="run" name="full_test" type="button" value="&#9654;   {{Locale.RunAllTests}}  ">			
+				<input id="run_tests" class="run" name="full_test" type="button" value="{{Locale.RunAllTests}}  ">			
 				<input id="save_all_tests" class="save" type="button" value="{{Locale.SaveAll}}">
 			</div>
 			<!-- Tab links -->
@@ -116,7 +116,7 @@
 				<div class="manage_buttons">
 					<!-- Получить ожидаемое событие можно только при наличии нормализованных событий -->
 					{{#CanGetExpectedEvent}}
-						<input name="fast_test" type="button" value="&#9654;   {{Locale.GetExpectedEvent}}  ">
+						<input name="fast_test" type="button" value="{{Locale.GetExpectedEvent}}  ">
 					{{/CanGetExpectedEvent}}
 					<!-- Сравнить полученные результаты можно только если тест прошёл неуспешно -->
 					{{#IsFailed}}
@@ -731,7 +731,7 @@
 				normEvent.text('');
 				
 				const expect = $(`#${new_id} [name=expect]`);
-				expect.text("expect 1 {\"correlation_name\" : \"{{RuleName}}\"}");
+				expect.text("# test comment\ntable_list default\nexpect 1 {\"correlation_name\" : \"{{RuleName}}\"}");
 				expect.attr('id', 'expect' + new_id)
 
 				// Клонируем вкладку

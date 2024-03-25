@@ -18,7 +18,7 @@
 	"xp.views.knowledgebaseTree.duplicateCommand": "Duplicate",
 
 	"xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Integration tests",
-	"xp.views.knowledgebaseTree.showMetainfoCommand": "Meta information",
+	"xp.views.knowledgebaseTree.showMetainfoCommand": "Metadata",
 	"xp.views.knowledgebaseTree.showLocalizationCommand": "Localization",
 	"xp.views.knowledgebaseTree.showTableDefaultValuesCommand": "Edit defaults",
 

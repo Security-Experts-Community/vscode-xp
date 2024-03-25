@@ -100,11 +100,13 @@ export class MetainfoViewProvider {
 				KnowledgeHolders : this._config.getMessage("View.Metainfo.KnowledgeHolders"),
 				Created: this._config.getMessage("View.Metainfo.Created"),
 				Updated: this._config.getMessage("View.Metainfo.Updated"),
+				Id: this._config.getMessage("View.Metainfo.Id"),
 				Usecases: this._config.getMessage("View.Metainfo.Usecases"),
 				Falsepositives: this._config.getMessage("View.Metainfo.Falsepositives"),
 				Improvements: this._config.getMessage("View.Metainfo.Improvements"),
 				References: this._config.getMessage("View.Metainfo.References"),
 				DataSources: this._config.getMessage("View.Metainfo.DataSources"),
+				MITRE: this._config.getMessage("View.Metainfo.MITRE")
 			}
 		});
 		this._view.webview.html = metainfoHtml;

@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.13.13 (Pre-Release)
+
+- `table_list default` добавлен во всех шаблоны и добавляется при создании нового теста;
+- улучшена русская и английская локализация (special thanks @feelstacy, @eugzolotukhin).
+
 ## 3.13.12 (Pre-Release)
 
 - улучшена русская локализация;
