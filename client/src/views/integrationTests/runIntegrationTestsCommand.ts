@@ -7,8 +7,7 @@ import { RunIntegrationTestDialog } from '../runIntegrationDialog';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
 import { TestStatus } from '../../models/tests/testStatus';
-import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { ContentItemStatus, RuleBaseItem } from '../../models/content/ruleBaseItem';
+import { ContentItemStatus } from '../../models/content/ruleBaseItem';
 import { Log } from '../../extension';
 import { ContentTreeProvider } from '../contentTree/contentTreeProvider';
 
@@ -73,8 +72,7 @@ export class RunIntegrationTestsCommand extends Command {
 			} 
 
 			this.params.rule.setStatus(ContentItemStatus.Default);
-
-			vscode.window.showErrorMessage(`Все тесты не были пройдены. Также возможно наличие синтаксических ошибок в коде правила или его зависимостях`);
+			DialogHelper.showError(`Все тесты не были пройдены. Также возможно наличие синтаксических ошибок в коде правила или его зависимостях`);
 			ContentTreeProvider.refresh(this.params.rule);
 			return true;
 		});

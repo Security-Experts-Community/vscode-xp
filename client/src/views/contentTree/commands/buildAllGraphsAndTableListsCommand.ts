@@ -15,7 +15,7 @@ import { ViewCommand } from './viewCommand';
 /**
  * Команда выполняющая сборку всех графов: нормализации, агрегации, обогащения и корреляции.
  */
-export class BuildAllGraphCommand extends ViewCommand {
+export class BuildAllGraphsAndTableListsCommand extends ViewCommand {
 	constructor(private config: Configuration, private outputParser: SiemJOutputParser) {
 		super();
 	}

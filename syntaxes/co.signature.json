@@ -214,10 +214,17 @@
 			"Возвращает объединенные в одну строку элементы."
 		],
 		"examples" : [
+			"# Объединение полей в строку через разделитель |",
 			"subject.account.name = \"pushkin\"",
 			"object.process.cmdline = \"ipconfig\"",
 			"alert.key = join([lower(subject.account.name), (object.process.cmdline)], \"|\")",
-			"# pushkin|ipconfig"
+			"# pushkin|ipconfig",
+			" ",
+			"# Исключение пустых полей события с последующим объединением через разделитель |",
+			"# event_src.host = null",
+			"$list = remove(['a', event_src.host, 'c', event_src.host], null)",
+			"$datafield10 = join($list, '|')",
+			"# $datafield10 = 'a|c'"
 		]
 	},
 	{
@@ -865,9 +872,15 @@
 			"Возвращает список без указанных элементов."
 		],
 		"examples" : [
-			"$list = ['a', 'b', 'c', 'd']",
-			"remove($list, 'd')",
-			"# $list = ['a', 'b', 'c']"
+			"# Удаление элемента d",
+			"$list = ['a', 'd', 'c', 'd']",
+			"$list = remove($list, 'd')",
+			"# $list = ['a', 'c']",
+			"",
+			"# Удаление null-элементов",
+			"$list = ['a', null, 'c', null]",
+			"$list = remove($list, null)",
+			"$list = ['a', 'c']"
 		]
 	},
 	{

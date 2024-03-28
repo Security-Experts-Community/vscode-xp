@@ -23,7 +23,7 @@ import { RenameTreeItemCommand } from './commands/renameTreeItemCommand';
 import { DeleteContentItemCommand } from './commands/deleteContentItemCommand';
 import { CreatePackageCommand } from './commands/createPackageCommand';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
-import { BuildAllGraphCommand } from './commands/buildAllGraphCommand';
+import { BuildAllGraphsAndTableListsCommand } from './commands/buildAllGraphsAndTableListsCommand';
 import { UnpackKbCommand } from './commands/unpackKbCommand';
 import { ContentType } from '../../contentType/contentType';
 import { SetContentTypeCommand } from '../../contentType/setContentTypeCommand';
@@ -40,6 +40,8 @@ import { CreateMacroCommand } from './commands/createMacrosCommand';
 import { PackKbCommand } from './commands/packKbCommand';
 import { OpenTableCommand } from './commands/openTableCommand';
 import { LocalizationEditorViewProvider } from '../localization/localizationEditorViewProvider';
+import { CommandHelper } from '../../helpers/commandHelper';
+import { SortHelper } from '../../helpers/sortHelper';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeBaseItem> {
 
@@ -94,8 +96,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 			vscode.commands.registerCommand(
 				ContentTreeProvider.verifyFolderCommand,
 				async (item: ContentTreeBaseItem) => {
-					const lt = new ContentVerifierCommand(config, item);
-					await lt.execute();
+					const command = new ContentVerifierCommand(config, item);
+					await CommandHelper.singleExecutionCommand(command);
 				}
 			)
 		);
@@ -243,13 +245,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 						return DialogHelper.showInfo("Для распаковки KB-пакета нужно открыть базу знаний");
 					}
 					
-					const action = new UnpackKbCommand(config, selectedItem);
-					try {
-						await action.execute();
-					}
-					catch(error) {
-						ExceptionHelper.show(error, `Неожиданная ошибка распаковки kb-пакета`);
-					}
+					const command = new UnpackKbCommand(config, selectedItem);
+					await CommandHelper.singleExecutionCommand(command, `Неожиданная ошибка распаковки kb-пакета`);
 				}
 			)
 		);
@@ -259,8 +256,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 				ContentTreeProvider.buildAllCommand,
 				async () => {
 					const parser = new SiemJOutputParser();
-					const buildCommand = new BuildAllGraphCommand(config, parser);
-					await buildCommand.execute();
+					const command = new BuildAllGraphsAndTableListsCommand(config, parser);
+					await CommandHelper.singleExecutionCommand(command);
 				}
 			)
 		);
@@ -270,8 +267,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 				ContentTreeProvider.buildLocalizationsCommand,
 				async () => {
 					const parser = new SiemJOutputParser();
-					const buildCommand = new BuildLocalizationsCommand(config, parser);
-					await buildCommand.execute();
+					const command = new BuildLocalizationsCommand(config, parser);
+					await CommandHelper.singleExecutionCommand(command);
 				}
 			)
 		);
@@ -281,8 +278,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 				ContentTreeProvider.buildNormalizationsCommand,
 				async () => {
 					const parser = new SiemJOutputParser();
-					const buildCommand = new BuildNormalizationsCommand(config, parser);
-					await buildCommand.execute();
+					const command = new BuildNormalizationsCommand(config, parser);
+					await CommandHelper.singleExecutionCommand(command);
 				}
 			)
 		);
@@ -290,10 +287,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		context.subscriptions.push(
 			vscode.commands.registerCommand(
 				ContentTreeProvider.buildWldCommand,
-				async (selectedItem: RuleBaseItem) => {
+				async () => {
 					const parser = new SiemJOutputParser();
-					const buildCommand = new BuildWldCommand(config, parser);
-					await buildCommand.execute();
+					const command = new BuildWldCommand(config, parser);
+					await CommandHelper.singleExecutionCommand(command);
 				}
 			)
 		);
@@ -493,29 +490,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 		}
 
 		// Сначала директории, потом файлы
-		childrenItems.sort(
-			(l, r) => {
-				// Сначала идут потом отдельные item-ы.
-				if(l.isFolder() && !r.isFolder()) {
-					return -1;
-				}
-
-				// Сначала идут системные пакеты, потом пользовательские.
-				const lObjectId = l.getMetaInfo().getObjectId();
-				const rObjectId = r.getMetaInfo().getObjectId();
-				if(
-					lObjectId &&
-					lObjectId.startsWith("PT") &&
-					// Либо это обычная директория, либо пользовательский пакет
-					(!rObjectId || !rObjectId.startsWith("PT"))
-					) {
-					return -1;
-				}
-
-				return l.getName().localeCompare(r.getName());
-			}
-		);
-
+		childrenItems.sort(SortHelper.contentItemComparer);
 		element.setChildren(childrenItems);
 
 		// Подсвечиваем правила, у которых есть хотя бы один измененный файл.
@@ -695,6 +670,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 	public static async selectItem(item: ContentTreeBaseItem) : Promise<boolean> {
 		return vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, item);
 	}
+
+
 
 	private _gitAPI : API;
 

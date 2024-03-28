@@ -22,10 +22,10 @@
 	"xp.views.knowledgebaseTree.showLocalizationCommand": "Localization",
 	"xp.views.knowledgebaseTree.showTableDefaultValuesCommand": "Edit defaults",
 
-	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Build all graphs",
-	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Build all localizations",
-	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Build all wld files",
-	"xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Build all normalizations",
+	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Compile all rules and lists",
+	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Compile all localizations",
+	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Compile all wld files",
+	"xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Compile all normalizations",
 	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Correlate log files",
 
 	"xp.views.knowledgebaseTree.importKbFileCommand": "Import packages from kb file",
