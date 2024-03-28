@@ -5,6 +5,8 @@
     "NoPathSelected": "Путь не выбран",
     "Create": "Создать",
 
+    "OperationWasAbortedByUser": "Операция была прервана пользователем",
+
     "NameOfNewRule": "Название нового правила",
 
     "View.ObjectTree.Message.TheKnowledgeBaseIsNotInitialized": "База знаний не найдена. Создать стандартные папки для продукта {0}?",
@@ -14,6 +16,11 @@
     "View.ObjectTree.Message.CurrentTargetProduct" : "Целевой продукт {0}",
     "View.ObjectTree.Message.TheCurrentKbFormatEDRDoesNotMatchTargetSIEM": "Формат базы знаний (EDR) не соответствует текущему целевому продукту (SIEM). Неправильная настройка не позволит собрать пакет. Выбрать другой продукт?",
     "View.ObjectTree.Message.TheCurrentKbFormatSIEMDoesNotMatchTargetEDR": "Формат базы знаний (SIEM) не соответствует текущему целевому продукту (EDR). Выбрать другой продукт? Неправильная настройка не позволит собрать пакет",
+
+    "View.ObjectTree.Progress.BuildAllGraphs": "Компиляция всех графов и табличных списков",
+    "View.ObjectTree.Progress.BuildAllLocalizations": "Компиляция всех локализаций",
+    "View.ObjectTree.Progress.BuildAllNormalizations": "Компиляция всех нормализаций",
+    "View.ObjectTree.Progress.BuildAllWlds": "Компиляция всех wld-файлов",
     
     "View.IntegrationTests.Title": "Тесты для {0}",
     "View.IntegrationTests.Test": "Тест", 

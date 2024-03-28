@@ -11,6 +11,7 @@ import { XpException } from '../../../models/xpException';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { SiemjManager } from '../../../models/siemj/siemjManager';
 import { ViewCommand } from './viewCommand';
+import { Log } from '../../../extension';
 
 /**
  * Команда выполняющая сборку формул нормализации
@@ -21,10 +22,12 @@ export class BuildWldCommand extends ViewCommand {
 	}
 
 	public async execute() : Promise<void> {
+		Log.info(this.config.getMessage("View.ObjectTree.Progress.BuildAllWlds"));
+
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
-			title: `Компиляция wld-файлов`
+			cancellable: true,
+			title: this.config.getMessage("View.ObjectTree.Progress.BuildAllWlds")
 		}, async (progress, cancellationToken: vscode.CancellationToken) => {
 
 			await SiemjConfigHelper.clearArtifacts(this.config);
@@ -71,12 +74,18 @@ export class BuildWldCommand extends ViewCommand {
 					],
 					{
 						encoding: "utf-8",
-						outputChannel: this.config.getOutputChannel()
+						outputChannel: this.config.getOutputChannel(),
+						cancellationToken: cancellationToken
 					}
 				);
 
+				if(cancellationToken.isCancellationRequested) {
+					DialogHelper.showInfo(this.config.getMessage("OperationWasAbortedByUser"));
+					return;
+				}
+
 				if(executionResult.exitCode != 0) {
-					DialogHelper.showError("Ошибка сборки wld-файлов");
+					DialogHelper.showError("Ошибка сборки wld-файлов, смотри Output");
 					return;
 				}
 

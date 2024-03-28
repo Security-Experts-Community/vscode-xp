@@ -5,6 +5,8 @@
     "NoPathSelected": "No path selected",
     "Create": "Create",
 
+    "OperationWasAbortedByUser": "The operation was aborted by the user",
+
     "NameOfNewRule": "Name of the new rule",
 
     "View.ObjectTree.Message.TheKnowledgeBaseIsNotInitialized": "The knowledge base is not initialized. Create required folders for {0} format?",
@@ -14,6 +16,11 @@
     "View.ObjectTree.Message.CurrentTargetProduct" : "Target product {0}",
     "View.ObjectTree.Message.TheCurrentKbFormatEDRDoesNotMatchTargetSIEM": "The knowledge base format (EDR) does not match the current target product (SIEM). Incorrect configuration will prevent the package from being built. Choose another product?",
     "View.ObjectTree.Message.TheCurrentKbFormatSIEMDoesNotMatchTargetEDR": "The knowledge base format (SIEM) does not match the current target product (EDR). Incorrect configuration will prevent the package from being built. Choose another product?",
+
+    "View.ObjectTree.Progress.BuildAllGraphs": "Compilation of all graphs and tabular lists",
+    "View.ObjectTree.Progress.BuildAllLocalizations": "Compilation of all localizations",
+    "View.ObjectTree.Progress.BuildAllNormalizations": "Compilation of all normalizations",
+    "View.ObjectTree.Progress.BuildAllWlds": "Compiling all wld files",
 
     "View.IntegrationTests.Title": "{0} tests",
     "View.IntegrationTests.Test": "Test", 

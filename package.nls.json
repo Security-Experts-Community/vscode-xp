@@ -24,8 +24,9 @@
 
 	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Compile all rules and lists",
 	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Compile all localizations",
-	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Compile all wld files",
 	"xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Compile all normalizations",
+	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Compile all wld files",
+
 	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Correlate log files",
 
 	"xp.views.knowledgebaseTree.importKbFileCommand": "Import packages from kb file",

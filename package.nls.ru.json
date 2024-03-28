@@ -25,9 +25,9 @@
 	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все правила и списки",
 	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Компилировать все правила локализации",
 	"xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Компилировать все правила нормализации",
-	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Коррелировать событий из лог-файлов",
-	
 	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Компилировать все файлы .wld",
+	
+	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Коррелировать событий из лог-файлов",
 
 	"xp.views.knowledgebaseTree.importKbFileCommand": "Импортировать из файла .kb",
 	"xp.views.knowledgebaseTree.exportKbFileCommand": "Экспортировать в файл .kb",
