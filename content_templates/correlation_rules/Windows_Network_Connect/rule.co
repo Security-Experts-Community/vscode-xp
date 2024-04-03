@@ -67,8 +67,8 @@ rule Windows_Network_Connect: Network_Connect
 emit {
     $correlation_type = ""
 
-    $subject = "process"
-    $action = "open"
+    $subject = "rule"
+    $action = "detect"
     $object = "connection"   
     $status = "success"
 

@@ -68,6 +68,7 @@ rule Windows_Logon: User_Login
 
         $alert.key = 
         $alert.context = 
+    }
 
 emit {
     $correlation_type = ""

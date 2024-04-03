@@ -21,12 +21,12 @@ export class BuildNormalizationsCommand extends ViewCommand {
 	}
 
 	public async execute() : Promise<void> {
-		Log.info("Запущена компиляция всех нормализаций");
+		Log.info(this.config.getMessage("View.ObjectTree.Progress.BuildAllNormalizations"));
 
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
 			cancellable: true,
-			title: `Компиляция всех нормализаций`
+			title: this.config.getMessage("View.ObjectTree.Progress.BuildAllNormalizations")
 		}, async (progress, cancellationToken: vscode.CancellationToken) => {
 
 			await SiemjConfigHelper.clearArtifacts(this.config);
@@ -57,6 +57,11 @@ export class BuildNormalizationsCommand extends ViewCommand {
 
 					if(result.statusMessage) {
 						DialogHelper.showError(result.statusMessage);
+						return;
+					}
+
+					if(cancellationToken.isCancellationRequested) {
+						DialogHelper.showInfo(this.config.getMessage("OperationWasAbortedByUser"));
 						return;
 					}
 

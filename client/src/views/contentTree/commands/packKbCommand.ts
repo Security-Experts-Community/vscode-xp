@@ -124,7 +124,7 @@ export class PackKbCommand extends ViewCommand {
 					return;
 				} 
 
-				DialogHelper.showError(`Ошибка сборки пакета '${packageName}'. Смотри Output`);
+				DialogHelper.showError(`Ошибка сборки пакета '${packageName}'. [Смотри Output](command:xp.commonCommands.showOutputChannel)`);
 				this.config.getOutputChannel().show();
 			}
 			catch(error) {

@@ -53,7 +53,7 @@ export class SiemJOutputParser {
 			const exitCode = parseInt(m[1]);
 			if(exitCode !== 0) {
 				result.testsStatus = false;
-				result.statusMessage = `Ошибка выполнения, так как одна из утилит вернула код ошибки ${exitCode}, отличный от нуля. Смотри Output`;
+				result.statusMessage = `Ошибка выполнения, так как одна из утилит вернула код ошибки ${exitCode}, отличный от нуля. [Смотри Output](command:xp.commonCommands.showOutputChannel)`;
 				return;
 			}
 		}

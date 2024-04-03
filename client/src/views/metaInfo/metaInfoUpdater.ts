@@ -28,8 +28,6 @@ export class MetaInfoUpdater {
 		const references = this.filterAndTrimArray(fields.References);
 		metaInfo.setReferences(references);
 
-		const tags = this.filterAndTrimArray(fields.Tags);
-
 		if (fields.DataSources) {
 			const dataSources = Array.from(fields.DataSources)
 				.map(dt => classTransformer.plainToInstance(DataSource, dt));

@@ -36,7 +36,33 @@ export class XpSignatureHelpProvider implements vscode.SignatureHelpProvider {
 					return instance;
 				});
 
-		return new XpSignatureHelpProvider(parser, signatures);
+		const signatureProvider = new XpSignatureHelpProvider(parser, signatures);
+		context.subscriptions.push(
+			vscode.languages.registerSignatureHelpProvider(
+				[
+					{
+						scheme: 'file',
+						language: 'xp'
+					},
+					{
+						scheme: 'file',
+						language: 'co'
+					},
+					{
+						scheme: 'file',
+						language: 'en'
+					},
+					{
+						scheme: 'file',
+						language: 'flt'
+					},
+				],
+				signatureProvider,
+				'(', ','
+			)
+		);
+
+		return signatureProvider;
 	}
 
     public provideSignatureHelp(

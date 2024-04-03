@@ -23,7 +23,6 @@ import { ContentTreeProvider } from './views/contentTree/contentTreeProvider';
 import { RunningCorrelationGraphProvider } from './views/correlationGraph/runningCorrelationGraphProvider';
 import { TableListsEditorViewProvider } from './views/tableListsEditor/tableListsEditorViewProvider';
 import { XpDocumentHighlightProvider } from './providers/highlight/xpDocumentHighlightProvider';
-import { TestsFormatContentMenuExtension } from './ext/contextMenuExtension';
 import { SetContentTypeCommand } from './contentType/setContentTypeCommand';
 import { YamlHelper } from './helpers/yamlHelper';
 import { InitKBRootCommand } from './views/contentTree/commands/initKnowledgebaseRootCommand';
@@ -34,13 +33,10 @@ import { XpEnumValuesCompletionItemProvider } from './providers/xpEnumValuesComp
 import { LogLevel, Logger } from './logger';
 import { RetroCorrelationViewController } from './views/retroCorrelation/retroCorrelationViewProvider';
 import { XpHoverProvider } from './providers/xpHoverProvider';
-import { DialogHelper } from './helpers/dialogHelper';
 import { OriginsManager } from './models/content/originsManager';
-import { VsCodeApiHelper } from './helpers/vsCodeApiHelper';
-import { OpenTableDefaultsCommand } from './views/contentTree/commands/openTableDefaultValuesCommand';
-import { Table } from './models/content/table';
 import { DefaultTLValuesEditorViewProvider } from './views/defaultTLValues/defaultTLValuesEditorViewProvider';
 import { LocalizationEditorViewProvider } from './views/localization/localizationEditorViewProvider';
+import { CommonCommands } from './models/command/commonCommands';
 
 export let Log: Logger;
 let client: LanguageClient;
@@ -56,8 +52,9 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		} else {
 			Log.setLogLevel(LogLevel.Info);
 		}
-
+		
 		Log.info(`Начата активация расширения '${Configuration.getExtensionDisplayName()}'`);
+		config.checkUserSetting();
 
 		await OriginsManager.init(config);
 
@@ -132,101 +129,28 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		SetContentTypeCommand.init(config);
 		InitKBRootCommand.init(config);
 		RetroCorrelationViewController.init(config);
+		CommonCommands.init(config);
 
-		context.subscriptions.push(
-			vscode.commands.registerCommand(
-				ContentTreeProvider.showTableDefaultsCommand,
-				async (table: Table) => {
-					const command = new OpenTableDefaultsCommand(config, table);
-					command.execute();
-				}
-			)
-		);
 		const templateFilePath = path.join(
 			config.getExtensionPath(),
 			"client", "templates", "TableListEditor", "html", "TableListEditor.html"
 		);
-		context.subscriptions.push(DefaultTLValuesEditorViewProvider.register(context, templateFilePath, config));
+		context.subscriptions.push(
+			DefaultTLValuesEditorViewProvider.register(context, templateFilePath, config)
+		);
 
 		siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(XPPackingTaskProvider.Type, new XPPackingTaskProvider(config));
 
-		
 		// Расширение нативного контекстного меню.
-		TestsFormatContentMenuExtension.init(context);
+		// TestsFormatContentMenuExtension.init(context);
 
 		// Подпись функций.
-		const signatureProvider = await XpSignatureHelpProvider.init(context);
-		context.subscriptions.push(
-			vscode.languages.registerSignatureHelpProvider(
-				[
-					{
-						scheme: 'file',
-						language: 'xp'
-					},
-					{
-						scheme: 'file',
-						language: 'co'
-					},
-					{
-						scheme: 'file',
-						language: 'en'
-					},
-					{
-						scheme: 'file',
-						language: 'flt'
-					},
-				],
-				signatureProvider,
-				'(', ','
-			)
-		);
+		await XpSignatureHelpProvider.init(context);
 
 		// Автодополнение функций.
-		const completionItemProvider = await XpCompletionItemProvider.init(config);
-		context.subscriptions.push(
-			vscode.languages.registerCompletionItemProvider(
-				[
-					{
-						scheme: 'file',
-						language: 'xp'
-					},
-					{
-						scheme: 'file',
-						language: 'co'
-					},
-					{
-						scheme: 'file',
-						language: 'en'
-					},
-					{
-						scheme: 'file',
-						language: 'flt'
-					},
-				],
-				completionItemProvider,
-				"$"
-			)
-		);
+		await XpCompletionItemProvider.init(config);
+		await XpEnumValuesCompletionItemProvider.init(config);
 
-		const literalItemProvider = await XpEnumValuesCompletionItemProvider.init(config);
-		context.subscriptions.push(
-			vscode.languages.registerCompletionItemProvider(
-				[
-					{
-						scheme: 'file',
-						language: 'co'
-					},
-					{
-						scheme: 'file',
-						language: 'xp'
-					}
-				],
-				literalItemProvider,
-				"\""
-			)
-		);
-
-		// TODO: реализовать
 		context.subscriptions.push(
 			vscode.languages.registerRenameProvider(
 				{
@@ -238,53 +162,13 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		);
 
 		// Показывает общую информацию по наведению на конструкцию.
-		const xpHoverProvider = await XpHoverProvider.init(config);
-		context.subscriptions.push(
-			vscode.languages.registerHoverProvider([
-				{
-					scheme: 'file',
-					language: 'co'
-				},
-				{
-					scheme: 'file',
-					language: 'xp'
-				},
-				{
-					scheme: 'file',
-					language: 'en'
-				}], 
-				xpHoverProvider
-			)
-		);
+		await XpHoverProvider.init(config);
 
 		// Не очень понятно как тут сделать разумно.
 		const tokenModifiers = ['declaration', 'documentation'];
 		const tokenTypes = ['function', 'variable'];
 		const legend = new vscode.SemanticTokensLegend(tokenTypes, tokenModifiers);
-
-		const xpDocumentHighlightProvider = await XpDocumentHighlightProvider.init(config, legend);
-		vscode.languages.registerDocumentSemanticTokensProvider(
-			[
-				{
-					scheme: 'file',
-					language: 'xp'
-				},
-				{
-					scheme: 'file',
-					language: 'co'
-				},
-				{
-					scheme: 'file',
-					language: 'en'
-				},
-				{
-					scheme: 'file',
-					language: 'flt'
-				},
-			],
-			xpDocumentHighlightProvider,
-			legend
-		);
+		await XpDocumentHighlightProvider.init(config, legend);
 
 		// Очистка директории временных файлов.
 		const tmpDirectory = config.getTmpDirectoryPath();
@@ -299,11 +183,12 @@ export async function activate(context: ExtensionContext): Promise<void> {
 		}
 
 		// Очистка директории выходных файлов. Нужна для сохранения консистентности нормализаций.
-		const baseOutputDirectory = config.getBaseOutputDirectoryPath();
-		if(fs.existsSync(baseOutputDirectory)) {
+		const extensionSettings = config.getConfiguration();
+		const outputDirectoryPath = extensionSettings.get<string>("outputDirectoryPath");
+		if(fs.existsSync(outputDirectoryPath)) {
 			try {
-				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(baseOutputDirectory);
-				Log.info(`Директория выходных файлов '${baseOutputDirectory}' была успешно очищена`);
+				await FileSystemHelper.deleteAllSubDirectoriesAndFiles(outputDirectoryPath);
+				Log.info(`Директория выходных файлов '${outputDirectoryPath}' была успешно очищена`);
 			}
 			catch (error) {
 				Log.warn('Ошибка очистки файлов из выходной директории', error);

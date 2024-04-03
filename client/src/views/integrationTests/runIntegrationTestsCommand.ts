@@ -1,14 +1,13 @@
 import * as vscode from 'vscode';
 
-import { Command, CommandParams } from '../command';
+import { Command, CommandParams } from '../../models/command/command';
 import { TestHelper } from '../../helpers/testHelper';
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { RunIntegrationTestDialog } from '../runIntegrationDialog';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { IntegrationTestRunner } from '../../models/tests/integrationTestRunner';
 import { TestStatus } from '../../models/tests/testStatus';
-import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { ContentItemStatus, RuleBaseItem } from '../../models/content/ruleBaseItem';
+import { ContentItemStatus } from '../../models/content/ruleBaseItem';
 import { Log } from '../../extension';
 import { ContentTreeProvider } from '../contentTree/contentTreeProvider';
 
@@ -36,7 +35,7 @@ export class RunIntegrationTestsCommand extends Command {
 			const ruleCode = await this.params.rule.getRuleCode();
 			if (TestHelper.isRuleCodeContainsSubrules(ruleCode)) {
 				progress.report({
-					message: `Интеграционные тесты для правила ${this.params.rule.getName()} с подправилами (subrules)`
+					message: `Интеграционные тесты для правила ${this.params.rule.getName()} с вспомогательными правилами (subrules)`
 				});
 			} else {
 				progress.report({
@@ -73,8 +72,7 @@ export class RunIntegrationTestsCommand extends Command {
 			} 
 
 			this.params.rule.setStatus(ContentItemStatus.Default);
-
-			vscode.window.showErrorMessage(`Все тесты не были пройдены. Также возможно наличие синтаксических ошибок в коде правила или его зависимостях`);
+			DialogHelper.showError(`Все тесты не были пройдены. Возможно наличие синтаксических ошибок в коде правила или его зависимостях. [Смотри Output](command:xp.commonCommands.showOutputChannel)`);
 			ContentTreeProvider.refresh(this.params.rule);
 			return true;
 		});

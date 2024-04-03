@@ -25,15 +25,16 @@ export class Enveloper {
 
 		// Проверяем, если исходное событие в формате xml (EventViewer)
 		let rawEventsTrimmed = rawEvents.trim();
-		if(this.isRawEventXml(rawEventsTrimmed)) {
+		if(this.isRawEventXml(rawEventsTrimmed) && mimeType == "application/x-pt-eventlog") {
 			rawEventsTrimmed = this.convertEventLogXmlRawEventsToJson(rawEventsTrimmed);
+		} else {
+			// Сжимаем json-события.
+			rawEventsTrimmed = TestHelper.compressJsonRawEvents(rawEventsTrimmed);
 		}
+		
+		const compressedRawEvents = rawEventsTrimmed.split(Enveloper.END_OF_LINE).filter(e => e);
 
-		// Сжимаем json-события.
-		const compressedRawEventsString = TestHelper.compressJsonRawEvents(rawEventsTrimmed);
-		const compressedRawEvents = compressedRawEventsString.split(Enveloper.END_OF_LINE);
-
-		if(!this.thereAreUnenvelopedEvents(compressedRawEvents)) {
+		if(!this.thereAreUnEnvelopedEvents(compressedRawEvents)) {
 			throw new XpException("Конверт для всех событий уже добавлен");
 		}
 
@@ -57,7 +58,7 @@ export class Enveloper {
 		return xmlCheckRegExp.test(rawEvent);
 	}
 
-	public static isEnvelopedEvents(rawEvents : string) : boolean {
+	public static isEnvelopedEvent(rawEvents : string) : boolean {
 		rawEvents = rawEvents.trim();
 
 		// Одно событие.
@@ -98,7 +99,7 @@ export class Enveloper {
 		return isEnvelopedEvent;
 	}
 
-	public static thereAreUnenvelopedEvents(rawEvents : string[]) : boolean {
+	public static thereAreUnEnvelopedEvents(rawEvents : string[]) : boolean {
 
 		let envelopedEvents = 0;
 		for (const rawEvent of rawEvents) {
@@ -136,7 +137,7 @@ export class Enveloper {
 				continue;
 			}
 
-			if(this.isEnvelopedEvents(rawEvent)) {
+			if(this.isEnvelopedEvent(rawEvent)) {
 				envelopedEvents.push(rawEvent);
 				continue;
 			}

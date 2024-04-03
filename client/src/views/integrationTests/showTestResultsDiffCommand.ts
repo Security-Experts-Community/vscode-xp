@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
 
-import { Command, CommandParams } from '../command';
+import { Command, CommandParams } from '../../models/command/command';
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { RegExpHelper } from '../../helpers/regExpHelper';

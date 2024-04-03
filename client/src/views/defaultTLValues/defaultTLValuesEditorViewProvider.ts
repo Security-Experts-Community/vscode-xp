@@ -132,11 +132,22 @@ export class DefaultTLValuesEditorViewProvider implements vscode.CustomTextEdito
 					let updatedTableFileContent =  YamlHelper.stringify(data, {'!!null': 'empty'});
 					
 					// это костыль чтобы сохранить разные отступы 
-					// в дефлотных значениях и остальном документе
+					// в дефолтных значениях и остальном документе
 					const margin = '    ';
-					const loc = YamlHelper.stringify(yaml['loc'], {'!!null': 'empty'}).split(os.EOL).filter(Boolean).map((l) => `${margin}${l}`).join(os.EOL);
+					const loc = 
+						YamlHelper.stringify(yaml['loc'], {'!!null': 'empty'})
+						.split(os.EOL)
+						.filter(Boolean)
+						.map((l) => `${margin}${l}`)
+						.join(os.EOL);
 					updatedTableFileContent = updatedTableFileContent.replace('<LOC>', `${os.EOL}${loc}`);
-					const pt = YamlHelper.stringify(yaml['pt'], {'!!null': 'empty'}).split(os.EOL).filter(Boolean).map((l) => `${margin}${l}`).join(os.EOL);
+
+					const pt = 
+						YamlHelper.stringify(yaml['pt'], {'!!null': 'empty'})
+						.split(os.EOL)
+						.filter(Boolean)
+						.map((l) => `${margin}${l}`)
+						.join(os.EOL);
 					updatedTableFileContent = updatedTableFileContent.replace('<PT>', `${os.EOL}${pt}`);
 					
 					this.updateTextDocument(document, updatedTableFileContent);

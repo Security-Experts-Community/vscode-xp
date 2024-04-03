@@ -109,7 +109,7 @@ export class PackSIEMAllPackagesAction {
 					DialogHelper.showInfo(`Пакет '${packageName}' успешно собран.`);
 					return;
 				} 
-				DialogHelper.showError(`Ошибка сборки пакета '${packageName}'. Смотри Output.`);
+				DialogHelper.showError(`Ошибка сборки пакета '${packageName}'. [Смотри Output](command:xp.commonCommands.showOutputChannel)`);
 			}
 			catch(error) {
 				// TODO: Нужно все внутренние ошибки обрабатывть единообразно

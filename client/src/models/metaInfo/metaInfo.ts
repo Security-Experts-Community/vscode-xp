@@ -552,7 +552,7 @@ export class MetaInfo {
 	private DataSources: DataSource[] = [];
 	private ATTACK: Attack[] = [];
 	private EventDescriptions: MetaInfoEventDescription[] = [];
-	private ContentLabels: string[] = [];
+	private ContentLabels: string[];
 
 	private AsInFile: any = {};
 }

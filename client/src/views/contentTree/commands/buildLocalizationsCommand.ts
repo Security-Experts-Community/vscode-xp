@@ -10,6 +10,7 @@ import { SiemjConfBuilder } from '../../../models/siemj/siemjConfigBuilder';
 import { XpException } from '../../../models/xpException';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { ViewCommand } from './viewCommand';
+import { Log } from '../../../extension';
 
 /**
  * Команда выполняющая сборку локализаций
@@ -20,12 +21,12 @@ export class BuildLocalizationsCommand extends ViewCommand {
 	}
 
 	public async execute() : Promise<void> {
-
+		Log.info(this.config.getMessage("View.ObjectTree.Progress.BuildAllLocalizations"));
 		return vscode.window.withProgress({
 			location: vscode.ProgressLocation.Notification,
-			cancellable: false,
-			title: `Компиляция локализаций`
-		}, async (progress) => {
+			cancellable: true,
+			title: this.config.getMessage("View.ObjectTree.Progress.BuildAllLocalizations")
+		}, async (progress, cancellationToken: vscode.CancellationToken) => {
 
 			await SiemjConfigHelper.clearArtifacts(this.config);
 			
@@ -55,7 +56,8 @@ export class BuildLocalizationsCommand extends ViewCommand {
 					["-c", siemjConfigPath, "main"],
 					{
 						encoding: this.config.getSiemjOutputEncoding(),
-						outputChannel: this.config.getOutputChannel()
+						outputChannel: this.config.getOutputChannel(),
+						cancellationToken: cancellationToken
 					}
 				);
 
@@ -72,6 +74,11 @@ export class BuildLocalizationsCommand extends ViewCommand {
 
 				if(result.statusMessage) {
 					DialogHelper.showError(result.statusMessage);
+					return;
+				}
+
+				if(cancellationToken.isCancellationRequested) {
+					DialogHelper.showInfo(this.config.getMessage("OperationWasAbortedByUser"));
 					return;
 				}
 

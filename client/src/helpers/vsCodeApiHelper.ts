@@ -20,6 +20,12 @@ export class VsCodeApiHelper {
 		);
 	}
 
+	public static openExtensionSettings(settingsPrefix: string) : Thenable<unknown> {
+		return vscode.commands.executeCommand('workbench.action.openSettings',
+			settingsPrefix
+		);
+	}
+
 	public static closeActiveEditor() : Thenable<unknown>{
 		return vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 	}

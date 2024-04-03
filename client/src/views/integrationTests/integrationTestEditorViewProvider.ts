@@ -29,10 +29,10 @@ export class IntegrationTestEditorViewProvider {
 	public static readonly onTestSelectionChangeCommand = "IntegrationTestEditorView.onTestSelectionChange";
 
 	private _view?: vscode.WebviewPanel;
-	private _rule: RuleBaseItem;
+	private rule: RuleBaseItem;
 
 	public constructor(
-		private readonly _config: Configuration,
+		private readonly config: Configuration,
 		private readonly _templatePath: string) {
 	}
 
@@ -78,9 +78,9 @@ export class IntegrationTestEditorViewProvider {
 		Log.info(`Редактор интеграционных тестов открыт для правила ${rule.getName()}`);
 
 		if (this._view) {
-			Log.info(`Открытый ранее редактор интеграционных тестов для правила ${this._rule.getName()} был автоматически закрыт`);
+			Log.info(`Открытый ранее редактор интеграционных тестов для правила ${this.rule.getName()} был автоматически закрыт`);
 
-			this._rule = null;
+			this.rule = null;
 			this._view.dispose();
 		}
 
@@ -89,10 +89,10 @@ export class IntegrationTestEditorViewProvider {
 			return;
 		}
 
-		this._rule = rule;
+		this.rule = rule;
 
 		// Создать и показать панель.
-		const viewTitle = this._config.getMessage("View.IntegrationTests.Title", this._rule.getName());
+		const viewTitle = this.config.getMessage("View.IntegrationTests.Title", this.rule.getName());
 		this._view = vscode.window.createWebviewPanel(
 			IntegrationTestEditorViewProvider.viewId,
 			viewTitle,
@@ -101,15 +101,15 @@ export class IntegrationTestEditorViewProvider {
 				retainContextWhenHidden: true,
 				enableFindWidget: true,
 				enableScripts: true,
-				localResourceRoots: [vscode.Uri.joinPath(this._config.getExtensionUri(), "client", "out")]
+				localResourceRoots: [vscode.Uri.joinPath(this.config.getExtensionUri(), "client", "out")]
 			});
 
 		// Создаем временную директорию для результатов тестов, которая посмотреть почему не прошли тесты.
-		this._testsTmpFilesPath = this._config.getRandTmpSubDirectoryPath();
+		this.testsTmpFilesPath = this.config.getRandTmpSubDirectoryPath();
 
 		this._view.onDidDispose(async (e: void) => {
 			this._view = undefined;
-			await FileSystemHelper.recursivelyDeleteDirectory(this._testsTmpFilesPath);
+			await FileSystemHelper.recursivelyDeleteDirectory(this.testsTmpFilesPath);
 		},
 			this);
 
@@ -138,37 +138,37 @@ export class IntegrationTestEditorViewProvider {
 		const resultFocusTestNumber = focusTestNumber ?? 1;
 		Log.debug(`WebView ${IntegrationTestEditorViewProvider.name} была загружена/обновлена. Текущий тест №${resultFocusTestNumber ?? "1"}`);
 
-		const resourcesUri = this._config.getExtensionUri();
+		const resourcesUri = this.config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
 
-		const webviewUri = this.getUri(this._view.webview, this._config.getExtensionUri(), ["client", "out", "ui.js"]);
+		const webviewUri = this.getUri(this._view.webview, this.config.getExtensionUri(), ["client", "out", "ui.js"]);
 
 		const plain = {
 			"IntegrationTests": [],
 			"ExtensionBaseUri": extensionBaseUri,
-			"RuleName": this._rule.getName(),
+			"RuleName": this.rule.getName(),
 			"ActiveTestNumber": resultFocusTestNumber,
 
 			// Локализация вьюшки
 			"Locale" : {
-				"Test" : this._config.getMessage('View.IntegrationTests.Test'),
-				"SaveAll" : this._config.getMessage('View.IntegrationTests.SaveAll'),
-				"RunAllTests" : this._config.getMessage('View.IntegrationTests.RunAllTests'),
-				"RawEvents" : this._config.getMessage('View.IntegrationTests.RawEvents'),
-				"WordWrap" : this._config.getMessage('View.IntegrationTests.WordWrap'),
-				"WrapRawEvents" : this._config.getMessage('View.IntegrationTests.WrapRawEventsInAnEnvelope'),
-				"Normalize" : this._config.getMessage('View.IntegrationTests.Normalize'),
-				"NormalizeAndEnrich" : this._config.getMessage('View.IntegrationTests.NormalizeAndEnrich'),
-				"NormalizedEvents" : this._config.getMessage('View.IntegrationTests.NormalizedEvents'),
-				"TestCondition" : this._config.getMessage('View.IntegrationTests.ConditionForPassingTheTest'),
-				"GetExpectedEvent" : this._config.getMessage('View.IntegrationTests.GetExpectedEvent'),
-				"CompareResults" : this._config.getMessage('View.IntegrationTests.CompareYourResults'),
-				"ClearExpectedEvent" : this._config.getMessage('View.IntegrationTests.ClearExpectedEvent'),
+				"Test" : this.config.getMessage('View.IntegrationTests.Test'),
+				"SaveAll" : this.config.getMessage('View.IntegrationTests.SaveAll'),
+				"RunAllTests" : this.config.getMessage('View.IntegrationTests.RunAllTests'),
+				"RawEvents" : this.config.getMessage('View.IntegrationTests.RawEvents'),
+				"WordWrap" : this.config.getMessage('View.IntegrationTests.WordWrap'),
+				"WrapRawEvents" : this.config.getMessage('View.IntegrationTests.WrapRawEventsInAnEnvelope'),
+				"Normalize" : this.config.getMessage('View.IntegrationTests.Normalize'),
+				"NormalizeAndEnrich" : this.config.getMessage('View.IntegrationTests.NormalizeAndEnrich'),
+				"NormalizedEvents" : this.config.getMessage('View.IntegrationTests.NormalizedEvents'),
+				"TestCondition" : this.config.getMessage('View.IntegrationTests.ConditionForPassingTheTest'),
+				"GetExpectedEvent" : this.config.getMessage('View.IntegrationTests.GetExpectedEvent'),
+				"CompareResults" : this.config.getMessage('View.IntegrationTests.CompareYourResults'),
+				"ClearExpectedEvent" : this.config.getMessage('View.IntegrationTests.ClearExpectedEvent'),
 			}
 		};
 
 		try {
-			const integrationTest = this._rule.getIntegrationTests();
+			const integrationTest = this.rule.getIntegrationTests();
 
 			// Если тестов нет, то создаём пустую форму для первого теста
 			if (integrationTest.length === 0) {
@@ -176,7 +176,7 @@ export class IntegrationTestEditorViewProvider {
 					"TestNumber": 1,
 					"RawEvents": '',
 					"NormEvents": '',
-					"TestCode": `expect 1 {"correlation_name" : "${this._rule.getName()}"}`,
+					"TestCode": `expect 1 {"correlation_name" : "${this.rule.getName()}"}`,
 					"TestOutput": '',
 					"JsonedTestObject": '',
 					"TestStatus": ''
@@ -304,7 +304,7 @@ export class IntegrationTestEditorViewProvider {
 			case 'saveAllTests': {
 				try {
 					// В данном руле сохраняются в памяти нормализованные события.
-					this._rule = await this.saveAllTests(message);
+					this.rule = await this.saveAllTests(message);
 					DialogHelper.showInfo(`Все тесты сохранены`);
 
 					// Добавляем в DOM новый тест.
@@ -358,9 +358,9 @@ export class IntegrationTestEditorViewProvider {
 					}
 
 					const command = new ShowTestResultsDiffCommand( {
-							config : this._config,
-							rule: this._rule,
-							tmpDirPath: this._testsTmpFilesPath,
+							config : this.config,
+							rule: this.rule,
+							tmpDirPath: this.testsTmpFilesPath,
 							testNumber: selectedTestNumber
 						}
 					);
@@ -383,9 +383,9 @@ export class IntegrationTestEditorViewProvider {
 				// Актуализируем сырые события в тесте из вьюшки.
 				const currTest = await this.saveTestFromUI(message);
 				const command = new NormalizeRawEventsCommand({
-					config: this._config,
+					config: this.config,
 					isEnrichmentRequired: isEnrichmentRequired,
-					rule: this._rule,
+					rule: this.rule,
 					test: currTest
 				});
 
@@ -399,10 +399,10 @@ export class IntegrationTestEditorViewProvider {
 			case "GetExpectedEventCommand": {
 				const currTest = await this.saveTestFromUI(message);
 				const command = new GetExpectedEventCommand({
-					config: this._config,
-					rule: this._rule,
+					config: this.config,
+					rule: this.rule,
 					test: currTest,
-					tmpDirPath: this._testsTmpFilesPath
+					tmpDirPath: this.testsTmpFilesPath
 				});
 
 				await command.execute(this);
@@ -413,8 +413,8 @@ export class IntegrationTestEditorViewProvider {
 				// Сохраняем актуальное состояние тестов из вьюшки.
 				let rule: RuleBaseItem;
 				try {
-					rule = await TestHelper.saveAllTest(message, this._rule);
-					Log.info(`Все тесты правила ${this._rule.getName()} сохранены`);
+					rule = await TestHelper.saveAllTest(message, this.rule);
+					Log.info(`Все тесты правила ${this.rule.getName()} сохранены`);
 				}
 				catch (error) {
 					ExceptionHelper.show(error, `Не удалось сохранить тесты`);
@@ -422,12 +422,12 @@ export class IntegrationTestEditorViewProvider {
 				}
 
 				try {
-					await FileSystemHelper.recursivelyDeleteDirectory(this._testsTmpFilesPath);
+					await FileSystemHelper.recursivelyDeleteDirectory(this.testsTmpFilesPath);
 
 					const command = new RunIntegrationTestsCommand({
-						config: this._config,
+						config: this.config,
 						rule: rule,
-						tmpDirPath: this._testsTmpFilesPath
+						tmpDirPath: this.testsTmpFilesPath
 					});
 
 					const shouldUpdateViewAfterTestsRunned = await command.execute();
@@ -526,7 +526,7 @@ export class IntegrationTestEditorViewProvider {
 
 	async saveTest(message: any): Promise<IntegrationTest> {
 		// Обновляем и сохраняем тест.
-		const test = await TestHelper.saveIntegrationTest(this._rule, message);
+		const test = await TestHelper.saveIntegrationTest(this.rule, message);
 		DialogHelper.showInfo(`Тест №${test.getNumber()} сохранен`);
 		return test;
 	}
@@ -539,7 +539,7 @@ export class IntegrationTestEditorViewProvider {
 			throw new XpException(`Не задан номер активного теста`);
 		}
 
-		return TestHelper.saveAllTest(message, this._rule);
+		return TestHelper.saveAllTest(message, this.rule);
 	}
 
 	public async updateTestCode(newTestCode: string, testNumber?: number): Promise<boolean> {
@@ -561,7 +561,7 @@ export class IntegrationTestEditorViewProvider {
 		return webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, ...pathList));
 	}
 
-	private _testsTmpFilesPath: string;
+	private testsTmpFilesPath: string;
 
 	public static TEXTAREA_END_OF_LINE = "\n";
 }

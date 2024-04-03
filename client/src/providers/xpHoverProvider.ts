@@ -47,7 +47,26 @@ export class XpHoverProvider implements vscode.HoverProvider {
 			Log.warn(`Не удалось считать описания полей таксономии. Их описание при наведении курсора мыши не будет отображаться`, error);
 		}
 
-		return new XpHoverProvider(signatures, taxonomySignatures);
+		const xpHoverProvider = new XpHoverProvider(signatures, taxonomySignatures);
+		config.getContext().subscriptions.push(
+			vscode.languages.registerHoverProvider([
+				{
+					scheme: 'file',
+					language: 'co'
+				},
+				{
+					scheme: 'file',
+					language: 'xp'
+				},
+				{
+					scheme: 'file',
+					language: 'en'
+				}], 
+				xpHoverProvider
+			)
+		);
+
+		return xpHoverProvider;
 	}
 
 	provideHover(

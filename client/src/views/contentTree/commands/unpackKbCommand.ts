@@ -111,7 +111,7 @@ export class UnpackKbCommand extends ViewCommand {
 			}
 
 			if(!executeResult.output.includes(this.SUCCESS_SUBSTRING)) {
-				DialogHelper.showError(`Не удалось распаковать пакет. Смотри Output`);
+				DialogHelper.showError(`Не удалось распаковать пакет. [Смотри Output](command:xp.commonCommands.showOutputChannel)`);
 				return;
 			} 
 

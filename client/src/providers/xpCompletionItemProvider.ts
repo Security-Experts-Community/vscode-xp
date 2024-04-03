@@ -53,7 +53,7 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 			autocompleteSignatures = autocompleteSignatures.concat(taxonomySignatures);
 		}
 		catch (error) {
-			DialogHelper.showError(`Не удалось считать описания полей таксономии. Их автодополнение работать не будет.`, error);
+			Log.warn(`Не удалось считать описания полей таксономии. Их автодополнение работать не будет.`, error);
 		}
 
 		try {
@@ -69,7 +69,6 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 				// общие для контента
 				"event", "key",
 				"query", "from", "qhandler", "limit", "skip",
-				"filter",
 
 				// агрегация
 				"aggregate",
@@ -95,7 +94,33 @@ export class XpCompletionItemProvider implements vscode.CompletionItemProvider {
 			Log.warn("Ошибка при считывании: " + error.message);
 		}
 
-		return new XpCompletionItemProvider(autocompleteSignatures);
+		const completionItemProvider = new XpCompletionItemProvider(autocompleteSignatures);
+		configuration.getContext().subscriptions.push(
+			vscode.languages.registerCompletionItemProvider(
+				[
+					{
+						scheme: 'file',
+						language: 'xp'
+					},
+					{
+						scheme: 'file',
+						language: 'co'
+					},
+					{
+						scheme: 'file',
+						language: 'en'
+					},
+					{
+						scheme: 'file',
+						language: 'flt'
+					},
+				],
+				completionItemProvider,
+				"$"
+			)
+		);
+
+		return completionItemProvider;
 	}
 
 	public provideCompletionItems(

@@ -1,2 +1,3 @@
 # Неуспешный брут
+table_list default
 expect 1 {"correlation_name": "Password_Brute"}

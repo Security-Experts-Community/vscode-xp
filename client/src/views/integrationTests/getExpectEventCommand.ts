@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
 
-import { Command, CommandParams } from '../command';
+import { Command, CommandParams } from '../../models/command/command';
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { RegExpHelper } from '../../helpers/regExpHelper';
@@ -169,12 +169,23 @@ export class GetExpectedEventCommand  {
 
 		const rule = this.params.rule;
 		const ruleName = rule.getName();
+
+		const ruleCode = await rule.getRuleCode();
+		const isSubrule = TestHelper.isRuleCodeContainsSubrules(ruleCode);
+
 		if(!fs.existsSync(this.params.tmpDirPath)) {
+			if(isSubrule) {
+				throw new XpException(`Для правил, использующих вспомогательные правила (subrule), необходимо успешное прохождение интеграционных тестов. Повторите после того, как нужные тесты успешно пройдут`);	
+			}
+
 			throw new XpException(`Результаты интеграционного теста №${this.params.test.getNumber()} правила ${ruleName} не найдены. Получение ожидаемого события возможно только для успешно прошедших интеграционных тестов`);
 		}
 
 		const actualEventsFilePath = await this.getActualEventsFilePath();
 		if(!actualEventsFilePath) {
+			if(isSubrule) {
+				throw new XpException(`Для правил, использующих вспомогательные правила (subrule), необходимо успешное прохождение интеграционных тестов. Повторите после того, как нужные тесты успешно пройдут`);	
+			}
 			throw new XpException(`Результаты интеграционного теста №${this.params.test.getNumber()} правила ${ruleName} не найдены. Получение ожидаемого события возможно только для успешно прошедших интеграционных тестов`);
 		}
 

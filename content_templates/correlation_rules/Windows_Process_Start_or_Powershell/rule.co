@@ -42,7 +42,8 @@ rule Windows_Process_Start_or_Powershell: Process_Start or Powershell_Pipeline_E
     }
 
     on Process_Start {
-        $object = object
+        $action = action  # start
+        $object = object  # process
 
         $subject.account.name = subject.account.name
         $subject.account.domain = subject.account.domain
@@ -112,7 +113,8 @@ rule Windows_Process_Start_or_Powershell: Process_Start or Powershell_Pipeline_E
     }
 
     on Powershell_Pipeline_Execute {
-        $object = object
+        $action = action  # execute
+        $object = object  # command
 
         $subject.account.name = subject.account.name
         $subject.account.domain = subject.account.domain
@@ -163,7 +165,8 @@ rule Windows_Process_Start_or_Powershell: Process_Start or Powershell_Pipeline_E
     }
 
     on Powershell_Command_Execute {
-        $object = object
+        $action = action  # execute
+        $object = object  # command
 
         $subject.account.name = subject.account.name
         $subject.account.domain = subject.account.domain
@@ -206,7 +209,6 @@ emit {
     $correlation_type = ""
 
     $subject = "account"
-    $action = "execute"
     $status = "success"
 
     $importance = ""

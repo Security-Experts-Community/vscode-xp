@@ -10,7 +10,7 @@ export class SetContentTypeCommand {
 
 	static Name = "xpContentEditor.setContentType";
 
-	static async init(config: Configuration) {
+	static async init(config: Configuration): Promise<void> {
 		const context = config.getContext();
 		const setContentTypeCommand = new SetContentTypeCommand();
 
@@ -26,9 +26,8 @@ export class SetContentTypeCommand {
 				if(newContentType) {
 					return await setContentTypeCommand.updateContentTypeStatusBarItem(contentTypeStatusBarItem, config, newContentType);
 				}
-				const selectedContentType = await vscode.window.showQuickPick(["SIEM", "EDR"], {
-					// TODO: добавить локализацию
-					placeHolder: `Select Content Type`
+				const selectedContentType = await vscode.window.showQuickPick([ContentType.SIEM, ContentType.EDR], {
+					placeHolder: config.getMessage("View.ObjectTree.Message.SelectTargetProduct")
 				});
 
 				const contentTypeString = ContentType[selectedContentType];
@@ -59,8 +58,7 @@ export class SetContentTypeCommand {
 		// Централизованно обновляем тип контента
 		config.setContentType(contentType);
 
-		// TODO: добавить локализацию
-		item.text = `Тип целевого продукта: ${contentType}`;
+		item.text = config.getMessage("View.ObjectTree.Message.CurrentTargetProduct", contentType);
 		item.show();
 	}
 }

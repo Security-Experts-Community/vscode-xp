@@ -14,7 +14,7 @@ export class DialogHelper {
 		let showInfoMessage: string;
 		if(params.length !== 0) {
 			const paramsString = params.filter(p => p).map(p => `"${p}"`).join(", ");
-			showInfoMessage = `"${returnValue}" = vscode.window.showInformationMessage("${message}", ${paramsString})`;
+			showInfoMessage = `"${returnValue}" = showInformationMessage("${message}", ${paramsString})`;
 		} else {
 			showInfoMessage = `showInformationMessage("${message}")`;
 		}

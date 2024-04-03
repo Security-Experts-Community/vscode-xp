@@ -6,14 +6,9 @@ event Registry_Action:
         and
         (
             (
-               ( 
-                msgid == "13"
-                or
-                msgid == "12"
-               )
-            and event_src.title == "sysmon"
-            )
-            or (
+                in_list(["12", "13"], msgid)
+                and event_src.title == "sysmon"
+            ) or (
                 msgid == "4657"
                 and event_src.title == "windows"
             )
@@ -29,8 +24,8 @@ rule Windows_Registry_modification: Registry_Action
     }
 
     on Registry_Action {
-        $action = action
-        $status = status
+        $action = action  # modify, remove, create
+        $status = status  # success, failure
 
         $subject.account.id = subject.account.id
         $subject.account.domain = subject.account.domain

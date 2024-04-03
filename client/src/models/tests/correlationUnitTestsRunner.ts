@@ -131,7 +131,7 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
 		// Парсим ошибки из вывода.
 		let diagnostics = this._outputParser.parse(output.output);
 		if(diagnostics.length === 0) {
-			throw new XpException("Ошибка выполнения теста");
+			throw new XpException("Ошибка выполнения теста. [Смотри Output](command:xp.commonCommands.showOutputChannel)");
 		}
 
 		// Коррекция вывода.

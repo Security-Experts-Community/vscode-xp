@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import { DialogHelper } from '../../helpers/dialogHelper';
-import { Command, CommandParams } from '../command';
+import { Command, CommandParams } from '../../models/command/command';
 import { SiemjManager } from '../../models/siemj/siemjManager';
 import { IntegrationTest } from '../../models/tests/integrationTest';
 

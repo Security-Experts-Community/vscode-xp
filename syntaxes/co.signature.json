@@ -214,10 +214,17 @@
 			"Возвращает объединенные в одну строку элементы."
 		],
 		"examples" : [
+			"# Объединение полей в строку через разделитель |",
 			"subject.account.name = \"pushkin\"",
 			"object.process.cmdline = \"ipconfig\"",
 			"alert.key = join([lower(subject.account.name), (object.process.cmdline)], \"|\")",
-			"# pushkin|ipconfig"
+			"# pushkin|ipconfig",
+			" ",
+			"# Исключение пустых полей события с последующим объединением через разделитель |",
+			"# event_src.host = null",
+			"$list = remove(['a', event_src.host, 'c', event_src.host], null)",
+			"$datafield10 = join($list, '|')",
+			"# $datafield10 = 'a|c'"
 		]
 	},
 	{
@@ -253,8 +260,8 @@
 		],
 		"examples" : [
 			"object.process.cmdline = \"In^vok^e-We^^bRe^que^st\"",
-			"replace(object.process.cmdline, \"\", \"^\")",
-			"# Invoke-WebRequest"
+			"$result = replace(object.process.cmdline, \"\", \"^\")",
+			"# $result = \"Invoke-WebRequest\""
 		]
 	},
 	{
@@ -865,9 +872,15 @@
 			"Возвращает список без указанных элементов."
 		],
 		"examples" : [
-			"$list = ['a', 'b', 'c', 'd']",
-			"remove($list, 'd')",
-			"# $list = ['a', 'b', 'c']"
+			"# Удаление элемента d",
+			"$list = ['a', 'd', 'c', 'd']",
+			"$list = remove($list, 'd')",
+			"# $list = ['a', 'c']",
+			"",
+			"# Удаление null-элементов",
+			"$list = ['a', null, 'c', null]",
+			"$list = remove($list, null)",
+			"$list = ['a', 'c']"
 		]
 	},
 	{
@@ -1174,6 +1187,42 @@
 			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
 			"$count = $get_value[\"$get_count\"]",
 			"# count = 2"
+		]
+	},
+	{
+		"name" : "copy_fields",
+		"signature" : "copy_fields(<dst_fields_prefix>, <src_fields_prefix>)",
+		"description": "Функция **copy_fields** (доступна с R27 версии) выполняет копирование значений из группы полей схемы событий, имеющих общий префикс <src_fields_prefix> в наименовании, в группу полей, имеющих общий префикс <dst_fields_prefix>. Копирование будет выполнено только для полей, у которых в обоих группах будет одинаковая часть наименования за вычетом префикса, а так же одинаковый тип поля. Допускается использовать в блоке операторов инструкций _on_, _emit_ и _init_.",
+		"params": [
+			"<dst_fields_prefix> - префикс группы целевых полей, куда осуществляется копирование значений. Префикс целевой группы полей обязан начинаться с $",
+			"<src_fields_prefix> - префикс группы исходных полей, откуда осуществляется копирование значений"
+		],
+		"examples" : [
+			"# $src.host = src.host",
+			"# $src.fqdn = src.fqdn",
+			"# $src.hostname = src.hostname",
+			"# $src.ip = src.ip",
+			"# $src.port = src.port",
+			"# $src.asset = src.asset",
+			"copy_fields($src, src)",
+			"",
+			"# $event_src.host = event_src.host",
+			"# $event_src.fqdn = event_src.fqdn",
+			"# $event_src.hostname = event_src.hostname",
+			"# $event_src.ip = event_src.ip",
+			"# $event_src.asset = event_src.asset",
+			"# $event_src.vendor = event_src.vendor",
+			"# $event_src.title = event_src.title",
+			"# $event_src.subsys = event_src.subsys",
+			"# $event_src.category = event_src.category",
+			"# $event_src.rule = event_src.rule",
+			"copy_fields($event_src, event_src)",
+			"",
+			"# $subject.account.domain = object.account.domain",
+			"# $subject.account.fullname = object.account.fullname",
+			"# $subject.account.name = object.account.name",
+			"# $subject.account.id = object.account.id",
+			"copy_fields($subject.account, object.account)"
 		]
 	}
 ]

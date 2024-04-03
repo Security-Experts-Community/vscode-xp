@@ -1,7 +1,50 @@
 import assert = require('assert');
+
 import { Enveloper } from '../../../models/enveloper';
+
 suite('Enveloper', () => {
 
+  test('Двойное к существующему событию xml-событие из журнала', async () => {
+    const events = 
+    `{"body":"{\\"Event\\":{\\"xmlns\\":\\"http://schemas.microsoft.com/win/2004/08/events/event\\",\\"System\\":{\\"Provider\\":{\\"Name\\":\\"Microsoft-Windows-Security-Auditing\\",\\"Guid\\":\\"{54849625-5478-4994-a5ba-3e3b0328c30d}\\"},\\"EventID\\":\\"4688\\",\\"Version\\":\\"1\\",\\"Level\\":\\"0\\",\\"Task\\":\\"13312\\",\\"Opcode\\":\\"0\\",\\"Keywords\\":\\"0x8020000000000000\\",\\"TimeCreated\\":{\\"SystemTime\\":\\"2023-05-31T10:33:55.9138393Z\\"},\\"EventRecordID\\":\\"204087\\",\\"Correlation\\":\\"\\",\\"Execution\\":{\\"ProcessID\\":\\"4\\",\\"ThreadID\\":\\"64\\"},\\"Channel\\":\\"Security\\",\\"Computer\\":\\"COMP-3096.corp.stf\\",\\"Security\\":\\"\\"},\\"EventData\\":{\\"Data\\":[{\\"Name\\":\\"SubjectUserSid\\",\\"text\\":\\"S-1-5-21-1911633879-617351258-157325994-500\\"},{\\"Name\\":\\"SubjectUserName\\",\\"text\\":\\"Administrator\\"},{\\"Name\\":\\"SubjectDomainName\\",\\"text\\":\\"COMP-3096\\"},{\\"Name\\":\\"SubjectLogonId\\",\\"text\\":\\"0x94872f80\\"},{\\"Name\\":\\"NewProcessId\\",\\"text\\":\\"0x2f8\\"},{\\"Name\\":\\"NewProcessName\\",\\"text\\":\\"C:\\\\Windows\\\\System32\\\\mmc.exe\\"},{\\"Name\\":\\"TokenElevationType\\",\\"text\\":\\"%%1936\\"},{\\"Name\\":\\"ProcessId\\",\\"text\\":\\"0x14b4\\"},{\\"Name\\":\\"CommandLine\\",\\"text\\":\\"\\\\"C:\\\\Windows\\\\system32\\\\mmc.exe\\\\" \\\\"C:\\\\Windows\\\\system32\\\\eventvwr.msc\\\\" /s\\"}]}}}","recv_ipv4":"127.0.0.1","recv_time":"2024-03-21T19:09:28.443Z","task_id":"00000000-0000-0000-0000-000000000000","tag":"some_tag","mime":"application/x-pt-eventlog","normalized":false,"input_id":"00000000-0000-0000-0000-000000000000","type":"raw","uuid":"6abb1792-8d3c-4371-9a6c-2de3580d9341"}
+- <Event xmlns="http://schemas.microsoft.com/win/2004/08/events/event">
+- <System>
+  <Provider Name="Microsoft-Windows-Security-Auditing" Guid="{54849625-5478-4994-a5ba-3e3b0328c30d}" /> 
+  <EventID>4688</EventID> 
+  <Version>1</Version> 
+  <Level>0</Level> 
+  <Task>13312</Task> 
+  <Opcode>0</Opcode> 
+  <Keywords>0x8020000000000000</Keywords> 
+  <TimeCreated SystemTime="2023-05-31T10:33:55.9138393Z" /> 
+  <EventRecordID>204087</EventRecordID> 
+  <Correlation /> 
+  <Execution ProcessID="4" ThreadID="64" /> 
+  <Channel>Security</Channel> 
+  <Computer>COMP-3096.corp.stf</Computer> 
+  <Security /> 
+  </System>
+- <EventData>
+  <Data Name="SubjectUserSid">S-1-5-21-1911633879-617351258-157325994-500</Data> 
+  <Data Name="SubjectUserName">Administrator</Data> 
+  <Data Name="SubjectDomainName">COMP-3096</Data> 
+  <Data Name="SubjectLogonId">0x94872f80</Data> 
+  <Data Name="NewProcessId">0x2f8</Data> 
+  <Data Name="NewProcessName">C:\\Windows\\System32\\mmc.exe</Data> 
+  <Data Name="TokenElevationType">%%1936</Data> 
+  <Data Name="ProcessId">0x14b4</Data> 
+  <Data Name="CommandLine">"C:\\Windows\\system32\\mmc.exe" "C:\\Windows\\system32\\eventvwr.msc" /s</Data> 
+  </EventData>
+  </Event>`;
+    const envelopedEvents = Enveloper.addEnvelope(events, "application/x-pt-eventlog");
+
+		assert.strictEqual(envelopedEvents.length, 2);
+		const json1 = JSON.parse(envelopedEvents[0]);
+		assert.ok(json1);
+		
+		const json2 = JSON.parse(envelopedEvents[1]);
+		assert.ok(json2);
+  });
 
 	test('К событию в конверте добавляется xml-событие из журнала Windows', async () => {
 		const events =

@@ -31,7 +31,7 @@ rule Windows_Tasks_actions : Task_Action
     }
 
     on Task_Action {
-        $action = action
+        $action = action  # modify, create, delete
 
         $subject.account.id = subject.account.id
         $subject.account.name = subject.account.name

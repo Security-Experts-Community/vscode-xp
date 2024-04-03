@@ -5,7 +5,7 @@
   "author": "Dmitry Fedosov (@DmitryOffsec)",
   "icon": "resources/xp.png",
   "license": "MIT",
-  "version": "3.13.10",
+  "version": "3.13.17",
   "repository": {
     "type": "git",
     "url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -28,8 +28,13 @@
     "EDR",
     "XP",
     "xplang",
-    "MaxPatrol 10",
-    "MP 10"
+    "MaxPatrol",
+    "Max Patrol EDR",
+    "Max Patrol XDR",
+    "Max Patrol SIEM",
+    "MP 10",
+    "MP SIEM",
+    "MP EDR"
   ],
   "engines": {
     "vscode": "^1.75.0"
@@ -72,29 +77,14 @@
     "languages": [
       {
         "id": "yaml",
-        "aliases": [
-          "TableLists"
-        ],
         "extensions": [
           ".tl"
         ]
       },
       {
         "id": "yaml",
-        "aliases": [
-          "Wld"
-        ],
         "extensions": [
           ".wld"
-        ]
-      },
-      {
-        "id": "json",
-        "aliases": [
-          "NormEvents"
-        ],
-        "extensions": [
-          ".js"
         ]
       },
       {
@@ -295,25 +285,36 @@
           "group": "navigation@4"
         },
         {
-          "command": "xp.contentTree.buildLocalizations",
-          "when": "view == KnowledgebaseTree",
-          "group": "dots@1"
-        },
-        {
           "command": "xp.contentTree.buildNormalizations",
           "when": "view == KnowledgebaseTree",
           "group": "dots@1"
         },
         {
-          "command": "xp.contentTree.buildWld",
+          "command": "xp.contentTree.buildLocalizations",
           "when": "view == KnowledgebaseTree",
           "group": "dots@2"
         },
         {
-          "command": "xp.retroCorrelationShow",
+          "command": "xp.contentTree.buildWld",
           "when": "view == KnowledgebaseTree",
           "group": "dots@3"
         },
+        {
+          "command": "xp.retroCorrelationShow",
+          "when": "view == KnowledgebaseTree",
+          "group": "dots_a@4"
+        },
+        {
+          "command": "xp.commonCommands.showOutputChannel",
+          "when": "view == KnowledgebaseTree",
+          "group": "dots_b@5"
+        },
+        {
+          "command": "xp.commonCommands.showExtensionSettings",
+          "when": "view == KnowledgebaseTree",
+          "group": "dots_c@6"
+        },
+
         {
           "command": "ModularTestsListView.addTest",
           "when": "view == ModularTestsListView",
@@ -480,40 +481,50 @@
     },
     "commands": [
       {
+        "command": "xp.commonCommands.showExtensionSettings",
+        "title": "%xp.commonCommands.showExtensionSettings%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
+        "command": "xp.commonCommands.showOutputChannel",
+        "title": "%xp.commonCommands.showOutputChannel%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
         "command": "xp.DeleteTLRowCommand",
         "title": "Delete TL Row",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xp.AddLOCTLRowCommand",
         "title": "Add LOC TL Row",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xp.AddPTTLRowCommand",
         "title": "Add PT TL Row",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xp.contentTree.showTableDefaultValuesCommand",
         "title": "%xp.views.knowledgebaseTree.showTableDefaultValuesCommand%",
-        "category": "Редактор XP",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(open-preview)"
       },
       {
         "command": "xp.retroCorrelationShow",
         "title": "%xp.views.knowledgebaseTree.showRetroCorrelationCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xpContentEditor.setContentType",
         "title": "Выбрать целевой продукт: SIEM или XDR",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xp.contentTree.openKnowledgebaseCommand",
         "title": "%xp.views.knowledgebaseTree.openKnowledgebaseCommand%",
-        "category": "Редактор XP",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(folder-opened)"
       },
       {
@@ -524,162 +535,167 @@
       {
         "command": "xp.contentTree.createPackageCommand",
         "title": "%xp.views.knowledgebaseTree.createPackageCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "KnowledgebaseTree.showCreateCorrelationView",
         "title": "%xp.views.knowledgebaseTree.createCorrelationCommand%",
-        "category": "Редактор XP",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(file-add)"
       },
       {
         "command": "KnowledgebaseTree.showCreateEnrichmentView",
         "title": "%xp.views.knowledgebaseTree.createEnrichmentCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "KnowledgebaseTree.showCreateNormalizationView",
         "title": "%xp.views.knowledgebaseTree.createNormalizationCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xp.contentTree.createMacroCommand",
         "title": "%xp.views.knowledgebaseTree.createMacroCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xp.tableListsEditor.create",
         "title": "%xp.views.knowledgebaseTree.createTableListsCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xp.tableListsEditor.show",
         "title": "Show table list structure",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "KnowledgebaseTree.runningCorrelationGraph",
         "title": "%xp.views.knowledgebaseTree.correlateEventsCommand%",
-        "category": "Редактор XP",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(outline-view-icon)"
       },
       {
         "command": "xp.contentTree.buildAll",
         "title": "%xp.views.knowledgebaseTree.buildAllGraphsCommand%",
-        "category": "Редактор XP",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(debug-start)"
       },
       {
         "command": "xp.contentTree.buildLocalizations",
         "title": "%xp.views.knowledgebaseTree.buildAllLocalizationsCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xp.contentTree.buildNormalizations",
         "title": "%xp.views.knowledgebaseTree.buildAllNormalizationsCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xp.contentTree.buildWld",
         "title": "%xp.views.knowledgebaseTree.buildAllWldsCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
+        "command": "xp.commonCommands.showOutputChannel",
+        "title": "%xp.commonCommands.showOutputChannel%"
       },
       {
         "command": "KnowledgebaseTree.unpackKbPackage",
         "title": "%xp.views.knowledgebaseTree.importKbFileCommand%",
-        "category": "Редактор XP",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(package)"
       },
       {
         "command": "KnowledgebaseTree.buildKbPackage",
         "title": "%xp.views.knowledgebaseTree.exportKbFileCommand%",
-        "category": "Редактор XP",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(debug-start)"
       },
       {
         "command": "KnowledgebaseTree.onElementSelectionChange",
-        "title": "Вызывается при выборе правила",
+        "title": "Called when a rule is selected",
         "category": "Internal"
       },
       {
         "command": "xp.contentTree.createSubFolderCommand",
         "title": "%xp.views.knowledgebaseTree.createFolderCommand%",
-        "category": "Редактор XP",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(new-folder)"
       },
       {
         "command": "xp.contentTree.renameItemCommand",
         "title": "%xp.views.knowledgebaseTree.renameCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xp.contentTree.duplicateItemCommand",
         "title": "%xp.views.knowledgebaseTree.duplicateCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xp.contentTree.deleteItemCommand",
         "title": "%xp.views.knowledgebaseTree.deleteCommand%",
-        "category": "Редактор XP",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(notebook-delete-cell)"
       },
       {
         "command": "MetaInfoView.showMetaInfoEditor",
         "title": "%xp.views.knowledgebaseTree.showMetainfoCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "LocalizationView.showLocalizationEditor",
         "title": "%xp.views.knowledgebaseTree.showLocalizationCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "ModularTestContentEditorView.showEditor",
-        "title": "Показать модульный тест",
-        "category": "Редактор XP"
+        "title": "Show unit tests",
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "ModularTestsListView.runTests",
-        "title": "Запустить все модульные тесты",
-        "category": "Редактор XP",
+        "title": "%xp.views.modularTestsListView.runAll%",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(run-all)"
       },
       {
         "command": "ModularTestsListView.addTest",
-        "title": "Создать модульный тест",
-        "category": "Редактор XP",
+        "title": "%xp.views.modularTestsListView.create%",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(add)"
       },
       {
         "command": "ModularTestsListView.reloadAndRefresh",
-        "title": "Обновить список модульных тестов",
-        "category": "Редактор XP",
+        "title": "%xp.views.modularTestsListView.refresh%",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(refresh)"
       },
       {
         "command": "ModularTestsListView.removeTest",
-        "title": "Удалить модульный тест",
-        "category": "Редактор XP",
+        "title": "%xp.views.modularTestsListView.remove%",
+        "category": "%xp.commonCommandCategory%",
         "icon": "$(refresh)"
       },
       {
         "command": "IntegrationTestEditorView.showEditor",
         "title": "%xp.views.knowledgebaseTree.showIntegrationTestsCommand%",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "IntegrationTestEditorView.onTestSelectionChange",
-        "title": "Выбран интеграционный тест",
-        "category": "Редактор XP"
+        "title": "Show integration tests",
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "NativeEditorContextMenu.compressTest",
         "title": "Сжать документ",
-        "category": "Редактор XP"
+        "category": "%xp.commonCommandCategory%"
       },
       {
         "command": "xp.contentTree.verifyFolder",
-        "title": "%xp.views.knowledgebaseTree.verifyFolderCommand%"
+        "title": "%xp.views.knowledgebaseTree.verifyFolderCommand%",
+        "category": "%xp.commonCommandCategory%"
       }
     ],
     "keybindings": [

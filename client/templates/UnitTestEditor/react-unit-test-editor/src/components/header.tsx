@@ -11,7 +11,7 @@ export default function Header() {
                 Запустить
             </vscode-button>
             <vscode-button onClick={postSaveTest}>Сохранить</vscode-button>
-            <vscode-button onClick={postUpdateExpectation}>Обновить ожидаемое событие</vscode-button>
+            <vscode-button onClick={postUpdateExpectation}>Заменить ожидаемое событие фактическим</vscode-button>
         </header>
     );
 }

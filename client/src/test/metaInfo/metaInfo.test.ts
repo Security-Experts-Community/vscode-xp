@@ -139,10 +139,23 @@ suite('MetaInfo', () => {
 		const newMetainfoPlain = await TestFixture.readYamlFile(path.join(savePath, MetaInfo.METAINFO_FILENAME));
 
 		assert.strictEqual(newMetainfoPlain.ContentAutoName, "KeepUnknownFieldsTest");
-		assert.deepStrictEqual(newMetainfoPlain.ContentRelations.Implements.ATTACK, { "test": ["T1234.56"] });
 		assert.strictEqual(newMetainfoPlain.UnknownField, "Unknown data");
 		assert.strictEqual(newMetainfoPlain.ExpertContext.UnknownFieldInExpertContext, "lalala");
+
+		assert.deepStrictEqual(newMetainfoPlain.ContentRelations.Implements.ATTACK, { "test": ["T1234.56"] });
+		assert.deepStrictEqual(newMetainfoPlain.ContentLabels, ["ContentLabel1"]);
 		assert.deepStrictEqual(newMetainfoPlain.ContentRelations.InternalField, ["some", "strings"]);
+	});
+
+	test('Сохранение ContentLabels после сохранения', async () => {
+		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "keepUnknownFields");
+		const metainfo = await MetaInfo.fromFile(metaInfoPath);
+
+		const savePath = TestFixture.getTmpPath();
+		await metainfo.save(savePath);
+
+		const newMetainfoPlain = await TestFixture.readYamlFile(path.join(savePath, MetaInfo.METAINFO_FILENAME));
+		assert.deepStrictEqual(newMetainfoPlain.ContentLabels, ["ContentLabel1"]);
 	});
 
 	// Создаем временную директорию.

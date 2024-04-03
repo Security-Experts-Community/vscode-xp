@@ -18,29 +18,29 @@ import { RegExpHelper } from '../../helpers/regExpHelper';
 
 export class SiemjManager {
 
-	constructor(private _config : Configuration, private _token?: vscode.CancellationToken) {}
+	constructor(private config : Configuration, private _token?: vscode.CancellationToken) {}
 
 	public async buildSchema(rule: RuleBaseItem) : Promise<string> {
 
-		await SiemjConfigHelper.clearArtifacts(this._config);
+		await SiemjConfigHelper.clearArtifacts(this.config);
 
-		const contentRootPath = rule.getContentRootPath(this._config);
+		const contentRootPath = rule.getContentRootPath(this.config);
 		const contentRootFolder = path.basename(contentRootPath);
-		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
+		const outputFolder = this.config.getOutputDirectoryPath(contentRootFolder);
 
 		if(!fs.existsSync(outputFolder)) {
 			fs.mkdirSync(outputFolder, {recursive: true});
 		}
 		
 		// Получаем нужный конфиг для нормализации событий.
-		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
+		const configBuilder = new SiemjConfBuilder(this.config, contentRootPath);
 		configBuilder.addTablesSchemaBuilding();
 		const siemjConfContent = configBuilder.build();
 
 		const siemjOutput = await this.executeSiemjConfigForRule(rule, siemjConfContent);
 		this.processOutput(siemjOutput.output);
 
-		const schemaFilePath = this._config.getSchemaFullPath(contentRootFolder);
+		const schemaFilePath = this.config.getSchemaFullPath(contentRootFolder);
 		if(!fs.existsSync(schemaFilePath)) {
 			throw new XpException("Ошибка компиляции схемы БД. Результирующий файл не создан");
 		}
@@ -54,23 +54,23 @@ export class SiemjManager {
 			throw new FileSystemException(`Файл сырых событий '${rawEventsFilePath}' не существует`);
 		}
 
-		const contentFullPath = rule.getPackagePath(this._config);
+		const contentFullPath = rule.getPackagePath(this.config);
 		if(!fs.existsSync(contentFullPath)) {
 			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует`);
 		}
 
-		await SiemjConfigHelper.clearArtifacts(this._config);
+		await SiemjConfigHelper.clearArtifacts(this.config);
 
-		const contentRootPath = rule.getContentRootPath(this._config);
+		const contentRootPath = rule.getContentRootPath(this.config);
 		const contentRootFolder = path.basename(contentRootPath);
-		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
+		const outputFolder = this.config.getOutputDirectoryPath(contentRootFolder);
 
 		if(!fs.existsSync(outputFolder)) {
 			fs.mkdirSync(outputFolder, {recursive: true});
 		}
 		
 		// Получаем нужный конфиг для нормализации событий.
-		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
+		const configBuilder = new SiemjConfBuilder(this.config, contentRootPath);
 		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addEventsNormalization(rawEventsFilePath);
@@ -79,7 +79,7 @@ export class SiemjManager {
 		const siemjExecutionResult = await this.executeSiemjConfigForRule(rule, siemjConfContent);
 		this.processOutput(siemjExecutionResult.output);
 
-		const normEventsFilePath = this._config.getNormalizedEventsFilePath(contentRootFolder);
+		const normEventsFilePath = this.config.getNormalizedEventsFilePath(contentRootFolder);
 		if(!fs.existsSync(normEventsFilePath)) {
 			throw new XpException("Ошибка нормализации событий. Файл с результирующим событием не создан");
 		}
@@ -99,22 +99,22 @@ export class SiemjManager {
 			throw new FileSystemException(`Файл сырых событий '${rawEventsFilePath}' не существует`);
 		}
 
-		const contentFullPath = rule.getPackagePath(this._config);
+		const contentFullPath = rule.getPackagePath(this.config);
 		if(!fs.existsSync(contentFullPath)) {
 			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует`);
 		}
 
-		await SiemjConfigHelper.clearArtifacts(this._config);
+		await SiemjConfigHelper.clearArtifacts(this.config);
 
-		const contentRootPath = rule.getContentRootPath(this._config);
+		const contentRootPath = rule.getContentRootPath(this.config);
 		const contentRootFolder = path.basename(contentRootPath);
-		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
+		const outputFolder = this.config.getOutputDirectoryPath(contentRootFolder);
 
 		if(!fs.existsSync(outputFolder)) {
 			fs.mkdirSync(outputFolder, {recursive: true});
 		}
 		
-		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
+		const configBuilder = new SiemjConfBuilder(this.config, contentRootPath);
 		configBuilder.addNormalizationsGraphBuilding(false);
 		configBuilder.addTablesSchemaBuilding();
 		configBuilder.addTablesDbBuilding();
@@ -126,7 +126,7 @@ export class SiemjManager {
 		const siemjExecutionResult = await this.executeSiemjConfigForRule(rule, siemjConfContent);
 		this.processOutput(siemjExecutionResult.output);
 
-		const enrichEventsFilePath = this._config.getEnrichedEventsFilePath(contentRootFolder);
+		const enrichEventsFilePath = this.config.getEnrichedEventsFilePath(contentRootFolder);
 		
 		if(!fs.existsSync(enrichEventsFilePath)) {
 			throw new XpException("Ошибка нормализации и обогащения событий. Файл с результирующим событием не создан");
@@ -145,9 +145,9 @@ export class SiemjManager {
 	public async executeSiemjConfigForRule(rule: RuleBaseItem, siemjConfContent: string) : Promise<ExecutionResult> { 
 	
 		// Централизованно сохраняем конфигурационный файл для siemj.
-		const contentRootPath = rule.getContentRootPath(this._config);
+		const contentRootPath = rule.getContentRootPath(this.config);
 		const contentRootFolder = path.basename(contentRootPath);
-		const outputFolderPath = this._config.getOutputDirectoryPath(contentRootFolder);
+		const outputFolderPath = this.config.getOutputDirectoryPath(contentRootFolder);
 
 		// Создаем пустую схему и дефолты для того, чтобы работали все утилиты.	
 		if (!FileSystemHelper.checkIfFilesIsExisting(contentRootPath, /\.tl$/)) {
@@ -158,9 +158,9 @@ export class SiemjManager {
 			await FileSystemHelper.writeContentFile(schemaPath,  "{}");
 		}	
 		
-		const siemjConfigPath = this._config.getTmpSiemjConfigPath(contentRootFolder);
+		const siemjConfigPath = this.config.getTmpSiemjConfigPath(contentRootFolder);
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
-		const siemjExePath = this._config.getSiemjPath();
+		const siemjExePath = this.config.getSiemjPath();
 
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
@@ -168,8 +168,8 @@ export class SiemjManager {
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
 			{	
-				encoding: this._config.getSiemjOutputEncoding(),
-				outputChannel: this._config.getOutputChannel(),
+				encoding: this.config.getSiemjOutputEncoding(),
+				outputChannel: this.config.getOutputChannel(),
 				cancellationToken: this._token
 			}
 		);
@@ -180,7 +180,7 @@ export class SiemjManager {
 	
 		// Централизованно сохраняем конфигурационный файл для siemj.
 		const contentRootFolder = path.basename(contentRootPath);
-		const outputFolderPath = this._config.getOutputDirectoryPath(contentRootFolder);
+		const outputFolderPath = this.config.getOutputDirectoryPath(contentRootFolder);
 
 		// Создаем пустую схему и дефолты для того, чтобы работали все утилиты.	
 		if (!FileSystemHelper.checkIfFilesIsExisting(contentRootPath, /\.tl$/)) {
@@ -191,9 +191,9 @@ export class SiemjManager {
 			await FileSystemHelper.writeContentFile(schemaPath,  "{}");
 		}	
 		
-		const siemjConfigPath = this._config.getTmpSiemjConfigPath(contentRootFolder);
+		const siemjConfigPath = this.config.getTmpSiemjConfigPath(contentRootFolder);
 		await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
-		const siemjExePath = this._config.getSiemjPath();
+		const siemjExePath = this.config.getSiemjPath();
 
 		// Типовая команда выглядит так:
 		// "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
@@ -201,8 +201,8 @@ export class SiemjManager {
 			siemjExePath,
 			["-c", siemjConfigPath, "main"],
 			{	
-				encoding: this._config.getSiemjOutputEncoding(),
-				outputChannel: this._config.getOutputChannel(),
+				encoding: this.config.getSiemjOutputEncoding(),
+				outputChannel: this.config.getOutputChannel(),
 				cancellationToken: this._token
 			}
 		);
@@ -216,7 +216,7 @@ export class SiemjManager {
 	 * @returns список примеров локализаций
 	 */
 	public async buildLocalizationExamples(rule: RuleBaseItem, integrationTestsTmpDirPath : string) : Promise<LocalizationExample[]> {
-		const contentFullPath = rule.getPackagePath(this._config);
+		const contentFullPath = rule.getPackagePath(this.config);
 		if(!fs.existsSync(contentFullPath)) {
 			throw new FileSystemException(`Директория контента '${contentFullPath}' не существует`);
 		}
@@ -236,7 +236,7 @@ export class SiemjManager {
 			throw new XpException("Корреляционные события не найдены");
 		}
 
-		const contentRootPath = rule.getContentRootPath(this._config);
+		const contentRootPath = rule.getContentRootPath(this.config);
 		const contentRootFolder = path.basename(contentRootPath);
 
 		const correlateEvents = [];
@@ -255,25 +255,25 @@ export class SiemjManager {
 		const allCorrelateEventsFilePath = path.join(integrationTestsTmpDirPath, this.ALL_CORR_EVENTS_FILENAME);
 		await FileSystemHelper.writeContentFile(allCorrelateEventsFilePath, correlateEventsContent);
 
-		await SiemjConfigHelper.clearArtifacts(this._config);
+		await SiemjConfigHelper.clearArtifacts(this.config);
 
-		const outputFolder = this._config.getOutputDirectoryPath(contentRootFolder);
+		const outputFolder = this.config.getOutputDirectoryPath(contentRootFolder);
 		if(!fs.existsSync(outputFolder)) {
 			await fs.promises.mkdir(outputFolder, {recursive: true});
 		}
 
 		// Удаляем файлы предыдущих локализаций.
-		const ruLocalizationFilePath = this._config.getRuRuleLocalizationFilePath(contentRootFolder);
+		const ruLocalizationFilePath = this.config.getRuRuleLocalizationFilePath(contentRootFolder);
 		if(fs.existsSync(ruLocalizationFilePath)) {
 			await fs.promises.unlink(ruLocalizationFilePath);
 		}
 
-		const enLocalizationFilePath = this._config.getEnRuleLocalizationFilePath(contentRootFolder);
+		const enLocalizationFilePath = this.config.getEnRuleLocalizationFilePath(contentRootFolder);
 		if(fs.existsSync(enLocalizationFilePath)) {
 			await fs.promises.unlink(enLocalizationFilePath);
 		}
 
-		const configBuilder = new SiemjConfBuilder(this._config, contentRootPath);
+		const configBuilder = new SiemjConfBuilder(this.config, contentRootPath);
 		configBuilder.addLocalizationsBuilding({
 				rulesSrcPath: rule.getDirectoryPath(),
 				force: true
@@ -292,14 +292,14 @@ export class SiemjManager {
 	private async readCurrentLocalizationExample(contentRootFolder : string, correlationName : string) : Promise<LocalizationExample[]> {
 
 		// Читаем события с русской локализацией.
-		const ruLocalizationFilePath = this._config.getRuRuleLocalizationFilePath(contentRootFolder);
+		const ruLocalizationFilePath = this.config.getRuRuleLocalizationFilePath(contentRootFolder);
 		if(!fs.existsSync(ruLocalizationFilePath)) {
 			return [];
 		}
 		const ruLocalizationEvents = await FileSystemHelper.readContentFile(ruLocalizationFilePath);
 
 		// Читаем события с английской локализацией.
-		const enLocalizationFilePath = this._config.getEnRuleLocalizationFilePath(contentRootFolder);
+		const enLocalizationFilePath = this.config.getEnRuleLocalizationFilePath(contentRootFolder);
 		if(!fs.existsSync(enLocalizationFilePath)) {
 			return [];
 		}
@@ -358,14 +358,14 @@ export class SiemjManager {
 		return locExamples;
 	}
 
-	private processOutput(siemjOutput: string) {
+	private processOutput(siemjOutput: string): void {
 		if(siemjOutput.includes(this.ERROR_SUBSTRING)) {
-			this._config.getOutputChannel().show();
-			throw new XpException("Ошибка выполнения siemj. Смотри Output");
+			this.config.getOutputChannel().show();
+			throw new XpException("Ошибка выполнения siemj. [Смотри Output](command:xp.commonCommands.showOutputChannel)");
 		}
 	}
 
-	get siemjTmpFilesPath() {
+	get siemjTmpFilesPath(): string {
 		return this._siemjTmpFilesPath;
 	}
 

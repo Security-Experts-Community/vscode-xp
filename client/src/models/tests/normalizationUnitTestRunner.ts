@@ -41,7 +41,7 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
 
 		const normalizedEventResult = RegExpHelper.parseJsonsFromMultilineString(utilityOutput);
 		if(!normalizedEventResult || normalizedEventResult.length != 1) {
-			throw new XpException("Нормализатор не вернул никакого события. Некорректен код нормализации или входные данные. Смотри Output");
+			throw new XpException("Нормализатор не вернул никакого события. Некорректен код нормализации или входные данные. [Смотри Output](command:xp.commonCommands.showOutputChannel)");
 		}
 		const actualEvent = normalizedEventResult[0];
 

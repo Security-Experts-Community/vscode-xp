@@ -31,8 +31,8 @@ export class LocalizationEditorViewProvider {
 	private _rule: RuleBaseItem;
 
 	constructor(
-		private readonly _config: Configuration,
-		private readonly _templatePath: string
+		private readonly config: Configuration,
+		private readonly templatePath: string
 	) { }
 
 	public static init(config: Configuration): void {
@@ -65,12 +65,12 @@ export class LocalizationEditorViewProvider {
 
 		// Сохраняем директорию для временных файлов, которая будет единая для вьюшки.
 		if(!keepTmpFiles) {
-			this._integrationTestTmpFilesPath = this._config.getRandTmpSubDirectoryPath();
+			this.integrationTestTmpFilesPath = this.config.getRandTmpSubDirectoryPath();
 		}
 
 		try {
 			// Создать и показать панель.
-			const title = this._config.getMessage("View.Localization.Title", rule.getName());
+			const title = this.config.getMessage("View.Localization.Title", rule.getName());
 			this._view = vscode.window.createWebviewPanel(
 				LocalizationEditorViewProvider.viewId,
 				title,
@@ -160,7 +160,7 @@ export class LocalizationEditorViewProvider {
 			};
 		});
 
-		const resourcesUri = this._config.getExtensionUri();
+		const resourcesUri = this.config.getExtensionUri();
 		const extensionBaseUri = this._view.webview.asWebviewUri(resourcesUri);
 
 		const locExamples = this._rule.getLocalizationExamples();
@@ -176,17 +176,17 @@ export class LocalizationEditorViewProvider {
 			"DefaultLocalizationCriteria" : await ContentHelper.getDefaultLocalizationCriteria(this._rule),
 
 			"Locale": {
-				"CheckLocalizations" : this._config.getMessage("View.Localization.CheckLocalizations"),
-				"Description" : this._config.getMessage("View.Localization.Description"),
-				"LocalizationСriteria" : this._config.getMessage("View.Localization.LocalizationСriteria"),
-				"Сriteria" : this._config.getMessage("View.Localization.Сriteria"),
-				"LocalizationExamples" : this._config.getMessage("View.Localization.LocalizationExamples"),
-				"Save" : this._config.getMessage("Save")
+				"CheckLocalizations" : this.config.getMessage("View.Localization.CheckLocalizations"),
+				"Description" : this.config.getMessage("View.Localization.Description"),
+				"LocalizationСriteria" : this.config.getMessage("View.Localization.LocalizationСriteria"),
+				"Сriteria" : this.config.getMessage("View.Localization.Сriteria"),
+				"LocalizationExamples" : this.config.getMessage("View.Localization.LocalizationExamples"),
+				"Save" : this.config.getMessage("Save")
 			}
 		};
 
 		// Подгружаем шаблон и шаблонизируем данные.
-		const template = (await fs.promises.readFile(this._templatePath)).toString();
+		const template = (await fs.promises.readFile(this.templatePath)).toString();
 		const formatter = new MustacheFormatter(template);
 		const htmlContent = formatter.format(templatePlainObject);
 
@@ -238,7 +238,7 @@ export class LocalizationEditorViewProvider {
 					}
 					
 					try {
-						await FileSystemHelper.deleteAllSubDirectoriesAndFiles(this._integrationTestTmpFilesPath);
+						await FileSystemHelper.deleteAllSubDirectoriesAndFiles(this.integrationTestTmpFilesPath);
 					}
 					catch(error) {
 						Log.warn("Ошибка очистки временных файлов интеграционных тестов", error);
@@ -315,8 +315,8 @@ export class LocalizationEditorViewProvider {
 				
 			let result: string;
 			
-			if(fs.existsSync(this._integrationTestTmpFilesPath)) {
-				const subDirItems = await fs.promises.readdir(this._integrationTestTmpFilesPath, { withFileTypes: true });
+			if(fs.existsSync(this.integrationTestTmpFilesPath)) {
+				const subDirItems = await fs.promises.readdir(this.integrationTestTmpFilesPath, { withFileTypes: true });
 
 				if(subDirItems.length > 0) {
 					result = await DialogHelper.showInfo(
@@ -333,13 +333,13 @@ export class LocalizationEditorViewProvider {
 
 			if(!result || result === LocalizationEditorViewProvider.RESTART_TESTS) {
 				progress.report({ message: `Получение зависимостей правила для корректной сборки графа корреляций` });
-				const ritd = new RunIntegrationTestDialog(this._config, this._integrationTestTmpFilesPath);
+				const ritd = new RunIntegrationTestDialog(this.config, this.integrationTestTmpFilesPath);
 				const options = await ritd.getIntegrationTestRunOptions(this._rule);
 				options.cancellationToken = token;
 
 				progress.report({ message: `Получение корреляционных событий на основе интеграционных тестов правила` });
 				const outputParser = new SiemJOutputParser();
-				const testRunner = new IntegrationTestRunner(this._config, outputParser);
+				const testRunner = new IntegrationTestRunner(this.config, outputParser);
 				const siemjResult = await testRunner.run(this._rule, options);
 
 				if (!siemjResult.testsStatus) {
@@ -348,8 +348,8 @@ export class LocalizationEditorViewProvider {
 			}
 
 			progress.report({ message: `Генерация локализаций на основе корреляционных событий из интеграционных тестов`});
-			const siemjManager = new SiemjManager(this._config);
-			const locExamples = await siemjManager.buildLocalizationExamples(this._rule, this._integrationTestTmpFilesPath);
+			const siemjManager = new SiemjManager(this.config);
+			const locExamples = await siemjManager.buildLocalizationExamples(this._rule, this.integrationTestTmpFilesPath);
 
 			return locExamples;
 		});
@@ -357,7 +357,7 @@ export class LocalizationEditorViewProvider {
 
 
 
-	private _integrationTestTmpFilesPath: string;
+	private integrationTestTmpFilesPath: string;
 
 	public static readonly USE_OLD_TESTS_RESULT = "Использовать";
 	public static readonly RESTART_TESTS = "Повторить";

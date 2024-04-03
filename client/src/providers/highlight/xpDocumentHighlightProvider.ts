@@ -21,7 +21,31 @@ export class XpDocumentHighlightProvider implements vscode.DocumentSemanticToken
 				.map(s => classTransformer.plainToInstance(CompleteSignature, s))
 				.map(s => s.name);
 
-		return new XpDocumentHighlightProvider(functionNames, legend);
+		const xpDocumentHighlightProvider = new XpDocumentHighlightProvider(functionNames, legend);
+		vscode.languages.registerDocumentSemanticTokensProvider(
+			[
+				{
+					scheme: 'file',
+					language: 'xp'
+				},
+				{
+					scheme: 'file',
+					language: 'co'
+				},
+				{
+					scheme: 'file',
+					language: 'en'
+				},
+				{
+					scheme: 'file',
+					language: 'flt'
+				},
+			],
+			xpDocumentHighlightProvider,
+			legend
+		);
+
+		return xpDocumentHighlightProvider;
 	}	
 
 	constructor(private _functionNames: string[], private _legend: vscode.SemanticTokensLegend) {
