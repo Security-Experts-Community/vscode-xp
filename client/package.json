@@ -3,7 +3,7 @@
     "description": "Language client",
     "author": "Dmitry Fedosov (@DmitryOffsec)",
     "license": "MIT",
-    "version": "3.13.17",
+    "version": "3.13.18",
     "repository": {
         "type": "git",
         "url": "https://github.com/Security-Experts-Community/vscode-xp"

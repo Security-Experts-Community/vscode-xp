@@ -56,12 +56,8 @@ export class SDKUtilitiesWrappers {
 		const rootFolder = path.basename(rootPath);
 		const tempPath = this._config.getTmpDirectoryPath(rootFolder);				
 		const taxonomyPath = this._config.getTaxonomyFullPath();
-		const appendixPath = this._config.getAppendixFullPath();
 
 		const formulaPath = rule.getFilePath();
-		if(!FileSystemHelper.isValidPath(formulaPath)) {
-			throw new FileSystemException(`В пути ${formulaPath} к правилу нормализации содержаться недопустимые символы. Допустима только латинский буквы, цифры и знак подчёркивания.`);
-		}
 
 		const rawEventPath = unitTest.getTestInputDataPath();
 		process.env.PTSIEM_SDK_ROOT = this._config.getSiemSdkDirectoryPath();
