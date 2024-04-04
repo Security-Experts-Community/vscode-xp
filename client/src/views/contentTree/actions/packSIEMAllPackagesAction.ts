@@ -79,8 +79,7 @@ export class PackSIEMAllPackagesAction {
 					await fs.promises.writeFile(contentfullPath, content);
 				}
 
-				// Нужна ссылка в 
-				const contractsDirPath = path.join(tmpSubDirectoryPath, ContentTreeProvider.CONTRACTS_UNPACKED_DIRNAME);
+				const contractsDirPath = path.join(tmpSubDirectoryPath, Configuration.CONTRACTS_DIR_NAME);
 				await fs.promises.mkdir(contractsDirPath, {recursive: true});
 
 				// Проверяем путь к контрактам и копируем их.
