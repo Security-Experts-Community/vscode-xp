@@ -17,10 +17,10 @@
     "View.ObjectTree.Message.TheCurrentKbFormatEDRDoesNotMatchTargetSIEM": "Формат базы знаний (EDR) не соответствует текущему целевому продукту (SIEM). Неправильная настройка не позволит собрать пакет. Выбрать другой продукт?",
     "View.ObjectTree.Message.TheCurrentKbFormatSIEMDoesNotMatchTargetEDR": "Формат базы знаний (SIEM) не соответствует текущему целевому продукту (EDR). Выбрать другой продукт? Неправильная настройка не позволит собрать пакет",
 
-    "View.ObjectTree.Progress.BuildAllGraphs": "Компиляция всех графов и табличных списков",
-    "View.ObjectTree.Progress.BuildAllLocalizations": "Компиляция всех локализаций",
-    "View.ObjectTree.Progress.BuildAllNormalizations": "Компиляция всех нормализаций",
-    "View.ObjectTree.Progress.BuildAllWlds": "Компиляция всех wld-файлов",
+    "View.ObjectTree.Progress.BuildAllGraphs": "Компиляция всех правил и списков",
+    "View.ObjectTree.Progress.BuildAllLocalizations": "Компиляция всех правил локализации",
+    "View.ObjectTree.Progress.BuildAllNormalizations": "Компиляция всех правил нормализации",
+    "View.ObjectTree.Progress.BuildAllWlds": "Компиляция всех файлов .wld",
     
     "View.IntegrationTests.Title": "Тесты для {0}",
     "View.IntegrationTests.Test": "Тест", 
@@ -34,7 +34,7 @@
     "View.IntegrationTests.NormalizedEvents" : "Нормализованные события",
     "View.IntegrationTests.ConditionForPassingTheTest" : "Код теста",
     "View.IntegrationTests.GetExpectedEvent" : "Заменить ожидаемое событие фактическим",
-    "View.IntegrationTests.CompareYourResults": "Сравнить фактическое событие и ожидаемое",
+    "View.IntegrationTests.CompareYourResults": "Сравнить фактическое событие с ожидаемым",
     "View.IntegrationTests.ClearExpectedEvent": "Очистить ожидаемое событие",
     "View.IntegrationTests.ExpectedEventWasSuccessfullyUpdated": "Ожидаемое событие в коде теста успешно обновлено. Скорректируйте если необходимо и сохраните тест",
     "View.IntegrationTests.UnableGetExpectedEvent": "Невозможно получить ожидаемое событие для теста, который завершился неуспешно",
@@ -58,7 +58,7 @@
     "NameReserved": "Это название зарезервировано и не может быть использовано",
     "AlreadyExists": "Такое название уже используется",
 
-    "View.CorrelateLogFiles": "Корреляция событий из файлов",
+    "View.CorrelateLogFiles": "Корреляция из файлов",
     "View.CorrelateLogFiles.AddEventFiles": "Добавить файлы с событиями",
     "View.CorrelateLogFiles.CorrelateEvents": "Запустить корреляцию",
     "View.CorrelateLogFiles.CorrelationEvents": "Корреляционные события",
