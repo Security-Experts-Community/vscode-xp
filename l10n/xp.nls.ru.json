@@ -58,7 +58,7 @@
     "NameReserved": "Это название зарезервировано и не может быть использовано",
     "AlreadyExists": "Такое название уже используется",
 
-    "View.CorrelateLogFiles": "Корреляция из файлов",
+    "View.CorrelateLogFiles": "Корреляция событий из файлов",
     "View.CorrelateLogFiles.AddEventFiles": "Добавить файлы с событиями",
     "View.CorrelateLogFiles.CorrelateEvents": "Запустить корреляцию",
     "View.CorrelateLogFiles.CorrelationEvents": "Корреляционные события",
