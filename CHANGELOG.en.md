@@ -4,6 +4,10 @@
 
 - fixed the error of replacing the expected event actually in integration tests (special thanks @Bobyboba18, @GeorgeFloyd_Official).
 
+## 3.18.1 (Release - August 21, 2024)
+
+- fixed the error of replacing the expected event actually in integration tests (special thanks @Bobyboba18, @GeorgeFloyd_Official).
+
 ## 3.18.0 (Release - July 31, 2024)
 
 - added basic support for aggregation rules: creation from a template, testing, filling in meta information, validation through tests, description and localization (special thanks @Protenil, @hiddenbymeeee);
