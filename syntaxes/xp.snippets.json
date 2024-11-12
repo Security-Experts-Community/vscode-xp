@@ -10,6 +10,90 @@
 			"}"
 		]
 	},
+	"Добавить обогащение события": {
+		"prefix": [
+			"enrich event"
+		],
+		"body": [
+			"# Tips: чтобы отключить автодополнение во время редактирования сниппета,",
+			"#       выставьте настройку 'editor.suggest.snippetsPreventQuickSuggestions'",
+			"event ${1:EventName}",
+			"   filter {",
+			"       # TODO: задать логику фильтрации нормализованного или корреляционного события",
+			"       filter::NotFromCorrelator()",
+			"       and ${2:object.id} != null",
+			"       and ${3:event_src.host} != null",
+			"       and ${4:event_src.hostname} != null",
+			"   }",
+			"",
+			"    # TODO: нужно перенести этот фрагмент в секцию enrichment",
+			"    enrich ${1:EventName}:",
+			"       enrich_fields {",
+			"           # TODO: определить логику обогащения события",
+			"           ${5:datafield10} = \"enrichment ${2:object.id}: \" + string(\\$${2:object.id})",
+			"           ${6:datafield11} = \"enrichment ${3:event_src.host}: \" + string(\\$${3:event_src.host})",
+			"           ${7:datafield12} = \"enrichment ${4:event_src.hostname}: \" + string(\\$${4:event_src.hostname})",
+			"       }",
+			"",
+			""
+		]
+	},
+	"Добавить секцию обогащения полей": {
+		"prefix": [
+			"enrich_fields"
+		],
+		"body": [
+			"${7:# блок для описания обогащения полей события}",
+			"enrich_fields {",
+			"    # TODO: определить логику обогащения события",
+			"    \\$${1:columnValue1} = ${2:object.id}",
+			"    \\$${3:columnValue2} = ${4:event_src.host}",
+			"    \\$${5:columnValue3} = ${6:event_src.hostname}",
+			"}",
+			"",
+			""
+		]
+	},
+	"Удаление записи из табличного списка":{
+		"prefix": [
+			"remove_from"
+		],
+		"body": [		
+			"${4:# блок для удаления записей из табличного списка}",
+			"remove_from ${1:TableName} {",
+			"    column::${2:columnName1} == ${3:lower(object.id)}",
+			"}",
+			""
+		]
+	},
+	"Добавление записи в табличный список":{
+		"prefix": [
+			"insert_into"
+		],
+		"body": [
+			"${8:# блок для вставки записи в табличный список}",
+			"insert_into ${1:TableName} {",
+			"    column::${2:columnName1} = \\$${3:columnValue1}",
+			"    column::${4:columnName2} = \\$${5:columnValue2}",
+			"    column::${6:columnName3} = \\$${7:columnValue3}",
+			"}",
+			""
+		]
+	},
+	"Условное добавление в табличный список":{
+		"prefix": [
+			"insert_into if"
+		],
+		"body": [
+			"${8:# блок для условной вставки записи в табличный список}",
+			"insert_into ${1:TableName} if \\$${2:columnValue1} != null {",
+			"    column::${3:columnName1} = \\$${2:columnValue1}",
+			"    column::${4:columnName2} = \\$${5:columnValue2}",
+			"    column::${6:columnName3} = \\$${7:columnValue3}",
+			"}",
+			""
+		]
+	},
 	"Пустое событие": {
 		"prefix": [
 			"event"
