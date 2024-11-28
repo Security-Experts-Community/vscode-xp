@@ -56,8 +56,10 @@ rule Windows_Powershell_Execute: Powershell_Pipeline_Execute or Powershell_Comma
         $object.fullpath = object.fullpath
         $object.value = object.value
 
-        $datafield8 = datafield8  # версия модуля
-        $datafield9 = datafield9 # Командлайн без приведения к нижнему регистру
+        $datafield12 = datafield12      # Runspace ID
+        $datafield13 = datafield13      # Sequence Number - порядковый номер события в журнале
+        $datafield8 = datafield8        # версия модуля
+        $datafield9 = datafield9        # Командлайн без приведения к нижнему регистру
 
         $chain_id = chain_id
 

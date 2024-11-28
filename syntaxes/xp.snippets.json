@@ -804,6 +804,7 @@
 		],
 		"body": [
 			"\\$event_src.ip = event_src.ip",
+			"\\$event_src.fqdn = event_src.fqdn",
 			"\\$event_src.hostname = event_src.hostname",
 			"\\$event_src.host = event_src.host",
 			"\\$event_src.asset = event_src.asset",
