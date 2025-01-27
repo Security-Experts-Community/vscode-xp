@@ -73,13 +73,16 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
     config.getContext().subscriptions.push(normalizationFilesWatcher);
 
     const normalizationGraphInvalidatorCallback = async () => {
-      const outputDirectoryPath = config.getBaseOutputDirectoryPath();
-      if (fs.existsSync(outputDirectoryPath)) {
-        await FileSystemHelper.deleteAllSubDirectoriesAndFiles(outputDirectoryPath);
+      for (const contentRoot of config.getContentRoots()) {
+        const rootFolder = path.basename(contentRoot);
+        const outputDirectoryPath = config.getOutputDirectoryPath(rootFolder);
+        if (fs.existsSync(outputDirectoryPath)) {
+          await FileSystemHelper.deleteAllSubDirectoriesAndFiles(outputDirectoryPath);
+        }
+        Log.info(
+          `The output directory ${outputDirectoryPath} was cleared after detecting a change in the formula code`
+        );
       }
-      Log.info(
-        `The output directory ${outputDirectoryPath} was cleared after detecting a change in the formula code`
-      );
     };
     normalizationFilesWatcher.onDidCreate(normalizationGraphInvalidatorCallback);
     normalizationFilesWatcher.onDidDelete(normalizationGraphInvalidatorCallback);
