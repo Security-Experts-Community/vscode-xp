@@ -1,5 +1,14 @@
 # Change Log
 
+## 3.20.2 (Release)
+
+- The unit test editor has been rewritten in React and now contains tabs like in integration tests
+- Added fields when wrapping in an envelope (special thanks @zatrahali)
+- Added the ability to connect a custom language server
+- Fixed bugs in the meta information view
+- Fixed a collision when unpacking a kb file (special thanks @qwazzz0)
+- Updated the pipeline for building and publishing the extension (special thanks @KleinQuartic)
+
 ## 3.20.1 (Release)
 
 - Rewrote Metainfo editor in React
