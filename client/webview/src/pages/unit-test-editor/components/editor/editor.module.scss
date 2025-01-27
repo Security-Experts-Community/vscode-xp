@@ -6,22 +6,6 @@
 
 .content {
   flex-grow: 1;
-  display: flex;
-  flex-direction: column;
   width: 100%;
   min-width: 400px;
-}
-
-.section {
-  display: flex;
-  flex-grow: 1;
-  border-top: 1px solid var(--vscode-editorGroup-border);
-
-  &:first-child {
-    border-top: 1px solid var(--vscode-quickInput-background) !important;
-  }
-
-  & > *:not(:last-child) {
-    border-right: 1px solid var(--vscode-editorGroup-border);
-  }
 }

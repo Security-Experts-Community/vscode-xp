@@ -50,7 +50,7 @@ export class NormalizationUnitTest extends BaseUnitTest {
 
           unitTest.command = {
             command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,
-            title: 'ModularTestContentEditorViewProvider.onTestSelectionChangeCommand',
+            title: 'ModularTestEditorViewProvider.onTestSelectionChangeCommand',
             arguments: [unitTest]
           };
 

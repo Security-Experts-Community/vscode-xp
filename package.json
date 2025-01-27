@@ -190,10 +190,6 @@
       {
         "view": "KnowledgebaseTree",
         "contents": "%xp.views.knowledgebaseTree.defaultContent%"
-      },
-      {
-        "view": "ModularTestsListView",
-        "contents": "%xp.views.modularTestsListView.defaultContent%"
       }
     ],
     "viewsContainers": {
@@ -211,11 +207,6 @@
           "id": "KnowledgebaseTree",
           "name": "%xp.views.knowledgebaseTree.title%",
           "contextualTitle": "%xp.views.knowledgebaseTree.title%"
-        },
-        {
-          "id": "ModularTestsListView",
-          "name": "%xp.views.modularTestsListView.title%",
-          "contextualTitle": "%xp.views.modularTestsListView.title%"
         }
       ]
     },
@@ -277,21 +268,6 @@
           "command": "xp.commonCommands.showExtensionSettings",
           "when": "view == KnowledgebaseTree",
           "group": "dots_c@6"
-        },
-        {
-          "command": "ModularTestsListView.addTest",
-          "when": "view == ModularTestsListView",
-          "group": "navigation@1"
-        },
-        {
-          "command": "ModularTestsListView.runTests",
-          "when": "view == ModularTestsListView",
-          "group": "navigation@2"
-        },
-        {
-          "command": "ModularTestsListView.reloadAndRefresh",
-          "when": "view == ModularTestsListView",
-          "group": "navigation@3"
         }
       ],
       "view/item/context": [
@@ -321,9 +297,14 @@
           "group": "Correlation@1"
         },
         {
+          "command": "ModularTestEditorView.showEditor",
+          "when": "view == KnowledgebaseTree && (viewItem == Normalization || viewItem == Correlation || viewItem == Enrichment)",
+          "group": "Correlation@2"
+        },
+        {
           "command": "MetaInfoView.showMetaInfoEditor",
           "when": "view == KnowledgebaseTree && viewItem == Correlation",
-          "group": "Correlation@2"
+          "group": "Correlation@3"
         },
         {
           "command": "LocalizationView.showLocalizationEditor",
@@ -336,19 +317,9 @@
           "group": "Aggregation@1"
         },
         {
-          "command": "MetaInfoView.showMetaInfoEditor",
-          "when": "view == KnowledgebaseTree && viewItem == Aggregation",
-          "group": "Aggregation@2"
-        },
-        {
           "command": "LocalizationView.showLocalizationEditor",
           "when": "view == KnowledgebaseTree && viewItem == Aggregation",
           "group": "Aggregation@3"
-        },
-        {
-          "command": "MetaInfoView.showMetaInfoEditor",
-          "when": "view == KnowledgebaseTree && viewItem == Normalization",
-          "group": "Normalization@2"
         },
         {
           "command": "LocalizationView.showLocalizationEditor",
@@ -361,29 +332,14 @@
           "group": "Enrichment@1"
         },
         {
-          "command": "MetaInfoView.showMetaInfoEditor",
-          "when": "view == KnowledgebaseTree && viewItem == Enrichment",
-          "group": "Enrichment@2"
-        },
-        {
           "command": "LocalizationView.showLocalizationEditor",
           "when": "view == KnowledgebaseTree && viewItem == Enrichment",
           "group": "Enrichment@3"
         },
         {
-          "command": "MetaInfoView.showMetaInfoEditor",
-          "when": "view == KnowledgebaseTree && viewItem == Macros",
-          "group": "Macros@1"
-        },
-        {
           "command": "LocalizationView.showLocalizationEditor",
           "when": "view == KnowledgebaseTree && viewItem == Macros",
           "group": "Macros@2"
-        },
-        {
-          "command": "ModularTestsListView.removeTest",
-          "when": "view == ModularTestsListView",
-          "group": "ModularTest@4"
         },
         {
           "command": "xp.contentTree.renameItemCommand",
@@ -399,11 +355,6 @@
           "command": "xp.contentTree.deleteItemCommand",
           "when": "view == KnowledgebaseTree && viewItem != KbRoot",
           "group": "ZCommonItems@4"
-        },
-        {
-          "command": "MetaInfoView.showMetaInfoEditor",
-          "when": "view == KnowledgebaseTree && viewItem == Table",
-          "group": "Common@1"
         },
         {
           "command": "LocalizationView.showLocalizationEditor",
@@ -485,21 +436,6 @@
       {
         "command": "xp.commonCommands.showOutputChannel",
         "title": "%xp.commonCommands.showOutputChannel%",
-        "category": "%xp.commonCommandCategory%"
-      },
-      {
-        "command": "xp.DeleteTLRowCommand",
-        "title": "Delete TL Row",
-        "category": "%xp.commonCommandCategory%"
-      },
-      {
-        "command": "xp.AddLOCTLRowCommand",
-        "title": "Add LOC TL Row",
-        "category": "%xp.commonCommandCategory%"
-      },
-      {
-        "command": "xp.AddPTTLRowCommand",
-        "title": "Add PT TL Row",
         "category": "%xp.commonCommandCategory%"
       },
       {
@@ -645,33 +581,9 @@
         "category": "%xp.commonCommandCategory%"
       },
       {
-        "command": "ModularTestContentEditorView.showEditor",
-        "title": "Show unit tests",
+        "command": "ModularTestEditorView.showEditor",
+        "title": "%xp.views.knowledgebaseTree.showModularTestsCommand%",
         "category": "%xp.commonCommandCategory%"
-      },
-      {
-        "command": "ModularTestsListView.runTests",
-        "title": "%xp.views.modularTestsListView.runAll%",
-        "category": "%xp.commonCommandCategory%",
-        "icon": "$(run-all)"
-      },
-      {
-        "command": "ModularTestsListView.addTest",
-        "title": "%xp.views.modularTestsListView.create%",
-        "category": "%xp.commonCommandCategory%",
-        "icon": "$(add)"
-      },
-      {
-        "command": "ModularTestsListView.reloadAndRefresh",
-        "title": "%xp.views.modularTestsListView.refresh%",
-        "category": "%xp.commonCommandCategory%",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "ModularTestsListView.removeTest",
-        "title": "%xp.views.modularTestsListView.remove%",
-        "category": "%xp.commonCommandCategory%",
-        "icon": "$(refresh)"
       },
       {
         "command": "IntegrationTestEditorView.showEditor",
@@ -714,6 +626,11 @@
           "type": "string",
           "markdownDescription": "%xp.xpConfig.outputDirectoryPathDescription%"
         },
+				"xpConfig.lspServerExecutablePath": {
+					"type": "string",
+					"default": "",
+					"description": "%xp.xpConfig.lspServerExecutablePathDescription%"
+				},
         "xpConfig.correlatorTimeout": {
           "scope": "window",
           "type": "integer",

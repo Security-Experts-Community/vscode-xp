@@ -110,10 +110,12 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
     }
 
     // Сохраняем тесты и перезаписываем.
-    this._unitTests.forEach(async (mt, index) => {
-      mt.setNumber(index + 1);
-      await mt.save();
-    });
+    await Promise.all(
+      this._unitTests.map((unitTest, index) => {
+        unitTest.setNumber(index + 1);
+        return unitTest.save();
+      })
+    );
   }
 
   /**
@@ -150,6 +152,13 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
    */
   public getUnitTests(): BaseUnitTest[] {
     return this._unitTests;
+  }
+
+  /**
+   * Returns unit test by its number
+   */
+  public getUnitTestByNumber(testNumber: number): BaseUnitTest {
+    return this.getUnitTests().find((test) => test.getNumber() === testNumber);
   }
 
   public abstract reloadUnitTests(): void;

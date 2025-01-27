@@ -26,9 +26,9 @@
 	"xp.views.knowledgebaseTree.duplicateCommand": "Создать копию",
 
 	"xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Интеграционные тесты",
+	"xp.views.knowledgebaseTree.showModularTestsCommand": "Модульные тесты",
 	"xp.views.knowledgebaseTree.showMetainfoCommand": "Метаданные",
 	"xp.views.knowledgebaseTree.showLocalizationCommand": "Локализация",
-	"xp.views.knowledgebaseTree.showTableDefaultValuesCommand": "Значения по умолчанию",
 
 	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все правила и списки",
 	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Компилировать все правила локализации",
@@ -42,16 +42,10 @@
 
 	"xp.views.knowledgebaseTree.defaultContent": "Это расширение помогает разрабатывать правила для обработки событий на языке eXtraction and Processing (XP).\nЧтобы начать, [откройте базу знаний](command:xp.contentTree.openKnowledgebaseCommand) или создайте новую.\nПриятной работы!",
 
-	"xp.views.modularTestsListView.title": "Модульные тесты",
-	"xp.views.modularTestsListView.defaultContent": "Пока нет модульных тестов",
-	"xp.views.modularTestsListView.runAll": "Запустить все",
-	"xp.views.modularTestsListView.create": "Создать",
-	"xp.views.modularTestsListView.remove": "Удалить",
-	"xp.views.modularTestsListView.refresh": "Обновить",
-
 	"xp.xpConfig.kbtBaseDirectoryDescription": "Путь к папке c [Knowledge Base Toolkit](https://github.com/vxcontrol/xp-kbt/releases)",
 	"xp.xpConfig.outputDirectoryPathDescription": "Путь к папке, в которой сохраняются временные объекты. Эта папка очищается автоматически при каждом запуске расширения",
 	"xp.xpConfig.correlatorTimeoutDescription": "Макс. время корреляции в секундах. Если оно будет превышено, корреляция будет прервана",
+	"xp.xpConfig.lspServerExecutablePathDescription": "Путь до исполняемого файла LSP сервера",
 
 	"xp.xpConfig.originDescription": "Информация о поставщике. Используется при экспорте объектов в KB-файл",
 	"xp.xpConfig.origin.contentPrefixDescription": "Префикс поставщика объектов. Должен совпадать с ObjectId. По умолчанию, пользовательским правилам соответствует префикс LOC, системным — PT. Если не указать префикс, у создаваемых правил не будет ObjectId",

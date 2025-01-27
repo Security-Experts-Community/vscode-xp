@@ -21,7 +21,7 @@ import { Correlation } from '../../models/content/correlation';
 import { Normalization } from '../../models/content/normalization';
 import { TestStatus } from '../../models/tests/testStatus';
 import { BaseUnitTest } from '../../models/tests/baseUnitTest';
-import { UnitTestsListViewProvider } from '../unitTestEditor/unitTestsListViewProvider';
+// import { UnitTestsListViewProvider } from '../unitTestEditor/unitTestsListViewProvider';
 
 /**
  * Команда выполняющая сборку всех графов: нормализации, агрегации, обогащения и корреляции.
@@ -243,7 +243,7 @@ export class CheckLocalizationCommand extends ViewCommand {
           const actualDataOneLine = JSON.stringify(actualDataObject);
           testActualResultStrings.push(actualDataOneLine);
 
-          vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
+          // vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
         }
 
         Log.progress(

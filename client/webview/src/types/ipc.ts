@@ -1,6 +1,6 @@
 // Types for communication between extension and webviews
 
-import { MetaInfoDto, TableListDto, UnitTestDto } from '.';
+import { MetaInfoDto, TableListDto, UnitTest, UnitTestsDto } from '.';
 
 /**
  * Messages webview pages send to the extension
@@ -10,9 +10,31 @@ export type RequestMessage =
   | { command: 'documentIsReady' }
 
   // Unit Test Editor
-  | { command: 'UnitTestEditor.updateExpectation'; expectation: string }
-  | { command: 'UnitTestEditor.saveTest'; expectation: string; inputData: string }
-  | { command: 'UnitTestEditor.runTest'; expectation: string; inputData: string }
+  | {
+      command: 'UnitTestEditor.saveAllTests';
+      payload: {
+        tests: UnitTest[];
+      };
+    }
+  | {
+      command: 'UnitTestEditor.runAllTests';
+      payload: {
+        tests: UnitTest[];
+      };
+    }
+  | {
+      command: 'UnitTestEditor.runTest';
+      payload: {
+        testNumber: number;
+        tests: UnitTest[];
+      };
+    }
+  | {
+      command: 'UnitTestEditor.updateExpectation';
+      payload: {
+        testNumber: number;
+      };
+    }
 
   // Table List Editor
   | { command: 'TableListEditor.saveTableList'; payload: TableListDto }
@@ -29,10 +51,11 @@ export type ResponseMessage =
   | ({ command: '*' } & Record<string, unknown>)
 
   // Unit Test Editor
-  | { command: 'UnitTestEditor.setState'; payload: UnitTestDto }
-  | { command: 'UnitTestEditor.updateExpectation'; expectation: string }
-  | { command: 'UnitTestEditor.updateInputData'; inputData: string }
-  | { command: 'UnitTestEditor.updateActualData'; actualData: string }
+  | { command: 'UnitTestEditor.setState'; payload: UnitTestsDto }
+  | {
+      command: 'UnitTestEditor.updateTest';
+      payload: Partial<UnitTest> & Required<Pick<UnitTest, 'testNumber'>>;
+    }
 
   // Table List Editor
   | { command: 'TableListEditor.setState'; payload: TableListDto }

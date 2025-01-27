@@ -10,7 +10,7 @@ export type PageName =
   | 'retro-correlation-editor'
   | 'integration-test-editor';
 
-export type Language = 'json' | 'json-lines' | 'xp-test-code';
+export type Language = 'xp' | 'json' | 'json-lines' | 'xp-test-code';
 
 export type Translations = Record<string, string>;
 

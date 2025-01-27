@@ -117,7 +117,10 @@ export const actions = {
     state.data.falsepositives = data.Falsepositives || [];
     state.data.improvements = data.Improvements || [];
     state.data.references = data.References || [];
-    state.data.dataSources = data.DataSources;
+    state.data.dataSources = data.DataSources.map(({ Provider, EventID }) => ({
+      Provider,
+      EventID: EventID.map(String)
+    }));
     state.data.attacks = data.ATTACK;
     state.data.dependencies = data.dependencies!;
     validation.validateAll();

@@ -16,7 +16,7 @@ import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { API } from '../../@types/vscode.git';
 import { Configuration } from '../../models/configuration';
 import { OpenKnowledgebaseCommand } from './commands/openKnowledgebaseCommand';
-import { UnitTestsListViewProvider } from '../unitTestEditor/unitTestsListViewProvider';
+// import { UnitTestsListViewProvider } from '../unitTestEditor/unitTestsListViewProvider';
 import { CreateRuleViewProvider } from '../createRule/createRuleViewProvider';
 import { CreateSubFolderCommand } from './commands/createSubFolderCommand';
 import { RenameTreeItemCommand } from './commands/renameTreeItemCommand';
@@ -126,7 +126,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
             // Попытка открыть несуществующий item
             // Возможно при переключении веток репозитория или ручной модификации репозитория.
             ContentTreeProvider.setSelectedItem(null);
-            await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
+            // await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
 
             contentTreeProvider.refresh();
             return false;
@@ -139,7 +139,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
             const elementUri = vscode.Uri.file(ruleFilePath);
             const contentDocument = await vscode.workspace.openTextDocument(elementUri);
             await vscode.window.showTextDocument(contentDocument, vscode.ViewColumn.One);
-            await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
+            // await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
           }
         } catch (error) {
           ExceptionHelper.show(error, `Ошибка во время обработки файла ${item.getFilePath()}`);

@@ -5,28 +5,29 @@ import { useActions } from './store';
 
 function UnitTestEditor() {
   const [isDataReady, setIsDataReady] = useState(false);
-  const { setInputText, setExpectationText, setResultText, setRuleType } = useActions();
+  const {
+    setData,
+    setRuleType,
+    setRuleData,
+    setDefaultInputData,
+    setDefaultExpectationData,
+    updateTest
+  } = useActions();
 
   useMessage(
     useCallback((message) => {
       switch (message.command) {
         case 'UnitTestEditor.setState':
+          setData(message.payload.tests);
           setRuleType(message.payload.ruleType);
-          setInputText(message.payload.inputEvents.data);
-          setExpectationText(message.payload.expectation.data);
+          setRuleData(message.payload.ruleData);
+          setDefaultInputData(message.payload.defaultInputData);
+          setDefaultExpectationData(message.payload.defaultExpectationData);
           setIsDataReady(true);
           break;
 
-        case 'UnitTestEditor.updateInputData':
-          setInputText(message.inputData);
-          break;
-
-        case 'UnitTestEditor.updateExpectation':
-          setExpectationText(message.expectation);
-          break;
-
-        case 'UnitTestEditor.updateActualData':
-          setResultText(message.actualData);
+        case 'UnitTestEditor.updateTest':
+          updateTest(message.payload.testNumber - 1, message.payload);
           break;
       }
     }, []) // eslint-disable-line react-hooks/exhaustive-deps

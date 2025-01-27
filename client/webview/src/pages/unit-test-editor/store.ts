@@ -1,40 +1,87 @@
 import { proxy, useSnapshot } from 'valtio';
-import { RuleType } from '~/types';
+import { RuleType, UnitTest } from '~/types';
 
 export type State = {
   ruleType: RuleType;
-  inputText: string;
-  expectationText: string;
-  resultText: string;
-  isTestExecuting: boolean;
+  ruleData: string;
+  defaultInputData: string;
+  defaultExpectationData: string;
+  tests: UnitTest[];
+  openedTestNumber: number;
+  openedTestIndex: number;
+  openedTest: UnitTest;
   isEditorValid: boolean;
 };
 
 export const state = proxy<State>({
   ruleType: 'correlation',
-  inputText: '',
-  expectationText: '',
-  resultText: '',
-  isTestExecuting: false,
+  ruleData: '',
+  defaultInputData: '',
+  defaultExpectationData: '',
+  tests: [],
+  openedTestIndex: 0,
+  get openedTestNumber(): number {
+    return state.openedTestIndex + 1;
+  },
+  get openedTest(): UnitTest {
+    return state.tests[state.openedTestIndex];
+  },
   get isEditorValid(): boolean {
-    return !!state.inputText;
+    return state.tests.every((test) => !!test.inputData);
   }
 });
 
 export const actions = {
+  setData(tests: UnitTest[]) {
+    state.tests = tests;
+
+    if (state.tests.length == 0) {
+      actions.addTest();
+    }
+  },
+
   setRuleType(ruleType: RuleType) {
     state.ruleType = ruleType;
   },
-  setInputText(inputText: string) {
-    state.inputText = inputText;
+
+  setRuleData(ruleData: string) {
+    state.ruleData = ruleData;
   },
-  setExpectationText(expectationText: string) {
-    state.expectationText = expectationText;
+
+  setDefaultInputData(defaultInputData: string) {
+    state.defaultInputData = defaultInputData;
   },
-  setResultText(resultText: string) {
-    state.resultText = resultText;
+
+  setDefaultExpectationData(defaultExpectationData: string) {
+    state.defaultExpectationData = defaultExpectationData;
+  },
+
+  openTest(testIndex: number) {
+    state.openedTestIndex = testIndex;
+  },
+
+  addTest() {
+    state.tests.push(generateTest());
+  },
+
+  updateTest(testIndex: number, test: Partial<UnitTest>) {
+    Object.assign(state.tests[testIndex], test);
+  },
+
+  deleteTest(testIndex: number) {
+    state.tests.splice(testIndex, 1);
+    if (state.openedTestIndex >= state.tests.length) {
+      state.openedTestIndex = state.tests.length - 1;
+    }
   }
 };
+
+const generateTest = (): UnitTest => ({
+  status: 'Unknown',
+  inputData: state.defaultInputData,
+  expectationData: state.defaultExpectationData,
+  actualData: ''
+});
 
 export const useActions = () => actions;
 export const useEditor = () => useSnapshot(state);

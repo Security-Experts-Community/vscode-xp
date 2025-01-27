@@ -4,54 +4,69 @@ import { useTranslations } from '~/hooks/use-translations';
 import Button from '~/ui/button/button';
 import Header from '~/ui/header/header';
 import Icon from '~/ui/icon/icon';
-import { useActions, useEditor } from '../../store';
+import { useEditor } from '../../store';
 import styles from './editor-header.module.scss';
 
 function EditorHeader() {
   const translations = useTranslations();
   const postMessage = usePostMessage();
-  const { inputText, expectationText, resultText, isEditorValid } = useEditor();
-  const { setResultText } = useActions();
+  const { tests, openedTestNumber } = useEditor();
 
-  const postSaveTestMessage = () => {
-    postMessage({
-      command: 'UnitTestEditor.saveTest',
-      inputData: inputText,
-      expectation: expectationText
-    });
-  };
-
-  const postRunTestMessage = () => {
+  const handleRunTest = () => {
     postMessage({
       command: 'UnitTestEditor.runTest',
-      inputData: inputText,
-      expectation: expectationText
+      payload: {
+        testNumber: openedTestNumber,
+        tests: JSON.parse(JSON.stringify(tests))
+      }
     });
   };
 
-  const postUpdateExpectationMessage = () => {
+  const handleUpdateExpectation = () => {
     postMessage({
       command: 'UnitTestEditor.updateExpectation',
-      expectation: expectationText
+      payload: {
+        testNumber: openedTestNumber
+      }
     });
-    setResultText('');
+  };
+
+  const handleRunAllTests = () => {
+    postMessage({
+      command: 'UnitTestEditor.runAllTests',
+      payload: {
+        tests: JSON.parse(JSON.stringify(tests))
+      }
+    });
+  };
+  const handleSaveAllTests = () => {
+    postMessage({
+      command: 'UnitTestEditor.saveAllTests',
+      payload: {
+        tests: JSON.parse(JSON.stringify(tests))
+      }
+    });
   };
 
   return (
     <Header className={styles.root} title={translations.EditorTitle}>
       <div className={styles.controls}>
-        <Button onClick={postSaveTestMessage}>
-          <Icon id="save" />
-          {translations.Save}
+        <Button onClick={handleRunTest}>
+          <Icon id="play" size={12} />
+          {translations.RunTest} #{openedTestNumber}
+        </Button>
+        <Button variant="secondary" onClick={handleUpdateExpectation}>
+          {translations.ReplaceExpectedEventWithActual} #{openedTestNumber}
         </Button>
       </div>
       <div className={styles.controls}>
-        <Button isDisabled={!isEditorValid} onClick={postRunTestMessage}>
-          <Icon id="play" />
-          {translations.Run}
+        <Button onClick={handleSaveAllTests}>
+          <Icon id="save" size={12} />
+          {translations.SaveAll}
         </Button>
-        <Button isDisabled={!resultText} variant="secondary" onClick={postUpdateExpectationMessage}>
-          {translations.ReplaceExpectedEventWithActual}
+        <Button onClick={handleRunAllTests}>
+          <Icon id="play" size={12} />
+          {translations.RunAll}
         </Button>
       </div>
     </Header>

@@ -10,10 +10,10 @@ interface CodeSectionProps {
   code: string;
   language?: Language;
   readOnly?: boolean;
-  setCode(text: string): void;
+  setCode(code: string): void;
 }
 
-function CodeSection({ title, code, language, readOnly = false, setCode }: CodeSectionProps) {
+function CodeSection({ title, code, language, readOnly, setCode }: CodeSectionProps) {
   const translations = useTranslations();
   const [wordWrap, setWordWrap] = useState(false);
 

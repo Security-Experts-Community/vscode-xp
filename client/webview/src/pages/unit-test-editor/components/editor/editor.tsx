@@ -1,21 +1,15 @@
 import EditorHeader from '../editor-header/editor-header';
-import ExpectationEditor from '../expectation-editor/expectation-editor';
-import InputEditor from '../input-editor/input-editor';
-import ResultEditor from '../result-editor/result-editor';
+import TestEditors from '../test-editors/test-editors';
+import TestsControlPanel from '../tests-control-panel/tests-control-panel';
 import styles from './editor.module.scss';
 
 function Editor() {
   return (
     <div className={styles.root}>
       <EditorHeader />
+      <TestsControlPanel />
       <div className={styles.content}>
-        <section className={styles.section}>
-          <InputEditor />
-        </section>
-        <section className={styles.section}>
-          <ExpectationEditor />
-          <ResultEditor />
-        </section>
+        <TestEditors />
       </div>
     </div>
   );

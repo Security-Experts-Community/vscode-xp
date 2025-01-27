@@ -7,4 +7,4 @@ Build/
 contract
 *.tsbuildinfo
 
-mitre_attack/data/parsed
+mitre_attack/data/parsed/attack.json

@@ -4,8 +4,8 @@ import CodeSection from '../code-section/code-section';
 
 function InputEditor() {
   const translations = useTranslations();
-  const { setInputText } = useActions();
-  const { ruleType, inputText } = useEditor();
+  const { ruleType, openedTest, openedTestIndex } = useEditor();
+  const { updateTest } = useActions();
 
   return (
     <CodeSection
@@ -15,8 +15,10 @@ function InputEditor() {
           : translations.NormalizationRawEvents
       }
       language="json-lines"
-      code={inputText}
-      setCode={setInputText}
+      code={openedTest.inputData}
+      setCode={(inputData) => {
+        updateTest(openedTestIndex, { inputData });
+      }}
     />
   );
 }

@@ -11,13 +11,17 @@ import {
 } from './monaco';
 
 // Build worker into a separate chunk and get the path inside of the `out` folder
-import mainWorkerPath from '../../../node_modules/monaco-editor/min/vs/base/worker/workerMain.js?worker&url';
+import mainWorker from '../../../node_modules/monaco-editor/min/vs/base/worker/workerMain.js?raw';
 
 // In production mode we need to tell Monaco the paths to workers, otherwise
 // VSCode won't load them correctly
 if (!import.meta.env.DEV) {
   window.MonacoEnvironment = {
-    getWorkerUrl: () => mainWorkerPath
+    getWorker: () => {
+      const blob = new Blob([mainWorker]);
+      const uri = URL.createObjectURL(blob);
+      return new Worker(uri);
+    }
   };
 }
 
@@ -33,18 +37,18 @@ loader.config({
 
 type CodeEditorProps = {
   code: string;
-  setCode: ((value: string) => void) | ((value: React.SetStateAction<string>) => void);
   language?: Language;
   readOnly?: boolean;
   wordWrap?: boolean;
+  setCode(code: string): void;
 };
 
 function CodeEditor({
   code,
-  setCode,
   language,
   readOnly = false,
-  wordWrap = false
+  wordWrap = false,
+  setCode
 }: CodeEditorProps) {
   const { themeName, themeKind } = useTheme();
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
@@ -106,7 +110,7 @@ function CodeEditor({
           loading={null}
           options={options}
           onMount={handleMount}
-          onChange={handleChange}
+          onChange={readOnly ? undefined : handleChange}
         />
       </div>
     </div>

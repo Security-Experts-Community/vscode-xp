@@ -8,7 +8,7 @@ interface ActionButtonProps extends ComponentPropsWithoutRef<'button'> {
   className?: string;
   size?: number;
   isDisabled?: boolean;
-  onClick?(): void;
+  onClick?(e: React.MouseEvent): void;
 }
 
 const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(

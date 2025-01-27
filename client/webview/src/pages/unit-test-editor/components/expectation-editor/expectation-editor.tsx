@@ -4,15 +4,17 @@ import CodeSection from '../code-section/code-section';
 
 function ExpectationEditor() {
   const translations = useTranslations();
-  const { setExpectationText } = useActions();
-  const { ruleType, expectationText } = useEditor();
+  const { ruleType, openedTest, openedTestIndex } = useEditor();
+  const { updateTest } = useActions();
 
   return (
     <CodeSection
       title={translations.ConditionForPassingTheTest}
       language={ruleType == 'correlation' ? 'xp-test-code' : 'json'}
-      code={expectationText}
-      setCode={setExpectationText}
+      code={openedTest.expectationData}
+      setCode={(expectationData) => {
+        updateTest(openedTestIndex, { expectationData });
+      }}
     />
   );
 }

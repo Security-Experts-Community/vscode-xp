@@ -4,16 +4,18 @@ import CodeSection from '../code-section/code-section';
 
 function ResultEditor() {
   const translations = useTranslations();
-  const { setResultText } = useActions();
-  const { resultText } = useEditor();
+  const { openedTest, openedTestIndex } = useEditor();
+  const { updateTest } = useActions();
 
   return (
     <CodeSection
       readOnly
       language="json"
       title={translations.ActualResult}
-      code={resultText}
-      setCode={setResultText}
+      code={openedTest.actualData}
+      setCode={(actualData) => {
+        updateTest(openedTestIndex, { actualData });
+      }}
     />
   );
 }

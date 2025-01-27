@@ -26,9 +26,9 @@
 	"xp.views.knowledgebaseTree.duplicateCommand": "Copy",
 
 	"xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Integration Tests",
+	"xp.views.knowledgebaseTree.showModularTestsCommand": "Modular Tests",
 	"xp.views.knowledgebaseTree.showMetainfoCommand": "Metadata",
 	"xp.views.knowledgebaseTree.showLocalizationCommand": "Localization",
-	"xp.views.knowledgebaseTree.showTableDefaultValuesCommand": "Default Values",
 
 	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Compile All Rules and Lists",
 	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Compile All Localization Rules",
@@ -42,16 +42,10 @@
 
 	"xp.views.knowledgebaseTree.defaultContent": "This extension helps you develop rules for event processing using the eXtraction and Processing (XP) language.\nTo start, [open a knowledge base](command:xp.contentTree.openKnowledgebaseCommand) or create a new one.\nEnjoy!",
 
-	"xp.views.modularTestsListView.title": "Unit Tests",
-	"xp.views.modularTestsListView.defaultContent": "No unit tests yet",
-	"xp.views.modularTestsListView.runAll": "Run All",
-	"xp.views.modularTestsListView.create": "Create",
-	"xp.views.modularTestsListView.remove": "Delete",
-	"xp.views.modularTestsListView.refresh": "Refresh",
-
 	"xp.xpConfig.kbtBaseDirectoryDescription": "Path of the folder with the [Knowledge Base Toolkit](https://github.com/vxcontrol/xp-kbt/releases)",
 	"xp.xpConfig.outputDirectoryPathDescription": "Path of the folder where temporary objects are saved. The folder is emptied automatically every time you start the extension.",
 	"xp.xpConfig.correlatorTimeoutDescription": "Max correlation time in seconds. If the time is exceeded, the correlation will be canceled.",
+	"xp.xpConfig.lspServerExecutablePathDescription": "Path of the LSP server executable",
 
 	"xp.xpConfig.originDescription": "Vendor information. Used to export objects to a KB file.",
 	"xp.xpConfig.origin.contentPrefixDescription": "Object vendor prefix. Must match ObjectId. By default, custom rules have the LOC prefix, and system rules have the PT prefix. If no prefix is specified, the rules you create will not have ObjectId either.",
