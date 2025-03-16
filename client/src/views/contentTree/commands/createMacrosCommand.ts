@@ -31,25 +31,24 @@ export class CreateMacroCommand extends ViewCommand {
 
     const name = userInput.trim();
     const parentPath = this.parentItem.getDirectoryPath();
-    const rule = await Macros.create(name, parentPath);
+    const macros = await Macros.create(name, parentPath);
 
-    const metainfo = rule.getMetaInfo();
-    metainfo.setName(name);
+    const metainfo = macros.metadata;
 
-    const objectId = rule.generateObjectId();
+    const objectId = macros.generateObjectId();
     if (objectId) {
-      metainfo.setObjectId(objectId);
+      metainfo['ObjectId'] = objectId;
     }
 
     // Добавляем команду на открытие.
-    rule.setCommand({
+    macros.setCommand({
       command: ContentTreeProvider.onRuleClickCommand,
       title: 'Open File',
-      arguments: [rule]
+      arguments: [macros]
     });
 
-    await rule.save();
+    await macros.save();
     await ContentTreeProvider.refresh(this.parentItem);
-    await ContentTreeProvider.selectItem(rule);
+    await ContentTreeProvider.selectItem(macros);
   }
 }

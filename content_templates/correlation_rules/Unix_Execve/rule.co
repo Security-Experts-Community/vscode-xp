@@ -23,6 +23,7 @@ rule Unix_Execve: Event
         $subject.account.id = subject.account.id
         $subject.account.session_id = subject.account.session_id
         $subject.account.privileges = subject.account.privileges
+        $subject.account.fullname = subject.account.fullname
         $subject.type = subject.type
         $subject.process.chain = subject.process.chain
         

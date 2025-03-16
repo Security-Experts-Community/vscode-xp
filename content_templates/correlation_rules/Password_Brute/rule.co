@@ -41,6 +41,7 @@ rule Password_Brute: (Login_Failure[9,] -> Login_Success?) timer 11m
             $subject.account.session_id = subject.account.session_id
             $subject.account.id = subject.account.id
             $subject.account.privileges = subject.account.privileges
+            $subject.account.fullname = subject.account.fullname
 
             $src.host = src.host
             $src.ip = src.ip

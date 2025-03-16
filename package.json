@@ -337,11 +337,6 @@
           "group": "Enrichment@3"
         },
         {
-          "command": "LocalizationView.showLocalizationEditor",
-          "when": "view == KnowledgebaseTree && viewItem == Macros",
-          "group": "Macros@2"
-        },
-        {
           "command": "xp.contentTree.renameItemCommand",
           "when": "view == KnowledgebaseTree && (viewItem == Correlation || viewItem == Normalization || viewItem == Enrichment || viewItem == PackageFolder || viewItem == AuxiliaryFolder || viewItem == ContentRoot || viewItem == AnotherFolder)",
           "group": "ZCommonItems@2"

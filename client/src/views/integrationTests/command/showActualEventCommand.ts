@@ -19,7 +19,9 @@ export class ShowActualEventCommand extends Command {
 
   public async execute(): Promise<boolean> {
     const ruleName = this.params.rule.getName();
-    Log.info(`Запрошено фактического события ${ruleName} теста №${this.params.testNumber}`);
+    Log.info(
+      `Запрошено фактическое событие для теста №${this.params.testNumber} правила ${ruleName}`
+    );
 
     // Получаем ожидаемое событие.
     const tests = this.params.rule.getIntegrationTests();

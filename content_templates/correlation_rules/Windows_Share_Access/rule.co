@@ -22,7 +22,7 @@ rule Windows_Share_Access: Share_Access
         $subject.account.domain = subject.account.domain
         $subject.account.fullname = subject.account.fullname
         $subject.account.id = subject.account.id
-        $subject.account.session_id = subject.account.session_id 
+        $subject.account.session_id = subject.account.session_id
 
         $object.name = object.name
         $object.path = object.path
