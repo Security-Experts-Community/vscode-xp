@@ -51,13 +51,13 @@ export const postprocessData = (data: TableList) => {
     name: data.name,
     type: data.type,
     fillType: data.fillType,
-    userCanEditContent: true,
     metainfo: { ...data.metainfo },
     fields: data.columns.map((column) => ({ [column.name]: { ...column.data } }))
   } as TableListDto;
 
   switch (data.fillType) {
     case 'Registry':
+      result.userCanEditContent = true;
       result.defaults = {
         PT: Array.from(data.defaults.PT.values()).map(postprocessDefaultValues),
         LOC: Array.from(data.defaults.LOC.values()).map(postprocessDefaultValues)
