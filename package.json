@@ -298,7 +298,7 @@
         },
         {
           "command": "ModularTestEditorView.showEditor",
-          "when": "view == KnowledgebaseTree && (viewItem == Normalization || viewItem == Correlation || viewItem == Enrichment)",
+          "when": "view == KnowledgebaseTree && viewItem == Correlation",
           "group": "Correlation@2"
         },
         {
@@ -322,6 +322,11 @@
           "group": "Aggregation@3"
         },
         {
+          "command": "ModularTestEditorView.showEditor",
+          "when": "view == KnowledgebaseTree && viewItem == Normalization",
+          "group": "Normalization@1"
+        },
+        {
           "command": "LocalizationView.showLocalizationEditor",
           "when": "view == KnowledgebaseTree && viewItem == Normalization",
           "group": "Normalization@2"
@@ -332,7 +337,12 @@
           "group": "Enrichment@1"
         },
         {
-          "command": "LocalizationView.showLocalizationEditor",
+          "command": "ModularTestEditorView.showEditor",
+          "when": "view == KnowledgebaseTree && viewItem == Enrichment",
+          "group": "Enrichment@2"
+        },
+        {
+          "command": "MetaInfoView.showMetaInfoEditor",
           "when": "view == KnowledgebaseTree && viewItem == Enrichment",
           "group": "Enrichment@3"
         },

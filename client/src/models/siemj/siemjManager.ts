@@ -113,7 +113,7 @@ export class SiemjManager {
     // Ограничения KBT
     if (!FileSystemHelper.isValidPath(rawEventsFilePath)) {
       throw new XpException(
-        `Обнаружены недопустимые символы в пути ${rawEventsFilePath}. Исправьте путь и повторите`
+        `Обнаружены недопустимые символы в пути ${rawEventsFilePath}. Для корректной работы необходимо использовать только латинские буквы, цифры и другие корректные для путей символы, исключая пробелы. Исправьте путь и повторите`
       );
     }
 

@@ -96,7 +96,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
         format(text, {
           parser: 'yaml',
           singleQuote: true,
-          tabWidth: 4
+          tabWidth: 2
         })
     );
 

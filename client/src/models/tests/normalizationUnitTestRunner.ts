@@ -27,7 +27,7 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
     const testsDirPath = unitTest.getTestsDirPath();
     if (!FileSystemHelper.isValidPath(unitTest.getTestsDirPath())) {
       throw new XpException(
-        `Путь к тесту '${testsDirPath}' содержит недопустимые символы. Для корректной работы необходимо использовать только латинские буквы, цифры и другие корректные для путей символы`
+        `Путь к тесту '${testsDirPath}' содержит недопустимые символы. Для корректной работы необходимо использовать только латинские буквы, цифры и другие корректные для путей символы, исключая пробелы`
       );
     }
 

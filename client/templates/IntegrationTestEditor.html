@@ -723,7 +723,7 @@
 				// TODO: Перенести выше.
 				// Добавляем наши ключевые слова в json.
 				const xpTestCode = hljs.getLanguage('json');
-				xpTestCode.keywords.literal.push('not', 'expect', 'table_list', 'default');
+				xpTestCode.keywords.literal.push('any', 'not', 'expect', 'table_list', 'default');
 				xpTestCode.contains.push({begin:"#", end: "$", scope: "comment"});
 				hljs.registerLanguage(
 					'xp-test-code', 

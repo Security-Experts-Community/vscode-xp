@@ -66,7 +66,9 @@ export class TableListsEditorViewProvider extends WebViewProviderBase {
       const title = this._config.getMessage('View.TableList.OpenTitle', tableName);
       await this.createView(title);
     } catch (error) {
-      DialogHelper.showError(`Не удалось открыть табличный список`, error);
+      if (error.message != 'Webview is disposed') {
+        DialogHelper.showError(`Не удалось открыть табличный список`, error);
+      }
     }
   }
 

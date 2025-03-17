@@ -113,7 +113,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
         WordWrap: getTranslation('View.UnitTests.WordWrap'),
         ActualResult: getTranslation('View.UnitTests.ActualResult'),
         ConditionForPassingTheTest: getTranslation('View.UnitTests.ConditionForPassingTheTest'),
-        CorrelationRawEvents: getTranslation('View.UnitTests.CorrelationRawEvents'),
+        CorrelationNormalizedEvents: getTranslation('View.UnitTests.CorrelationNormalizedEvents'),
         NormalizationRawEvents: getTranslation('View.UnitTests.NormalizationRawEvents'),
         ReplaceExpectedEventWithActual: getTranslation(
           'View.UnitTests.ReplaceExpectedEventWithActual'

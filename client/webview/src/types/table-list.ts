@@ -28,6 +28,7 @@ export type TableList = {
   name: string;
   type: number;
   fillType: TableListFillType;
+  userCanEditContent?: boolean;
   ttl?: number;
   maxSize?: number;
   typicalSize?: number;

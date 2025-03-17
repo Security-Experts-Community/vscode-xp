@@ -212,9 +212,35 @@ export class SaveTableListCommand implements TableListCommand {
       'fields',
       'defaults'
     ];
-    const sortedObject = JsHelper.sortRootKeysAccordingToSchema(tableObject, schema);
+    var sortedObject = JsHelper.sortRootKeysAccordingToSchema(tableObject, schema);
+
+    // предполагаем, что complex_key всегда является первым элементом
+    if ('complex_key' in sortedObject.fields[0]) {
+      const complex_key_sort_schema = [
+        'compositeFields',
+        'index',
+        'nullable',
+        'primaryKey',
+        'type',
+        'unique'
+      ];
+      var sorted_complex_key = JsHelper.sortRootKeysAccordingToSchema(
+        sortedObject.fields[0].complex_key,
+        complex_key_sort_schema
+      );
+      sortedObject.fields[0].complex_key = sorted_complex_key;
+    }
 
     // Сохраняем в YAML
+    if (sortedObject.defaults) {
+      if ('PT' in sortedObject.defaults && sortedObject.defaults.length === 0) {
+        delete sortedObject.defaults['PT'];
+      }
+      if ('LOC' in sortedObject.defaults && sortedObject.defaults['LOC'].length === 0) {
+        delete sortedObject.defaults['LOC'];
+      }
+    }
+
     const resultYamlTable = await YamlHelper.tableStringify(sortedObject);
     await this._newTable.setRuleCode(resultYamlTable);
     return this._newTable.save();

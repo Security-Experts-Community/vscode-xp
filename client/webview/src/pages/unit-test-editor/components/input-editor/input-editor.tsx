@@ -11,7 +11,7 @@ function InputEditor() {
     <CodeSection
       title={
         ruleType == 'correlation'
-          ? translations.CorrelationRawEvents
+          ? translations.CorrelationNormalizedEvents
           : translations.NormalizationRawEvents
       }
       language="json-lines"
