@@ -13,7 +13,18 @@ import { StringHelper } from '../../helpers/stringHelper';
 
 export class CorrelationUnitTest extends BaseUnitTest {
   public getDefaultExpectation(): string {
-    return `# Тут будет твой тест. В секции expect укажи сколько и каких корреляционных событий ты ожидаешь\nexpect 1 {"correlation_name":"${this._rule.getName()}"}\n`;
+    return `# Тут будет твой модульный тест.
+# Пример:
+## создать для теста временную БД с табличными списками
+# table_list default
+## ожидаемое заполнение табличных списков
+# table_list {"AD_Domain_Controllers":[{"ip":"8.8.8.8","hostname":"dc.contoso.com"}]}
+## ожидаеммые события
+# expect <число>|not|any {<через запятую пары "поле":"значение">}
+    
+table_list default
+table_list {}
+expect 1 {"correlation_name":"${this._rule.getName()}"}\n`;
   }
 
   public getDefaultInputData(): string {
@@ -52,15 +63,15 @@ export class CorrelationUnitTest extends BaseUnitTest {
 
     const inputDataStrings: string[] = [];
 
-    const table_list_default = /(?:^#.*$|\r?\n)*^table_list\s+default$/m.exec(testFileContent);
-    if (table_list_default && table_list_default.length === 1) {
-      inputDataStrings.push(table_list_default[0].trim());
-    }
+    // const table_list_default = /(?:^#.*$|\r?\n)*^table_list\s+default$/m.exec(testFileContent);
+    // if (table_list_default && table_list_default.length === 1) {
+    //   inputDataStrings.push(table_list_default[0].trim());
+    // }
 
-    const table_list = /(?:^#.*$|\r?\n)*^table_list\s+\{.*?\}$/m.exec(testFileContent);
-    if (table_list && table_list.length === 1) {
-      inputDataStrings.push(table_list[0].trim());
-    }
+    // const table_list = /(?:^#.*$|\r?\n)*^table_list\s+\{.*?\}$/m.exec(testFileContent);
+    // if (table_list && table_list.length === 1) {
+    //   inputDataStrings.push(table_list[0].trim());
+    // }
 
     let m: RegExpExecArray;
     const event_pattern = /(?:^#.*?$|\s)*(?:^\{.*?\}$)/gm;

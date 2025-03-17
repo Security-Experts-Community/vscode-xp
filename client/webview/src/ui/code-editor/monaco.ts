@@ -10,6 +10,25 @@ export const initMonaco = (monaco: Monaco) => {
   // Add XP test files highlighting
   const XPTestCodeLanguage = 'xp-test-code';
   monaco.languages.register({ id: XPTestCodeLanguage });
+  monaco.languages.setLanguageConfiguration(XPTestCodeLanguage, {
+    comments: {
+      lineComment: '#'
+    },
+    brackets: [
+      ['{', '}'],
+      ['[', ']']
+    ],
+    autoClosingPairs: [
+      { open: '{', close: '}', notIn: ['string', 'comment'] },
+      { open: '[', close: ']', notIn: ['string', 'comment'] },
+      { open: '"', close: '"', notIn: ['string', 'comment'] }
+    ],
+    surroundingPairs: [
+      { open: '{', close: '}' },
+      { open: '[', close: ']' },
+      { open: '"', close: '"' }
+    ]
+  });
   monaco.languages.setMonarchTokensProvider(XPTestCodeLanguage, {
     tokenizer: {
       root: [
@@ -17,7 +36,7 @@ export const initMonaco = (monaco: Monaco) => {
         [/-?\d+(\.\d+)?/, 'number'],
         [/".*?"/, 'string'],
         [/\b(true|false|null)\b/, 'constant'],
-        [/\b(not|expect|table_list|default)\b/, 'keyword']
+        [/\b(not|any|expect|table_list|default)\b/, 'keyword']
       ]
     }
   });

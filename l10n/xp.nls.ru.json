@@ -267,7 +267,7 @@
     "View.UnitTests.ActualResult" : "Фактический результат",
     "View.UnitTests.ConditionForPassingTheTest" : "Код теста",
     "View.UnitTests.NormalizationRawEvents" : "Необработанные события",
-    "View.UnitTests.CorrelationRawEvents" : "Необработанные события в конверте (JSON Lines)",
+    "View.UnitTests.CorrelationNormalizedEvents" : "Нормализованные события (JSON Lines)",
     "View.UnitTests.CouldNotOpenTheTest" : "Не удалось открыть модульный тест",
     "View.UnitTests.NoActualEvent": "Фактическое событие не получено. Запустите тест для получения фактического события, после чего можно заменить ожидаемое событие фактическим",
     "View.UnitTests.ReplaceExpectedEventWithActual" : "Заменить ожидаемое событие фактическим в тесте",

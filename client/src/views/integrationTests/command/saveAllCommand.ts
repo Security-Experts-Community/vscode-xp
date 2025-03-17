@@ -89,7 +89,7 @@ export class SaveAllCommand extends Command {
 
       // Проверяем наличие проверки ожидаемых событий
       if (
-        !/(\bexpect\b\s+(\d+|not))|(\bexpect\b\s+\btable_list\b)\s+{[\s\S]*?}$/gm.test(testCode)
+        !/(\bexpect\b\s+(\d+|not|any))|(\bexpect\b\s+\btable_list\b)\s+{[\s\S]*?}$/gm.test(testCode)
       ) {
         throw new XpException(
           this.params.config.getMessage('View.IntegrationTests.Message.InvalidTestCode', number)

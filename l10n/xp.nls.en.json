@@ -266,7 +266,7 @@
     "View.UnitTests.WordWrap": "Word wrap",
     "View.UnitTests.ActualResult": "Actual result",
     "View.UnitTests.ConditionForPassingTheTest": "Test code",
-    "View.UnitTests.CorrelationRawEvents": "Raw events in envelope (JSON Lines)",
+    "View.UnitTests.CorrelationNormalizedEvents": "Normalized events (JSON Lines)",
     "View.UnitTests.NormalizationRawEvents": "Raw events",
     "View.UnitTests.CouldNotOpenTheTest" : "Couldn't open the modular test",
     "View.UnitTests.NoActualEvent": "The actual event hasn't been received. Run the test to receive the actual event, and then you can replace the expected event with the actual one",
