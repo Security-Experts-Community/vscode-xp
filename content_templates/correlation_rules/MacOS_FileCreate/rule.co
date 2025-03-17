@@ -20,6 +20,7 @@ rule MacOS_FileCreate: EventName
         $subject.account.session_id = subject.account.session_id
         $subject.account.id = subject.account.id
         $subject.account.privileges = subject.account.privileges
+        $subject.account.fullname = subject.account.fullname
 
         $subject.process.id = subject.process.id
         $subject.process.name = subject.process.name

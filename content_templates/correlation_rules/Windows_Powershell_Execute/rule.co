@@ -35,6 +35,7 @@ rule Windows_Powershell_Execute: Powershell_Pipeline_Execute or Powershell_Comma
         $subject.account.domain = subject.account.domain
         $subject.account.fullname = subject.account.fullname
         $subject.account.id = subject.account.id
+        $subject.account.fullname = subject.account.fullname
 
         $object.account.name = object.account.name
         $object.account.domain = object.account.domain

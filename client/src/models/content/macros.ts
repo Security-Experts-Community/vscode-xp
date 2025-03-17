@@ -12,6 +12,7 @@ import { BaseUnitTest } from '../tests/baseUnitTest';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { MetaInfo } from '../metaInfo/metaInfo';
+import { YamlHelper } from '../../helpers/yamlHelper';
 
 export class Macros extends RuleBaseItem {
   public async save(parentFullPath?: string): Promise<void> {
@@ -25,7 +26,6 @@ export class Macros extends RuleBaseItem {
       if (!parentPath) {
         throw new XpException('Не задан путь для сохранения макроса');
       }
-
       marcoDirPath = this.getDirectoryPath();
     }
 
@@ -33,15 +33,18 @@ export class Macros extends RuleBaseItem {
       await fs.promises.mkdir(marcoDirPath, { recursive: true });
     }
 
-    const ruleFullPath = this.getRuleFilePath();
-    const ruleCode = await this.getRuleCode();
-    await FileSystemHelper.writeContentFile(ruleFullPath, ruleCode);
+    const macrosFullPath = this.getRuleFilePath();
+    const macrosCode = await this.getRuleCode();
+    await FileSystemHelper.writeContentFile(macrosFullPath, macrosCode);
 
     // // Параллельно сохраняем все данные правила.
-    await this.getMetaInfo().save(marcoDirPath);
-    // const integrationTestsPromise = this.saveIntegrationTests(marcoDirPath);
-    // const unitTestsPromise = this.saveUnitTests();
-    // await Promise.all([metainfoPromise, localizationPromise, integrationTestsPromise, unitTestsPromise]);
+    let metaInfoFullPath = path.join(marcoDirPath, MetaInfo.METAINFO_FILENAME);
+    await FileSystemHelper.writeContentFileIfChanged(
+      metaInfoFullPath,
+      await YamlHelper.stringify(this.metadata)
+    );
+
+    //await this.getMetaInfo().save(marcoDirPath);
   }
 
   public async saveMetaInfoAndLocalizations(): Promise<void> {
@@ -110,16 +113,16 @@ export class Macros extends RuleBaseItem {
   }
 
   public static async create(name: string, parentDirectoryPath?: string): Promise<Macros> {
-    const marco = new Macros(name, parentDirectoryPath);
+    const macros = new Macros(name, parentDirectoryPath);
 
     // Добавляем команду на открытие.
-    marco.setCommand({
+    macros.setCommand({
       command: ContentTreeProvider.onRuleClickCommand,
       title: 'Open File',
-      arguments: [marco]
+      arguments: [macros]
     });
 
-    marco.setRuleCode(
+    macros.setRuleCode(
       `filter ${name}(string $name) {
 	filter::NotFromCorrelator()
 	# and (
@@ -139,10 +142,11 @@ export class Macros extends RuleBaseItem {
     );
 
     // Метаданные по умолчанию.
-    const metaInfo = MetaInfo.create({});
+    // const metaInfo = MetaInfo.create();
 
-    marco.setMetaInfo(metaInfo);
-    return marco;
+    // marco.setMetaInfo(metaInfo);
+    // macros.metadata = metadata;
+    return macros;
   }
 
   public getRuleFilePath(): string {
@@ -174,6 +178,21 @@ export class Macros extends RuleBaseItem {
     throw new XpException('Method not implemented.');
   }
 
+  metadata = {
+    Filter: {
+      Name: {
+        ru: '',
+        en: ''
+      },
+      Description: {
+        ru: '',
+        en: ''
+      },
+      UseAsEventName: true
+    }
+    // Args: {},
+    // Tags: []
+  };
   iconPath = new vscode.ThemeIcon('filter');
   contextValue = 'Macros';
 }
