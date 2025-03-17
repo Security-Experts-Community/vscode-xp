@@ -47,7 +47,7 @@ export class SiemjConfBuilder {
     const baseOutputDirPath = config.getBaseOutputDirectoryPath();
     if (!FileSystemHelper.isValidPath(baseOutputDirPath)) {
       throw new XpException(
-        `Путь к выходной директории '${baseOutputDirPath}' содержит недопустимые символы. Для корректной работы необходимо использовать только латинские буквы, цифры и другие корректные для путей символы`
+        `Путь к выходной директории '${baseOutputDirPath}' содержит недопустимые символы. Для корректной работы необходимо использовать только латинские буквы, цифры и другие корректные для путей символы, исключая пробелы`
       );
     }
 

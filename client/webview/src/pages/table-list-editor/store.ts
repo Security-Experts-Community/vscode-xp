@@ -15,10 +15,10 @@ import { postprocessData, preprocessData } from './store.utils';
 import { validation } from './store.validation';
 
 const DEFAULT_COLUMN_NAME = '';
-const DEFAULT_STRING_VALUE = '-';
+const DEFAULT_STRING_VALUE = '';
 const DEFAULT_NUMBER_VALUE = '0';
 const DEFAULT_DATE_VALUE = new Date().toISOString().slice(0, 10);
-const DEFAULT_REGEX_VALUE = '.';
+const DEFAULT_REGEX_VALUE = '.*';
 const SECONDS_IN_MINUTE = 60;
 const SECONDS_IN_HOUR = SECONDS_IN_MINUTE * 60;
 const SECONDS_IN_DAY = SECONDS_IN_HOUR * 24;
