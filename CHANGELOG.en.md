@@ -1,5 +1,18 @@
 # Change Log
 
+## 3.20.3 (Release)
+
+- Fixed position of compositeFields to the complex_key list
+- Fixed logic for handling empty values ​​for defaults in tabular lists. Fixed tabulation from 2 spaces to 4 to preserve indents from PTKB.
+- The userCanEditContent property is now available only for registries
+- Fixed test parsing problem (from issue #219)
+- Fixed the inscription in the unit test editor
+- Added support for the 'any' keyword in tests
+- In the unit test editor: restored functionality for commenting lines with Ctrl+/, added auto-closing pairs of symbols and their highlighting
+- Context menus for correlations and enrichments are rebuilded to a unified view
+- Updated correlation rule templates
+- Added new data sources for metainformation
+
 ## 3.20.2 (Release)
 
 - The unit test editor has been rewritten in React and now contains tabs like in integration tests
