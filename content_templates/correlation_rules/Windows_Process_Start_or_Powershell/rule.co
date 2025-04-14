@@ -136,7 +136,6 @@ rule Windows_Process_Start_or_Powershell: Process_Start or Powershell_Pipeline_E
         $object.process.parent.id = object.process.parent.id
         $object.process.parent.cmdline = object.process.parent.cmdline
 
-        $object.id = object.id
         $object.name = object.name
         $object.path = object.path
         $object.fullpath = object.fullpath

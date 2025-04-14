@@ -812,7 +812,12 @@
 			"\\$event_src.subsys = event_src.subsys",
 			"\\$event_src.vendor = event_src.vendor",
 			"\\$event_src.category = event_src.category",
-			"\\$event_src.rule = event_src.rule"
+			"\\$event_src.rule = event_src.rule",
+			"\\$event_src.description = event_src.description",
+			"\\$event_src.id = event_src.id",
+			"\\$event_src.provider = event_src.provider",
+			"\\$event_src.mac = event_src.mac",
+			"\\$event_src.mac.vendor = event_src.mac.vendor"
 		]
 	},
 	"Поля аккаунта субъекта": {
@@ -841,6 +846,30 @@
 			"\\$object.account.privileges = object.account.privileges"
 		]
 	},
+	"Поля аккаунта субъекта приложения": {
+		"prefix": [
+			"$subject.application.account.*"
+		],
+		"body": [
+			"\\$subject.application.account.domain = subject.application.account.domain",
+			"\\$subject.application.account.id = subject.application.account.id",
+			"\\$subject.application.account.name = subject.application.account.name",
+			"\\$subject.application.account.privileges = subject.application.account.privileges",
+			"\\$subject.application.account.session_id = subject.application.account.session_id"
+		]
+	},
+	"Поля аккаунта объекта приложения": {
+		"prefix": [
+			"$object.application.account.*"
+		],
+		"body": [
+			"\\$object.application.account.domain = object.application.account.domain",
+			"\\$object.application.account.id = object.application.account.id",
+			"\\$object.application.account.name = object.application.account.name",
+			"\\$object.application.account.privileges = object.application.account.privileges",
+			"\\$object.application.account.session_id = object.application.account.session_id"
+		]
+	},
 	"Поля субьекта-процесса": {
 		"prefix": [
 			"$subject.process.*"
@@ -867,6 +896,21 @@
 			"",
 			"\\$datafield18 = datafield18 # chain with PID for subject",
 			"\\$datafield19 = datafield19 # chain with PID for object"
+		]
+	},
+	"Поля субъекта": {
+		"prefix": [
+			"$subject.*"
+		],
+		"body": [
+			"\\$subject.name = subject.name",
+			"\\$subject.id = subject.id",
+			"\\$subject.domain = subject.domain",
+			"\\$subject.group = subject.group",
+			"\\$subject.privileges = subject.privileges",
+			"\\$subject.state = subject.state",
+			"\\$subject.type = subject.type",
+			"\\$subject.version = subject.version"
 		]
 	},
 	"Поля объекта-процесса": {
@@ -912,7 +956,21 @@
 			"\\$object.property = object.property",
 			"\\$object.value = object.value",
 			"\\$object.new_value = object.new_value",
-			"\\$object.query = object.query"
+			"\\$object.query = object.query",
+			"\\$object.original_name = object.original_name",
+			"\\$object.domain = object.domain",
+			"\\$object.group = object.group",
+			"\\$object.id = object.id",
+			"\\$object.state = object.state",
+			"\\$object.vendor = object.vendor",
+			"\\$object.version = object.version",
+			"\\$object.hash = object.hash",
+			"\\$object.hash.imphash = object.hash.imphash",
+			"\\$object.hash.md5 = object.hash.md5",
+			"\\$object.hash.sha1 = object.hash.sha1",
+			"\\$object.hash.sha256 = object.hash.sha256",
+			"\\$object.meta = object.meta",
+			"\\$object.num_value = object.num_value"
 		]
 	},
 	"Поля источника": {
