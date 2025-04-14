@@ -1,6 +1,0 @@
-/node_modules
-/build
-.prettierrc.cjs
-**/*.d.ts
-**/*.config.js
-**/*.config.ts

@@ -1,3 +1,3 @@
 export class TaxonomyFieldDetails {
-	public type : string;
+  public type: string;
 }

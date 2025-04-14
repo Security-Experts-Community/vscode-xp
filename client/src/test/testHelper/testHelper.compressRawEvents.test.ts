@@ -4,11 +4,8 @@ import * as assert from 'assert';
 import { TestHelper } from '../../helpers/testHelper';
 
 suite('TestHelper.compressRawEvents', async () => {
-
-	test('Сжатие одного события с новыми строками', async () => {
-
-		const rawEventsFromSIEM = 
-`{
+  test('Сжатие одного события с новыми строками', async () => {
+    const rawEventsFromSIEM = `{
 	"Event": {
 		"xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
 		"System": {
@@ -75,16 +72,14 @@ suite('TestHelper.compressRawEvents', async () => {
 	}
 }`;
 
-		const compressedRawEventsString = TestHelper.compressJsonRawEvents(rawEventsFromSIEM);
+    const compressedRawEventsString = TestHelper.compressJsonRawEvents(rawEventsFromSIEM);
 
-		const lines = compressedRawEventsString.split("\n");
-		assert.strictEqual(lines.length, 1);
-	});
+    const lines = compressedRawEventsString.split('\n');
+    assert.strictEqual(lines.length, 1);
+  });
 
-	test('Сжатие двух событий', async () => {
-
-		const rawEventsFromSIEM = 
-`{
+  test('Сжатие двух событий', async () => {
+    const rawEventsFromSIEM = `{
 	"Event": {
 		"xmlns": "http://schemas.microsoft.com/win/2004/08/events/event",
 		"System": {
@@ -151,9 +146,9 @@ suite('TestHelper.compressRawEvents', async () => {
 	}
 }`;
 
-		const formatedTestCode = TestHelper.compressJsonRawEvents(rawEventsFromSIEM);
+    const formattedTestCode = TestHelper.compressJsonRawEvents(rawEventsFromSIEM);
 
-		const lines = formatedTestCode.split("\n");
-		assert.strictEqual(lines.length, 2);
-	});
+    const lines = formattedTestCode.split('\n');
+    assert.strictEqual(lines.length, 2);
+  });
 });

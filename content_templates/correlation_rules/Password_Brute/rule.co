@@ -4,7 +4,7 @@ event Login_Failure:
     filter {
         filter::Bruteforce_Attempted_Vendors()
 		# TODO: задать условие неудачной авторизации
-		
+
 		# TODO: исключить технические учётные записи
         # and not in_list(["technical_account"], lower(subject.account.name))
         and filter::CheckWL_Password_Guessing("Password_Brute", lower(join([event_src.title, event_src.host, coalesce(subject.account.name, subject.account.id), src.host],"|")))
@@ -19,7 +19,7 @@ event Login_Success:
         and action == "login"
         and object == "application"
         and status == "success"
-		
+
 		# TODO: исключить технические учётные записи
         # and not in_list(["technical_account"], lower(subject.account.name))
     }
@@ -29,18 +29,19 @@ rule Password_Brute: (Login_Failure[9,] -> Login_Success?) timer 11m
 
     init {
         $labels = "CheckWL_Password_Guessing"
-        $count_total = 0
+        $count.subevents = 0
     }
 
     on Login_Failure {
         # Блок выполняется только при первом событии
-        if $count_total == 0 then  
+        if $count.subevents == 0 then  
             $subject.account.name = subject.account.name
             $subject.account.fullname = subject.account.fullname
             $subject.account.domain = subject.account.domain
             $subject.account.session_id = subject.account.session_id
             $subject.account.id = subject.account.id
             $subject.account.privileges = subject.account.privileges
+            $subject.account.fullname = subject.account.fullname
 
             $src.host = src.host
             $src.ip = src.ip
@@ -74,7 +75,7 @@ rule Password_Brute: (Login_Failure[9,] -> Login_Success?) timer 11m
             $event_src.rule = event_src.rule
         endif
 
-        $count_total = $count_total + 1    
+        $count.subevents = $count.subevents + 1    
     }
 
     on Login_Success {
@@ -94,12 +95,10 @@ emit {
     $subject = "account"
     $action = "initiate"
     $object = "attack"
-    
-    $alert.key = lower(join([$event_src.title, $event_src.host, coalesce($subject.account.name, $subject.account.id), $src.host],"|"))
-    $datafield1 = $count_total # количество неудачных попыток входа
-    $numfield1 = $count_total
 
-    $alert.context = "Attempts: " + string($count_total)
+    $alert.key = lower(join([$event_src.title, $event_src.host, coalesce($subject.account.name, $subject.account.id), $src.host],"|"))
+    $alert.context = "Attempts: " + string($count.subevents)
+
     if $status == "success" then
         $correlation_type = "incident"
         $alert.context = join([$alert.context, "| Password guessed for:", $subject.account.name], " ")

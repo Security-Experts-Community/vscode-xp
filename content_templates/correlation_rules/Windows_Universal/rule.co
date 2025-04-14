@@ -10,7 +10,7 @@ event EventName:
 rule Windows_Universal: EventName
 
     init {
-        $labels = "w_auto"
+        $labels = "w_auto|CheckWL_Specific_Only"
     }
 
     on EventName {
@@ -19,6 +19,7 @@ rule Windows_Universal: EventName
         $subject.account.session_id = subject.account.session_id
         $subject.account.id = subject.account.id
         $subject.account.privileges = subject.account.privileges
+        $subject.account.fullname = subject.account.fullname
 
         $subject.process.id = subject.process.id
         $subject.process.name = subject.process.name

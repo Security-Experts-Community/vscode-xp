@@ -10,167 +10,171 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Attack } from '../../models/metaInfo/attack';
 
 suite('MetaInfo', () => {
+  test('Очищение поля Improvements', async () => {
+    const metaInfo = new MetaInfo();
+    metaInfo.setImprovements(['first improvements', 'second improvements']);
+    metaInfo.setImprovements([]);
 
-	test('Очищение поля Improvements', () => {
-		const metaInfo = new MetaInfo();
-		metaInfo.setImprovements([
-			"first improvements",
-			"second improvements"
-		]);
-		metaInfo.setImprovements([]);
+    const metainfoString = await metaInfo.toString();
+    assert.ok(metainfoString.includes('Improvements: []'));
+  });
 
-		const metainfoString = metaInfo.toString();
-		assert.ok(metainfoString.includes("Improvements: []"));
-	});
+  test('EventID без кавычек для Windows', async () => {
+    const metaInfo = new MetaInfo();
+    metaInfo.setDataSources([
+      new DataSource('Microsoft-Windows-Security-Auditing', ['1644', '5136'])
+    ]);
+    const tmpDir = TestFixture.getTmpPath();
 
-	test('EventID без кавычек для Windows', async () => {
+    await metaInfo.save(tmpDir);
 
-		const metaInfo = new MetaInfo();
-		metaInfo.setDataSources([
-			new DataSource("Microsoft-Windows-Security-Auditing", ["1644", "5136"])
-		]);
-		const tmpDir = TestFixture.getTmpPath();
+    const metaInfoFilePath = path.join(tmpDir, MetaInfo.METAINFO_FILENAME);
+    const metaInfoString = await FileSystemHelper.readContentFile(metaInfoFilePath);
 
-		await metaInfo.save(tmpDir);
+    assert.ok(metaInfoString.includes('- 1644'));
+    assert.ok(metaInfoString.includes('- 5136'));
+  });
 
-		const metaInfoFilePath = path.join(tmpDir, MetaInfo.METAINFO_FILENAME);
-		const metaInfoString = await FileSystemHelper.readContentFile(metaInfoFilePath);
+  test('EventID без кавычек для Linux', async () => {
+    const metaInfo = new MetaInfo();
+    metaInfo.setDataSources([
+      new DataSource('Unix', ['pt_siem_execve', 'pt_siem_execve_daemon', 'user_cmd'])
+    ]);
 
-		assert.ok(metaInfoString.includes("- 1644"));
-		assert.ok(metaInfoString.includes("- 5136"));
-	});
+    const tmpDir = TestFixture.getTmpPath();
+    await metaInfo.save(tmpDir);
 
-	test('EventID без кавычек для Linux', async () => {
+    const metaInfoFilePath = path.join(tmpDir, MetaInfo.METAINFO_FILENAME);
+    const metaInfoString = await FileSystemHelper.readContentFile(metaInfoFilePath);
 
-		const metaInfo = new MetaInfo();
-		metaInfo.setDataSources([
-			new DataSource("Unix", ["pt_siem_execve", "pt_siem_execve_daemon", "user_cmd"])
-		]);
+    assert.ok(metaInfoString.includes('- pt_siem_execve'));
+    assert.ok(metaInfoString.includes('- pt_siem_execve_daemon'));
+    assert.ok(metaInfoString.includes('- user_cmd'));
+  });
 
-		const tmpDir = TestFixture.getTmpPath();
-		await metaInfo.save(tmpDir);
+  test('Минимальная метаинформация, содержащая только ObjectId', async () => {
+    const metaInfoPath = TestFixture.getFixturePath('metaInfo', 'onlyObjectId');
+    const metaInfo = await MetaInfo.fromFile(metaInfoPath);
 
-		const metaInfoFilePath = path.join(tmpDir, MetaInfo.METAINFO_FILENAME);
-		const metaInfoString = await FileSystemHelper.readContentFile(metaInfoFilePath);
+    assert.strictEqual(metaInfo.getObjectId(), 'LOC-ER-1');
+  });
 
-		assert.ok(metaInfoString.includes("- pt_siem_execve"));
-		assert.ok(metaInfoString.includes("- pt_siem_execve_daemon"));
-		assert.ok(metaInfoString.includes("- user_cmd"));
-	});
+  test('Поле Created = []', async () => {
+    const metaInfoPath = TestFixture.getFixturePath('metaInfo', 'createdIsEmptyArray');
+    const metaInfo = await MetaInfo.fromFile(metaInfoPath);
 
-	test('Минимальная метаинформация, содержащая только ObjectId', async () => {
-		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "onlyObjectId");
-		const metaInfo = await MetaInfo.fromFile(metaInfoPath);
+    assert.strictEqual(metaInfo.getCreatedDate(), undefined);
+  });
 
-		assert.strictEqual(metaInfo.getObjectId(), "LOC-ER-1");
-	});
+  test('Несколько техник в одной тактике', async () => {
+    const metaInfo = new MetaInfo();
+    const attack1 = new Attack();
+    const attack2 = new Attack();
+    attack1.Tactic = attack2.Tactic = 'discovery';
+    attack1.Techniques = ['T1010', 'T1217'];
+    attack2.Techniques = ['T1580', 'T1526'];
 
-	test('Поле Created = []', async () => {
-		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "createdIsEmptyArray");
-		const metaInfo = await MetaInfo.fromFile(metaInfoPath);
+    metaInfo.setAttacks([attack1, attack2]);
 
-		assert.strictEqual(metaInfo.getCreatedDate(), undefined);
-	});
+    const savePath = TestFixture.getTmpPath();
+    await metaInfo.save(savePath);
 
-	test('Несколько техник в одной тактике', async () => {
-		const metaInfo = new MetaInfo();
-		const attack1 = new Attack();
-		const attack2 = new Attack();
-		attack1.Tactic = attack2.Tactic = 'discovery';
-		attack1.Techniques = ['T1010', 'T1217'];
-		attack2.Techniques = ['T1580', 'T1526'];
+    const metaInfoPath = path.join(savePath, MetaInfo.METAINFO_FILENAME);
+    const metaInfoString = await FileSystemHelper.readContentFile(metaInfoPath);
+    const metaInfoPlain = await TestFixture.readYamlFile(metaInfoPath);
 
-		metaInfo.setAttacks([attack1, attack2]);
+    assert.ok(metaInfoString.match('discovery').length == 1); // в metainfo.yaml строго один ключ тактики discovery
+    assert.ok(
+      ['T1010', 'T1217', 'T1580', 'T1526'].every((item) =>
+        metaInfoPlain.ContentRelations.Implements.ATTACK.discovery.includes(item)
+      )
+    );
+  });
 
-		const savePath = TestFixture.getTmpPath();
-		await metaInfo.save(savePath);
+  test('Сохранение только заданных полей', async () => {
+    // Создаем метаданные.
+    const metaInfo = new MetaInfo();
+    const ed = new MetaInfoEventDescription();
+    ed.setCriteria('criteria');
+    ed.setLocalizationId('localizationId');
+    metaInfo.addEventDescriptions([ed]);
 
-		const metaInfoPath = path.join(savePath, MetaInfo.METAINFO_FILENAME);
-		const metaInfoString = await FileSystemHelper.readContentFile(metaInfoPath);
-		const metaInfoPlain = await TestFixture.readYamlFile(metaInfoPath);
+    const savePath = TestFixture.getTmpPath();
+    await metaInfo.save(savePath);
 
-		assert.ok(metaInfoString.match('discovery').length == 1); // в metainfo.yaml строго один ключ тактики discovery
-		assert.ok(['T1010', 'T1217', 'T1580', 'T1526'].every(item => metaInfoPlain.ContentRelations.Implements.ATTACK.discovery.includes(item)));
-	});
+    // Проверяем, что нас устраивает формат сохранения.
+    const metaInfoPath = path.join(savePath, MetaInfo.METAINFO_FILENAME);
+    const metaInfoPlain = await TestFixture.readYamlFile(metaInfoPath);
 
-	test('Сохранение только заданных полей', async () => {
-		// Создаем метаданные.
-		const metaInfo = new MetaInfo();
-		const ed = new MetaInfoEventDescription();
-		ed.setCriteria("criteria");
-		ed.setLocalizationId("localizationId");
-		metaInfo.addEventDescriptions([ed]);
+    assert.ok(!metaInfoPlain.Name);
+    assert.ok(!metaInfoPlain.ObjectId);
+    assert.ok(metaInfoPlain.ExpertContext.Created);
+    assert.ok(metaInfoPlain.ExpertContext.Updated);
 
-		const savePath = TestFixture.getTmpPath();
-		await metaInfo.save(savePath);
+    assert.strictEqual(metaInfoPlain.EventDescriptions[0].Criteria, 'criteria');
+    assert.strictEqual(metaInfoPlain.EventDescriptions[0].LocalizationId, 'localizationId');
 
-		// Проверяем, что нас устраивает формат сохранения.
-		const metaInfoPath = path.join(savePath, MetaInfo.METAINFO_FILENAME);
-		const metaInfoPlain = await TestFixture.readYamlFile(metaInfoPath);
+    assert.ok(!metaInfoPlain.ExpertContext.DataSources);
+    assert.ok(!metaInfoPlain.ExpertContext.Falsepositives);
+    assert.ok(!metaInfoPlain.ExpertContext.Improvements);
+    assert.ok(!metaInfoPlain.ExpertContext.KnowledgeHolders);
+    assert.ok(!metaInfoPlain.ExpertContext.Usecases);
+    assert.ok(!metaInfoPlain.ExpertContext.References);
+    assert.ok(!metaInfoPlain.ContentRelations); // ATTACK
+  });
 
-		assert.ok(!metaInfoPlain.Name);
-		assert.ok(!metaInfoPlain.ObjectId);
-		assert.ok(metaInfoPlain.ExpertContext.Created);
-		assert.ok(metaInfoPlain.ExpertContext.Updated);
+  test('Сохранение произвольных полей metainfo', async () => {
+    const metaInfoPath = TestFixture.getFixturePath('metaInfo', 'keepUnknownFields');
 
-		assert.strictEqual(metaInfoPlain.EventDescriptions[0].Criteria, "criteria");
-		assert.strictEqual(metaInfoPlain.EventDescriptions[0].LocalizationId, "localizationId");
+    const metainfo = await MetaInfo.fromFile(metaInfoPath);
 
-		assert.ok(!metaInfoPlain.ExpertContext.DataSources);
-		assert.ok(!metaInfoPlain.ExpertContext.Falsepositives);
-		assert.ok(!metaInfoPlain.ExpertContext.Improvements);
-		assert.ok(!metaInfoPlain.ExpertContext.KnowledgeHolders);
-		assert.ok(!metaInfoPlain.ExpertContext.Usecases);
-		assert.ok(!metaInfoPlain.ExpertContext.References);
-		assert.ok(!metaInfoPlain.ContentRelations); // ATTACK
-	});
+    metainfo.setAttacks([{ Tactic: 'test', Techniques: ['T1234.56'] }]);
+    metainfo.setName('KeepUnknownFieldsTest');
 
-	test('Сохранение произвольных полей metainfo', async () => {
-		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "keepUnknownFields");
+    const savePath = TestFixture.getTmpPath();
+    await metainfo.save(savePath);
 
-		const metainfo = await MetaInfo.fromFile(metaInfoPath);
+    const newMetainfoPlain = await TestFixture.readYamlFile(
+      path.join(savePath, MetaInfo.METAINFO_FILENAME)
+    );
 
-		metainfo.setAttacks([{ Tactic: "test", Techniques: ["T1234.56"] }]);
-		metainfo.setName("KeepUnknownFieldsTest");
+    assert.strictEqual(newMetainfoPlain.ContentAutoName, 'KeepUnknownFieldsTest');
+    assert.strictEqual(newMetainfoPlain.UnknownField, 'Unknown data');
+    assert.strictEqual(newMetainfoPlain.ExpertContext.UnknownFieldInExpertContext, 'lalala');
 
-		const savePath = TestFixture.getTmpPath();
-		await metainfo.save(savePath);
+    assert.deepStrictEqual(newMetainfoPlain.ContentRelations.Implements.ATTACK, {
+      test: ['T1234.56']
+    });
+    assert.deepStrictEqual(newMetainfoPlain.ContentLabels, ['ContentLabel1']);
+    assert.deepStrictEqual(newMetainfoPlain.ContentRelations.InternalField, ['some', 'strings']);
+  });
 
-		const newMetainfoPlain = await TestFixture.readYamlFile(path.join(savePath, MetaInfo.METAINFO_FILENAME));
+  test('Сохранение ContentLabels после сохранения', async () => {
+    const metaInfoPath = TestFixture.getFixturePath('metaInfo', 'keepUnknownFields');
+    const metainfo = await MetaInfo.fromFile(metaInfoPath);
 
-		assert.strictEqual(newMetainfoPlain.ContentAutoName, "KeepUnknownFieldsTest");
-		assert.strictEqual(newMetainfoPlain.UnknownField, "Unknown data");
-		assert.strictEqual(newMetainfoPlain.ExpertContext.UnknownFieldInExpertContext, "lalala");
+    const savePath = TestFixture.getTmpPath();
+    await metainfo.save(savePath);
 
-		assert.deepStrictEqual(newMetainfoPlain.ContentRelations.Implements.ATTACK, { "test": ["T1234.56"] });
-		assert.deepStrictEqual(newMetainfoPlain.ContentLabels, ["ContentLabel1"]);
-		assert.deepStrictEqual(newMetainfoPlain.ContentRelations.InternalField, ["some", "strings"]);
-	});
+    const newMetainfoPlain = await TestFixture.readYamlFile(
+      path.join(savePath, MetaInfo.METAINFO_FILENAME)
+    );
+    assert.deepStrictEqual(newMetainfoPlain.ContentLabels, ['ContentLabel1']);
+  });
 
-	test('Сохранение ContentLabels после сохранения', async () => {
-		const metaInfoPath = TestFixture.getFixturePath("metaInfo", "keepUnknownFields");
-		const metainfo = await MetaInfo.fromFile(metaInfoPath);
+  // Создаем временную директорию.
+  setup(() => {
+    const tmpPath = TestFixture.getTmpPath();
+    if (!fs.existsSync(tmpPath)) {
+      fs.mkdirSync(tmpPath);
+    }
+  });
 
-		const savePath = TestFixture.getTmpPath();
-		await metainfo.save(savePath);
-
-		const newMetainfoPlain = await TestFixture.readYamlFile(path.join(savePath, MetaInfo.METAINFO_FILENAME));
-		assert.deepStrictEqual(newMetainfoPlain.ContentLabels, ["ContentLabel1"]);
-	});
-
-	// Создаем временную директорию.
-	setup(() => {
-		const tmpPath = TestFixture.getTmpPath();
-		if (!fs.existsSync(tmpPath)) {
-			fs.mkdirSync(tmpPath);
-		}
-	});
-
-	// Удаляем созданные корреляции.
-	teardown(() => {
-		const tmpPath = TestFixture.getTmpPath();
-		if (fs.existsSync(tmpPath)) {
-			fs.rmdirSync(tmpPath, { recursive: true });
-		}
-	});
+  // Удаляем созданные корреляции.
+  teardown(() => {
+    const tmpPath = TestFixture.getTmpPath();
+    if (fs.existsSync(tmpPath)) {
+      fs.rmdirSync(tmpPath, { recursive: true });
+    }
+  });
 });

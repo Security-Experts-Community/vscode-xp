@@ -1,0 +1,35 @@
+event Event:
+    filter {
+        # TODO: задать логику фильтрации нормализованного или корреляционного события
+        filter::NotFromCorrelator()
+        and object.id != null
+    }
+
+enrichment With_the_Table_Edition
+    enrich Event:
+        enrich_fields {
+            # TODO: определение переменных для вставки или удаления записей из табличного списка
+            $columnValue1 = object.id
+            $columnValue2 = object.id
+            $columnValue3 = object.id
+        }
+
+    # TODO: блок для вставки записи в табличный список
+    insert_into TableName {
+        column::columnName1 = $columnValue1
+        column::columnName2 = $columnValue2
+        column::columnName3 = $columnValue3
+    }
+
+    # TODO: блок для вставки записи в табличный список при верном условии $columnValue1 != null
+    insert_into TableName if $columnValue1 != null {
+        column::columnName1 = $columnValue1
+        column::columnName2 = $columnValue2
+        column::columnName3 = $columnValue3
+    }
+
+    # TODO: блок для удаления записей из табличного списка
+    remove_from TableName {
+        column::columnName1 == lower(object.id)
+    }
+

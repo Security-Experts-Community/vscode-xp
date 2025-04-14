@@ -1,13 +1,9 @@
-
 import * as assert from 'assert';
 import { ContentHelper } from '../../helpers/contentHelper';
 
 suite('EnrichmentHelper', async () => {
-
-	test('Переименование простого обогащения', async () => {
-
-		const ruleCode =
-`event Sandbox_event:
+  test('Переименование простого обогащения', async () => {
+    const ruleCode = `event Sandbox_event:
 filter {
 	filter::NotFromCorrelator()
 	and event_src.vendor == "vendor"
@@ -23,8 +19,7 @@ enrich Sandbox_event:
 	}
 `;
 
-		const expectedRuleCode =
-`event Sandbox_event:
+    const expectedRuleCode = `event Sandbox_event:
 filter {
 	filter::NotFromCorrelator()
 	and event_src.vendor == "vendor"
@@ -40,8 +35,11 @@ enrich Sandbox_event:
 	}
 `;
 
-		const newRuleCode = ContentHelper.replaceAllEnrichmentNameWithinCode("Super_Duper_Enrichment", ruleCode);
+    const newRuleCode = ContentHelper.replaceAllEnrichmentNameWithinCode(
+      'Super_Duper_Enrichment',
+      ruleCode
+    );
 
-		assert.strictEqual(newRuleCode, expectedRuleCode);
-	});
+    assert.strictEqual(newRuleCode, expectedRuleCode);
+  });
 });

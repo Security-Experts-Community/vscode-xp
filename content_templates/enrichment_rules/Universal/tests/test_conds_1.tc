@@ -1,4 +1,16 @@
+# Подгружать заполнение по умолчанию для табличных списков типа справочник
 table_list default
 
-expect table_list {"":[{"":""}]}
+# TODO: задать ожидаемое заполнение табличного (табличных) список или удалить
+expect table_list {
+    "TableName": [
+        {
+            "columnName1": "<expected value1>",
+            "columnName2": "<expected value2>",
+			"columnName3": "<expected value3>",
+        }
+    ]
+}
+
+# TODO: задать поля ожидаемого события или удалить
 expect 1 {}

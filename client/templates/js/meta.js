@@ -1,9 +1,27 @@
 const vscode = acquireVsCodeApi();
 
-document.querySelector("body").addEventListener("keyup", event => {
-	if (event.key !== "Enter") return;
-	saveMetaInfo();
-	event.preventDefault();
+const MULTILINE_INPUT_CLASSNAME = 'multiline-input';
+const MULTILINE_INPUT_INVALID_CLASSNAME = 'multiline-input_invalid';
+
+document.addEventListener('DOMContentLoaded', function () {
+	populateMultilineInputs();
+
+	this.addEventListener("keyup", (e) => {
+		const closestEditableNode = e.target.closest(`.${MULTILINE_INPUT_CLASSNAME}`);
+		if (closestEditableNode && checkIfNodeContentEditable(closestEditableNode)) {
+			validateMultilineInput(closestEditableNode);
+			e.stopImmediatePropagation();
+		}
+	});
+
+	this.addEventListener("keyup", (e) => {
+		if (e.key !== "Enter") {
+			return;
+		}
+
+		saveMetaInfo();
+		e.preventDefault();
+	});
 });
 
 function saveMetaInfo() {
@@ -27,14 +45,14 @@ function saveMetaInfo() {
 	dataSourceElements.map(ds => {
 		const providerElement = ds.querySelector("[name='provider']");
 		if (!providerElement) {
-			console.log("Ошибка получения провайдера.")
+			console.log("Ошибка получения провайдера.");
 			return;
 		}
 		const providerName = providerElement.value;
 
 		const eventIdsElement = ds.querySelector("[name='eventID']");
 		if (!eventIdsElement) {
-			console.log("Ошибка получения списка EventID.")
+			console.log("Ошибка получения списка EventID.");
 			return;
 		}
 		const eventIdString = eventIdsElement.value;
@@ -59,14 +77,14 @@ function saveMetaInfo() {
 	attackElements.map(ds => {
 		const tacticElement = ds.querySelector("[name='tactic']");
 		if (!tacticElement) {
-			console.log("Ошибка получения провайдера.")
+			console.log("Ошибка получения провайдера.");
 			return;
 		}
 		const tacticName = tacticElement.value;
 
 		const techniquesIdsElement = ds.querySelector("[name='techniques']");
 		if (!techniquesIdsElement) {
-			console.log("Ошибка получения списка EventID.")
+			console.log("Ошибка получения списка EventID.");
 			return;
 		}
 		const techniquesIdsString = techniquesIdsElement.value;
@@ -92,7 +110,7 @@ function saveMetaInfo() {
 
 
 	vscode.postMessage({
-		command: 'saveMetaInfo',
+		command: 'MetaInfoEditor.saveMetaInfo',
 		metainfo: {
 			'Name': newName,
 			'ObjectId': newObjectId,
@@ -114,15 +132,18 @@ function saveMetaInfo() {
 // Сохраняем все тесты по хот кею Ctrl+S
 $(document).on("keydown", e => {
 	if (e.ctrlKey && e.code == 'KeyS') {
-		console.log(e.keyCode);
 		e.preventDefault();
 		saveMetaInfo();
 	}
 });
 
 function inputsNameToArray(name) {
-	const elements = [...document.getElementsByName(name)];
-	return elements.map(u => u.value);
+	return [].map.call(document.getElementsByName(name), (node) => {
+		if (checkIfNodeContentEditable(node)) {
+			return convertHTMLToText(node.innerHTML);
+		}
+		return node.value;
+	});
 }
 
 function addValue(button, name) {
@@ -143,13 +164,35 @@ function addValue(button, name) {
 	deleteButton.classList.add("delete");
 	deleteButton.onclick = function () {
 		deleteButton.parentNode.remove();
-	}
+	};
 
 	newDiv.appendChild(newField);
 	newDiv.appendChild(deleteButton);
 
 	button.parentNode.insertBefore(newDiv, button);
 	newField.focus();
+}
+
+function addMultilineValue(addButton, fieldName) {
+	addButton.insertAdjacentHTML('beforeBegin', `
+		<div>
+			<div class="${MULTILINE_INPUT_CLASSNAME}" name="${fieldName}" type="text" contenteditable="plaintext-only"></div>
+			<input class="delete" type="button" value="-" onclick="deleteValue(this)">
+		</div>
+	`);
+
+	const inputNode = addButton.parentNode.querySelector(
+		`:scope > div:last-of-type .${MULTILINE_INPUT_CLASSNAME}`
+	);
+
+	if (inputNode) {
+		inputNode.focus();
+		validateMultilineInput(inputNode);
+	}
+}
+
+function validateMultilineInput(node) {
+	node.classList[node.textContent.trim() ? 'remove' : 'add'](MULTILINE_INPUT_INVALID_CLASSNAME);
 }
 
 function addComplexValue(button, type) {
@@ -184,17 +227,17 @@ function addComplexValue(button, type) {
 	deleteButton.classList.add("delete");
 	deleteButton.onclick = function () {
 		deleteButton.parentNode.remove();
-	}
+	};
 
-	$(`[name="${a}"]`).first().clone(true, true).appendTo(dropdownGroupDiv)
-	dropdownGroupDiv.appendChild(inputField)
+	$(`[name="${a}"]`).first().clone(true, true).appendTo(dropdownGroupDiv);
+	dropdownGroupDiv.appendChild(inputField);
 
 	complexDiv.appendChild(dropdownGroupDiv);
 	complexDiv.appendChild(deleteButton);
 	const simpleDiv = document.createElement('div');
 	simpleDiv.appendChild(complexDiv);
 
-	button.parentElement.insertBefore(simpleDiv, button)
+	button.parentElement.insertBefore(simpleDiv, button);
 	newField1.focus();
 }
 
@@ -208,4 +251,40 @@ function addDataSourceComplexValue(button) {
 
 function deleteValue(button) {
 	button.parentNode.remove();
+}
+
+function populateMultilineInputs() {
+	document.querySelectorAll(`.${MULTILINE_INPUT_CLASSNAME}`)?.forEach((node) => {
+		const { value: inputValue } = node.dataset;
+
+		if (inputValue) {
+			delete node.dataset.value;
+			node.innerHTML = convertTextToHTML(inputValue);
+		}
+	});
+}
+
+function convertHTMLToText(html) {
+	return html
+		.replace(/<br\s*\/?>/gi, '\n')
+		.replace(/\t/g, '    ')
+		.replace(/&nbsp;/g, ' ')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&amp;/g, '&');
+}
+
+function convertTextToHTML(textString) {
+	return textString
+		.replace(/&/g, '&amp;')
+		// Меняем на &nbsp; только два пробела и более, иначе неправильно переносятся слова
+		.replace(/[ ]{2,}/g, (spaces) => '&nbsp;'.repeat(spaces.length))
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/\r\n|\n/g, '<br>');
+}
+
+function checkIfNodeContentEditable(node) {
+	const contentEditableAttribute = node.getAttribute('contenteditable');
+	return contentEditableAttribute != null && contentEditableAttribute != 'false';
 }

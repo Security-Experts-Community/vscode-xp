@@ -1,0 +1,55 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.buttons {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: flex-start;
+  border-bottom: 1px solid var(--vscode-settings-headerBorder);
+}
+
+.button {
+  position: relative;
+  padding: 7px 8px 6.5px;
+  border-bottom: 1px solid transparent;
+  color: var(--vscode-foreground);
+  font-size: 13px;
+  opacity: 0.9;
+  outline: none;
+  cursor: pointer;
+
+  &:not(.isDisabled):hover,
+  &.isSlected {
+    opacity: 1;
+  }
+
+  &.isSelected {
+    border-bottom-color: var(--vscode-settings-headerForeground);
+    color: var(--vscode-settings-headerForeground);
+  }
+
+  &.isDisabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  &.isInvalid::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    right: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: var(--vscode-inputValidation-errorBorder);
+  }
+}
+
+.content {
+  position: relative;
+  flex-grow: 1;
+}

@@ -1,0 +1,10 @@
+.highlighted {
+  display: inline !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 2px !important;
+  background: var(--vscode-editor-selectionBackground) !important;
+  font: inherit !important;
+  line-height: inherit !important;
+  color: var(--vscode-editor-selectionForeground) !important;
+}

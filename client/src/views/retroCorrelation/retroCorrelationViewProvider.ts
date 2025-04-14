@@ -9,105 +9,128 @@ import { BaseWebViewController, WebViewDescriptor, WebViewMessage } from '../bas
 import { Log } from '../../extension';
 import { CorrelateEventsCommand } from './correlateEventsCommand';
 import { AppendEventMessage, AppendEventsCommand } from './appendEventCommand';
-
+import { DialogHelper } from '../../helpers/dialogHelper';
+import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 
 export class RetroCorrelationViewController extends BaseWebViewController {
+  protected onDispose(e: void): void {
+    return;
+  }
 
-    public static viewId = 'xp.retroCorrelation';
-    public static showViewCommand = 'xp.retroCorrelationShow';
+  protected getTitle(): string {
+    return this.descriptor.config.getMessage('View.CorrelateLogFiles.Title');
+  }
 
-    private constructor(
-		descriptor : WebViewDescriptor,
-        private readonly _formatter: MustacheFormatter
-    ) {
-		super(descriptor);
-	}
+  public static viewId = 'xp.retroCorrelation';
+  public static showViewCommand = 'xp.retroCorrelationShow';
 
-    public static async init(config : Configuration) : Promise<void> {
+  private constructor(
+    descriptor: WebViewDescriptor,
+    private readonly formatter: MustacheFormatter
+  ) {
+    super(descriptor);
+  }
 
-        // Форма создания корреляции.
-        const createCorrelationTemplateFilePath = path.join(config.getExtensionPath(), "client", "src", "views", "retroCorrelation", "retroCorrelation.html");
-        const createCorrelationTemplateContent = (await fs.promises.readFile(createCorrelationTemplateFilePath)).toString();
+  public static async init(config: Configuration): Promise<void> {
+    // Форма создания корреляции.
+    const createCorrelationTemplateFilePath = path.join(
+      config.getExtensionPath(),
+      'client',
+      'templates',
+      'RetroCorrelation.html'
+    );
+    const createCorrelationTemplateContent = (
+      await fs.promises.readFile(createCorrelationTemplateFilePath)
+    ).toString();
 
-        const view = new RetroCorrelationViewController(
-            {
-				config : config,
-				templatePath: createCorrelationTemplateFilePath,
-				viewId: RetroCorrelationViewController.viewId,
-				viewTitle: config.getMessage("View.CorrelateLogFiles"),
-				webViewOptions: {
-					retainContextWhenHidden: true,
-					enableCommandUris : true,
-					enableScripts: true,
-					enableFindWidget: true,
-				}
-			},
-            new MustacheFormatter(createCorrelationTemplateContent)
-		);
-
-        config.getContext().subscriptions.push(
-            vscode.commands.registerCommand(
-                RetroCorrelationViewController.showViewCommand,
-                async () => {
-                    return view.show();
-                }
-            )
-        );
-    }
-
-	protected async preShow() : Promise<void> {
-		this._tmpDirPath = this._descriptor.config.getRandTmpSubDirectoryPath();
-		this._xmlEventsFilePath = path.join(this._tmpDirPath, RetroCorrelationViewController.XML_EVENTS_FILENAME);
-		
-		await fs.promises.mkdir(this._tmpDirPath, {recursive : true});
-		return;
-	}
-
-	protected getHtml(): string {
-        const resourcesUri = this._descriptor.config.getExtensionUri();
-		const extensionBaseUri = this.view.webview.asWebviewUri(resourcesUri);
-		const templateDefaultContent = {
-			"ExtensionBaseUri" : extensionBaseUri,
-			"AddEventFiles": this._descriptor.config.getMessage("View.CorrelateLogFiles.AddEventFiles"),
-			"CorrelateEvents": this._descriptor.config.getMessage("View.CorrelateLogFiles.CorrelateEvents"),
-			"CorrelationEvents": this._descriptor.config.getMessage("View.CorrelateLogFiles.CorrelationEvents")
-		};
-
-		const htmlContent = this._formatter.format(templateDefaultContent);
-		return htmlContent;
-	}
-
-    protected async receiveMessageFromWebView(message: WebViewMessage) : Promise<void> {
-		switch (message.cmdName) {
-            case "AppendEventsCommand": {
-				// TODO: подумать над улучшением представления команд.
-				message.params = {
-					tmpDirPath: this._tmpDirPath,
-					xmlEventsFilePath: this._xmlEventsFilePath,
-				};
-
-				const typedMessage = classTransformer.plainToInstance(AppendEventMessage, message);
-				const cmd = new AppendEventsCommand(typedMessage);
-                return cmd.execute(this);
-			}
-			case "CorrelateEventsCommand": {
-                const cmd = new CorrelateEventsCommand(message);
-				// TODO: подумать над улучшением представления команд.
-				message.params = {
-					tmpDirPath: this._tmpDirPath,
-					xmlEventsFilePath: this._xmlEventsFilePath,
-				};
-
-                return cmd.execute(this);
-			}
-			default: {
-				Log.error(`Команды ${message.cmdName} не найдена в контроллере ${RetroCorrelationViewController.name}`);
-			}
+    const view = new RetroCorrelationViewController(
+      {
+        config: config,
+        viewId: RetroCorrelationViewController.viewId,
+        webViewOptions: {
+          retainContextWhenHidden: true,
+          enableCommandUris: true,
+          enableScripts: true,
+          enableFindWidget: true
         }
+      },
+      new MustacheFormatter(createCorrelationTemplateContent)
+    );
+
+    config.getContext().subscriptions.push(
+      vscode.commands.registerCommand(RetroCorrelationViewController.showViewCommand, async () => {
+        return view.show();
+      })
+    );
+  }
+
+  protected async preRender(): Promise<boolean> {
+    this.tmpDirPath = this.descriptor.config.getRandTmpSubDirectoryPath();
+    this.xmlEventsFilePath = path.join(
+      this.tmpDirPath,
+      RetroCorrelationViewController.XML_EVENTS_FILENAME
+    );
+
+    await fs.promises.mkdir(this.tmpDirPath, { recursive: true });
+    return true;
+  }
+
+  protected renderHtml(): string {
+    const resourcesUri = this.descriptor.config.getExtensionUri();
+    const extensionBaseUri = this.webView.webview.asWebviewUri(resourcesUri);
+    const templateDefaultContent = {
+      ExtensionBaseUri: extensionBaseUri,
+      AddEventFiles: this.descriptor.config.getMessage('View.CorrelateLogFiles.AddEventFiles'),
+      CorrelateEvents: this.descriptor.config.getMessage('View.CorrelateLogFiles.CorrelateEvents'),
+      CorrelationEvents: this.descriptor.config.getMessage(
+        'View.CorrelateLogFiles.CorrelationEvents'
+      )
+    };
+
+    const htmlContent = this.formatter.format(templateDefaultContent);
+    return htmlContent;
+  }
+
+  protected async receiveMessageFromWebView(message: WebViewMessage): Promise<void> {
+    switch (message.cmdName) {
+      case 'AppendEventsCommand': {
+        // TODO: подумать над улучшением представления команд.
+        message.params = {
+          tmpDirPath: this.tmpDirPath,
+          xmlEventsFilePath: this.xmlEventsFilePath
+        };
+
+        const typedMessage = classTransformer.plainToInstance(AppendEventMessage, message);
+        const cmd = new AppendEventsCommand(typedMessage);
+        return cmd.execute(this);
+      }
+      case 'CorrelateEventsCommand': {
+        const jsonFiles = await FileSystemHelper.readFilesFromDirectory(this.tmpDirPath);
+        if (jsonFiles.length === 0) {
+          DialogHelper.showInfo(
+            `Файлы для корреляции не добавлены. Добавьте файлы с помощью кнопки 'Добавить файлы с событиями' и повторите`
+          );
+          return;
+        }
+        const cmd = new CorrelateEventsCommand(message);
+        // TODO: подумать над улучшением представления команд.
+        message.params = {
+          tmpDirPath: this.tmpDirPath,
+          xmlEventsFilePath: this.xmlEventsFilePath
+        };
+
+        return cmd.execute(this);
+      }
+      default: {
+        Log.error(
+          `Команды ${message.cmdName} не найдена в контроллере ${RetroCorrelationViewController.name}`
+        );
+      }
     }
+  }
 
-	private _xmlEventsFilePath: string;
-	private _tmpDirPath: string;
+  private xmlEventsFilePath: string;
+  private tmpDirPath: string;
 
-	public static XML_EVENTS_FILENAME = "events.xml";
+  public static XML_EVENTS_FILENAME = 'events.xml';
 }

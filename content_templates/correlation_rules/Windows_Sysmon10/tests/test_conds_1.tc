@@ -1,2 +1,0 @@
-table_list default
-expect 1 {"correlation_name": "Windows_Sysmon10"}

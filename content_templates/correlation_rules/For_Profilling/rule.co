@@ -55,6 +55,7 @@ rule For_Profilling: Anomaly_Logon_Application
         $subject.account.session_id = subject.account.session_id
         $subject.account.id = subject.account.id
         $subject.account.privileges = subject.account.privileges
+        $subject.account.fullname = subject.account.fullname
         
         $object.name = object.name
         $object.path = object.path
@@ -148,7 +149,7 @@ rule For_Profilling: Anomaly_Logon_Application
         dst_path = ""
         additional_data = ""
     }
-   
+
 emit {
     $correlation_type = "event"
 

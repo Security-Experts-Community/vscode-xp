@@ -14,7 +14,7 @@ rule Unix_Execve: Event
     init {
         $labels = "w_auto|CheckWL_Linux_Process_Creation"
     }
-       
+
     on Event {
         $status = status
 
@@ -23,6 +23,7 @@ rule Unix_Execve: Event
         $subject.account.id = subject.account.id
         $subject.account.session_id = subject.account.session_id
         $subject.account.privileges = subject.account.privileges
+        $subject.account.fullname = subject.account.fullname
         $subject.type = subject.type
         $subject.process.chain = subject.process.chain
         
@@ -40,7 +41,7 @@ rule Unix_Execve: Event
         $object.process.cwd = object.process.cwd
         $object.process.parent.id = object.process.parent.id
         $object.process.chain = object.process.chain
-       
+
         $logon_service = logon_service
         
         $datafield1 = datafield1
@@ -64,7 +65,7 @@ rule Unix_Execve: Event
         $event_src.vendor = event_src.vendor
         $event_src.category = event_src.category
         $event_src.rule = event_src.rule
-               
+
         $alert.key =           
         $alert.context = 
         $alert.regex_match = 

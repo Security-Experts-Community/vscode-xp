@@ -19,6 +19,8 @@ rule Windows_Network_Connect: Network_Connect
     }
 
     on Network_Connect {
+        $status = status
+
         $object.account.domain = object.account.domain
         $object.account.fullname = object.account.fullname
         $object.account.name = object.account.name
@@ -70,7 +72,6 @@ emit {
     $subject = "rule"
     $action = "detect"
     $object = "connection"   
-    $status = "success"
 
     # фильтр с direction == "egress", то есть event_src = src
     if $event_src.ip == null  and not in_subnet($src.ip, "127.0.0.0/8") and find_substr($src.host, "docker.internal") == null then

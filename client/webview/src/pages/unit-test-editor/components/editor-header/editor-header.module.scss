@@ -1,0 +1,13 @@
+.root {
+  padding-left: 24px !important;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  column-gap: 8px;
+
+  &:last-child {
+    margin-left: auto;
+  }
+}

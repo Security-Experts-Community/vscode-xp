@@ -1,67 +1,47 @@
-import * as fs from "fs";
-import * as vscode from "vscode";
-import * as path from "path";
+import * as vscode from 'vscode';
 
-import { Configuration } from "../../models/configuration";
-import { BaseUnitTest } from "../../models/tests/baseUnitTest";
-import { TestHelper } from "../../helpers/testHelper";
-import { TestStatus } from "../../models/tests/testStatus";
-import { FileSystemHelper } from "../../helpers/fileSystemHelper";
-import { MustacheFormatter } from "../mustacheFormatter";
-import { DialogHelper } from "../../helpers/dialogHelper";
-import { ExceptionHelper } from "../../helpers/exceptionHelper";
-import { UnitTestsListViewProvider } from "./unitTestsListViewProvider";
-import { XpException } from "../../models/xpException";
-import { RegExpHelper } from "../../helpers/regExpHelper";
-import { Correlation } from "../../models/content/correlation";
-import { Normalization } from "../../models/content/normalization";
-import { WebViewProviderBase } from "../tableListsEditor/webViewProviderBase";
+import { Configuration } from '../../models/configuration';
+import { BaseUnitTest } from '../../models/tests/baseUnitTest';
+import { TestHelper } from '../../helpers/testHelper';
+import { DialogHelper } from '../../helpers/dialogHelper';
+import { ExceptionHelper } from '../../helpers/exceptionHelper';
+import { RegExpHelper } from '../../helpers/regExpHelper';
+import { Correlation } from '../../models/content/correlation';
+import { Normalization } from '../../models/content/normalization';
+import { WebViewProviderBase } from '../tableListsEditor/webViewProviderBase';
+import webviewHtmlProvider from '../webviewHtmlProvider';
+import { RuleBaseItem } from '../../models/content/ruleBaseItem';
+import { Enrichment } from '../../models/content/enrichment';
+import { Aggregation } from '../../models/content/aggregation';
 
 export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
-  public static readonly viewId = "ModularTestContentEditorView";
-
-  public static readonly showEditorCommand =
-    "ModularTestContentEditorView.showEditor";
+  public static readonly viewId = 'ModularTestEditorView';
+  public static readonly showEditorCommand = 'ModularTestEditorView.showEditor';
   public static readonly onTestSelectionChangeCommand =
-    "ModularTestContentEditorView.onTestSelectionChange";
+    'ModularTestEditorView.onTestSelectionChange';
 
-  private _test: BaseUnitTest;
+  private rule: RuleBaseItem;
 
-  public constructor(
-    private readonly _config: Configuration,
-    private readonly _templatePath: string
-  ) {
+  public constructor(private readonly config: Configuration) {
     super();
   }
 
   public static init(config: Configuration): void {
     const context = config.getContext();
 
-    // Форма создания визуализации интеграционных тестов.
-    const templatePath = path.join(
-      config.getExtensionPath(),
-      path.join("client", "templates", "UnitTestEditor", "UnitTestEditor.html")
-    );
+    const provider = new UnitTestContentEditorViewProvider(config);
 
-    const provider = new UnitTestContentEditorViewProvider(
-      config,
-      templatePath
-    );
-
-    // Открытие кода теста по нажатию на его номер.
     context.subscriptions.push(
       vscode.commands.registerCommand(
         UnitTestContentEditorViewProvider.showEditorCommand,
-        async (test: BaseUnitTest) => {
-          const testPath = test.getTestExpectationPath();
-          if (!fs.existsSync(testPath)) {
-            vscode.window.showWarningMessage(
-              `Не удалось открыть тест: '${testPath}'`
-            );
+        async (rule: Correlation | Enrichment | Normalization | Aggregation) => {
+          if (!rule) {
+            DialogHelper.showError(config.getMessage('View.UnitTests.RuleIsNotLoaded'));
             return;
           }
-          // test.show();
-          provider.showEditor(test);
+
+          rule.reloadUnitTests();
+          return provider.showEditor(rule);
         }
       )
     );
@@ -70,158 +50,133 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
       vscode.commands.registerCommand(
         UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,
         async (test: BaseUnitTest) => {
-          // Открываем код теста.
-          vscode.commands.executeCommand(
-            UnitTestContentEditorViewProvider.showEditorCommand,
-            test
-          );
+          vscode.commands.executeCommand(UnitTestContentEditorViewProvider.showEditorCommand, test);
         }
       )
     );
   }
 
-  public async showEditor(unitTest: BaseUnitTest): Promise<void> {
-    if (this.getView()) {
-      this._test = null;
-      this.getView().dispose();
-    }
-
-    if (!(unitTest instanceof BaseUnitTest)) {
+  public async showEditor(
+    rule: Correlation | Enrichment | Normalization | Aggregation
+  ): Promise<void> {
+    if (
+      !(
+        rule instanceof Correlation ||
+        rule instanceof Enrichment ||
+        rule instanceof Normalization ||
+        rule instanceof Aggregation
+      )
+    ) {
+      DialogHelper.showWarning(
+        `The modular test editor does not support rules other than correlations, normalizations, enrichments, and aggregations`
+      );
       return;
     }
 
-    this._test = unitTest;
-    const rule = this._test.getRule();
+    this.rule = rule;
 
     // Создать и показать панель.
-    const viewTitle = `Тест №${this._test.getNumber()} правила '${rule.getName()}'`;
+    const viewTitle = this.config.getMessage('View.UnitTests.Title', rule.getName());
     const panel = vscode.window.createWebviewPanel(
       UnitTestContentEditorViewProvider.viewId,
       viewTitle,
       vscode.ViewColumn.One,
       {
         retainContextWhenHidden: true,
-        enableFindWidget: true,
+        enableFindWidget: true
       }
     );
 
     panel.webview.options = {
       enableScripts: true,
+      localResourceRoots: [
+        vscode.Uri.joinPath(this.config.getExtensionUri(), 'client/webview/out/assets'),
+        vscode.Uri.joinPath(this.config.getExtensionUri(), 'client/webview/node_modules')
+      ]
     };
 
     panel.webview.onDidReceiveMessage(this.receiveMessageFromWebView, this);
-
     this.setView(panel);
-
     await this.updateView();
   }
 
   private async updateView(): Promise<void> {
-    const rule = this._test.getRule();
-
-    const resourcesUri = this._config.getExtensionUri();
-    const extensionBaseUri = this.getView().webview.asWebviewUri(resourcesUri);
-
-    const plain = {
-      UnitTest: null,
-      ExtensionBaseUri: extensionBaseUri,
-      RuleName: rule.getName(),
-    };
-
     try {
-      const formattedTestInput = TestHelper.formatTestCodeAndEvents(
-        this._test.getTestInputData()
-      );
-      const formattedTestExpectation = TestHelper.formatTestCodeAndEvents(
-        this._test.getTestExpectation()
-      );
+      const getTranslation: (s: string) => string = this.config.getMessage.bind(this.config);
 
-      let testStatusStyle: string;
-      const testStatus = this._test.getStatus();
-      vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
-      switch (testStatus) {
-        case TestStatus.Unknown: {
-          testStatusStyle = "";
-          break;
-        }
-        case TestStatus.Success: {
-          testStatusStyle = "success";
-          break;
-        }
-        case TestStatus.Failed: {
-          testStatusStyle = "failure";
-          break;
-        }
-      }
-
-      plain["UnitTest"] = {
-        TestNumber: this._test.getNumber(),
-        TestInput: formattedTestInput,
-        TestExpectation: formattedTestExpectation,
-        TestOutput: this._test.getOutput(),
-        TestStatus: testStatusStyle,
+      const translations = {
+        EditorTitle: getTranslation('View.UnitTests.EditorTitle'),
+        Save: getTranslation('Save'),
+        SaveAll: getTranslation('SaveAll'),
+        Run: getTranslation('Run'),
+        RunAll: getTranslation('RunAll'),
+        WordWrap: getTranslation('View.UnitTests.WordWrap'),
+        ActualResult: getTranslation('View.UnitTests.ActualResult'),
+        ConditionForPassingTheTest: getTranslation('View.UnitTests.ConditionForPassingTheTest'),
+        CorrelationNormalizedEvents: getTranslation('View.UnitTests.CorrelationNormalizedEvents'),
+        NormalizationRawEvents: getTranslation('View.UnitTests.NormalizationRawEvents'),
+        ReplaceExpectedEventWithActual: getTranslation(
+          'View.UnitTests.ReplaceExpectedEventWithActual'
+        ),
+        RunTest: getTranslation('View.UnitTests.RunTest'),
+        AddTest: getTranslation('View.UnitTests.AddTest'),
+        DeleteTest: getTranslation('View.UnitTests.DeleteTest'),
+        TestPassed: getTranslation('View.UnitTests.TestPassed'),
+        TestFailed: getTranslation('View.UnitTests.TestFailed')
       };
 
-      const template = await FileSystemHelper.readContentFile(
-        this._templatePath
+      const webviewRootUri = this.getView()
+        .webview.asWebviewUri(this.config.getExtensionUri())
+        .toString();
+
+      const htmlContent = await webviewHtmlProvider.getWebviewHtml(
+        'unit-test-editor',
+        webviewRootUri,
+        translations
       );
-      const formatter = new MustacheFormatter(template);
-      const htmlContent = formatter.format(plain);
+
       this.setHtmlContent(htmlContent);
     } catch (error) {
-      DialogHelper.showError("Не удалось открыть модульный тест", error);
+      DialogHelper.showError(this.config.getMessage('View.UnitTests.CouldNotOpenTheTest'), error);
     }
   }
 
   private async receiveMessageFromWebView(message: any) {
     switch (message.command) {
-      case "documentIsReady": {
+      case 'documentIsReady':
         return this.documentIsReadyHandler();
-      }
-      case "saveTest": {
-        await this.saveTest(message);
-        await this.updateInputDataInView(this._test.getTestInputData());
 
-        const expectationData = TestHelper.formatTestCodeAndEvents(
-          this._test.getTestExpectation()
-        );
-        await this.updateExpectationInView(expectationData);
+      case 'UnitTestEditor.saveAllTests':
+        return this.saveTests(message.payload.tests);
 
-        return;
-      }
+      case 'UnitTestEditor.runAllTests':
+        await this.saveTests(message.payload.tests);
+        return this.runAllTests();
 
-      case "runTest": {
-        await this.runUnitTestHandler(message);
-        return;
-      }
+      case 'UnitTestEditor.runTest':
+        await this.saveTests(message.payload.tests);
+        return this.runTest(message.payload.testNumber);
 
-      case "updateExpectation": {
-        await this.updateExpectationHandler();
-        return;
-      }
-
-      default: {
-        DialogHelper.showError("Переданная команда не поддерживается");
-      }
+      case 'UnitTestEditor.updateExpectation':
+        return this.updateTestExpectation(message.payload.testNumber);
     }
   }
 
-  private async updateExpectationHandler(): Promise<void> {
-    const actualEvent = this._test.getActualData();
+  private async updateTestExpectation(testNumber: number): Promise<void> {
+    const test = this.rule.getUnitTestByNumber(testNumber);
+    const actualEvent = test.getActualData();
+
     if (!actualEvent) {
-      DialogHelper.showWarning(
-        "Фактическое событие не получено. Запустите тест для получения фактического события, после чего можно заменить ожидаемое событие фактическим"
-      );
+      DialogHelper.showWarning(this.config.getMessage('View.UnitTests.NoActualEvent'));
       return;
     }
 
-    const rule = this._test.getRule();
     let testResult: string;
 
     // В модульных тестах корреляций есть expect и возможны комментарии, поэтому надо заменить события, сохранив остальное.
-    if (rule instanceof Correlation) {
+    if (this.rule instanceof Correlation) {
       const newTestCode = `expect 1 ${actualEvent}`;
-      const currentTestCode = this._test.getTestExpectation();
+      const currentTestCode = test.getTestExpectation();
       testResult = currentTestCode.replace(
         RegExpHelper.getExpectSectionRegExp(),
         // Фикс того, что из newTestCode пропадают доллары
@@ -233,170 +188,196 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
     }
 
     // Для нормализации просто сохраняем фактическое событие без дополнительных преобразований.
-    if (rule instanceof Normalization) {
+    if (this.rule instanceof Normalization) {
       testResult = actualEvent;
     }
 
     // Обновляем ожидаемое событие на диске и во вьюшке.
-    this._test.setTestExpectation(testResult);
-    await this._test.save();
+    test.setTestExpectation(testResult);
 
-    this.updateExpectationInView(testResult);
-    DialogHelper.showInfo(
-      "Ожидаемое событие обновлено. Запустите еще раз тест, он должен пройти"
-    );
+    await test.save();
+    await this._updateTestInWebview({ testNumber, expectationData: testResult });
+
+    DialogHelper.showInfo(this.config.getMessage('View.UnitTests.ExpectedEventReplacedWithActual'));
   }
 
   private async documentIsReadyHandler(): Promise<boolean> {
-    const inputEvents = this._test.getTestInputData();
+    const tests = [];
+    const unitTests = this.rule.getUnitTests();
+    const ruleData = await this.rule.getRuleCode();
 
-    const expectationData = TestHelper.formatTestCodeAndEvents(
-      this._test.getTestExpectation()
-    );
+    const templateTest = unitTests.length ? unitTests[0] : this.rule.createNewUnitTest();
+    const defaultInputData = templateTest.getDefaultInputData();
+    const defaultExpectationData = templateTest.getDefaultExpectation();
 
-    let inputType = undefined;
-    let expectationLanguage = undefined;
-    const rule = this._test.getRule();
-    // Для корреляций на вход всегда json (нормализованное событие)
-    // Код теста это xp-test-code (json, expect, default и т.д.)
-    if (rule instanceof Correlation) {
-      inputType = "json";
-      expectationLanguage = "xp-test-code";
+    for (const unitTest of unitTests) {
+      const status = unitTest.getStatus();
+      const inputData = unitTest.getTestInputData();
+      const expectationData = TestHelper.formatTestCodeAndEvents(unitTest.getTestExpectation());
+      const actualData = unitTest.getActualData();
+
+      tests.push({
+        status,
+        inputData,
+        expectationData,
+        actualData
+      });
     }
 
-    // TODO: Для законченной нормализации в теории можно распарсить код правила и понять какой тип данных в raw_N.txt
-    // Ожидаемое событие всегда json
-    if (rule instanceof Normalization) {
-      const ruleCode = await rule.getRuleCode();
-      if (ruleCode.match(/^JSON\s*=\s*/)) {
-        inputType = "json";
+    return await this.postMessage({
+      command: 'UnitTestEditor.setState',
+      payload: {
+        ruleType: this.rule instanceof Normalization ? 'normalization' : 'correlation',
+        ruleData,
+        tests,
+        defaultInputData,
+        defaultExpectationData
       }
-
-      expectationLanguage = "json";
-    }
-
-    // Контракт на команду к FE
-    // {
-    // command = 'setIUnitTestEditorViewContent',
-    // inputEvents : {language: json, data: string},
-    // expectation: {language: json|xp-test-code, data: string},
-    // }
-    await this.postMessage({
-      command: "setIUnitTestEditorViewContent",
-      inputEvents: { language: inputType, data: inputEvents },
-      expectation: { language: expectationLanguage, data: expectationData },
     });
-
-    // Если в тесте сохранены фактические данные, например, после запуска тестов по списку.
-    const actualData = this._test.getActualData();
-    if(actualData) {
-      return this.updateActualDataInView(actualData);
-    }
   }
 
-  private async saveTest(message: any) {
-    try {
-      const inputData = message?.inputData;
-      if (!inputData) {
-        throw new XpException(
-          `Не задано сырое событие для теста №${this._test.getNumber()}. Добавьте его и повторите`
-        );
-      }
-      this._test.setTestInputData(inputData);
-
-      const expectation = message?.expectation;
-      if (!expectation) {
-        throw new XpException(
-          `Не задано ожидаемое нормализованное событие для теста №${this._test.getNumber()}. Добавьте его и повторите`
-        );
-      }
-
-      this._test.setTestExpectation(expectation);
-      await this._test.save();
-
-      DialogHelper.showInfo("Тест успешно сохранён");
-    } catch (error) {
-      ExceptionHelper.show(
-        error,
-        `Не удалось сохранить модульный тест №${
-          this._test.label
-        } правила ${this._test.getRule().getName()}`
-      );
-    }
-  }
-
-  private async runUnitTestHandler(message: any) {
-    if (!message?.inputData) {
-      DialogHelper.showError(
-        "Не заданы входные данные теста. Задайте их и повторите"
-      );
-      return;
-    }
-
-    if (!message?.expectation) {
-      DialogHelper.showError(
-        "Не задано условие проверки теста или ожидаемое событие. Задайте его и повторите"
-      );
-      return;
-    }
-
-    // Обновляем тест и сохраняем
-    const expectation = message.expectation;
-    this._test.setTestExpectation(expectation);
-
-    const inputData = message?.inputData;
-    this._test.setTestInputData(inputData);
-    await this._test.save();
-
-    const rule = this._test.getRule();
+  private async saveTests(testsData: { inputData: string; expectationData: string }[]) {
     return vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
-        cancellable: false,
+        cancellable: false
+      },
+      async (progress) => {
+        progress.report({
+          message: this.config.getMessage('View.UnitTests.TestsAreSaving')
+        });
+
+        try {
+          const tests = this.rule.getUnitTests();
+
+          // Delete extra tests
+          this.rule.setUnitTests(tests.slice(0, testsData.length));
+
+          testsData.forEach((testData, index) => {
+            const testNumber = index + 1;
+            const test = tests[index] ?? this.rule.addNewUnitTest();
+            test.setNumber(testNumber);
+            test.setTestInputData(testData.inputData);
+            test.setTestExpectation(testData.expectationData);
+          });
+
+          await this.rule.saveUnitTests();
+
+          DialogHelper.showInfo(this.config.getMessage('View.UnitTests.TestsAreSaved'));
+        } catch (error) {
+          ExceptionHelper.show(
+            error,
+            `Failed to save unit tests of the "${this.rule.getName()}" rule`
+          );
+        }
+      }
+    );
+  }
+
+  private async runTest(testNumber: number);
+  private async runTest(unitTest: BaseUnitTest);
+  private async runTest(testOrTestNumber: number | BaseUnitTest) {
+    let test;
+    let testNumber;
+
+    if (testOrTestNumber instanceof BaseUnitTest) {
+      test = testOrTestNumber;
+      testNumber = test.getNumber();
+    } else {
+      test = this.rule.getUnitTestByNumber(testOrTestNumber);
+      testNumber = testOrTestNumber;
+    }
+
+    if (!test) {
+      DialogHelper.showError(
+        this.config.getMessage(
+          'View.UnitTests.NoSuchTestForTheRule',
+          testNumber,
+          this.rule.getName()
+        )
+      );
+      return;
+    }
+
+    return vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        cancellable: false
       },
       async (progress) => {
         try {
           progress.report({
-            message: `Выполнение теста №${this._test.getNumber()}`,
+            message: this.config.getMessage('View.UnitTests.TestIsRunning', test.getNumber())
           });
-          const runner = rule.getUnitTestRunner();
-          this._test = await runner.run(this._test);
 
-          const actualData = this._test.getActualData();
-          this.updateActualDataInView(actualData);
+          const runner = this.rule.getUnitTestRunner();
+          const updatedTest = await runner.run(test);
+          const actualData = updatedTest.getActualData();
 
+          this._updateTestInWebview({
+            testNumber,
+            actualData
+          });
         } catch (error) {
-          const outputData = this._test.getOutput();
-          this.updateActualDataInView(outputData);
-          ExceptionHelper.show(
-            error,
-            "Неожиданная ошибка выполнения модульного теста"
-          );
+          const outputData = test.getOutput();
+          this._updateTestInWebview({
+            testNumber,
+            actualData: outputData
+          });
+
+          ExceptionHelper.show(error, 'Unexpected error while executing the modular test');
         } finally {
-          vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
-        }        
+          this._updateTestInWebview({
+            testNumber,
+            status: test.getStatus()
+          });
+        }
       }
     );
   }
 
-  private async updateExpectationInView(expectation: string): Promise<boolean> {
-    return this.postMessage({
-      command: "updateExpectation",
-      expectation: expectation,
-    });
+  private async runAllTests() {
+    const tests = this.rule.getUnitTests();
+
+    return vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        cancellable: false
+      },
+      async (progress) => {
+        try {
+          progress.report({
+            message: this.config.getMessage('View.UnitTests.TestsAreRunning', this.rule.getName())
+          });
+
+          await Promise.all(tests.map(this.runTest.bind(this)));
+        } catch (error) {
+          ExceptionHelper.show(
+            error,
+            `Error while running modular tests of the rule "${this.rule.getName()}"`
+          );
+        } finally {
+          tests.forEach((unitTest, index) => {
+            this._updateTestInWebview({
+              testNumber: index + 1,
+              status: unitTest.getStatus()
+            });
+          });
+        }
+      }
+    );
   }
 
-  private async updateInputDataInView(inputData: string): Promise<boolean> {
+  private async _updateTestInWebview(payload: {
+    testNumber: number;
+    status?: 'Unknown' | 'Success' | 'Failed';
+    inputData?: string;
+    actualData?: string;
+    expectationData?: string;
+  }): Promise<boolean> {
     return this.postMessage({
-      command: "updateInputData",
-      inputData: inputData,
-    });
-  }
-
-  private async updateActualDataInView(actualData: string): Promise<boolean> {
-    return this.postMessage({
-      command: "updateActualData",
-      actualData: actualData,
+      command: 'UnitTestEditor.updateTest',
+      payload
     });
   }
 }

@@ -28,7 +28,10 @@ body {
 	flex-direction: column;
 	background: var(--vscode-editorGroupHeader-tabsBackground);
 	gap: 8px;
-	/* z-index: 1; */
+}
+
+#header input {
+	box-shadow: none;
 }
 
 .save[type=button]{

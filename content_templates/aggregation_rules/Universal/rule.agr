@@ -1,0 +1,7 @@
+event Event:
+    key:
+        event_src.host, event_src.vendor, event_src.title, importance, action, object, status
+
+    id = "LOC_Universal"
+
+aggregate Universal: Event[3,100] within 5m

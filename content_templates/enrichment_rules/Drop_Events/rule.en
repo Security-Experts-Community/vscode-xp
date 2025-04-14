@@ -1,0 +1,16 @@
+event Event:
+    filter {
+        # TODO: задать логику фильтрации события для его удаления
+        filter::NotFromCorrelator()
+        and object.id != null
+        and event_src.host != null
+        and event_src.hostname != null
+    }
+
+enrichment Drop_Events
+    enrich Event:
+        enrich_fields {
+            # Удаления обогащаемого события
+            drop
+        }
+

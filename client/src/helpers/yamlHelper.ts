@@ -1,89 +1,64 @@
-import * as js_yaml from 'js-yaml';
-import * as prettier from 'prettier';
+import * as jsYaml from 'js-yaml';
 import * as os from 'os';
 
+type Formatter = (text: string) => Promise<string>;
+
 export class YamlHelper {
-	public static configure(
-		dumpOptions: js_yaml.DumpOptions,
-		loadOptions?: js_yaml.LoadOptions): void {
-		this.dumpOptions = dumpOptions;
-		this.loadOptions = loadOptions;
-	}
+  public static configure(
+    dumpOptions: jsYaml.DumpOptions,
+    loadOptions?: jsYaml.LoadOptions,
+    formatter?: Formatter
+  ): void {
+    this.dumpOptions = dumpOptions;
+    this.loadOptions = loadOptions;
+    this.formatter = formatter;
+  }
 
-	/**
-	 * Сериализует в строку локализацию. Отличие в принудительном обрамлении в строку и дублировании одинарных кавычек.
-	 * @param object объект для сериализации в строку
-	 * @returns 
-	 */
-	public static localizationsStringify(object: any): string {
-		const localizationDumpOptions = Object.assign({}, this.dumpOptions);
-		localizationDumpOptions.forceQuotes = true;
+  /**
+   * Сериализует в строку локализацию. Отличие в принудительном обрамлении в строку и дублировании одинарных кавычек.
+   * @param object объект для сериализации в строку
+   * @returns
+   */
+  public static localizationsStringify(object: any): Promise<string> {
+    const localizationDumpOptions = { ...this.dumpOptions };
+    localizationDumpOptions.forceQuotes = true;
 
-		const yamlContent = js_yaml.dump(object, localizationDumpOptions);
-		return prettier.format(
-			yamlContent,
-			{
-				'parser': 'yaml',
-				'tabWidth': this.dumpOptions.indent,
-				//'aliasDuplicateObjects': false,
-				'singleQuote': true
-			}
-		);
-	}
+    return this.formatter(jsYaml.dump(object, localizationDumpOptions));
+  }
 
-	public static tableStringify(object: any): string {
-		const yamlContent = js_yaml.dump(object, this.dumpOptions);
+  public static tableStringify(object: any): Promise<string> {
+    return this.formatter(jsYaml.dump(object, this.dumpOptions).replace(/\n/g, os.EOL));
+  }
 
-		return prettier.format(
-			yamlContent,
-			{
-				'parser': 'yaml',
-				'tabWidth': 2,
-			}
-		);
+  public static stringify(object: any, styles?: any): Promise<string> {
+    if (styles !== undefined) {
+      this.dumpOptions.styles = styles;
+    }
 
-		return yamlContent.replace(/\n/g, os.EOL);
-	}
+    return this.formatter(jsYaml.dump(object, this.dumpOptions).replace(/\n/g, os.EOL));
+  }
 
-	public static stringify(object: any, styles?: any): string {
-		if (styles !== undefined){
-			this.dumpOptions.styles = styles;
-		}
-		let yamlContent = js_yaml.dump(object, this.dumpOptions);
+  public static stringifyTable(object: any): string {
+    return jsYaml.dump(object, {
+      styles: { '!!null': 'empty' },
+      lineWidth: -1,
+      quotingType: '"'
+    });
+  }
 
-		yamlContent = prettier.format(
-			yamlContent,
-			{
-				'parser': 'yaml',
-				'tabWidth': this.dumpOptions.indent,
-				//'aliasDuplicateObjects': false,
-				// 'maxLineLength': this.dumpOptions.lineWidth,
-			}
-		);
+  public static jsonToYaml(jsonStr: string): string {
+    return jsYaml.dump(JSON.parse(jsonStr));
+  }
 
-		return yamlContent.replace(/\n/g, os.EOL);
-	}
+  public static yamlToJson(yamlStr: string): string {
+    return JSON.stringify(jsYaml.load(yamlStr, this.loadOptions));
+  }
 
-	public static stringifyTable(object: any) : string {
-		return js_yaml.dump(object, {
-            styles: { '!!null': 'empty' },
-            lineWidth: -1,
-            quotingType: '"'
-        });
-	}
+  public static parse(str: string): any {
+    return jsYaml.load(str, this.loadOptions);
+  }
 
-	public static jsonToYaml(jsonStr: string) : string {
-		return js_yaml.dump(JSON.parse(jsonStr));
-	}
-
-	public static yamlToJson(yamlStr: string) : string {
-		return JSON.stringify(js_yaml.load(yamlStr, this.loadOptions));
-	}
-
-	public static parse(str: string): any {
-		return js_yaml.load(str, this.loadOptions);
-	}
-
-	private static dumpOptions: js_yaml.DumpOptions;
-	private static loadOptions: js_yaml.LoadOptions;
+  private static dumpOptions: jsYaml.DumpOptions;
+  private static loadOptions: jsYaml.LoadOptions;
+  private static formatter: Formatter;
 }

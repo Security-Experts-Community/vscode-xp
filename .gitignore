@@ -5,3 +5,6 @@ client/server
 .ai
 Build/
 contract
+*.tsbuildinfo
+
+mitre_attack/data/parsed/attack.json

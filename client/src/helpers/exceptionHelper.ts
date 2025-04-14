@@ -3,63 +3,71 @@ import * as vscode from 'vscode';
 import { XpException } from '../models/xpException';
 import { Log } from '../extension';
 import { Configuration } from '../models/configuration';
+import { StringHelper } from './stringHelper';
 
 export class ExceptionHelper {
-	public static async show(error: Error, defaultMessage?: string) : Promise<void> {
-		const errorType = error.constructor.name;
-		const outputChannel = Configuration.get().getOutputChannel();
+  public static async show(error: Error, defaultMessage?: string): Promise<void> {
+    const errorType = error.constructor.name;
+    const configuration = Configuration.get();
+    const outputChannel = configuration.getOutputChannel();
 
-		switch(errorType)  {
-			case "XpException": 
-			case "FileSystemException": 
-			case "IncorrectFieldFillingException": {
-				const typedError = error as XpException;
+    switch (errorType) {
+      case 'XpException':
+      case 'FileSystemException':
+      case 'IncorrectFieldFillingException': {
+        const typedError = error as XpException;
 
-				vscode.window.showErrorMessage(typedError.message);
-				ExceptionHelper.recursiveWriteXpExceptionToOutput(typedError, outputChannel);
-				break;
-			}
-			case "OperationCanceledException": {
-				const typedError = error as XpException;
+        vscode.window.showErrorMessage(typedError.message);
+        ExceptionHelper.recursiveWriteXpExceptionToOutput(typedError, outputChannel);
+        break;
+      }
+      case 'OperationCanceledException': {
+        const typedError = error as XpException;
 
-				Log.info(null, typedError);
-				vscode.window.showInformationMessage(typedError.message);
-				break;
-			}
-			default: {
-				if(defaultMessage) {
-					if(defaultMessage.endsWith(".")) {
-						vscode.window.showErrorMessage(`${defaultMessage} ${ExceptionHelper.FEEDBACK_WAY_INFO}`);
-					}
-					else {
-						vscode.window.showErrorMessage(`${defaultMessage}. ${ExceptionHelper.FEEDBACK_WAY_INFO}`);
-					}
-					
-				} else {
-					vscode.window.showErrorMessage(`Обнаружена неожиданная ошибка. ${ExceptionHelper.FEEDBACK_WAY_INFO}`);
-				}
+        Log.info(null, typedError);
+        vscode.window.showInformationMessage(typedError.message);
+        break;
+      }
+      default: {
+        // get the resulting message
+        let resultDefaultMessage: string;
+        if (defaultMessage) {
+          resultDefaultMessage = defaultMessage;
+        } else {
+          resultDefaultMessage = configuration.getMessage('UnexpectedError');
+        }
 
-				// Пишем stack в output.
-				Log.error(error.message, error);
-				outputChannel.show();
-			}
-		}
-	}
+        // prepare user message
+        const uncaughtExceptionMessage = configuration.getMessage(
+          'UncaughtExceptionMessagePostfix'
+        );
+        const userMessage = StringHelper.combiningMessages(
+          resultDefaultMessage,
+          uncaughtExceptionMessage
+        );
+        vscode.window.showErrorMessage(userMessage);
 
-	private static recursiveWriteXpExceptionToOutput(error: XpException|Error, outputChannel: vscode.OutputChannel) {
+        // Пишем stack в output.
+        Log.error(resultDefaultMessage);
+        Log.error(error.message, error);
+        outputChannel.show();
+      }
+    }
+  }
 
-		// Есть вложенные исключения.
-		if(error instanceof XpException && error.getInnerException()) {
-			// Пишем текущие исключение.
-			Log.error(error.message, error);
+  private static recursiveWriteXpExceptionToOutput(
+    error: XpException | Error,
+    outputChannel: vscode.OutputChannel
+  ) {
+    // Есть вложенные исключения.
+    if (error instanceof XpException && error.getInnerException()) {
+      // Пишем текущие исключение.
+      Log.error(error.message, error);
 
-			// Пишем вложенное.
-			ExceptionHelper.recursiveWriteXpExceptionToOutput(error.getInnerException(), outputChannel);
-		} else {
-			Log.error(error.message, error);
-		}
-	}
-
-	public static FEEDBACK_WAY_INFO = 
-		"В случае её повторения проверьте наличие соответствующего [issue](https://github.com/Security-Experts-Community/vscode-xp/issues/). Если подобная ошибка раньше не встречалась, заведите [баг](https://github.com/Security-Experts-Community/vscode-xp/issues/new?assignees=&labels=bug&template=form_for_bugs.yml&title=%5BBUG%5D) и приложите логи из окна Output. Любые вопросы также можно обсудить [Telegram-канале](https://t.me/s3curity_experts_community/75)";
+      // Пишем вложенное.
+      ExceptionHelper.recursiveWriteXpExceptionToOutput(error.getInnerException(), outputChannel);
+    } else {
+      Log.error(error.message, error);
+    }
+  }
 }

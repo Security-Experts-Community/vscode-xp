@@ -77,13 +77,25 @@ div {
 	width: calc(100% - 30px);
 }
 
-div input[type=text],
-div input[type=url] {
+div input[type="text"],
+div input[type="url"],
+.multiline-input {
 	width: calc(100% - 50px);
 }
 
+input[type="button"] {
+	cursor: pointer;
+}
+
+.multiline-input {
+	font-family: sans-serif;
+	word-break: break-word;
+}
+
+
 input,
-select {
+select,
+.multiline-input {
 	border: none;
 	padding: 6px 10px;
 	margin: 4px 0;
@@ -91,17 +103,19 @@ select {
 	float: left;
 	background-color: transparent;
 	color: var(--white);
-	border-bottom: 1px solid var(--white);
+	box-shadow: 0 1px var(--white);
 }
 
 input:focus,
-select:focus {
-	border-bottom: 3px solid var(--white);
+select:focus,
+.multiline-input:focus {
+	box-shadow: 0 3px var(--white);
 	outline: none;
 }
 
-input:invalid {
-	border-bottom: 3px solid var(--red);
+input:invalid,
+.multiline-input.multiline-input_invalid {
+	box-shadow: 0 3px var(--red);
 	outline: none;
 }
 
@@ -117,6 +131,7 @@ input:invalid {
 	box-sizing: border-box;
 	background-color: var(--white);
 	border: none;
+	box-shadow: none;
 }
 
 .add_value {

@@ -1,0 +1,5 @@
+# Вайтлистинг
+table_list default
+table_list {"Common_whitelist_auto": [{"rule": "Windows_ProcessAccess", "specific_value": ""}]}
+
+expect not {"correlation_name": "Windows_ProcessAccess"}

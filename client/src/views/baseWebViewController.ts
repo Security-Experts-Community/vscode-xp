@@ -6,109 +6,109 @@ import { ExceptionHelper } from '../helpers/exceptionHelper';
 import { LogErrorCommand } from './webViewCommands';
 
 export interface WebViewDescriptor {
-	viewId: string;
-	viewTitle: string;
-	config: Configuration;
-	templatePath: string;
-	webViewOptions: vscode.WebviewPanelOptions | vscode.WebviewOptions;
+  viewId: string;
+  config: Configuration;
+  templatePath?: string;
+  webViewOptions: vscode.WebviewPanelOptions | vscode.WebviewOptions;
 }
 
 export class WebViewMessage {
-	cmdName: string;
-	message: string;
-	params?: unknown;
+  cmdName: string;
+  message: string;
+  params?: unknown;
 }
 
 export abstract class BaseWebViewController {
+  constructor(protected descriptor: WebViewDescriptor) {}
 
-	constructor(protected _descriptor : WebViewDescriptor) { }
+  protected async showView(): Promise<void> {
+    // Если открыта еще одна локализация, то закрываем ее перед открытием новой.
+    if (this.webView) {
+      this.webView.dispose();
+      this.webView = undefined;
+    }
 
-	protected async showDefault() : Promise<void> {
+    try {
+      // Создать и показать панель.
+      this.webView = vscode.window.createWebviewPanel(
+        this.descriptor.viewId,
+        this.getTitle(),
+        vscode.ViewColumn.One,
+        this.descriptor.webViewOptions
+      );
 
-		// Если открыта еще одна локализация, то закрываем её перед открытием новой.
-		if (this._view) {
-			this._view.dispose();
-			this._view = undefined;
-		}
+      this.webView.webview.onDidReceiveMessage(this.receiveMessageFromWebViewDefault, this);
 
-		try {
-			// Создать и показать панель.
-			this._view = vscode.window.createWebviewPanel(
-				this._descriptor.viewId,
-				this._descriptor.viewTitle,
-				vscode.ViewColumn.One,
-				this._descriptor.webViewOptions
-			);
+      this.webView.onDidDispose((e: void) => {
+        this.onDispose(e);
+        this.webView = undefined;
+      });
 
-			this._view.webview.onDidReceiveMessage(
-				this.receiveMessageFromWebViewDefault,
-				this
-			);
+      this.webView.webview.html = await this.renderHtml();
+    } catch (error) {
+      ExceptionHelper.show(error, `Не удалось открыть ${this.getTitle()}`);
+    }
+  }
 
-			this._view.onDidDispose( () => {
-				this._view = undefined;
-			});
+  protected abstract onDispose(e: void): void;
 
-			this._view.webview.html = this.getHtml();
-		}
-		catch (error) {
-			ExceptionHelper.show(error, `Не удалось открыть ${this._descriptor.viewTitle}`);
-		}
-	}
+  public reveal(): void {
+    this.webView.reveal();
+  }
 
-	/**
-	 * Обработчик команд от webView
-	 * @param message 
-	 */
-	protected abstract receiveMessageFromWebView(message: WebViewMessage) : Promise<void>
+  /**
+   * Обработчик команд от webView
+   * @param message
+   */
+  protected abstract receiveMessageFromWebView(message: any): Promise<void>;
 
-	/**
-	 * Получает вёрстку для отображения webView
-	 */
-	protected abstract getHtml() : string;
+  /**
+   * Получает верстку для отображения webView
+   */
+  protected abstract renderHtml(): string | Promise<string>;
 
-	/**
-	 * Выполняется перед отображением вьюшки.
-	 */
-	protected abstract preShow() : Promise<void>;
+  /**
+   * Выполняется перед отображением вьюшки.
+   */
+  protected abstract preRender(): Promise<boolean>;
 
-	public async show() : Promise<void> {
-		await this.preShow();
-		await this.showDefault();
-		return;
-	}
+  public async show(): Promise<void> {
+    const result = await this.preRender();
+    if (!result) {
+      return;
+    }
+    await this.showView();
+    return;
+  }
 
-	protected async receiveMessageFromWebViewDefault(message: WebViewMessage) : Promise<void> {
+  protected abstract getTitle(): string;
 
-		if (message == null) return;
+  protected async receiveMessageFromWebViewDefault(message: WebViewMessage): Promise<void> {
+    if (message == null) return;
 
-		switch (message.cmdName) {
-			case "LogErrorCommand": {
-				const cmd = new LogErrorCommand(message);
-				cmd.execute(this);
-				break;
-			}
-			default: {
-				this.receiveMessageFromWebView(message);
-			}
-		}
-	}
+    switch (message.cmdName) {
+      case 'LogErrorCommand': {
+        const cmd = new LogErrorCommand(message);
+        cmd.execute(this);
+        break;
+      }
+      default: {
+        this.receiveMessageFromWebView(message);
+      }
+    }
+  }
 
-	public postMessage(message: any): Thenable<boolean> {
-		if(!this._view) {
-			throw new XpException("Невозможно отобразить данные в окне, так как оно закрыто. Откройте его заново и повторите операцию");
-		}
+  public postMessage(message: any): Thenable<boolean> {
+    if (!this.webView) {
+      throw new XpException(
+        'Невозможно отобразить данные в окне, так как оно закрыто. Откройте его заново и повторите операцию'
+      );
+    }
 
-		return this._view.webview.postMessage(message);
-	}
+    return this.webView.webview.postMessage(message);
+  }
 
-	public get view() : vscode.WebviewPanel {
-		return this._view;
-	}
-
-	private _view?: vscode.WebviewPanel;
-	public static END_OF_LINE = "\n";
+  protected webView?: vscode.WebviewPanel;
+  protected title: string;
+  public static END_OF_LINE = '\n';
 }
-
-
-

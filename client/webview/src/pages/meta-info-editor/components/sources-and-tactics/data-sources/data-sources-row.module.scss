@@ -1,0 +1,37 @@
+.root {
+  display: flex;
+  gap: 4px;
+  padding: 2px;
+  margin: -1px;
+  border-radius: 3px;
+
+  &:nth-child(even) {
+    background-color: var(--vscode-settings-rowHoverBackground);
+  }
+}
+
+.events {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.select {
+  flex-shrink: 0;
+  width: min(50%, 320px);
+
+  &.technique {
+    width: 150px;
+  }
+}
+
+.addEventButton {
+  font-size: 12px;
+}
+
+.deleteButton {
+  opacity: 0.75;
+}

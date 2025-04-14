@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import * as path from "path";
+import * as path from 'path';
 
 import { UnitTestContentEditorViewProvider } from '../../views/unitTestEditor/unitTestEditorViewProvider';
 import { BaseUnitTest } from './baseUnitTest';
@@ -7,136 +7,135 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Normalization } from '../content/normalization';
 import { XpException } from '../xpException';
 import { Log } from '../../extension';
+import { RuleBaseItem } from '../content/ruleBaseItem';
 
 export class NormalizationUnitTest extends BaseUnitTest {
-	public getDefaultExpectation(): string {
-		return `{}`;
-	}
+  public getDefaultExpectation(): string {
+    return `{}`;
+  }
 
-	public getDefaultInputData(): string {
-		return `# Здесь укажи какое сырое событие (одно) ты подаёшь на вход правилу нормализации.\n`;
-	}
+  public getDefaultInputData(): string {
+    return `# Здесь укажи какое сырое событие (одно) ты подаешь на вход правилу нормализации.\n`;
+  }
 
-	public static parseFromRuleDirectory(rule: Normalization) : NormalizationUnitTest [] {
-		
-		const ruleDirectoryFullPath = rule.getDirectoryPath();
-		const testsFullPath = path.join(ruleDirectoryFullPath, "tests");
-		if (!fs.existsSync(testsFullPath)){
-			return [];
-		}
-		const tests = fs.readdirSync(testsFullPath)
-			.map(f => path.join(testsFullPath, f))
-			.filter(f => f.endsWith(".js"))
-			.filter(f => fs.existsSync(f))
-			.map((f, _) => {
-				const expectedNormalizedEvent = fs.readFileSync(f, "utf8");
-				const regex = /norm_(\d+)\.js/.exec(f);
-				if (regex && regex.length > 0) {
-					const index = parseInt(regex[1]);
-					
-					const unitTest = NormalizationUnitTest.create(index, rule);
-					unitTest.setTestExpectation(expectedNormalizedEvent);
-					
-					const rawEventFileName = `raw_${index}.txt`;
-					const rawEventFilePath = path.join(unitTest.getTestsDirPath(), rawEventFileName);
-					if(!fs.existsSync(rawEventFilePath)) {
-						Log.error(`Повреждены файлы тестов, не найден файл '${rawEventFilePath}'`);
-						return;
-					}
+  public static parseFromRuleDirectory(rule: Normalization): NormalizationUnitTest[] {
+    const ruleDirectoryFullPath = rule.getDirectoryPath();
+    const testsFullPath = path.join(ruleDirectoryFullPath, RuleBaseItem.TESTS_DIRNAME);
+    if (!fs.existsSync(testsFullPath)) {
+      return [];
+    }
+    const tests = fs
+      .readdirSync(testsFullPath)
+      .map((f) => path.join(testsFullPath, f))
+      .filter((f) => f.endsWith('.js'))
+      .filter((f) => fs.existsSync(f))
+      .map((f, _) => {
+        const expectedNormalizedEvent = FileSystemHelper.readContentFileSync(f);
+        const regex = /norm_(\d+)\.js/.exec(f);
+        if (regex && regex.length > 0) {
+          const index = parseInt(regex[1]);
 
-					const rawEvent = FileSystemHelper.readContentFileSync(rawEventFilePath);
-					unitTest.setTestInputData(rawEvent);
+          const unitTest = NormalizationUnitTest.create(index, rule);
+          unitTest.setTestExpectation(expectedNormalizedEvent);
 
-					unitTest.command = { 
-						command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,  
-						title: "ModularTestContentEditorViewProvider.onTestSelectionChangeCommand", 
-						arguments: [unitTest] 
-					};
+          const rawEventFileName = `raw_${index}.txt`;
+          const rawEventFilePath = path.join(unitTest.getTestsDirPath(), rawEventFileName);
+          if (!fs.existsSync(rawEventFilePath)) {
+            Log.error(`Повреждены файлы тестов, не найден файл '${rawEventFilePath}'`);
+            return;
+          }
 
-					return unitTest;
-				}
-			})
-			// Сортируем тесты, ибо в противном случае сначала будет 1, потом 10 и т.д.
-			.sort((a, b) => a.getNumber() - b.getNumber());
+          const rawEvent = FileSystemHelper.readContentFileSync(rawEventFilePath);
+          unitTest.setTestInputData(rawEvent);
 
-		return tests;
-	}
+          unitTest.command = {
+            command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,
+            title: 'ModularTestEditorViewProvider.onTestSelectionChangeCommand',
+            arguments: [unitTest]
+          };
 
-	public static convertFromObject(object: any) : NormalizationUnitTest {
-		return Object.assign(new NormalizationUnitTest(1), object) as NormalizationUnitTest;
-	}
+          return unitTest;
+        }
+      })
+      // Сортируем тесты, ибо в противном случае сначала будет 1, потом 10 и т.д.
+      .sort((a, b) => a.getNumber() - b.getNumber());
 
-	public static create(number: number, rule : Normalization) : NormalizationUnitTest {
-		const baseDirFullPath = rule.getDirectoryPath();
+    return tests;
+  }
 
-		const test = new NormalizationUnitTest(number);
-		test.setRule(rule);
-		test.setTestExpectation(test.getDefaultExpectation());
-		test.setTestInputData(test.getDefaultInputData());
+  public static convertFromObject(object: any): NormalizationUnitTest {
+    return Object.assign(new NormalizationUnitTest(1), object) as NormalizationUnitTest;
+  }
 
-		test.command = { 
-			command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,  
-			title: "Open File", 
-			arguments: [test] 
-		};
-		return test;
-	}
+  public static create(number: number, rule: Normalization): NormalizationUnitTest {
+    const baseDirFullPath = rule.getDirectoryPath();
 
+    const test = new NormalizationUnitTest(number);
+    test.setRule(rule);
+    test.setTestExpectation(test.getDefaultExpectation());
+    test.setTestInputData(test.getDefaultInputData());
 
-	public static createFromExistFile(rule : Normalization) : NormalizationUnitTest {
-		const baseDirFullPath = rule.getDirectoryPath();
-		const testsFullPath = path.join(baseDirFullPath, "tests");
+    test.command = {
+      command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,
+      title: 'Open File',
+      arguments: [test]
+    };
+    return test;
+  }
 
-		for(let testNumber = 1; testNumber < NormalizationUnitTest.MaxTestIndex; testNumber++) {
-			const testFullPath = path.join(testsFullPath, `norm_${testNumber}.js`);
-			if(fs.existsSync(testFullPath))
-				continue;
+  public static createFromExistFile(rule: Normalization): NormalizationUnitTest {
+    const baseDirFullPath = rule.getDirectoryPath();
+    const testsFullPath = path.join(baseDirFullPath, RuleBaseItem.TESTS_DIRNAME);
 
-			const test = new NormalizationUnitTest(testNumber);
-			test.setRule(rule);
-			test.setTestExpectation(test.getDefaultExpectation());
-			test.setTestInputData(test.getDefaultInputData());
+    for (let testNumber = 1; testNumber < NormalizationUnitTest.MaxTestIndex; testNumber++) {
+      const testFullPath = path.join(testsFullPath, `norm_${testNumber}.js`);
+      if (fs.existsSync(testFullPath)) continue;
 
-			test.command = { 
-				command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,  
-				title: "Open File", 
-				arguments: [test] 
-			};
-			return test;
-		}
-	}
+      const test = new NormalizationUnitTest(testNumber);
+      test.setRule(rule);
+      test.setTestExpectation(test.getDefaultExpectation());
+      test.setTestInputData(test.getDefaultInputData());
 
-	public async save() : Promise<void> {
-		if(!this.getTestsDirPath()) {
-			throw new XpException("Не задан путь для сохранения");
-		}
+      test.command = {
+        command: UnitTestContentEditorViewProvider.onTestSelectionChangeCommand,
+        title: 'Open File',
+        arguments: [test]
+      };
+      return test;
+    }
+  }
 
-		if(!this.getNumber()) {
-			throw new XpException("Для модульного теста не задан порядковый номер");
-		}
+  public async save(): Promise<void> {
+    if (!this.getTestsDirPath()) {
+      throw new XpException('Не задан путь для сохранения');
+    }
 
-		await FileSystemHelper.writeContentFileIfChanged(
-			this.getTestInputDataPath(),
-			this.getTestInputData()
-		);
+    if (!this.getNumber()) {
+      throw new XpException('Для модульного теста не задан порядковый номер');
+    }
 
-		await FileSystemHelper.writeContentFileIfChanged(
-			this.getTestExpectationPath(),
-			this.getTestExpectation()
-		);
-	}
+    await FileSystemHelper.writeContentFileIfChanged(
+      this.getTestInputDataPath(),
+      this.getTestInputData()
+    );
 
-	public getTestExpectationPath() : string {
-		return path.join(this.getTestsDirPath(), `norm_${this.getNumber()}.js`);
-	}
+    await FileSystemHelper.writeContentFileIfChanged(
+      this.getTestExpectationPath(),
+      this.getTestExpectation()
+    );
+  }
 
-	public getTestInputDataPath() : string {
-		return path.join(this.getTestsDirPath(), `raw_${this.getNumber()}.txt`);
-	}
+  public getTestExpectationPath(): string {
+    return path.join(this.getTestsDirPath(), `norm_${this.getNumber()}.js`);
+  }
 
-	protected constructor(number = 0) {
-		super(number);
-	}
-	
-	private static MaxTestIndex = 255;
+  public getTestInputDataPath(): string {
+    return path.join(this.getTestsDirPath(), `raw_${this.getNumber()}.txt`);
+  }
+
+  protected constructor(number = 0) {
+    super(number);
+  }
+
+  private static MaxTestIndex = 255;
 }

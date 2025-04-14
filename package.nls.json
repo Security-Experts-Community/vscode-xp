@@ -1,43 +1,59 @@
 {
 	"xp.commonCommandCategory": "VSCode-XP",
+	
+	"xp.commonCommands.showOutputChannel": "Show Output Data",
 
-	"xp.commonCommands.showOutputChannel": "Show extension output",
+	"xp.commonCommands.showExtensionSettings" : "Extension Settings",
 
-	"xp.views.knowledgebaseTree.title": "Object tree",
-	"xp.views.knowledgebaseTree.refreshContentTreeCommand": "Refresh tree",
-	"xp.views.knowledgebaseTree.openKnowledgebaseCommand": "Open knowledge base",
-	"xp.views.knowledgebaseTree.correlateEventsCommand": "Correlate events",
+	"xp.views.knowledgebaseTree.title": "Object Tree",
+	"xp.views.knowledgebaseTree.refreshContentTreeCommand": "Refresh",
+	"xp.views.knowledgebaseTree.openKnowledgebaseCommand": "Open Knowledge Base",
+	"xp.views.knowledgebaseTree.correlateEventsCommand": "Correlate Events",
 
-	"xp.views.knowledgebaseTree.createPackageCommand": "Create new package",
-	"xp.views.knowledgebaseTree.createCorrelationCommand": "Create a correlation rule",
-	"xp.views.knowledgebaseTree.createEnrichmentCommand": "Create a enrichment rule",
-	"xp.views.knowledgebaseTree.createNormalizationCommand": "Create a normalization rule",
-	"xp.views.knowledgebaseTree.createTableListsCommand": "Create a tabular list",
-	"xp.views.knowledgebaseTree.createMacroCommand": "Create a macro",
-	"xp.views.knowledgebaseTree.createFolderCommand": "Create a folder",
+	"xp.views.knowledgebaseTree.createSubmenu": "Create",
+	"xp.views.knowledgebaseTree.createPackageCommand": "New Expertise Pack",
+	"xp.views.knowledgebaseTree.createCorrelationCommand": "New Correlation Rule",
+	"xp.views.knowledgebaseTree.createEnrichmentCommand": "New Enrichment Rule",
+	"xp.views.knowledgebaseTree.createNormalizationCommand": "New Normalization Rule",
+	"xp.views.knowledgebaseTree.createAggregationCommand": "New Aggregation Rule",
+	"xp.views.knowledgebaseTree.createTableListsCommand": "New Tabular List",
+	"xp.views.knowledgebaseTree.createMacroCommand": "New Macro",
+	"xp.views.knowledgebaseTree.createFolderCommand": "New Folder",
 
-	"xp.views.knowledgebaseTree.verifyFolderCommand": "Verify",
+	"xp.views.knowledgebaseTree.verifyFolderCommand": "Run Validation",
 	"xp.views.knowledgebaseTree.deleteCommand": "Delete",
 	"xp.views.knowledgebaseTree.renameCommand": "Rename",
-	"xp.views.knowledgebaseTree.duplicateCommand": "Duplicate",
+	"xp.views.knowledgebaseTree.duplicateCommand": "Copy",
 
-	"xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Integration tests",
+	"xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Integration Tests",
+	"xp.views.knowledgebaseTree.showModularTestsCommand": "Modular Tests",
 	"xp.views.knowledgebaseTree.showMetainfoCommand": "Metadata",
 	"xp.views.knowledgebaseTree.showLocalizationCommand": "Localization",
-	"xp.views.knowledgebaseTree.showTableDefaultValuesCommand": "Edit defaults",
 
-	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Compile all rules and lists",
-	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Compile all localizations",
-	"xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Compile all normalizations",
-	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Compile all wld files",
+	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Compile All Rules and Lists",
+	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Compile All Localization Rules",
+	"xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Compile All Normalization Rules",
+	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Compile All WLD Files",
+	
+	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Correlate Events from Files",
 
-	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Correlate log files",
+	"xp.views.knowledgebaseTree.importKbFileCommand": "Import from KB File",
+	"xp.views.knowledgebaseTree.exportKbFileCommand": "Export to KB File",
 
-	"xp.views.knowledgebaseTree.importKbFileCommand": "Import packages from kb file",
-	"xp.views.knowledgebaseTree.exportKbFileCommand": "Export package to kb file",
+	"xp.views.knowledgebaseTree.defaultContent": "This extension helps you develop rules for event processing using the eXtraction and Processing (XP) language.\nTo start, [open a knowledge base](command:xp.contentTree.openKnowledgebaseCommand) or create a new one.\nEnjoy!",
 
-	"xp.views.knowledgebaseTree.defaultContent": "Welcome! This extension will help you develop rules in the eXtraction and Processing (XP) language. To get started, open the knowledge base.\n[Open Knowledge Base](command:xp.contentTree.openKnowledgebaseCommand)\nHave fun!",
+	"xp.xpConfig.kbtBaseDirectoryDescription": "Path of the folder with the [Knowledge Base Toolkit](https://github.com/vxcontrol/xp-kbt/releases)",
+	"xp.xpConfig.outputDirectoryPathDescription": "Path of the folder where temporary objects are saved. The folder is emptied automatically every time you start the extension.",
+	"xp.xpConfig.correlatorTimeoutDescription": "Max correlation time in seconds. If the time is exceeded, the correlation will be canceled.",
+	"xp.xpConfig.lspServerExecutablePathDescription": "Path of the LSP server executable",
 
-	"xp.views.modularTestsListView.title": "Unit tests",
-	"xp.views.modularTestsListView.defaultContent": "No unit tests"
+	"xp.xpConfig.originDescription": "Vendor information. Used to export objects to a KB file.",
+	"xp.xpConfig.origin.contentPrefixDescription": "Object vendor prefix. Must match ObjectId. By default, custom rules have the LOC prefix, and system rules have the PT prefix. If no prefix is specified, the rules you create will not have ObjectId either.",
+	"xp.xpConfig.origin.ruDescription": "Display name (RU)",
+	"xp.xpConfig.origin.enDescription": "Display name (EN)",
+	"xp.xpConfig.origin.idDescription": "Vendor GUID (global unique identifier)",
+
+	"xp.xpConfig.logLevelDescription": "Log level",
+	"xp.xpConfig.defaultAuthor": "Default author name"
 }
+

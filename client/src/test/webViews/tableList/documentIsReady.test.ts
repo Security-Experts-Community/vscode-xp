@@ -52,7 +52,7 @@
 // 		const table = new Table("testTable");
 // 		jest.spyOn(table, 'getRuleCode').mockImplementation(async () => testTableList);
 // 		const tableInfo = table.getRuleCode();
-		
+
 // 		const command = new DocumentIsReadyCommand(table);
 // 		// command.processMessage({
 // 		// 	"command" : DocumentIsReadyCommand.commandName
@@ -63,4 +63,3 @@
 // 		// };
 // 	});
 // });
-

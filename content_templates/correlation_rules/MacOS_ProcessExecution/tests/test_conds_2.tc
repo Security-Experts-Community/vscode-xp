@@ -1,0 +1,4 @@
+# Вайтлистинг
+table_list default
+table_list {"Common_whitelist_auto": [{"rule": "MacOS_ProcessExecution", "specific_value": ""}]}
+expect not {"correlation_name": "MacOS_ProcessExecution"}

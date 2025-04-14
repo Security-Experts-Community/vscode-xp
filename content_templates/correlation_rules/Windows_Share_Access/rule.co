@@ -22,7 +22,7 @@ rule Windows_Share_Access: Share_Access
         $subject.account.domain = subject.account.domain
         $subject.account.fullname = subject.account.fullname
         $subject.account.id = subject.account.id
-        $subject.account.session_id = subject.account.session_id 
+        $subject.account.session_id = subject.account.session_id
 
         $object.name = object.name
         $object.path = object.path
@@ -32,7 +32,7 @@ rule Windows_Share_Access: Share_Access
         $object.storage.name = object.storage.name
         $object.storage.path = object.storage.path
         $object.storage.fullpath = object.storage.fullpath
-              
+
         $src.host = src.host
         $src.ip = src.ip
         $src.hostname = src.hostname
@@ -62,7 +62,7 @@ rule Windows_Share_Access: Share_Access
         $event_src.subsys = event_src.subsys
         $event_src.category = event_src.category
         $event_src.rule = event_src.rule
-               
+
         $alert.key = 
         $alert.context = 
     }

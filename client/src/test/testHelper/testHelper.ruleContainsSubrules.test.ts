@@ -4,23 +4,18 @@ import * as assert from 'assert';
 import { TestHelper } from '../../helpers/testHelper';
 
 suite('TestHelper.ruleContainsSubrules', async () => {
-
-	test('Проверка сабруля из списка без lower', async () => {
-
-		const ruleCode =
-`	in_list([
+  test('Проверка сабруля из списка без lower', async () => {
+    const ruleCode = `	in_list([
 	"Subrule_Windows_Host_Abnormal_Access", 
 	"Subrule_Unix_Server_Abnormal_Access"
 ], correlation_name)`;
 
-		const ruleContainsSubrules = TestHelper.isRuleCodeContainsSubrules(ruleCode);
-		assert.ok(ruleContainsSubrules);
-	});
+    const ruleContainsSubrules = TestHelper.isRuleCodeContainsSubrules(ruleCode);
+    assert.ok(ruleContainsSubrules);
+  });
 
-	test('Сравнение имени сабруля c lower', async () => {
-
-		const ruleCode =
-`	event Encoded_Powershell_Process:
+  test('Сравнение имени сабруля c lower', async () => {
+    const ruleCode = `	event Encoded_Powershell_Process:
 key:
 	event_src.host, event_src.title, object.process.name, object.process.id
 filter {
@@ -29,26 +24,22 @@ filter {
 	and filter::CheckWL_Process_Creation("ESC_Cobalt_Strike_Powershell_Payload_Delivery", lower(alert.key))
 }`;
 
-		const ruleContainsSubrules = TestHelper.isRuleCodeContainsSubrules(ruleCode);
-		assert.ok(ruleContainsSubrules);
-	});
-	
-	test('Сравнение имени сабруля', async () => {
+    const ruleContainsSubrules = TestHelper.isRuleCodeContainsSubrules(ruleCode);
+    assert.ok(ruleContainsSubrules);
+  });
 
-		const ruleCode =
-`filter {
+  test('Сравнение имени сабруля', async () => {
+    const ruleCode = `filter {
 	correlation_name == "Potential_Users_Or_Groups_Enumeration_Process"
 	and filter::CheckWL_Specific_Only("Groups_And_Users_Enumeration", lower(object.process.cmdline))
 }`;
 
-		const ruleContainsSubrules = TestHelper.isRuleCodeContainsSubrules(ruleCode);
-		assert.ok(ruleContainsSubrules);
-	});
+    const ruleContainsSubrules = TestHelper.isRuleCodeContainsSubrules(ruleCode);
+    assert.ok(ruleContainsSubrules);
+  });
 
-	test('Проверка сабруля из списка', async () => {
-
-		const ruleCode =
-`event Syscall_execve_run_process:
+  test('Проверка сабруля из списка', async () => {
+    const ruleCode = `event Syscall_execve_run_process:
 key:
 	event_src.host, object.name, alert.key
 filter {
@@ -69,7 +60,7 @@ filter {
 	and filter::CheckWL_Specific_Only("ESC_Unix_Malicious_Activity_from_Webserver", lower(object.account.name) + "|" + lower(alert.key))
 }`;
 
-		const ruleContainsSubrules = TestHelper.isRuleCodeContainsSubrules(ruleCode);
-		assert.ok(ruleContainsSubrules);
-	});
+    const ruleContainsSubrules = TestHelper.isRuleCodeContainsSubrules(ruleCode);
+    assert.ok(ruleContainsSubrules);
+  });
 });

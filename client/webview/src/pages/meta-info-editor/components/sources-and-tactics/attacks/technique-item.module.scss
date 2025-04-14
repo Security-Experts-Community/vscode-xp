@@ -1,0 +1,37 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: bold;
+  margin-top: 4px;
+}
+
+.content {
+  ul:last-child,
+  p:last-child {
+    margin-bottom: 4px;
+  }
+
+  li {
+    margin: 4px 0 4px 4px;
+  }
+
+  p {
+    margin: 8px 0;
+  }
+
+  ul {
+    margin: 0;
+    padding: 0 0 0 16px;
+  }
+
+  h3 {
+    font-weight: 600;
+    font-size: 13px;
+  }
+}
+
+.deprecatedMessage {
+  font-weight: normal;
+  color: var(--vscode-editorWarning-foreground);
+}

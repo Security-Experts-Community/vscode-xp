@@ -1,0 +1,124 @@
+.root {
+  --pointer-offset: 0px;
+  --pointer-width: 6px;
+
+  display: none;
+  position: absolute;
+  flex-direction: column;
+  min-height: 0;
+  animation: 0.2s fadeIn linear forwards;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 999;
+
+  &.isInteractive {
+    pointer-events: auto;
+  }
+
+  &.isError {
+    .inner {
+      background-color: var(--vscode-inputValidation-errorBackground);
+      border: 1px solid var(--vscode-inputValidation-errorBorder);
+      outline-color: var(--vscode-inputValidation-errorBorder);
+      color: var(--vscode-inputValidation-errorForeground);
+    }
+
+    .pointer::after {
+      background-color: var(--vscode-inputValidation-errorBackground) !important;
+      border-color: var(--vscode-inputValidation-errorBorder) !important;
+    }
+  }
+
+  &.isShown {
+    display: flex;
+  }
+
+  &.top {
+    padding-bottom: 6px;
+
+    .pointer {
+      bottom: 0;
+      left: 50%;
+      transform: translate(-50%, 3.5px);
+      margin-left: var(--pointer-offset);
+
+      &::after {
+        transform: rotate(45deg);
+      }
+    }
+  }
+
+  &.bottom {
+    padding-top: 6px;
+
+    .pointer {
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, -3.5px);
+      margin-left: var(--pointer-offset);
+
+      &::after {
+        transform: rotate(225deg);
+      }
+    }
+  }
+}
+
+.inner {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: var(--vscode-editorHoverWidget-background);
+  border: 1px solid var(--vscode-editorHoverWidget-border);
+  border-radius: 3px;
+  box-shadow: 0 2px 8px var(--vscode-widget-shadow);
+  cursor: default;
+}
+
+.content {
+  position: relative;
+  height: 100%;
+  padding: 2px 8px;
+  background-color: inherit;
+  border-radius: inherit;
+  font-size: 13px;
+  line-height: 19px;
+  font-size: 12px;
+  word-wrap: break-word;
+  white-space: normal;
+  color: var(--vscode-editorHoverWidget-foreground);
+  overflow: auto;
+  z-index: 3;
+}
+
+.pointer {
+  position: absolute;
+  height: var(--pointer-width);
+  width: var(--pointer-width);
+  pointer-events: none;
+  z-index: 2;
+
+  &::after {
+    content: '';
+    position: absolute;
+    transform-origin: 50% 50%;
+    height: var(--pointer-width);
+    width: var(--pointer-width);
+    background-color: var(--vscode-editorHoverWidget-background);
+    border-right: 1px solid var(--vscode-editorHoverWidget-border);
+    border-bottom: 1px solid var(--vscode-editorHoverWidget-border);
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    visibility: visible;
+  }
+  100% {
+    opacity: 1;
+  }
+}

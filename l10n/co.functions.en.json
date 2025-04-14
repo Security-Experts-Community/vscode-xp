@@ -1,0 +1,1282 @@
+[ 
+	{
+		"name" : "decode",
+		"signature" : "String decode(Buffer $1, String $2)",
+		"description": "The **decode** function is used to convert Buffer data into a string (String data). You can specify string encodings - UTF-8 or UCS2-LE.",
+		"params": [
+			"$1 - Buffer: buffer_from_base64($f), where $f - is a base64-encoded string",
+			"$2 - encoding (UTF-8 или UCS2-LE)",
+			"Returns a base64 decoded string"
+		],
+		"examples" : [
+			"$raw_base64 = \"aGVsbG8gd29ybGQ=\"",
+			"$datafield11 = decode(buffer_from_base64($raw_base64), \"UTF-8\")",
+			"if find_substr($datafield11, \"\\u0000\") != null then",
+			"    $datafield11 = decode(buffer_from_base64($raw_base64), \"UCS2-LE\")",
+			"endif",
+			"# hello world"
+		]
+	},
+	{
+		"name" : "buffer_from_base64",
+		"signature" : "Buffer buffer_from_base64(String $1)",
+		"description": "The **buffer_from_base64** function is used to convert a string to a byte array of type Buffer. Buffer data is not displayed in normalized message fields, but can be converted to String using the **decode** function.",
+		"params": [
+			"$1 - he string to be converted to a byte array",
+			"Returns a byte array"
+		],
+		"examples" : [
+			"$raw_base64 = \"aGVsbG8gd29ybGQ=\"",
+			"$datafield11 = decode(buffer_from_base64($raw_base64), \"UTF-8\")",
+			"if find_substr($datafield11, \"\\u0000\") != null then",
+			"    $datafield11 = decode(buffer_from_base64($raw_base64), \"UCS2-LE\")",
+			"endif",
+			"# hello world"
+		]
+	},
+	{
+		"name" : "match",
+		"signature" : "Bool match(String $1, String $2)",
+		"description": "The **match** function is used to compare a string with a given pattern.",
+		"params": [
+			"$1 - search string",
+			"$2 - template for matching",
+			"? — one character, * — several characters",
+			"Returns true or false."
+		],
+		"examples" : [
+			"subject.process.fullpath = \"c:\\\\windows\\\\system32\\\\services.exe\"",
+			"match(lower(subject.process.fullpath), \"?:\\\\windows\\\\system32\\\\services.exe\")",
+			"# true"
+		]
+	},
+	{
+		"name" : "lower",
+		"signature" : "String lower(String $1)",
+		"description": "The **lower** function is used to convert all uppercase letters in the string specified in the argument to lowercase.",
+		"params": [
+			"$1 - source string",
+			"Returns a string with lowercase letters."
+		],
+		"examples" : [
+			"subject.process.fullpath = \"C:\\\\Windows\\\\System32\\\\services.exe\"",
+			"lower(subject.process.fullpath) == \"c:\\\\windows\\\\system32\\\\services.exe\"",
+			"# true"
+		]
+	},
+	{
+		"name" : "regex",
+		"signature" : "String regex(String $1, String $2, String $3)",
+		"description": "The **regex** function is used to search a string using a given [pattern](https://github.com/google/re2/wiki/Syntax).",
+		"params": [
+			"$1 - search string",
+			"$2 is the pattern to search for (classes with the character \\\\a \\\\v \\\\r \\\\n \\\\t \\\\f \\\\b must have two escape characters) ",
+			"$3 - indicates the number of the pattern character group:",
+			" 0 - the result is returned for the entire template;",
+			" 1 — the result for the first group of characters is returned;",
+			" 2 - returns the result for the second group of characters, and so on.",
+			"Parentheses are used to combine pattern characters into a group. The function returns a string containing the first sequence of characters found that matches the pattern. If a non-zero pattern group number is specified, the function returns the portion of the string corresponding to that group in the pattern.",
+			"If any of the arguments are not specified or a character sequence matching the pattern is not found, the function returns null."
+		],
+		"examples" : [
+			"object.name = \"C:\\\\Windows\\\\temp\\\\payload.vba\"",
+			"regex(lower(object.name), \"\\.(js|vba|vbs)\", 0) != null",
+			"# true"
+		]
+	},
+	{
+		"name" : "append",
+		"signature" : "List[] append(List $1[], Any $2)",
+		"description": "The **append** function is used to append the element specified in the second argument to the end of the list specified in the first argument.",
+		"params": [
+			"$1 is the list to add the element to",
+			"$2 is the element to be added",
+			"If the first argument to the function is undefined, the function returns a list of one element.",
+			"Returns a new list with the element added."
+		],
+		"examples" : [
+			"$list = ['a', 'b', 'c']",
+			"$list = append($list, 'd')",
+			"# $list = ['a', 'b', 'c', 'd']"
+		]
+	},
+	{
+		"name" : "coalesce",
+		"signature" : "Any coalesce($1, $2, $3,...)",
+		"description": "The **coalesce** function checks the argument values from left to right and returns the first non-null value.",
+		"params": [
+		    "The number of arguments can be any.",
+		    "Return type as argument."
+		],
+		"examples" : [
+			"src.ip = 172.16.222.133",
+			"src.hostname = null",
+			"src.host = coalesce(src.hostname, src.ip)",
+			"# src.host = 172.16.222.133"
+		]
+	},
+	{
+		"name" : "datetime_to_epoch",
+		"signature" : "Number datetime_to_epoch(DateTime $1)",
+		"description": "The **datetime_to_epoch** function is used to convert a time format to Unix time.",
+		"params": [
+		    "$1 - time with DateTime data type",
+		    "The function returns the Unix time in seconds."
+		],
+		"examples" : [
+			"datafield1 = '2015-01-25T01:06:40'",
+			"datafield2 = datetime_to_epoch(datafield1)",
+			"# \"datafield2\": \"1422148000\""
+		]
+	},
+	{
+		"name" : "epoch_to_datetime",
+		"signature" : "DateTime epoch_to_datetime(Number $1)",
+		"description": "The **epoch_to_datetime** function is used to convert a Unix time to a time value of the DateTime data type.",
+		"params": [
+		    "$1 - Unix time",
+		    "The function returns a time value with the DateTime data type."
+		],
+		"examples" : [
+			"datafield1 = '1422148000'",
+			"datafield2 = datetime_to_epoch(datafield1)",
+			"# \"datafield2\": \"2015-01-25T01:06:40Z\""
+		]
+	},
+	{
+		"name" : "exec_query",
+		"signature" : "Bool exec_query(String $0, [$1, $2, ...])",
+		"description": "The **exec_query** function is used to query a table list.",
+		"params": [
+		    "$0 is the name of the query described in the query directive",
+		    "$1, $2 - list of field values for which the query is executed",
+		    "Returns True/False or table column type if qhandler is specified in the query."
+		],
+		"examples" : [
+			"$datafield1 = exec_query(\"TestQuery\", [dst.ip, dst.port])",
+			"# Возвращает True, если соответствующая запись найдена в ТС",
+			"$datafield2 = exec_query(\"TestQuery\", [dst.ip, dst.port])[\"$dst.host\"]",
+			"# Возвращает конкретное значение из ТС, если в запросе определен qhandler"
+		]
+	},
+	{
+		"name" : "find_substr",
+		"signature" : "Number find_substr(String $f1, String $f2)",
+		"description": "The **find_substr** function is used to find a combination of characters in a string.",
+		"params": [
+		    "$1 - search string",
+		    "$2 is the desired combination of symbols",
+		    "Returns the number of the byte in the string from which the searched combination begins, or null."
+		],
+		"examples" : [
+			"object.process.cmdline = \"procdump_x64.exe -ma 4572\"",
+			"find_substr(lower(object.process.cmdline), \"procdump\")",
+			"# 0",
+			"find_substr(lower(object.process.cmdline), \"mimikatz\")",
+			"# null"
+		]
+	},
+	{
+		"name" : "in_list",
+		"signature" : "Bool in_list(List $1[], String $2)",
+		"description": "The **in_list** function is used to search within a list.",
+		"params": [
+		    "$1[] - list with data type List",
+		    "$2 is the search value",
+		    "Returns True or False."
+		],
+		"examples" : [
+			"in_list([2,7,10], logon_type)",
+			"# True"
+		]
+	},
+	{
+		"name" : "in_subnet",
+		"signature" : "Bool in_subnet(IpAddress $f1, String $f2)",
+		"description": "The **in_subnet** function is used to check whether an IP address belongs to a subnet.",
+		"params": [
+		    "$1 - IP address with data type IPAddress",
+		    "$2 - subnet address in CIDR notation format",
+		    "Returns True or False."
+		],
+		"examples" : [
+			"in_subnet(172.16.222.133, \"172.16.222.0\\24\"",
+			"# True"
+		]
+	},
+	{
+		"name" : "join",
+		"signature" : "String join(List [$1], String $2)",
+		"description": "The **join** function is used to join a list of items into a string using the delimiter specified as the second argument.",
+		"params": [
+		    "$1[] - list of strings to merge",
+		    "$2 is the separator",
+		    "Returns the elements concatenated into one string."
+		],
+		"examples" : [
+			"# Combining fields into a string using a delimiter |",
+			"subject.account.name = \"pushkin\"",
+			"object.process.cmdline = \"ipconfig\"",
+			"alert.key = join([lower(subject.account.name), (object.process.cmdline)], \"|\")",
+			"# pushkin|ipconfig",
+			" ",
+			"# Excluding empty event fields and then merging through a delimiter |",
+			"# event_src.host = null",
+			"$list = remove(['a', event_src.host, 'c', event_src.host], null)",
+			"$datafield10 = join($list, '|')",
+			"# $datafield10 = 'a|c'"
+		]
+	},
+	{
+		"name" : "maybe_ipv4",
+		"signature" : "IPAddress maybe_ipv4(String $1)",
+		"description": "The **ipv4** function is used to convert a value with the String data type to an IP address with the IPAddress data type.",
+		"params": [
+		    "$1 - a string containing an IPv4 standard IP address with a String data type",
+		    "Converts the argument to a value with the IPAddress data type.",
+		     "If the IP address could not be recognized, the function returns null."
+		],
+		"examples" : [
+			"$f = '192.168.0.1'",
+			"src.host = ipv4($f)"
+		]
+	},
+	{
+		"name" : "replace",
+		"signature" : "String replace(String $f1, String $f2, String $f3, Number $f4)",
+		"description": "The **replace** function is used to replace a combination of characters in a string that matches a pattern with another combination of characters.",
+		"params": [
+		    "$1 - line to parse",
+		    "$2 is a combination of characters that will be inserted into the string",
+		    "$3 is a pattern for searching for a combination of characters that will be removed from a string (regular expressions can be used in the pattern)",
+		    " ? — Replacement of any one character;",
+		    " * — Replace any number of any characters in a row;",
+		    " [abcd] - Replace any of the listed characters;",
+		    " [a-d] — Replace any character from the range;",
+		    " [!abcd] — Replace any character except those listed;",
+		    " [!0-9] — Replace any character except characters from the range;",
+		    "$4 is the maximum number of occurrences that can be replaced (if the argument value is not specified or zero is specified, the number of occurrences is unlimited)",
+		    "Returns a copy of the string specified in the first argument, with the characters in the third argument replaced by the characters in the second argument."
+		],
+		"examples" : [
+			"object.process.cmdline = \"In^vok^e-We^^bRe^que^st\"",
+			"$result = replace(object.process.cmdline, \"\", \"^\")",
+			"# $result = \"Invoke-WebRequest\""
+		]
+	},
+	{
+		"name" : "select_query_first",
+		"signature" : "Any select_query_first($0<Request name>, [$f1, $f2, ...], $3\"<Column name>\")",
+		"description": "The **select_query_first** function is used to obtain the value of a table list cell that matches the query.",
+		"params": [
+		    "$0 is the name of the query described in the query directive",
+		    "$f1, $f2 - list of field values for which the query is executed",
+		    "$3 - the title of the table list column (in quotes), the value of which you want to get",
+		    "The data type of the return value matches the data type of the column.",
+		    "If the query condition is not met, the function returns null."
+		],
+		"examples" : [
+			"$datafield1 = \"Port_Status: \" + select_query_first(\"TestQuery\", [dst.ip, dst.port], \"Status\")",
+			"# Port_Status: Open"
+		]
+	},
+	{
+		"name" : "strip",
+		"signature" : "String strip(String $1, String $2, String $3)",
+		"description": "The **strip** function is used to strip the value of the first argument of type String, the prefix specified in the second argument, and/or the postfix specified in the third argument.",
+		"params": [
+		"$1 is the string from which the prefix and/or postfix need to be removed",
+		"$2 is the prefix that needs to be removed",
+		"$3 is the postfix that needs to be removed",
+		"Returns the new trimmed string."
+		],
+		"examples" : [
+			"$1 = <<<<Счастье есть>>>>",
+			"$f2 = \"<<<<\"",
+			"$f3 = \">>>>\"",
+			"datafield1 = strip($f1, $f2, $f3)",
+			"# \"datafield1\": \"Счастье есть\""
+		]
+	},
+
+	{
+		"name" : "div",
+		"signature" : "Number div(Number $1, Number $2)",
+		"description": "Division. The result of the **div** operator is the ratio of the first operand to the second. If both operands are Number data types, the result is the integer part of the division of the operands. Division by zero is not allowed.",
+		"params": [
+		"$1 is the first operand",
+		"$2 is the second operand",
+		"Returns the integer part from the division of the operands."
+		],
+		"examples" : [
+			"$1 = 12",
+			"$2 = 2",
+			"datafield1 = div($1, $2)",
+			"datafield2 = div($1, 7)",
+			"# \"datafield1\": \"6\"",
+			"# \"datafield2\": \"1\""
+		]
+	},
+	{
+		"name" : "mod",
+		"signature" : "Number mod(Number $1, Number $2)",
+		"description": "Modulo division. The result of applying the **mod** operator to integers is the remainder of the integer division of the operands. If the first operand is less than the second, then the result is its value. Division by zero is not allowed.",
+		"params": [
+		"$1 is the first operand",
+		"$2 is the second operand",
+		"Returns the remainder of an integer division of the operands."
+		],
+		"examples" : [
+			"$1 = 12",
+			"$2 = 7",
+			"$3 = 2",
+			"datafield1 = mod($1, $2)",
+			"datafield2 = mod($1, $3)",
+			"datafield3 = mod($3, $2)",
+			"# \"datafield1\": \"5\"",
+			"# \"datafield2\": \"0\"",
+			"# \"datafield3\": \"2\""
+		]
+	},
+	{
+		"name" : "datetime",
+		"signature" : "DateTime datetime(String $1)",
+		"description": "For normalization rules only. The **datetime** function is used to convert an argument value of type String to datetime data type.",
+		"params": [
+		"$1 is the string to convert to DateTime"
+		],
+		"examples" : [
+			"$1 = \"1990-10-31T23:13:04+03:00\"",
+			"$2 = datetime($1)",
+			"datafield1 = $2",
+			"datafield2 = year($2)",
+			"datafield3 = month($2)",
+			"datafield4 = day($2)",
+			"# \"datafield1\": \"1990-10-31T23:13:04+03:00\"",
+			"# \"datafield2\": \"1990\"",
+			"# \"datafield3\": \"10\"",
+			"# \"datafield4\": \"31\""
+		]
+	},
+	{
+		"name" : "maybe_datetime",
+		"signature" : "DateTime maybe_datetime(String $1)",
+		"description": "For normalization rules only. The **maybe_datetime** function is used to convert an argument value with a String data type to a DateTime data type.",
+		"params": [
+		"$1 is the string to convert to DateTime"
+		],
+		"examples" : [
+			"$1 = \"1990-10-31T23:13:04+03:00\"",
+			"$2 = maybe_datetime($1)",
+			"datafield1 = $2",
+			"datafield2 = year($2)",
+			"datafield3 = month($2)",
+			"datafield4 = day($2)",
+			"# \"datafield1\": \"1990-10-31T23:13:04+03:00\"",
+			"# \"datafield2\": \"1990\"",
+			"# \"datafield3\": \"10\"",
+			"# \"datafield4\": \"31\""
+		]
+	},
+	{
+		"name" : "datetime_to_epoch_ms",
+		"signature" : "Number datetime_to_epoch_ms(DateTime $1)",
+		"description": "The **datetime_to_epoch_ms** function is used to convert the time format. The function argument is a time with the DateTime data type. The function returns the Unix time in milliseconds. The Unix time starts at 00:00:00 UTC on January 1, 1970 ",
+		"params": [
+		"$1 - DateTime to convert to milliseconds"
+		],
+		"examples" : [
+			"$1 = 2015-01-25T01:06:40",
+			"datafield1 = $1",
+			"datafield2 = datetime_to_epoch_ms($1)",
+			"# \"datafield1\": \"2015-01-25T01:06:40Z\"",
+			"# \"datafield2\": \"1422148000000\""
+		]
+	},
+	{
+		"name" : "datetime_to_win_ticks",
+		"signature" : "Number datetime_to_win_ticks(DateTime $1)",
+		"description": "The **datetime_to_win_ticks** function is used to convert the time format. The function argument is a time with the DateTime data type. The function returns the time in filetime format with the Number data type. The filetime is specified in hundreds of nanoseconds (10-7 seconds), starting at 00:00:00 UTC January 1, 1601.",
+		"params": [
+		"$1 - DateTime to convert to filetime"
+		],
+		"examples" : [
+			"$1 = 2015-01-25T01:06:40",
+			"datafield1 = $1",
+			"datafield2 = datetime_to_win_ticks($1)",
+			"datafield3 = div(datetime_to_win_ticks($1), 10000000)",
+			"# \"datafield1\": \"2015-01-25T01:06:40Z\"",
+			"# \"datafield2\": \"130666216000000000\"",
+			"# \"datafield3\": \"13066621600\""
+		]
+	},
+	{
+		"name" : "duration",
+		"signature" : "Number duration(String $1)",
+		"description": "The **duration** function is used to convert the value of a String argument containing a time interval in the format XXXd XXh:XXm:XXs to a number of seconds. If the conversion fails, the function returns null.",
+		"params": [
+		"$1 - String with time interval to convert to seconds"
+		],
+		"examples" : [
+			"$1 = \"0d 1h:2m:15s\"",
+			"datafield1 = duration($1)",
+			"datafield2 = div(datafield1,60*60)",
+			"datafield3 = div(mod(datafield1,3600),60)",
+			"datafield4 = mod(mod(datafield1,3600),60)",
+			"# \"datafield1\": \"3735\"",
+			"# \"datafield2\": \"1\"",
+			"# \"datafield3\": \"2\"",
+			"# \"datafield4\": \"15\""
+		]
+	},
+	{
+		"name" : "maybe_duration",
+		"signature" : "Number maybe_duration(String $1)",
+		"description": "The **maybe_duration** function is used to convert the value of a String argument containing a time interval in the format XXXd XXh:XXm:XXs to a number of seconds. If the conversion fails, the function returns null.",
+		"params": [
+		"$1 - String with time interval to convert to seconds"
+		],
+		"examples" : [
+			"$1 = \"0d 1h:2m:15s\"",
+			"datafield1 = maybe_duration($1)",
+			"datafield2 = div(datafield1,60*60)",
+			"datafield3 = div(mod(datafield1,3600),60)",
+			"datafield4 = mod(mod(datafield1,3600),60)",
+			"# \"datafield1\": \"3735\"",
+			"# \"datafield2\": \"1\"",
+			"# \"datafield3\": \"2\"",
+			"# \"datafield4\": \"15\""
+		]
+	},
+	{
+		"name" : "hour",
+		"signature" : "Number hour(DateTime $1)",
+		"description": "The **hour** function is used to obtain the hour value from a date. The function argument must specify a date with the DateTime data type. The function returns a value with the Number data type.",
+		"params": [
+		"$1 - DateTime from which to get the hours"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T23:13:04+03:00",
+			"datafield1 = hour($1)",
+			"# \"datafield1\": \"20\""
+		]
+	},
+	{
+		"name" : "minute",
+		"signature" : "Number minute(DateTime $1)",
+		"description": "The **minute** function is used to obtain the minutes value from a date. The function argument must specify a date with the DateTime data type. The function returns a value with the Number data type.",
+		"params": [
+		"$1 - DateTime from which to get minutes"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T23:13:04+03:00",
+			"datafield1 = minute($1)",
+			"# \"datafield1\": \"13\""
+		]
+	},
+	{
+		"name" : "second",
+		"signature" : "Number second(DateTime $1)",
+		"description": "The **second** function is used to obtain the value of seconds from a date. The function argument must specify a date with the DateTime data type. The function returns a value with the Number data type.",
+		"params": [
+		"$1 - DateTime from which to get seconds"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T23:13:04+03:00",
+			"datafield1 = second($1)",
+			"# \"datafield1\": \"4\""
+		]
+	},
+	{
+		"name" : "timezone",
+		"signature" : "Number timezone(DateTime $1)",
+		"description": "The **timezone** function is used to obtain the deviation from UTC from a date. The function argument must specify a date with a DateTime data type. The function returns the value in seconds.",
+		"params": [
+		"$1 - DateTime from which to get the deviation from UTC in seconds"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T23:13:04+03:00",
+			"datafield1 = timezone($1)",
+			"# \"datafield1\": \"10800\""
+		]
+	},
+	{
+		"name" : "win_ticks_to_datetime",
+		"signature" : "DateTime win_ticks_to_datetime(Number $1)",
+		"description": "The **win_ticks_to_datetime** function is used to convert the time format. The argument to the function is a time in filetime format. The filetime is specified in hundreds of nanoseconds (10-7 seconds) since 00:00:00 UTC January 1, 1601. Time earlier than January 1, 1970 is considered invalid. The function returns time with the DateTime data type.",
+		"params": [
+		"$1 - Filetime in hundreds of nanoseconds to convert to DateTime format"
+		],
+		"examples" : [
+			"$1 = 130666216000000000",
+			"datafield1 = win_ticks_to_datetime($1)",
+			"# \"datafield1\": \"2015-01-25T01:06:40Z\""
+		]
+	},
+	{
+		"name" : "year",
+		"signature" : "Number year(DateTime $1)",
+		"description": "The **year** function is used to obtain the year value (in UTC time zone) from a date. The function argument must be a date with a DateTime data type.",
+		"params": [
+		"$1 - DateTime from which to get the year value"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T02:13:04+03:00",
+			"datafield1 = year($1)",
+			"# \"datafield1\": \"1990\""
+		]
+	},
+	{
+		"name" : "month",
+		"signature" : "Number month(DateTime $1)",
+		"description": "The **month** function is used to obtain the month value (in UTC time zone) from a date. The function argument must be a date with a DateTime data type.",
+		"params": [
+		"$1 - DateTime from which to get the month value"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T02:13:04+03:00",
+			"datafield1 = month($1)",
+			"# \"datafield1\": \"10\""
+		]
+	},
+	{
+		"name" : "day",
+		"signature" : "Number day(DateTime $1)",
+		"description": "The **day** function is used to obtain a number value (in UTC time zone) from a date. The function argument must be a date with the DateTime data type.",
+		"params": [
+		"$1 - DateTime from which to get the number value"
+		],
+		"examples" : [
+			"$1 = 1990-10-31T02:13:04+03:00",
+			"datafield1 = day($1)",
+			"# \"datafield1\": \"30\""
+		]
+	},
+
+	{
+		"name" : "bool",
+		"signature" : "Bool bool($1)",
+		"description": "The **bool** function is used to convert the argument value to the Boolean value True or False.",
+		"params": [
+		"$1 is an input argument that can take a value from the following data types: Bool, String, Number, Null",
+		"If the input argument is of type Bool and the value True, or of type String with any value other than 0, false, False, and the empty string, or of type Number and the value 1 or any number except 0, then the function result is True.",
+		"In other cases, the result of the function is False.",
+		"Returns the result of converting the argument value to a boolean."
+		],
+		"examples" : [
+			"datafield1 = bool(tRuE)",
+			"datafield2 = bool(12)",
+			"datafield3 = bool(\"\")",
+			"datafield4 = bool(null)",
+			"# \"datafield1\": \"true\"",
+			"# \"datafield2\": \"true\"",
+			"# \"datafield3\": \"false\"",
+			"# \"datafield4\": \"false\""
+		]
+	},
+	{
+		"name" : "ipv4",
+		"signature" : "IPAddress ipv4(String $1)",
+		"description": "The **ipv4** function is used to convert a value with the String data type to an IP address with the IPAddress data type.",
+		"params": [
+		"$1 - a string containing an IPv4 standard IP address with a String data type",
+		"Converts the argument to a value with the IPAddress data type.",
+		"If the IP address could not be recognized, the function returns null."
+		],
+		"examples" : [
+			"$f = '192.168.0.1'",
+			"src.host = ipv4($f)"
+		]
+	},
+	{
+		"name" : "ipv6",
+		"signature" : "IPAddress ipv6(String $1)",
+		"description": "The **ipv6** function is used to convert a value with the String data type to an IP address with the IPAddress data type.",
+		"params": [
+		"$1 - a string containing an IPv6 standard IP address with a String data type",
+		"Converts the argument to a value with the IPAddress data type.",
+		"If the IP address could not be recognized, the function returns null."
+		],
+		"examples" : [
+			"$f = '211:DB8:0:0:8:800:200C:47A'",
+			"src.host = ipv6($f)"
+		]
+	},
+	{
+		"name" : "maybe_ipv6",
+		"signature" : "IPAddress maybe_ipv6(String $1)",
+		"description": "The **maybe_ipv6** function is used to convert a value with the String data type to an IP address with the IPAddress data type.",
+		"params": [
+		"$1 - a string containing an IPv6 standard IP address with a String data type",
+		"Converts the argument to a value with the IPAddress data type.",
+		"If the IP address could not be recognized, the function returns null."
+		],
+		"examples" : [
+			"$f = '211:DB8:0:0:8:800:200C:47A'",
+			"src.host = maybe_ipv6($f)"
+		]
+	},
+	{
+		"name" : "macaddr",
+		"signature" : "MACAddress macaddr(String $1)",
+		"description": "The **macaddr** function is used to convert a value with the String data type to a MAC address with the MACAddress data type.",
+		"params": [
+		"$1 - a string containing the MAC address in one of the formats: aa:bb:cc:dd:ee:ff, aa-bb-cc-dd-ee-ff, aabb.ccdd.eeff",
+		"Converts the argument to a value with the MACAddress data type.",
+		"If the MAC address could not be resolved, the function returns null."
+		],
+		"examples" : [
+			"$f = 'a1-f6-33-4d-21-56'",
+			"datafield1 = macaddr($f)",
+			"# \"datafield1\": \"A1:F6:33:4D:21:56\""
+		]
+	},
+	{
+		"name" : "maybe_macaddr",
+		"signature" : "MACAddress maybe_macaddr(String $1)",
+		"description": "The **maybe_macaddr** function is used to convert a value with the String data type to a MAC address with the MACAddress data type.",
+		"params": [
+		"$1 - a string containing the MAC address in one of the formats: aa:bb:cc:dd:ee:ff, aa-bb-cc-dd-ee-ff, aabb.ccdd.eeff",
+		"Converts the argument to a value with the MACAddress data type.",
+		"If the MAC address could not be resolved, the function returns null."
+		],
+		"examples" : [
+			"$f = 'a1-f6-33-4d-21-56'",
+			"datafield1 = maybe_macaddr($f)",
+			"# \"datafield1\": \"A1:F6:33:4D:21:56\""
+		]
+	},
+	{
+		"name" : "number",
+		"signature" : "Number number(String $1)",
+		"description": "The **number** function is used to convert a value with the String data type to a number with the Number data type.",
+		"params": [
+		"$1 is a string containing a number in decimal number system with data type String",
+		"Converts the argument to a value of data type Number.",
+		"If the number could not be recognized, the function returns null."
+		],
+		"examples" : [
+			"$f = '-245'",
+			"datafield1 = number($f)",
+			"# \"datafield1\": \"-245\""
+		]
+	},
+	{
+		"name" : "maybe_number",
+		"signature" : "Number maybe_number(String $1)",
+		"description": "The **maybe_number** function is used to convert a value with the String data type to a number with the Number data type.",
+		"params": [
+		"$1 is a string containing a number in decimal number system with data type String",
+		"Converts the argument to a value of data type Number.",
+		"If the number could not be recognized, the function returns null."
+		],
+		"examples" : [
+			"$f = '-245'",
+			"datafield1 = maybe_number($f)",
+			"# \"datafield1\": \"-245\""
+		]
+	},
+	{
+		"name" : "number8",
+		"signature" : "Number number8(String $1)",
+		"description": "The **number8** function is used to convert a value with the String data type to a number with the Number data type.",
+		"params": [
+		"$1 is a string containing a number in octal number system with data type String",
+		"Converts the argument to a value of data type Number.",
+		"If the number could not be recognized, the function returns null."
+		],
+		"examples" : [
+			"$f = '-245'",
+			"datafield1 = number8($f)",
+			"# \"datafield1\": \"-165\""
+		]
+	},
+	{
+		"name" : "maybe_number8",
+		"signature" : "Number maybe_number8(String $1)",
+		"description": "The **maybe_number8** function is used to convert a value with the String data type to a number with the Number data type.",
+		"params": [
+		"$1 is a string containing a number in octal number system with data type String",
+		"Converts the argument to a value of data type Number.",
+		"If the number could not be recognized, the function returns null."
+		],
+		"examples" : [
+			"$f = '-245'",
+			"datafield1 = maybe_number8($f)",
+			"# \"datafield1\": \"-165\""
+		]
+	},
+	{
+		"name" : "number16",
+		"signature" : "Number number16(String $1)",
+		"description": "The **number16** function is used to convert a value with the String data type to a number with the Number data type.",
+		"params": [
+		"$1 is a string containing a hexadecimal number with data type String",
+		"Converts the argument to a value of data type Number.",
+		"If the number could not be recognized, the function returns null."
+		],
+		"examples" : [
+			"$f = '-245e'",
+			"datafield1 = number16($f)",
+			"# \"datafield1\": \"-9310\""
+		]
+	},
+	{
+		"name" : "maybe_number16",
+		"signature" : "Number maybe_number16(String $1)",
+		"description": "The **maybe_number16** function is used to convert a value with the String data type to a number with the Number data type.",
+		"params": [
+		"$1 is a string containing a hexadecimal number with data type String",
+		"Converts the argument to a value of data type Number.",
+		"If the number could not be recognized, the function returns null."
+		],
+		"examples" : [
+			"$f = '-245e'",
+			"datafield1 = maybe_number16($f)",
+			"# \"datafield1\": \"-9310\""
+		]
+	},
+	{
+		"name" : "string",
+		"signature" : "String string($1)",
+		"description": "The **string** function is used to convert the argument value to the String data type.",
+		"params": [
+		"$1 is an input argument that can take a value from the following data types: Bool, Number, String, DateTime",
+		"Converts the argument to a value of type String."
+		],
+		"examples" : [
+			"$f = 192.168.0.1",
+			"datafield1 = string($f)",
+			"# \"datafield1\": \"192.168.0.1\""
+		]
+	},
+	{
+		"name" : "csv",
+		"signature" : "List csv($1, String $2, String $3)",
+		"description": "The **csv** function is used to parse a CSV-tagged string into elements.",
+		"params": [
+		"$1 is the string to be parsed, can be of type String or List",
+		"$2 is the character separating the elements of the string",
+		"$3 is the escape character that comes before and after each element of the line",
+		"If string elements are not escaped, the third argument must be any character not found in the string.",
+		"Returns a list of the elements of a string."
+		],
+		"examples" : [
+			"# Example: /login=admin/, /password=supercleveradmin/",
+			"TEXT = 'Example: {$f1=REST}'",
+			"$f2 = ','",
+			"$f3 = '/'",
+			"datafield1 = csv($f1, $f2, $f3)[0]",
+			"datafield2 = csv($f1, $f2, $f3)[1]",
+			"# \"datafield1\": \"login=admin\"",
+			"# \"datafield2\": \"password=supercleveradmin\""
+		]
+	},
+	{
+		"name" : "keyvalue",
+		"signature" : "KeyValue keyvalue(String $1, String $2, String $3, String $4)",
+		"description": "The **keyvalue** function is used to parse a string and create an associative array of key-value pairs.",
+		"params": [
+		"$1 - line to parse",
+		"$2 is the outer separator between pairs",
+		"$3 is the internal separator in the pair",
+		"$4 is the value escape character that appears before and after each value in the pair",
+		"To enter single quotes, use a backslash (\\), to enter double quotes, use two backslashes (\\\\).",
+		"Returns an associative array whose each element contains a key-value pair."
+		],
+		"examples" : [
+			"# login='admin'; password='supercleveradmin'",
+			"TEXT = 'Example: {$f=REST}'",
+			"$result_list = keyvalue($f, \";\", \"=\", \"'\")",
+			"datafield1 = $result_list[\"login\"]",
+			"datafield2 = $result_list[\"password\"]",
+			"# \"datafield1\": \"admin\"",
+			"# \"datafield2\": \"supercleveradmin\""
+		]
+	},
+	{
+		"name" : "length",
+		"signature" : "Number length($1)",
+		"description": "The **length** function returns the size of a string in bytes or the number of elements in a list.",
+		"params": [
+		"$1 is an input argument that can take a value from the following data types: String, List, Null",
+		"For an argument of the String data type, the function returns the size of the string in bytes; for an argument of the List data type, the number of elements in the list.",
+		"If the argument is empty, the function returns null."
+		],
+		"examples" : [
+			"$f_string = \"Angry Birds\"",
+			"$f_list = [3, \"Angry\", \"Birds\"]",
+			"datafield1 = length($f_string)",
+			"datafield2 = length($f_list)",
+			"# \"datafield1\": \"11\"",
+			"# \"datafield2\": \"3\""
+		]
+	},
+	{
+		"name" : "substr",
+		"signature" : "String substr($1, $2, $3)",
+		"description": "The **substr** function returns part of the original string.",
+		"params": [
+		"$1 - source string",
+		"$2 is the index of the first element of the substring",
+		"$3 - substring length",
+		"If the second argument is negative, the index is counted from the end of the string.",
+		"Returns a substring from the source string, starting at the byte specified in the second argument and length as many bytes specified in the third argument."
+		],
+		"examples" : [
+			"$f1 = \"superadmin\"",
+			"$f2 = 4",
+			"$f3 = 5",
+			"datafield1 = substr($f1, $f2, $f3)",
+			"datafield2 = substr($f1, -$f2, $f3)",
+			"# \"datafield1\": \"radmin\"",
+			"# \"datafield2\": \"dmin\""
+		]
+	},
+	{
+		"name" : "upper",
+		"signature" : "String upper(String $1)",
+		"description": "The **upper** function is used to convert all lowercase letters in the string specified as an argument to uppercase.",
+		"params": [
+		"$1 - source string",
+		"Returns a string with uppercase letters."
+		],
+		"examples" : [
+			"subject.process.name = \"services.exe\"",
+			"upper(subject.process.name) == \"SERVICES.EXE\"",
+			"# true"
+		]
+	},
+	
+	{
+		"name" : "is_list",
+		"signature" : "Bool is_list($1)",
+		"description": "The **is_list** function is used to check whether an argument is a List data type.",
+		"params": [
+		"$1 - any object to compare",
+		"Returns True or False."
+		],
+		"examples" : [
+			"$list = ['a', 'b', 'c']",
+			"is_list($list)",
+			"# true"
+		]
+	},
+	{
+		"name" : "remove",
+		"signature" : "List remove($1, $2)",
+		"description": "The **remove** function is used to remove specified characters from the list.",
+		"params": [
+		"$1 - initial list",
+		"$2 - characters to delete",
+		"Returns a list without the specified elements."
+		],
+		"examples" : [
+			"# Удаление элемента d",
+			"$list = ['a', 'd', 'c', 'd']",
+			"$list = remove($list, 'd')",
+			"# $list = ['a', 'c']",
+			"",
+			"# Удаление null-элементов",
+			"$list = ['a', null, 'c', null]",
+			"$list = remove($list, null)",
+			"$list = ['a', 'c']"
+		]
+	},
+	{
+		"name" : "flip_endianness16",
+		"signature" : "Number flip_endianness16($1)",
+		"description": "The **flip_endianness16** function is used to reverse the byte order of 16-bit numbers.",
+		"params": [
+		"$1 is the original number",
+		"Returns the reciprocal decimal number of the original number according to the bit depth of their binary representation."
+		],
+		"examples" : [
+			"$1 = \"256\"",
+			"$number = flip_endianness16(\"256\")",
+			"# $number = 1"
+		]
+	},
+	{
+		"name" : "flip_endianness32",
+		"signature" : "Number flip_endianness32($1)",
+		"description": "The **flip_endianness32** function is used to reverse the byte order of 32-bit numbers.",
+		"params": [
+		"$1 is the original number",
+		"Returns the reciprocal decimal number of the original number according to the bit depth of their binary representation."
+		],
+		"examples" : [
+			"$1 = \"256\"",
+			"$number = flip_endianness32(\"256\")",
+			"# $number = 65536"
+		]
+	},
+	{
+		"name" : "flip_endianness64",
+		"signature" : "Number flip_endianness64($1)",
+		"description": "The **flip_endianness64** function is used to reverse the byte order of 64-bit numbers.",
+		"params": [
+		"$1 is the original number",
+		"Returns the reciprocal decimal number of the original number according to the bit depth of their binary representation."
+		],
+		"examples" : [
+			"$1 = \"256\"",
+			"$number = flip_endianness64(\"256\")",
+			"# $number = 281474976710656"
+		]
+	},
+	{
+		"name" : "regex_match",
+		"signature" : "regex_match($1, $2)",
+		"description": "The **regex_match** function is used in a table list query to compare a string with a pattern specified in the table list.",
+		"params": [
+		"$1 - string to compare",
+		"$2 is the name of the column with templates",
+		"Returns True or False."
+		],
+		"examples" : [
+			"\"TabularList\": [",
+			"   {\"Files\":\".*\\.exe\"},",
+			"   {\"Files\":\".*\\.dll\"}",
+			"]",
+			"$1 = \"start.exe\"",
+			"query QueryName($1) from TabularList {",
+			"   regex_match($1, \"Files\")",
+			"}",
+			"# true"
+		]
+	},
+	{
+		"name" : "submessage",
+		"signature" : "submessage($1, $2, $3)",
+		"description": "The **submessage** function is used to declare a nested normalization rule to recognize a fragment of a raw event that has a different format. The subformula, endsubformula keyword construct is used to constrain the nested normalization rule.",
+		"params": [
+		"$1 - fragment format",
+		"$2 - nested rule names",
+		"$3 is an unhandled event fragment"
+		],
+		"examples" : [
+			"Исходное событие: <30>Jun 16 12:36:42 Nortel222 :Web authentication fail from IP address 10.2.64.86",
+			"TEXT = '{\"<\"NUMBER\">\"}{time=DATETIME}{event_src.hostname=HOSTNAME|STRING}  :Web authentication {$3=REST}'",
+			"submessage (\"TEXT\", \"parse_rest1\", $3)",
+			"   subformula \"parse_rest1\"",
+			"      !TEXT = \"fail from IP address {src.ip=IPV4|src.ip=IPV6}\"",
+			"      status = \"failure\"",
+			"   endsubformula",
+			"# Нормализованное событие: { ..., action = \"login\", status = \"failure\", src.ip = 10.2.64.86,...}"
+		]
+	},
+	{
+		"name" : "insert_min",
+		"signature" : "insert_min(column::$1, $2)",
+		"description": "The **insert_min** function compares and writes into a table list cell the minimum of two values: the current value and the argument value $2. If the cell is empty or a new row is added to the table list, the argument value $2 is written to the cell.",
+		"params": [
+		"$1 - column name",
+		"$2 is the value being compared"
+		],
+		"examples" : [
+			"\"Tabular_List\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Port\":21, \"MinDuration\":12}",
+			"]",
+			"insert_into Tabular_List {",
+			"   column::Port = 21",
+			"   insert_min(column::MinDuration, 10)",
+			"}",
+			"# \"Tabular_List\": [{\"IP\":\"192.0.2.11\", \"Port\":21, \"MinDuration\":10}]"
+		]
+	},
+	{
+		"name" : "insert_max",
+		"signature" : "insert_max(column::$1, $2)",
+		"description": "The **insert_max** function compares and writes into a table list cell the maximum of two values: the current value and the value of argument $2. If the cell is empty or a new row is added to the table list, the value of argument $2 is written to the cell.",
+		"params": [
+		"$1 - column name",
+		"$2 is the value being compared"
+		],
+		"examples" : [
+			"\"Tabular_List\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Port\":21, \"MaxDuration\":12}",
+			"]",
+			"insert_into Tabular_List {",
+			"   column::Port = \"21\"",
+			"   insert_max(column::MaxDuration, 10)",
+			"}",
+			"# \"Tabular_List\": [{\"IP\":\"192.0.2.11\", \"Port\":21, \"MaxDuration\":12}]"
+		]
+	},
+	{
+		"name" : "insert_inc",
+		"signature" : "insert_inc(column::$1)",
+		"description": "The **insert_inc** function increments the value of a cell in the specified column by one. If a new row is added to the table list, 1 is inserted into the cell.",
+		"params": [
+		"$1 - column name"
+		],
+		"examples" : [
+			"\"Tabular_List\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Port\":21, \"Count\":10}",
+			"]",
+			"insert_into Tabular_List {",
+			"   column::Port = 21",
+			"   insert_inc(column::Count)",
+			"}",
+			"# \"Tabular_List\": [{\"IP\":\"192.0.2.11\", \"Port\":21, \"Count\":11}]"
+		]
+	},
+	{
+		"name" : "insert_dec",
+		"signature" : "Number insert_dec(column::$1)",
+		"description": "The **insert_dec** function decreases the value of a cell in the specified column by one. If a new row is added to the table list, -1 is inserted into the cell.",
+		"params": [
+		"$1 - column name"
+		],
+		"examples" : [
+			"\"Tabular_List\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Port\":21, \"Count\":10}",
+			"]",
+			"insert_into Tabular_List {",
+			"   column::Port = 21",
+			"   insert_dec(column::Count)",
+			"}",
+			"# \"Tabular_List\": [{\"IP\":\"192.0.2.11\", \"Port\":21, \"Count\":9}]"
+		]
+	},
+	{
+		"name" : "min",
+		"signature" : "Number min(column::$1)",
+		"description": "The **min** function returns the smallest element in the results of a table list query. Used only in the qhandler statement.",
+		"params": [
+		"$1 - column name",
+		"Returns the smallest element of column $1 from the results of a table list query."
+		],
+		"examples" : [
+			"\"TabularList\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":10},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":20}",
+			"]",
+			"query QueryName($ip) from TabularList {",
+			"   ip == $ip",
+			"}",
+			"   qhandler {",
+			"      $min_count = min(column::Count)",
+			"}",
+			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
+			"$min_value = $get_value[\"$min_count\"]",
+			"# min_value = 10"
+		]
+	},
+	{
+		"name" : "max",
+		"signature" : "Number max(column::$1)",
+		"description": "The **max** function returns the largest element in the results of a table list query. Used only in the qhandler statement.",
+		"params": [
+		"$1 - column name",
+		"Returns the largest element of column $1 from the results of a table list query."
+		],
+		"examples" : [
+			"\"TabularList\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":10},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":20}",
+			"]",
+			"query QueryName($ip) from TabularList {",
+			"   ip == $ip",
+			"}",
+			"   qhandler {",
+			"      $max_count = max(column::Count)",
+			"}",
+			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
+			"$max_value = $get_value[\"$max_count\"]",
+			"# max_value = 20"
+		]
+	},
+	{
+		"name" : "avg",
+		"signature" : "Number avg(column::$1)",
+		"description": "The **avg** function returns the average of the elements from the results of a table list query. Used only in the qhandler statement.",
+		"params": [
+		"$1 - column name",
+		"Returns the average of the elements of column $1 from the results of a table list query."
+		],
+		"examples" : [			
+			"\"TabularList\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":10},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":20}",
+			"]",
+			"query QueryName($ip) from TabularList {",
+			"   ip == $ip",
+			"}",
+			"   qhandler {",
+			"      $avg_count = avg(column::Count)",
+			"}",
+			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
+			"$avg_value = $get_value[\"$avg_count\"]",
+			"# avg_value = 15"
+		]
+	},
+	{
+		"name" : "median",
+		"signature" : "Number median(column::$1)",
+		"description": "The **median** function returns the median element from the results of a table list query. If the number of elements is even, the lower median value is selected. Used only in the qhandler statement.",
+		"params": [
+		"$1 - column name",
+		"Returns the value of the median element of column $1 from the results of a table list query."
+		],
+		"examples" : [						
+			"\"TabularList\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":10},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":20},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":15}",
+			"]",
+			"query QueryName($ip) from TabularList {",
+			"   ip == $ip",
+			"}",
+			"   qhandler {",
+			"      $median_count = median(column::Count)",
+			"}",
+			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
+			"$median_value = $get_value[\"$median_count\"]",
+			"# median_value = 20"
+		]
+	},
+	{
+		"name" : "sum",
+		"signature" : "Number sum(column::$1)",
+		"description": "The **sum** function returns the sum of all elements of the results of a query against a table list. Used only in the qhandler statement.",
+		"params": [
+		"$1 - column name",
+		"Returns the sum of all values of the elements of column $1 from the results of a query against a table list."
+		],
+		"examples" : [
+			"\"TabularList\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":10},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":20},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":15}",
+			"]",
+			"query QueryName($ip) from TabularList {",
+			"   ip == $ip",
+			"}",
+			"   qhandler {",
+			"      $sum_count = sum(column::Count)",
+			"}",
+			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
+			"$sum_value = $get_value[\"$sum_count\"]",
+			"# sum_value = 45"
+		]
+	},
+	{
+		"name" : "count",
+		"signature" : "Number count($1)",
+		"description": "The **count** function returns the number of elements in the results of a table list query. Used only in the qhandler statement.",
+		"params": [
+		"$1 - column name",
+		"Returns the number of elements of column $1 from the results of a table list query."
+		],
+		"examples" : [			
+			"\"TabularList\": [",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":10},",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":20}",
+			"   {\"IP\":\"192.0.2.11\", \"Count\":15}",
+			"]",
+			"query QueryName($ip) from TabularList {",
+			"   ip == $ip",
+			"}",
+			"   qhandler {",
+			"      $sum_count = sum(column::Count)",
+			"      $median_count = median(column::Count)",
+			"      $get_count = count()",
+			"}",
+			"$get_value = exec_query(\"QueryName\", [\"192.0.2.11\"])",
+			"$count = $get_value[\"$get_count\"]",
+			"# count = 2"
+		]
+	},
+	{
+		"name" : "copy_fields",
+		"signature" : "copy_fields(<dst_fields_prefix>, <src_fields_prefix>)",
+		"description": "The **copy_fields** function (*available from version 27.1*) copies values from a group of event schema fields with the common prefix <src_fields_prefix> in the name, to a group of fields with the common prefix <dst_fields_prefix>. Copying will be performed only for fields that have the same part of the name minus the prefix in both groups, as well as the same field type. It is allowed to use _on_, _emit_ and _init_ instructions in the operator block.",
+			"params": [
+		"<dst_fields_prefix> is the prefix of the group of target fields where values are copied. The prefix of the target group of fields must start with $",
+					"<src_fields_prefix> is the prefix of the group of source fields from which values are copied"
+		],
+				"examples" : [
+					"# $src.host = src.host",
+					"# $src.fqdn = src.fqdn",
+					"# $src.hostname = src.hostname",
+					"# $src.ip = src.ip",
+					"# $src.port = src.port",
+					"# $src.asset = src.asset",
+					"copy_fields($src, src)",
+					"",
+					"# $event_src.host = event_src.host",
+					"# $event_src.fqdn = event_src.fqdn",
+					"# $event_src.hostname = event_src.hostname",
+					"# $event_src.ip = event_src.ip",
+					"# $event_src.asset = event_src.asset",
+					"# $event_src.vendor = event_src.vendor",
+					"# $event_src.title = event_src.title",
+					"# $event_src.subsys = event_src.subsys",
+					"# $event_src.category = event_src.category",
+					"# $event_src.rule = event_src.rule",
+					"copy_fields($event_src, event_src)",
+					"",
+					"# $subject.account.domain = object.account.domain",
+					"# $subject.account.fullname = object.account.fullname",
+					"# $subject.account.name = object.account.name",
+					"# $subject.account.id = object.account.id",
+					"copy_fields($subject.account, object.account)"
+				]
+			},
+			{
+				"name" : "check_bit_mask",
+				"signature" : "Bool check_bit_mask(Number value, Number bit_mask)",
+		"description": "The **check_bit_mask** function (*available from version 27.1*) checks whether the bitmask _bit_mask_ is applicable for the number _value_, to solve the problems of checking the presence of several bits at once",
+				"params": [
+		"_value_ is a number for checking the bitmask",
+		"_bit_mask_ is a bitmask in the form of a number",
+					"Returns the result of checking the bitmask as a Bool type"
+		],
+				"examples" : [
+					"# datafield5 = \"0x6\" 110",
+					"$result = check_bit_mask(number16(datafield5), number16(\"0x2\")) # 010",
+					"# $result = true"
+				]
+			},
+			{
+				"name" : "get_bit",
+				"signature" : "Bool get_bit(Number value, Number bit_number)",
+				"description": "The **get_bit** function (*available from version 27.1*) gets the value of the bit number _bit_number_ [LBs](https://en.wikipedia.org/wiki/Bit_numbering) for the number _value_) (true == 1, false== 0)",
+				"params": [
+					"_value_ is the number for checking the bitmask",
+		"_bit_number_ is the bit number in the [LBs format](https://en.wikipedia.org/wiki/Bit_numbering)",
+		"Returns the result of checking the mask bit as a Bool type (true - bit is set, false - bit is reset)"
+		],
+				"examples" : [
+					"$var3 = 6 # 110",
+					"$datafield7 = get_bit($var3, 0)",
+					"# $datafield7 = false",
+					"$datafield8 = get_bit($var3, 1)",
+					"# $datafield8 = true",
+					"$datafield9 = get_bit($var3, 2)",
+					"# $datafield9 = true"
+				]
+			},
+			{
+				"name" : "regex",
+				"signature" : "Optional[Dictionary] regex(String value, String regex_pattern)",
+		"description": "The **regex** function (*available from version 27.1*) is used to search in a string according to a given [pattern](https://github.com/google/re2/wiki/Syntax) and returns all named groups of the regular expression template in as a dictionary in the format _{\"group1\": \"value1\", \"group2\": \"value2\"}_.",
+		"params": [
+		"_value_ - string to search for",
+		"_regex_pattern_ - template to search for (classes with the symbol \\\\a \\\\v \\\\r \\\\n \\\\t \\\\f \\\\b must have two escape characters)",
+					"Parentheses are used to combine template characters into a group. The function returns a string containing the first found sequence of characters that matches the pattern. If a non-zero number of the template character group is specified, the function returns the part of the string corresponding to this group in the template.",
+		"If any of the arguments are not specified or a matching sequence of characters is not found, the function returns null.",
+		" Returns a dictionary with the values of named groups of the regular expression template, or null if no match is found."
+				],
+				"examples" : [
+					"$var3 = \"Text: some random text. Numbers: 123. That's all.\"",
+					"$m = regex($var3, \"Text:\\s(?P<text>.+?)\\.\\sNumbers:\\s(?P<numbers>\\d+).*\")",
+					"$datafield10 = $m[\"text\"]",
+					"# $datafield10 = \"some random text\"",
+					"$numfield1 = number($m[\"numbers\"])",
+					"# $numfield1 = 123"
+				]
+			}
+]

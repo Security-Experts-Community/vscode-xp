@@ -1,16 +1,52 @@
-event Event:
+event Event_for_Table_Edition:
     filter {
+        # TODO: задать логику фильтрации нормализованного или корреляционного события
         filter::NotFromCorrelator()
-        
+        and object.id != null
     }
 
-enrichment EmptyEnrichment
-    
-    enrich Event:
-        enrich_fields {
+event Event_for_Enrichment:
+    filter {
+        # TODO: задать логику фильтрации нормализованного или корреляционного события
+        filter::NotFromCorrelator()
+        and object.id != null
+    }    
 
+enrichment Universal
+
+    enrich Event_for_Table_Edition:
+        enrich_fields {
+            # TODO: определение переменных для вставки или удаления записей из табличного списка
+            $columnValue1 = object.id
+            $columnValue2 = object.id
+            $columnValue3 = object.id
         }
 
-    insert_into _ if $_ == true {
-        column::_ = _
+    # TODO: блок для вставки записи в табличный список
+    insert_into TableName {
+        column::columnName1 = $columnValue1
+        column::columnName2 = $columnValue2
+        column::columnName3 = $columnValue3
     }
+
+    # TODO: блок для вставки записи в табличный список при верном условии $columnValue1 != null
+    insert_into TableName if $columnValue1 != null {
+        column::columnName1 = $columnValue1
+        column::columnName2 = $columnValue2
+        column::columnName3 = $columnValue3
+    }
+
+    # TODO: блок для удаления записей из табличного списка
+    remove_from TableName {
+        column::columnName1 == lower(object.id)
+    }
+
+    enrich Event_for_Enrichment:
+        enrich_fields {
+            # TODO: определить логику обогащения события
+            datafield10 = "enriched object.id: " + string($object.id)
+            datafield11 = "enriched event_src.host: " + string($event_src.host)
+            datafield12 = "enriched event_src.hostname: " + string($event_src.hostname)
+        }
+
+

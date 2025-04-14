@@ -3,11 +3,9 @@ import * as assert from 'assert';
 import { CorrelationUnitTestOutputParser } from '../../../models/tests/correlationUnitTestOutputParser';
 
 suite('ModuleTestOutputParser', () => {
-
-	test('Ошибка парсинга правила корреляции', () => {
-		const parser = new CorrelationUnitTestOutputParser();
-		const output = 
-`
+  test('Ошибка парсинга правила корреляции', () => {
+    const parser = new CorrelationUnitTestOutputParser();
+    const output = `
 [ERROR] Compilation failed:
 C:\\Content\\rule.co:27:29: syntax error, unexpected '='
 Build failed
@@ -20,63 +18,64 @@ Total errors: 1
 Must exit due to some critical errors!
 Removing temp directory C:\\Output\\temp\\2022-10-24_10-43-03_25.0.9349`;
 
-		const diagnostics = parser.parse(output);
+    const diagnostics = parser.parse(output);
 
-		assert.strictEqual(diagnostics.length, 1);
-		assert.strictEqual(diagnostics[0].message, "syntax error, unexpected '='");
+    assert.strictEqual(diagnostics.length, 1);
+    assert.strictEqual(diagnostics[0].message, "syntax error, unexpected '='");
 
-		assert.strictEqual(diagnostics[0].range.start.line, 26);
-		assert.strictEqual(diagnostics[0].range.start.character, 0);
+    assert.strictEqual(diagnostics[0].range.start.line, 26);
+    assert.strictEqual(diagnostics[0].range.start.character, 0);
 
-		assert.strictEqual(diagnostics[0].range.end.line, 26);
-		assert.strictEqual(diagnostics[0].range.end.character, 29);
-	});
+    assert.strictEqual(diagnostics[0].range.end.line, 26);
+    assert.strictEqual(diagnostics[0].range.end.character, 29);
+  });
 
-// 	test('Парсинг результата неуспешного запуска теста без корреляционного события', () => {
-// 		const parser = new CorrelationUnitTestOutputParser();
-// 		const unitTestCondition = `# Comment 1
-// # Comment 2
-// # Comment 3
-// expect 1 {"correlation_name":"NewCorrelation","subject.account.name":"username1"}
-// expect 1 {"correlation_name":"NewCorrelation","subject.account.name":"username12"}`;
-// 		const output = `
-// Expected results are not obtained.
-// Details:
-// Expected json:
-// 	{"correlation_name": "NewCorrelation", "subject.account.name": "username1"}:
-// Expected 1, got 0
-// Rule name is detected in expect. Building diff for all emits with the same "correlation_name" field..
-// There are no correlation emits
-// Expected json:
-// 	{"correlation_name": "NewCorrelation", "subject.account.name": "username12"}:
-// Expected 1, got 0
-// Rule name is detected in expect. Building diff for all emits with the same "correlation_name" field..
-// There are no correlation emits
+  // 	test('Парсинг результата неуспешного запуска теста без корреляционного события', () => {
+  // 		const parser = new CorrelationUnitTestOutputParser();
+  // 		const unitTestCondition = `# Comment 1
+  // # Comment 2
+  // # Comment 3
+  // expect 1 {"correlation_name":"NewCorrelation","subject.account.name":"username1"}
+  // expect 1 {"correlation_name":"NewCorrelation","subject.account.name":"username12"}`;
+  // 		const output = `
+  // Expected results are not obtained.
+  // Details:
+  // Expected json:
+  // 	{"correlation_name": "NewCorrelation", "subject.account.name": "username1"}:
+  // Expected 1, got 0
+  // Rule name is detected in expect. Building diff for all emits with the same "correlation_name" field..
+  // There are no correlation emits
+  // Expected json:
+  // 	{"correlation_name": "NewCorrelation", "subject.account.name": "username12"}:
+  // Expected 1, got 0
+  // Rule name is detected in expect. Building diff for all emits with the same "correlation_name" field..
+  // There are no correlation emits
 
-// Got no resulting events
-// `;
-// 		const result = parser.parseFailedOutput(output, unitTestCondition);
-// 		assert.strictEqual(result, "Got no resulting events");
-// 	});
+  // Got no resulting events
+  // `;
+  // 		const result = parser.parseFailedOutput(output, unitTestCondition);
+  // 		assert.strictEqual(result, "Got no resulting events");
+  // 	});
 
-	test('Парсинг результата успешного запуска теста с одним результатом', () => {
-		const parser = new CorrelationUnitTestOutputParser();
-		const expected = '{\n    "_rule": "NewCorrelation",\n    "action": "login",\n    "alert.context": "321",\n    "alert.key": "123",\n    "category.generic": "Attack",\n    "category.high": "",\n    "category.low": "",\n    "correlation_name": "NewCorrelation",\n    "correlation_type": "event",\n    "count": 1,\n    "datafield7": "1054209749",\n    "dst.fqdn": "dc3-w16.testlab.org",\n    "dst.host": "dc3-w16.testlab.org",\n    "dst.hostname": "dc3-w16",\n    "event_src.category": "AAA",\n    "event_src.host": "dc3-w16.testlab.org",\n    "event_src.hostname": "dc3-w16",\n    "event_src.subsys": "Security",\n    "event_src.title": "windows",\n    "event_src.vendor": "microsoft",\n    "generator.type": "correlationengine",\n    "generator.version": "26.0.3002 (libservice v.2.0.787)",\n    "importance": "low",\n    "incident.aggregation.key": "NewCorrelation|username",\n    "incident.aggregation.timeout": 3600,\n    "incident.category": "Undefined",\n    "incident.severity": "high",\n    "labels": "w_auto|CheckWL_Windows_Login|subject_account_to_attacking_assets|src_to_attacking_assets|event_source_to_compromised_assets",\n    "logon_auth_method": "remote",\n    "logon_service": "Kerberos",\n    "logon_type": 3,\n    "normalized": true,\n    "object": "system",\n    "origin_app_id": "00000000-0000-0000-0000-000000000005",\n    "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",\n    "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab",\n    "src.host": "160.13.111.150",\n    "src.ip": "160.13.111.150",\n    "src.port": 54281,\n    "status": "success",\n    "subevents": [\n        "15881af0-f701-4d7f-8b43-9b517c4e4468"\n    ],\n    "subevents.time": [\n        "2021-09-20T11:51:44.000Z"\n    ],\n    "subject": "account",\n    "subject.account.domain": "testlab.org",\n    "subject.account.id": "S-1-5-21-1129291328-2819992169-918366777-1113",\n    "subject.account.name": "username",\n    "subject.account.privileges": "local administrator rights",\n    "subject.account.session_id": "1054209749",\n    "time": "2021-09-20T11:51:44.000Z",\n    "uuid": "f3885e97-32e9-4f5f-a2bb-a549d36415c5"\n}';
-		const output = `
+  test('Парсинг результата успешного запуска теста с одним результатом', () => {
+    const parser = new CorrelationUnitTestOutputParser();
+    const expected =
+      '{\n    "_rule": "NewCorrelation",\n    "action": "login",\n    "alert.context": "321",\n    "alert.key": "123",\n    "category.generic": "Attack",\n    "category.high": "",\n    "category.low": "",\n    "correlation_name": "NewCorrelation",\n    "correlation_type": "event",\n    "count": 1,\n    "datafield7": "1054209749",\n    "dst.fqdn": "dc3-w16.testlab.org",\n    "dst.host": "dc3-w16.testlab.org",\n    "dst.hostname": "dc3-w16",\n    "event_src.category": "AAA",\n    "event_src.host": "dc3-w16.testlab.org",\n    "event_src.hostname": "dc3-w16",\n    "event_src.subsys": "Security",\n    "event_src.title": "windows",\n    "event_src.vendor": "microsoft",\n    "generator.type": "correlationengine",\n    "generator.version": "26.0.3002 (libservice v.2.0.787)",\n    "importance": "low",\n    "incident.aggregation.key": "NewCorrelation|username",\n    "incident.aggregation.timeout": 3600,\n    "incident.category": "Undefined",\n    "incident.severity": "high",\n    "labels": "w_auto|CheckWL_Windows_Login|subject_account_to_attacking_assets|src_to_attacking_assets|event_source_to_compromised_assets",\n    "logon_auth_method": "remote",\n    "logon_service": "Kerberos",\n    "logon_type": 3,\n    "normalized": true,\n    "object": "system",\n    "origin_app_id": "00000000-0000-0000-0000-000000000005",\n    "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",\n    "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab",\n    "src.host": "160.13.111.150",\n    "src.ip": "160.13.111.150",\n    "src.port": 54281,\n    "status": "success",\n    "subevents": [\n        "15881af0-f701-4d7f-8b43-9b517c4e4468"\n    ],\n    "subevents.time": [\n        "2021-09-20T11:51:44.000Z"\n    ],\n    "subject": "account",\n    "subject.account.domain": "testlab.org",\n    "subject.account.id": "S-1-5-21-1129291328-2819992169-918366777-1113",\n    "subject.account.name": "username",\n    "subject.account.privileges": "local administrator rights",\n    "subject.account.session_id": "1054209749",\n    "time": "2021-09-20T11:51:44.000Z",\n    "uuid": "f3885e97-32e9-4f5f-a2bb-a549d36415c5"\n}';
+    const output = `
 
 SUCCESS!
 Got results:
 
 {"subject.account.name": "username", "src.port": 54281, "category.low": "", "labels": "w_auto|CheckWL_Windows_Login|subject_account_to_attacking_assets|src_to_attacking_assets|event_source_to_compromised_assets", "subject": "account", "_rule": "NewCorrelation", "subject.account.domain": "testlab.org", "datafield7": "1054209749", "event_src.vendor": "microsoft", "event_src.category": "AAA", "object": "system", "event_src.hostname": "dc3-w16", "src.ip": "160.13.111.150", "dst.hostname": "dc3-w16", "event_src.title": "windows", "event_src.subsys": "Security", "subject.account.id": "S-1-5-21-1129291328-2819992169-918366777-1113", "subject.account.privileges": "local administrator rights", "dst.fqdn": "dc3-w16.testlab.org", "category.high": "", "src.host": "160.13.111.150", "incident.category": "Undefined", "correlation_name": "NewCorrelation", "action": "login", "_subjects": [{"AssetId": null, "Fqdn": null, "IpAddress": "160.13.111.150", "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": null, "IpAddress": "160.13.111.150", "EventTimestamp": "2021-09-20T11:51:44.000Z"}], "time": "2021-09-20T11:51:44.000Z", "correlation_type": "event", "incident.aggregation.timeout": 3600, "_objects": [{"AssetId": null, "Fqdn": null, "IpAddress": "160.13.111.150", "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": "dc3-w16", "IpAddress": null, "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": "dc3-w16", "IpAddress": null, "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": null, "IpAddress": "160.13.111.150", "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": "dc3-w16", "IpAddress": null, "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": "dc3-w16", "IpAddress": null, "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": null, "IpAddress": "127.0.0.1", "EventTimestamp": "2021-09-20T11:51:44.000Z"}], "alert.context": "321", "importance": "low", "count": 1, "event_src.host": "dc3-w16.testlab.org", "subevents.time": ["2021-09-20T11:51:44.000Z"], "incident.aggregation.key": "NewCorrelation|username", "incident.severity": "high", "status": "success", "subevents": ["15881af0-f701-4d7f-8b43-9b517c4e4468"], "logon_service": "Kerberos", "uuid": "f3885e97-32e9-4f5f-a2bb-a549d36415c5", "dst.host": "dc3-w16.testlab.org", "logon_type": 3, "logon_auth_method": "remote", "alert.key": "123", "category.generic": "Attack", "subject.account.session_id": "1054209749", "origin_app_id": "00000000-0000-0000-0000-000000000005", "primary_siem_app_id": "00000000-0000-0000-0000-000000000005", "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab", "normalized": true, "generator.version": "26.0.3002 (libservice v.2.0.787)", "generator.type": "correlationengine"}
 `;
-		const result = parser.parseSuccessOutput(output);
-		assert.strictEqual(result, expected);
-	});
+    const result = parser.parseSuccessOutput(output);
+    assert.strictEqual(result, expected);
+  });
 
-	test('Парсинг результата успешного запуска теста с несколькими результатами', () => {
-		const parser = new CorrelationUnitTestOutputParser();
-		const expected = `{\n    "_rule": "NewCorrelation",\n    "action": "login",\n    "alert.context": "321",\n    "alert.key": "123",\n    "category.generic": "Attack",\n    "category.high": "",\n    "category.low": "",\n    "correlation_name": "NewCorrelation",\n    "correlation_type": "event",\n    "count": 1,\n    "datafield7": "1054209749",\n    "dst.fqdn": "dc3-w16.testlab.org",\n    "dst.host": "dc3-w16.testlab.org",\n    "dst.hostname": "dc3-w16",\n    "event_src.category": "AAA",\n    "event_src.host": "dc3-w16.testlab.org",\n    "event_src.hostname": "dc3-w16",\n    "event_src.subsys": "Security",\n    "event_src.title": "windows",\n    "event_src.vendor": "microsoft",\n    "generator.type": "correlationengine",\n    "generator.version": "26.0.3002 (libservice v.2.0.787)",\n    "importance": "low",\n    "incident.aggregation.key": "NewCorrelation|username",\n    "incident.aggregation.timeout": 3600,\n    "incident.category": "Undefined",\n    "incident.severity": "high",\n    "labels": "w_auto|CheckWL_Windows_Login|subject_account_to_attacking_assets|src_to_attacking_assets|event_source_to_compromised_assets",\n    "logon_auth_method": "remote",\n    "logon_service": "Kerberos",\n    "logon_type": 3,\n    "normalized": true,\n    "object": "system",\n    "origin_app_id": "00000000-0000-0000-0000-000000000005",\n    "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",\n    "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab",\n    "src.host": "160.13.111.150",\n    "src.ip": "160.13.111.150",\n    "src.port": 54281,\n    "status": "success",\n    "subevents": [\n        "15881af0-f701-4d7f-8b43-9b517c4e4468"\n    ],\n    "subevents.time": [\n        "2021-09-20T11:51:44.000Z"\n    ],\n    "subject": "account",\n    "subject.account.domain": "testlab.org",\n    "subject.account.id": "S-1-5-21-1129291328-2819992169-918366777-1113",\n    "subject.account.name": "username",\n    "subject.account.privileges": "local administrator rights",\n    "subject.account.session_id": "1054209749",\n    "time": "2021-09-20T11:51:44.000Z",\n    "uuid": "61389037-288f-4f02-a291-3c23c9778d1b"\n}\n{\n    "_rule": "NewCorrelation",\n    "action": "login",\n    "alert.context": "321",\n    "alert.key": "123",\n    "category.generic": "Attack",\n    "category.high": "",\n    "category.low": "",\n    "correlation_name": "NewCorrelation",\n    "correlation_type": "event",\n    "count": 1,\n    "datafield7": "1054209749",\n    "dst.fqdn": "dc3-w16.testlab.org",\n    "dst.host": "dc3-w16.testlab.org",\n    "dst.hostname": "dc3-w16",\n    "event_src.category": "AAA",\n    "event_src.host": "dc3-w16.testlab.org",\n    "event_src.hostname": "dc3-w16",\n    "event_src.subsys": "Security",\n    "event_src.title": "windows",\n    "event_src.vendor": "microsoft",\n    "generator.type": "correlationengine",\n    "generator.version": "26.0.3002 (libservice v.2.0.787)",\n    "importance": "low",\n    "incident.aggregation.key": "NewCorrelation|username",\n    "incident.aggregation.timeout": 3600,\n    "incident.category": "Undefined",\n    "incident.severity": "high",\n    "labels": "w_auto|CheckWL_Windows_Login|subject_account_to_attacking_assets|src_to_attacking_assets|event_source_to_compromised_assets",\n    "logon_auth_method": "remote",\n    "logon_service": "Kerberos",\n    "logon_type": 3,\n    "normalized": true,\n    "object": "system",\n    "origin_app_id": "00000000-0000-0000-0000-000000000005",\n    "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",\n    "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab",\n    "src.host": "160.13.111.150",\n    "src.ip": "160.13.111.150",\n    "src.port": 54281,\n    "status": "success",\n    "subevents": [\n        "15881af0-f701-4d7f-8b43-9b517c4e4468"\n    ],\n    "subevents.time": [\n        "2021-09-20T11:51:44.000Z"\n    ],\n    "subject": "account",\n    "subject.account.domain": "testlab.org",\n    "subject.account.id": "S-1-5-21-1129291328-2819992169-918366777-1113",\n    "subject.account.name": "username",\n    "subject.account.privileges": "local administrator rights",\n    "subject.account.session_id": "1054209749",\n    "time": "2021-09-20T11:51:44.000Z",\n    "uuid": "4ffc8931-560f-42f9-b7c8-ad945854032a"\n}\n{\n    "_rule": "NewCorrelation",\n    "action": "login",\n    "alert.context": "321",\n    "alert.key": "123",\n    "category.generic": "Attack",\n    "category.high": "",\n    "category.low": "",\n    "correlation_name": "NewCorrelation",\n    "correlation_type": "event",\n    "count": 1,\n    "datafield7": "1054209749",\n    "dst.fqdn": "dc3-w16.testlab.org",\n    "dst.host": "dc3-w16.testlab.org",\n    "dst.hostname": "dc3-w16",\n    "event_src.category": "AAA",\n    "event_src.host": "dc3-w16.testlab.org",\n    "event_src.hostname": "dc3-w16",\n    "event_src.subsys": "Security",\n    "event_src.title": "windows",\n    "event_src.vendor": "microsoft",\n    "generator.type": "correlationengine",\n    "generator.version": "26.0.3002 (libservice v.2.0.787)",\n    "importance": "low",\n    "incident.aggregation.key": "NewCorrelation|username",\n    "incident.aggregation.timeout": 3600,\n    "incident.category": "Undefined",\n    "incident.severity": "high",\n    "labels": "w_auto|CheckWL_Windows_Login|subject_account_to_attacking_assets|src_to_attacking_assets|event_source_to_compromised_assets",\n    "logon_auth_method": "remote",\n    "logon_service": "Kerberos",\n    "logon_type": 3,\n    "normalized": true,\n    "object": "system",\n    "origin_app_id": "00000000-0000-0000-0000-000000000005",\n    "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",\n    "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab",\n    "src.host": "160.13.111.150",\n    "src.ip": "160.13.111.150",\n    "src.port": 54281,\n    "status": "success",\n    "subevents": [\n        "15881af0-f701-4d7f-8b43-9b517c4e4468"\n    ],\n    "subevents.time": [\n        "2021-09-20T11:51:44.000Z"\n    ],\n    "subject": "account",\n    "subject.account.domain": "testlab.org",\n    "subject.account.id": "S-1-5-21-1129291328-2819992169-918366777-1113",\n    "subject.account.name": "username",\n    "subject.account.privileges": "local administrator rights",\n    "subject.account.session_id": "1054209749",\n    "time": "2021-09-20T11:51:44.000Z",\n    "uuid": "61389037-288f-4f02-a291-3c23c9778d1b"\n}\n{\n    "_rule": "NewCorrelation",\n    "action": "login",\n    "alert.context": "321",\n    "alert.key": "123",\n    "category.generic": "Attack",\n    "category.high": "",\n    "category.low": "",\n    "correlation_name": "NewCorrelation",\n    "correlation_type": "event",\n    "count": 1,\n    "datafield7": "1054209749",\n    "dst.fqdn": "dc3-w16.testlab.org",\n    "dst.host": "dc3-w16.testlab.org",\n    "dst.hostname": "dc3-w16",\n    "event_src.category": "AAA",\n    "event_src.host": "dc3-w16.testlab.org",\n    "event_src.hostname": "dc3-w16",\n    "event_src.subsys": "Security",\n    "event_src.title": "windows",\n    "event_src.vendor": "microsoft",\n    "generator.type": "correlationengine",\n    "generator.version": "26.0.3002 (libservice v.2.0.787)",\n    "importance": "low",\n    "incident.aggregation.key": "NewCorrelation|username",\n    "incident.aggregation.timeout": 3600,\n    "incident.category": "Undefined",\n    "incident.severity": "high",\n    "labels": "w_auto|CheckWL_Windows_Login|subject_account_to_attacking_assets|src_to_attacking_assets|event_source_to_compromised_assets",\n    "logon_auth_method": "remote",\n    "logon_service": "Kerberos",\n    "logon_type": 3,\n    "normalized": true,\n    "object": "system",\n    "origin_app_id": "00000000-0000-0000-0000-000000000005",\n    "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",\n    "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab",\n    "src.host": "160.13.111.150",\n    "src.ip": "160.13.111.150",\n    "src.port": 54281,\n    "status": "success",\n    "subevents": [\n        "15881af0-f701-4d7f-8b43-9b517c4e4468"\n    ],\n    "subevents.time": [\n        "2021-09-20T11:51:44.000Z"\n    ],\n    "subject": "account",\n    "subject.account.domain": "testlab.org",\n    "subject.account.id": "S-1-5-21-1129291328-2819992169-918366777-1113",\n    "subject.account.name": "username",\n    "subject.account.privileges": "local administrator rights",\n    "subject.account.session_id": "1054209749",\n    "time": "2021-09-20T11:51:44.000Z",\n    "uuid": "4ffc8931-560f-42f9-b7c8-ad945854032a"\n}`;
-		const output = `
+  test('Парсинг результата успешного запуска теста с несколькими результатами', () => {
+    const parser = new CorrelationUnitTestOutputParser();
+    const expected = `{\n    "_rule": "NewCorrelation",\n    "action": "login",\n    "alert.context": "321",\n    "alert.key": "123",\n    "category.generic": "Attack",\n    "category.high": "",\n    "category.low": "",\n    "correlation_name": "NewCorrelation",\n    "correlation_type": "event",\n    "count": 1,\n    "datafield7": "1054209749",\n    "dst.fqdn": "dc3-w16.testlab.org",\n    "dst.host": "dc3-w16.testlab.org",\n    "dst.hostname": "dc3-w16",\n    "event_src.category": "AAA",\n    "event_src.host": "dc3-w16.testlab.org",\n    "event_src.hostname": "dc3-w16",\n    "event_src.subsys": "Security",\n    "event_src.title": "windows",\n    "event_src.vendor": "microsoft",\n    "generator.type": "correlationengine",\n    "generator.version": "26.0.3002 (libservice v.2.0.787)",\n    "importance": "low",\n    "incident.aggregation.key": "NewCorrelation|username",\n    "incident.aggregation.timeout": 3600,\n    "incident.category": "Undefined",\n    "incident.severity": "high",\n    "labels": "w_auto|CheckWL_Windows_Login|subject_account_to_attacking_assets|src_to_attacking_assets|event_source_to_compromised_assets",\n    "logon_auth_method": "remote",\n    "logon_service": "Kerberos",\n    "logon_type": 3,\n    "normalized": true,\n    "object": "system",\n    "origin_app_id": "00000000-0000-0000-0000-000000000005",\n    "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",\n    "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab",\n    "src.host": "160.13.111.150",\n    "src.ip": "160.13.111.150",\n    "src.port": 54281,\n    "status": "success",\n    "subevents": [\n        "15881af0-f701-4d7f-8b43-9b517c4e4468"\n    ],\n    "subevents.time": [\n        "2021-09-20T11:51:44.000Z"\n    ],\n    "subject": "account",\n    "subject.account.domain": "testlab.org",\n    "subject.account.id": "S-1-5-21-1129291328-2819992169-918366777-1113",\n    "subject.account.name": "username",\n    "subject.account.privileges": "local administrator rights",\n    "subject.account.session_id": "1054209749",\n    "time": "2021-09-20T11:51:44.000Z",\n    "uuid": "61389037-288f-4f02-a291-3c23c9778d1b"\n}\n{\n    "_rule": "NewCorrelation",\n    "action": "login",\n    "alert.context": "321",\n    "alert.key": "123",\n    "category.generic": "Attack",\n    "category.high": "",\n    "category.low": "",\n    "correlation_name": "NewCorrelation",\n    "correlation_type": "event",\n    "count": 1,\n    "datafield7": "1054209749",\n    "dst.fqdn": "dc3-w16.testlab.org",\n    "dst.host": "dc3-w16.testlab.org",\n    "dst.hostname": "dc3-w16",\n    "event_src.category": "AAA",\n    "event_src.host": "dc3-w16.testlab.org",\n    "event_src.hostname": "dc3-w16",\n    "event_src.subsys": "Security",\n    "event_src.title": "windows",\n    "event_src.vendor": "microsoft",\n    "generator.type": "correlationengine",\n    "generator.version": "26.0.3002 (libservice v.2.0.787)",\n    "importance": "low",\n    "incident.aggregation.key": "NewCorrelation|username",\n    "incident.aggregation.timeout": 3600,\n    "incident.category": "Undefined",\n    "incident.severity": "high",\n    "labels": "w_auto|CheckWL_Windows_Login|subject_account_to_attacking_assets|src_to_attacking_assets|event_source_to_compromised_assets",\n    "logon_auth_method": "remote",\n    "logon_service": "Kerberos",\n    "logon_type": 3,\n    "normalized": true,\n    "object": "system",\n    "origin_app_id": "00000000-0000-0000-0000-000000000005",\n    "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",\n    "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab",\n    "src.host": "160.13.111.150",\n    "src.ip": "160.13.111.150",\n    "src.port": 54281,\n    "status": "success",\n    "subevents": [\n        "15881af0-f701-4d7f-8b43-9b517c4e4468"\n    ],\n    "subevents.time": [\n        "2021-09-20T11:51:44.000Z"\n    ],\n    "subject": "account",\n    "subject.account.domain": "testlab.org",\n    "subject.account.id": "S-1-5-21-1129291328-2819992169-918366777-1113",\n    "subject.account.name": "username",\n    "subject.account.privileges": "local administrator rights",\n    "subject.account.session_id": "1054209749",\n    "time": "2021-09-20T11:51:44.000Z",\n    "uuid": "4ffc8931-560f-42f9-b7c8-ad945854032a"\n}\n{\n    "_rule": "NewCorrelation",\n    "action": "login",\n    "alert.context": "321",\n    "alert.key": "123",\n    "category.generic": "Attack",\n    "category.high": "",\n    "category.low": "",\n    "correlation_name": "NewCorrelation",\n    "correlation_type": "event",\n    "count": 1,\n    "datafield7": "1054209749",\n    "dst.fqdn": "dc3-w16.testlab.org",\n    "dst.host": "dc3-w16.testlab.org",\n    "dst.hostname": "dc3-w16",\n    "event_src.category": "AAA",\n    "event_src.host": "dc3-w16.testlab.org",\n    "event_src.hostname": "dc3-w16",\n    "event_src.subsys": "Security",\n    "event_src.title": "windows",\n    "event_src.vendor": "microsoft",\n    "generator.type": "correlationengine",\n    "generator.version": "26.0.3002 (libservice v.2.0.787)",\n    "importance": "low",\n    "incident.aggregation.key": "NewCorrelation|username",\n    "incident.aggregation.timeout": 3600,\n    "incident.category": "Undefined",\n    "incident.severity": "high",\n    "labels": "w_auto|CheckWL_Windows_Login|subject_account_to_attacking_assets|src_to_attacking_assets|event_source_to_compromised_assets",\n    "logon_auth_method": "remote",\n    "logon_service": "Kerberos",\n    "logon_type": 3,\n    "normalized": true,\n    "object": "system",\n    "origin_app_id": "00000000-0000-0000-0000-000000000005",\n    "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",\n    "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab",\n    "src.host": "160.13.111.150",\n    "src.ip": "160.13.111.150",\n    "src.port": 54281,\n    "status": "success",\n    "subevents": [\n        "15881af0-f701-4d7f-8b43-9b517c4e4468"\n    ],\n    "subevents.time": [\n        "2021-09-20T11:51:44.000Z"\n    ],\n    "subject": "account",\n    "subject.account.domain": "testlab.org",\n    "subject.account.id": "S-1-5-21-1129291328-2819992169-918366777-1113",\n    "subject.account.name": "username",\n    "subject.account.privileges": "local administrator rights",\n    "subject.account.session_id": "1054209749",\n    "time": "2021-09-20T11:51:44.000Z",\n    "uuid": "61389037-288f-4f02-a291-3c23c9778d1b"\n}\n{\n    "_rule": "NewCorrelation",\n    "action": "login",\n    "alert.context": "321",\n    "alert.key": "123",\n    "category.generic": "Attack",\n    "category.high": "",\n    "category.low": "",\n    "correlation_name": "NewCorrelation",\n    "correlation_type": "event",\n    "count": 1,\n    "datafield7": "1054209749",\n    "dst.fqdn": "dc3-w16.testlab.org",\n    "dst.host": "dc3-w16.testlab.org",\n    "dst.hostname": "dc3-w16",\n    "event_src.category": "AAA",\n    "event_src.host": "dc3-w16.testlab.org",\n    "event_src.hostname": "dc3-w16",\n    "event_src.subsys": "Security",\n    "event_src.title": "windows",\n    "event_src.vendor": "microsoft",\n    "generator.type": "correlationengine",\n    "generator.version": "26.0.3002 (libservice v.2.0.787)",\n    "importance": "low",\n    "incident.aggregation.key": "NewCorrelation|username",\n    "incident.aggregation.timeout": 3600,\n    "incident.category": "Undefined",\n    "incident.severity": "high",\n    "labels": "w_auto|CheckWL_Windows_Login|subject_account_to_attacking_assets|src_to_attacking_assets|event_source_to_compromised_assets",\n    "logon_auth_method": "remote",\n    "logon_service": "Kerberos",\n    "logon_type": 3,\n    "normalized": true,\n    "object": "system",\n    "origin_app_id": "00000000-0000-0000-0000-000000000005",\n    "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",\n    "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab",\n    "src.host": "160.13.111.150",\n    "src.ip": "160.13.111.150",\n    "src.port": 54281,\n    "status": "success",\n    "subevents": [\n        "15881af0-f701-4d7f-8b43-9b517c4e4468"\n    ],\n    "subevents.time": [\n        "2021-09-20T11:51:44.000Z"\n    ],\n    "subject": "account",\n    "subject.account.domain": "testlab.org",\n    "subject.account.id": "S-1-5-21-1129291328-2819992169-918366777-1113",\n    "subject.account.name": "username",\n    "subject.account.privileges": "local administrator rights",\n    "subject.account.session_id": "1054209749",\n    "time": "2021-09-20T11:51:44.000Z",\n    "uuid": "4ffc8931-560f-42f9-b7c8-ad945854032a"\n}`;
+    const output = `
 
 SUCCESS!
 Got results:
@@ -87,20 +86,19 @@ Got results:
 {"subject.account.name": "username", "src.port": 54281, "category.low": "", "labels": "w_auto|CheckWL_Windows_Login|subject_account_to_attacking_assets|src_to_attacking_assets|event_source_to_compromised_assets", "subject": "account", "_rule": "NewCorrelation", "subject.account.domain": "testlab.org", "datafield7": "1054209749", "event_src.vendor": "microsoft", "event_src.category": "AAA", "object": "system", "event_src.hostname": "dc3-w16", "src.ip": "160.13.111.150", "dst.hostname": "dc3-w16", "event_src.title": "windows", "event_src.subsys": "Security", "subject.account.id": "S-1-5-21-1129291328-2819992169-918366777-1113", "subject.account.privileges": "local administrator rights", "dst.fqdn": "dc3-w16.testlab.org", "category.high": "", "src.host": "160.13.111.150", "incident.category": "Undefined", "correlation_name": "NewCorrelation", "action": "login", "_subjects": [{"AssetId": null, "Fqdn": null, "IpAddress": "160.13.111.150", "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": null, "IpAddress": "160.13.111.150", "EventTimestamp": "2021-09-20T11:51:44.000Z"}], "time": "2021-09-20T11:51:44.000Z", "correlation_type": "event", "incident.aggregation.timeout": 3600, "_objects": [{"AssetId": null, "Fqdn": null, "IpAddress": "160.13.111.150", "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": "dc3-w16", "IpAddress": null, "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": "dc3-w16", "IpAddress": null, "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": null, "IpAddress": "160.13.111.150", "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": "dc3-w16", "IpAddress": null, "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": "dc3-w16", "IpAddress": null, "EventTimestamp": "2021-09-20T11:51:44.000Z"}, {"AssetId": null, "Fqdn": null, "IpAddress": "127.0.0.1", "EventTimestamp": "2021-09-20T11:51:44.000Z"}], "alert.context": "321", "importance": "low", "count": 1, "event_src.host": "dc3-w16.testlab.org", "subevents.time": ["2021-09-20T11:51:44.000Z"], "incident.aggregation.key": "NewCorrelation|username", "incident.severity": "high", "status": "success", "subevents": ["15881af0-f701-4d7f-8b43-9b517c4e4468"], "logon_service": "Kerberos", "uuid": "4ffc8931-560f-42f9-b7c8-ad945854032a", "dst.host": "dc3-w16.testlab.org", "logon_type": 3, "logon_auth_method": "remote", "alert.key": "123", "category.generic": "Attack", "subject.account.session_id": "1054209749", "origin_app_id": "00000000-0000-0000-0000-000000000005", "primary_siem_app_id": "00000000-0000-0000-0000-000000000005", "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab", "normalized": true, "generator.version": "26.0.3002 (libservice v.2.0.787)", "generator.type": "correlationengine"}
 
 `;
-		const result = parser.parseSuccessOutput(output);
-		assert.strictEqual(result, expected);
-	});
+    const result = parser.parseSuccessOutput(output);
+    assert.strictEqual(result, expected);
+  });
 
-
-	test('Парсинг результата неуспешного запуска теста с одним результатом и одним условием', () => {
-		const parser = new CorrelationUnitTestOutputParser();
-		const expected = ` {
+  test('Парсинг результата неуспешного запуска теста с одним результатом и одним условием', () => {
+    const parser = new CorrelationUnitTestOutputParser();
+    const expected = ` {
    "correlation_name": "NewCorrelation",
 -  "subject.account.name": "username"
 +  "subject.account.name": "username1"
  }
 `;
-		const output = `
+    const output = `
 Must exit due to some critical errors!
 Removing temp directory c:\\tmp\\7mqn1st3
 c:\\tmp\\7mqn1st3
@@ -123,19 +121,19 @@ rule NewCorrelation
     emit: 1
 
 `;
-		const unitTestCondition = `# Comment 1
+    const unitTestCondition = `# Comment 1
 # Comment 2
 # Comment 3
 expect 1 {"correlation_name":"NewCorrelation","subject.account.name":"username1"}`;
 
-		const result = parser.parseFailedOutput(output, unitTestCondition);
-		assert.strictEqual(result, expected);
-	});
+    const result = parser.parseFailedOutput(output, unitTestCondition);
+    assert.strictEqual(result, expected);
+  });
 
-	test('Парсинг результата неуспешного запуска теста с несколькими результатами и одним условием', () => {
-		const parser = new CorrelationUnitTestOutputParser();
+  test('Парсинг результата неуспешного запуска теста с несколькими результатами и одним условием', () => {
+    const parser = new CorrelationUnitTestOutputParser();
 
-		const output = `
+    const output = `
 Expected results are not obtained.
 Details:
 Expected json:
@@ -157,19 +155,18 @@ rule NewCorrelation
     emit: 2
 
 `;
-		const unitTestCondition = `# Comment 1
+    const unitTestCondition = `# Comment 1
 # Comment 2
 # Comment 3
 expect 1 {"correlation_name":"NewCorrelation","subject.account.name":"username1"}`;
 
-		const result = parser.parseFailedOutput(output, unitTestCondition);
-		assert.strictEqual(result, output);
-	});
-	
-	
-	test('Парсинг результата неуспешного запуска теста с несколькими условиями', () => {
-		const parser = new CorrelationUnitTestOutputParser();
-		const output = `
+    const result = parser.parseFailedOutput(output, unitTestCondition);
+    assert.strictEqual(result, output);
+  });
+
+  test('Парсинг результата неуспешного запуска теста с несколькими условиями', () => {
+    const parser = new CorrelationUnitTestOutputParser();
+    const output = `
 Expected results are not obtained.
 Details:
 Expected json:
@@ -199,16 +196,13 @@ rule NewCorrelation
     emit: 2
 
 `;
-		const unitTestCondition = `# Comment 1
+    const unitTestCondition = `# Comment 1
 # Comment 2
 # Comment 3
 expect 1 {"correlation_name":"NewCorrelation","subject.account.name":"username1"}
 expect 1 {"correlation_name":"NewCorrelation","subject.account.name":"username12"}`;
 
-		const result = parser.parseFailedOutput(output, unitTestCondition);
-		assert.strictEqual(result, output);
-	});
-
-	
+    const result = parser.parseFailedOutput(output, unitTestCondition);
+    assert.strictEqual(result, output);
+  });
 });
-

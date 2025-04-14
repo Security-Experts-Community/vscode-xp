@@ -1,0 +1,20 @@
+.root {
+  min-height: 26px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  outline: none;
+  outline-offset: -1px;
+  border: none;
+
+  &.isEditing {
+    background-color: var(--vscode-input-background);
+    outline: 1px solid var(--vscode-focusBorder);
+    color: var(--vscode-input-foreground);
+  }
+
+  &.isInvalid {
+    background-color: var(--vscode-inputValidation-errorBackground);
+    outline: 1px solid var(--vscode-inputValidation-errorBorder) !important;
+    color: var(--vscode-inputValidation-errorForeground);
+  }
+}

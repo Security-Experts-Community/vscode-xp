@@ -1,6 +1,6 @@
 Description: 'Попытка подобрать пароль или успешный подбор пароля в <...>'
 EventDescriptions:
     - LocalizationId: 'corrname_Password_Brute'
-      EventDescription: 'На узле {event_src.host} обнаружен подбор пароля учетной записи {subject.account.name} в приложении <...> с узла {src.host}. Количество попыток авторизации: {datafield1}'
+      EventDescription: 'На узле {event_src.host} обнаружен подбор пароля учетной записи {subject.account.name} в приложении <...> с узла {src.host}. Количество попыток авторизации: {count.subevents}'
     - LocalizationId: 'corrname_Password_Brute_2'
-      EventDescription: 'На узле {event_src.host} обнаружен успешный подбор пароля учетной записи {subject.account.name} в приложении <...> с узла {src.host}. Количество неудачных попыток авторизации: {datafield1}'
+      EventDescription: 'На узле {event_src.host} обнаружен успешный подбор пароля учетной записи {subject.account.name} в приложении <...> с узла {src.host}. Количество неудачных попыток авторизации: {count.subevents}'

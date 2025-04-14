@@ -80,7 +80,7 @@ emit {
     endif
     
     $importance = ""
-       
+
     $category.generic = "Attack"
     $category.high = ""
     $category.low = ""

@@ -16,6 +16,8 @@ rule Windows_LDAP: LDAP_Request
     }
 
     on LDAP_Request {
+        $status = status
+
         $subject.account.name = subject.account.name
         $subject.account.domain = subject.account.domain
         $subject.account.fullname = subject.account.fullname
@@ -74,7 +76,6 @@ emit {
     $subject = "account"
     $action = "execute"
     $object = "request"
-    $status = "success"
 
     $importance = ""
 

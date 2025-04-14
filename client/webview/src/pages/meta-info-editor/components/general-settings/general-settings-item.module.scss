@@ -1,0 +1,17 @@
+.item {
+  flex-grow: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+
+  & > *:first-child {
+    flex-grow: 1;
+  }
+}
+
+.itemButtons {
+  display: flex;
+  align-items: center;
+  margin-left: 4px;
+  opacity: 0.75;
+}

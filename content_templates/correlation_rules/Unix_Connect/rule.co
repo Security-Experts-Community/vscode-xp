@@ -14,7 +14,7 @@ rule Unix_Connect: Event
     init {
         $labels = "w_auto|CheckWL_Linux_Networking"
     }
-       
+
     on Event {
         $status = status
 
@@ -23,6 +23,7 @@ rule Unix_Connect: Event
         $subject.account.id = subject.account.id
         $subject.account.session_id = subject.account.session_id
         $subject.account.privileges = subject.account.privileges
+        $subject.account.fullname = subject.account.fullname
         $subject.type = subject.type
                 
         $subject.process.name = subject.process.name
@@ -32,7 +33,7 @@ rule Unix_Connect: Event
         $subject.process.meta = subject.process.meta
         $subject.process.parent.id = subject.process.parent.id
         $subject.process.chain = subject.process.chain
-                      
+
         $object.account.name = object.account.name
         $object.account.domain = object.account.domain
         $object.account.id = object.account.id
@@ -78,7 +79,7 @@ rule Unix_Connect: Event
         $event_src.vendor = event_src.vendor
         $event_src.category = event_src.category
         $event_src.rule = event_src.rule
-               
+
         $alert.key =           
         $alert.context = 
         $lert.regex_match = 

@@ -25,7 +25,7 @@
 		<!-- Common Panel -->
 		<div id="header">
 			<div id="navigation">
-				<input id="runFullGraph" class="run" name="full_test" type="button" value="&#9654;   Коррелировать события  ">
+				<input id="runFullGraph" class="run" name="full_test" type="button" value="{{Locale.CorrelateEventsButton}}">
 			</div>
 	    </div>
 
@@ -33,15 +33,15 @@
 			<!-- Raw Events -->
 			<div class="test_block">			
 				<div class="block_header">
-					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
-					<label for="raw_event" class="label">Сырые события:</label>
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
+					<label for="raw_event" class="label">{{Locale.RawEventsLabel}}:</label>
 				</div>
 				
 				<div class="manage_buttons">
 					<input type="checkbox" name="word-wrap" onclick="wrap(this);" checked>
-					<label for="word-wrap">переносить по словам</label>
+					<label for="word-wrap">{{Locale.WordWrapCheckBox}}</label>
 					<div class="dropdown">
-						<input class="dropbtn" type="button" value="MIME-тип">
+						<input class="dropbtn" type="button" value="{{Locale.WrapRawEventsInAnEnvelope}}">
 						<div class="dropdown-content">
 							<div name="add_envelope">application/x-pt-eventlog</div>
 							<div name="add_envelope">application/json</div>
@@ -60,8 +60,8 @@
 			<!-- Raw Events -->
 			<div class="test_block">
 				<div class="block_header">
-					<div class="scrolldown" onclick="togleTextarea(this)">ᐯ</div>
-					<label for="norm_event" class="label">Коррелированные события:</label>
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
+					<label for="norm_event" class="label">{{Locale.CorrelateEventsLabel}}:</label>
 				</div>
 				<div class="text">
 					<div contenteditable="true" id="correlated_events" name="correlated_events">
@@ -72,7 +72,7 @@
 		
 		<script>
 
-			function togleTextarea(arrow) {
+			function toggleTextarea(arrow) {
 				labels = arrow.parentNode.parentNode.children[1];
 				txt = arrow.parentNode.parentNode.children[2];
 				if (txt.hidden == true) {

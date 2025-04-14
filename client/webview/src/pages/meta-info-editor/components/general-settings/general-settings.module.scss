@@ -1,0 +1,12 @@
+.root {
+  position: absolute;
+  inset: 0;
+  margin: 8px 0;
+  overflow-y: scroll;
+}
+
+.content {
+  max-width: min(100%, 1000px);
+  height: 100%;
+  margin: 0 auto;
+}

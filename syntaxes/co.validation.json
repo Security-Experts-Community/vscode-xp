@@ -13,5 +13,10 @@
 		"desc": "Сравнение значения в нижнем регистре с литералом с верхнем регистре",
 		"regex": "lower([^)]+)\\s*==\\s*\"[A-Z0-9]+\"",
 		"_comment": "В таких случаях фолзит, поправить можно таким образом."
+	},
+	{
+		"desc": "Некорректный проброс importance в incident.severity",
+		"regex": "\\$importance = \"info\".*?\\$incident\\.severity = \\$importance",
+		"_comment": "У поля incident.severity нет значения info, поэтому такой проброс полей нельзя использовать"
 	}
 ]

@@ -1,0 +1,147 @@
+.root {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: min(100%, 800px);
+  max-width: min-content;
+  margin: 0 auto;
+  padding: 16px 0;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--vscode-quickInput-background);
+  border-radius: 4px;
+  overflow-x: hidden;
+}
+
+.header {
+  flex-shrink: 0;
+  z-index: 2;
+  min-width: fit-content;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  background: hsla(0, 0%, 51%, 0.04);
+
+  .cell {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    min-height: 35px;
+    padding: 4px 6px;
+    cursor: default;
+  }
+}
+
+.headerContent {
+  min-width: fit-content;
+  border-bottom: 1px solid var(--vscode-quickInput-background);
+}
+
+.rows {
+  position: relative;
+  min-height: 130px;
+  overflow-x: scroll;
+  overflow-y: scroll;
+
+  &Inner {
+    width: 100%;
+    position: relative;
+  }
+
+  &Scroller {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+}
+
+.emptyRowsMessage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-style: italic;
+  color: var(--vscode-input-placeholderForeground);
+  opacity: 0.8;
+}
+
+.row {
+  display: grid;
+  // Property --grid-template-columns is set in DefaultsTable component
+  grid-template-columns: var(--grid-template-columns);
+  width: fit-content;
+  min-width: 100%;
+  border-bottom: 1px solid var(--vscode-quickInput-background);
+
+  &:not(.headerContent):hover {
+    background: var(--vscode-settings-rowHoverBackground);
+    outline: 1px dotted var(--vscode-contrastActiveBorder);
+    outline-offset: -1px;
+
+    .controlsCell {
+      opacity: 1;
+    }
+  }
+}
+
+.cell {
+  font-variation-settings: normal;
+  letter-spacing: 0px;
+  word-wrap: break-word;
+  white-space: break-spaces;
+  word-break: normal;
+  line-height: normal;
+  font-size: var(--vscode-font-size);
+  font-weight: var(--vscode-font-weight);
+  font-family: var(--vscode-font-family);
+  color: var(--vscode-settings-textInputForeground);
+  cursor: text;
+
+  &:not(:first-child):not(.controlsCell) {
+    border-left: 1px solid var(--vscode-quickInput-background);
+  }
+
+  &.controlsCell {
+    position: sticky;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: center;
+    padding: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+}
+
+.footer {
+  display: flex;
+  column-gap: 8px;
+  margin-top: 12px;
+}
+
+.search {
+  position: relative;
+}
+
+.searchIcon {
+  position: absolute;
+  top: 50%;
+  left: 1px;
+  width: 26px;
+  transform: translateY(-50%);
+  margin-top: 1px;
+  font-size: 12px !important;
+  color: var(--vscode-input-placeholderForeground);
+  z-index: 2;
+}
+
+.searchField {
+  padding-left: 26px;
+}

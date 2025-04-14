@@ -1,4 +1,4 @@
 export class Attack {
-	public Tactic : string;
-	public Techniques : string[];
+  public Tactic: string;
+  public Techniques: string[];
 }

@@ -1,6 +1,6 @@
 Description: 'Attempt to bruteforce a password or successful password bruteforcing in <...>'
 EventDescriptions:
     - LocalizationId: 'corrname_Password_Brute'
-      EventDescription: 'Password bruteforcing for account {subject.account.name} in application <...> from host {src.host} is detected on host {event_src.host}. Authorization attempts: {datafield1}.'
+      EventDescription: 'Password bruteforcing for account {subject.account.name} in application <...> from host {src.host} is detected on host {event_src.host}. Authorization attempts: {count.subevents}.'
     - LocalizationId: 'corrname_Password_Brute_2'
-      EventDescription: 'Successful password bruteforcing for account {subject.account.name} in application <...> from host {src.host} is detected on host {event_src.host}. Failed authorization attempts: {datafield1}.'
+      EventDescription: 'Successful password bruteforcing for account {subject.account.name} in application <...> from host {src.host} is detected on host {event_src.host}. Failed authorization attempts: {count.subevents}.'

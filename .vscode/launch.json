@@ -16,6 +16,24 @@
 			"autoAttachChildProcesses": true
 		},
 		{
+			"type": "extensionHost",
+			"request": "launch",
+			"name": "Launch Client (Webview DEV)",
+			"runtimeExecutable": "${execPath}",
+			"args": [
+				"--disable-extensions",
+				"--extensionDevelopmentPath=${workspaceRoot}"
+			],
+			"outFiles": ["${workspaceRoot}/client/out/**/*.js"],
+			"preLaunchTask": {
+				"type": "npm",
+				"script": "compile"
+			},
+			"env": {
+				"MODE": "development"
+			}
+		},
+		{
 			"type": "node",
 			"request": "attach",
 			"name": "Attach to Server",
@@ -33,6 +51,7 @@
 			},
 			"runtimeExecutable": "${execPath}",
 			"args": [
+				"--disable-extensions",
 				"--extensionDevelopmentPath=${workspaceRoot}",
 				"--extensionTestsPath=${workspaceRoot}/client/out/test/index",
 				"${workspaceRoot}/client/testFixture"

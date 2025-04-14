@@ -1,0 +1,19 @@
+.root {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  column-gap: 16px;
+  padding: 14px 14px 14px 0;
+  background: var(--vscode-editor-background);
+  border-bottom: 1px solid var(--vscode-quickInput-background);
+
+  h1 {
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 26px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    color: var(--vscode-settings-headerForeground);
+  }
+}

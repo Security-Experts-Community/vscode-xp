@@ -3,36 +3,31 @@ import * as assert from 'assert';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 
 suite('regExpHelper.parseJsonsFromMultilineString', async () => {
+  test('Одностроковый json', async () => {
+    const json =
+      `{"object.value": "/sources/identify.php,POST,[{value : user_not_exists, text:}]<...>",\r\n` +
+      `"object.vendor": "Windows"}`;
 
-	test('Одностроковый json', async () => {
+    const jsons = RegExpHelper.parseJsonsFromMultilineString(json);
 
-		const json =
-`{"object.value": "/sources/identify.php,POST,[{value : user_not_exists, text:}]<...>",\r\n` +
-`"object.vendor": "Windows"}`;
+    assert.strictEqual(jsons.length, 1);
+    assert.strictEqual(
+      jsons[0],
+      `{"object.value": "/sources/identify.php,POST,[{value : user_not_exists, text:}]<...>",\r\n"object.vendor": "Windows"}`
+    );
+  });
 
-		const jsons = RegExpHelper.parseJsonsFromMultilineString(json);
+  test('Одностроковый json', async () => {
+    const json = `{"object.value": "name,objectClass,objectGUID", "src.host": "::1", "src.ip": "::1", "src.port": 1198}`;
 
-		assert.strictEqual(jsons.length, 1);
-		assert.strictEqual(
-			jsons[0], 
-			`{"object.value": "/sources/identify.php,POST,[{value : user_not_exists, text:}]<...>",\r\n"object.vendor": "Windows"}`);
-	});
+    const jsons = RegExpHelper.parseJsonsFromMultilineString(json);
 
-	test('Одностроковый json', async () => {
+    assert.strictEqual(jsons.length, 1);
+    assert.strictEqual(jsons[0], json);
+  });
 
-		const json =
-`{"object.value": "name,objectClass,objectGUID", "src.host": "::1", "src.ip": "::1", "src.port": 1198}`;
-
-		const jsons = RegExpHelper.parseJsonsFromMultilineString(json);
-
-		assert.strictEqual(jsons.length, 1);
-		assert.strictEqual(jsons[0], json);
-	});
-
-	test('Одностроковый json', async () => {
-
-		const json =
-`"Detected MIME type application/json from formula
+  test('Одностроковый json', async () => {
+    const json = `"Detected MIME type application/json from formula
 {    
     "action": "login",
     "category.generic": "Application"
@@ -42,15 +37,14 @@ suite('regExpHelper.parseJsonsFromMultilineString', async () => {
 [INFO] Found appendix, will use it: c:\\Content\\knowledgebase\\contracts\\xp_appendix\\appendix.xp
 "`;
 
-		const expectedJson = 
-`{    
+    const expectedJson = `{    
     "action": "login",
     "category.generic": "Application"
 }`;
 
-		const jsons = RegExpHelper.parseJsonsFromMultilineString(json);
+    const jsons = RegExpHelper.parseJsonsFromMultilineString(json);
 
-		assert.strictEqual(jsons.length, 1);
-		assert.strictEqual(jsons[0], expectedJson);
-	});
+    assert.strictEqual(jsons.length, 1);
+    assert.strictEqual(jsons[0], expectedJson);
+  });
 });

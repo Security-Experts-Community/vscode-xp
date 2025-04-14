@@ -1,0 +1,18 @@
+event Event:
+    filter {
+        # TODO: задать логику фильтрации нормализованного или корреляционного события
+        filter::NotFromCorrelator()
+        and object.id != null
+        and event_src.host != null
+        and event_src.hostname != null
+    }
+
+enrichment Enrich_Events
+    enrich Event:
+        enrich_fields {
+            # TODO: определить логику обогащения события
+            datafield10 = "enrichment object.id: " + string($object.id)
+            datafield11 = "enrichment event_src.host: " + string($event_src.host)
+            datafield12 = "enrichment event_src.hostname: " + string($event_src.hostname)
+        }
+

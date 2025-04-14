@@ -62,7 +62,7 @@
 			</div>
 
 			{{#IsLocalizableRule}}
-				<h2>{{Locale.LocalizationСriteria}}:</h2>
+				<h2>{{Locale.LocalizationCriteria}}:</h2>
 				<hr />
 				<div id="localizations">
 				
@@ -70,19 +70,19 @@
 				<div class="common">	
 					<div class="common">
 						<input class="delete_value" type="button" value="-" onclick="deleteLoc(this)">
-						<label for="criteria">{{Locale.Сriteria}}:</label>
+						<label for="criteria">{{Locale.Criteria}}:</label>
 						<textarea rows="1" name="criteria" class="criteria">{{Criteria}}</textarea>
 						<input type="hidden" name="localizationId" value="{{LocalizationId}}">
 					</div>	
 		
 					<div class="language">
-						<label for="ruLocalization">Шаблон локализации:</label>
+						<label for="ruLocalization">Шаблон:</label>
 						<br />
 						<textarea rows="5" name="ruLocalization">{{RuLocalization}}</textarea>
 					</div>
 		
 					<div class="language">
-						<label for="enLocalization">Localization template:</label>
+						<label for="enLocalization">Template:</label>
 						<br />
 						<textarea rows="5" name="enLocalization">{{EnLocalization}}</textarea>
 					</div>
@@ -98,7 +98,7 @@
 					<div class="common">	
 						<div class="common">
 							<input class="delete_value" type="button" value="-" onclick="deleteLoc(this)">
-							<label for="criteria">{{Locale.Сriteria}}:</label>
+							<label for="criteria">{{Locale.Criteria}}:</label>
 							<textarea rows="1" class="criteria">{{DefaultLocalizationCriteria}}</textarea>
 							<input type="hidden" value="{{LocalizationId}}">
 						</div>	

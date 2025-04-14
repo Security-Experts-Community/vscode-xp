@@ -1,0 +1,113 @@
+.root {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  max-width: 940px;
+  height: 100%;
+  margin: 0 auto;
+  padding: 16px 0;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid var(--vscode-quickInput-background);
+  border-radius: 4px;
+}
+
+.header {
+  flex-shrink: 0;
+  background: hsla(0, 0%, 51%, 0.04);
+  border-radius: 4px 4px 0 0;
+  border-bottom: 1px solid var(--vscode-quickInput-background);
+  min-height: 35px;
+  padding-right: 10px;
+  overflow: hidden;
+  z-index: 1;
+
+  .cell {
+    align-self: stretch;
+    border: 1px solid transparent;
+    cursor: default;
+
+    &.isInvalid {
+      border-radius: 2px;
+      border-color: var(--vscode-inputValidation-errorBorder);
+      background-color: var(--vscode-inputValidation-errorBackground);
+      color: var(--vscode-inputValidation-errorForeground);
+    }
+  }
+}
+
+.rows {
+  min-height: 0;
+  overflow-y: scroll;
+}
+
+.row {
+  border-top: 1px solid var(--vscode-quickInput-background);
+  min-width: fit-content;
+}
+
+.row,
+.header {
+  display: grid;
+  grid-template-columns:
+    40px minmax(200px, 1fr) minmax(200px, 1fr) minmax(40px, 1fr) minmax(40px, 1fr)
+    minmax(40px, 1fr) 40px;
+  align-items: center;
+}
+
+.row:hover,
+.row.isDragging {
+  background: var(--vscode-settings-rowHoverBackground);
+  outline: 1px dotted var(--vscode-contrastActiveBorder);
+  outline-offset: -1px;
+}
+
+.row.isDragging {
+  background: var(--vscode-list-hoverBackground) !important;
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+
+  &:not(:first-child):not(:last-child) {
+    padding: 2px 6px;
+  }
+
+  &:nth-child(2) {
+    padding-left: 0 !important;
+  }
+
+  &:first-child,
+  &:last-child {
+    justify-content: center;
+  }
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--vscode-icon-foreground);
+
+  &.resize {
+    cursor: grab;
+  }
+}
+
+.footer {
+  position: sticky;
+  bottom: 0;
+  padding-top: 12px;
+}
+
+.deleteButton {
+  opacity: 0.75;
+}

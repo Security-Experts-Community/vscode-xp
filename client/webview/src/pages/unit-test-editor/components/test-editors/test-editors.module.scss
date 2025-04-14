@@ -1,0 +1,44 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+.section {
+  display: flex;
+  flex-grow: 1;
+  border-top: 1px solid var(--vscode-editorGroup-border);
+
+  & > *:not(:last-child) {
+    border-right: 1px solid var(--vscode-editorGroup-border);
+  }
+}
+
+/* For the rule code at the left side of the editor: */
+
+// .root {
+//   display: flex;
+//   height: 100%;
+// }
+
+// .section {
+//   display: flex;
+//   width: 50%;
+//   border-top: 1px solid var(--vscode-editorGroup-border);
+//   border-right: 1px solid var(--vscode-editorGroup-border);
+
+//   & > *:not(:last-child) {
+//     border-top: 1px solid var(--vscode-editorGroup-border);
+//   }
+// }
+
+// .verticalSection {
+//   display: flex;
+//   flex-direction: column;
+//   width: 50%;
+
+//   & > section {
+//     border-top: 1px solid var(--vscode-editorGroup-border);
+//   }
+// }

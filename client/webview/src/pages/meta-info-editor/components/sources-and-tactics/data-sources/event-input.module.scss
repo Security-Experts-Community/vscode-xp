@@ -1,0 +1,18 @@
+.root {
+  position: relative;
+  align-self: flex-start;
+}
+
+.addIcon {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  height: 26px;
+  transform: translateY(-50%);
+  font-size: 12px;
+}
+
+.textfield {
+  width: 200px;
+  padding-right: 24px;
+}

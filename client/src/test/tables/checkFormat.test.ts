@@ -3,10 +3,9 @@ import * as assert from 'assert';
 import { ContentHelper } from '../../helpers/contentHelper';
 import { YamlHelper } from '../../helpers/yamlHelper';
 
-
 suite('Формат табличных списков', () => {
-	test('Строковая колонка не содержит кавычек вокруг числа и даты', () => {
-		const tableContent = `name: TEST
+  test('Строковая колонка не содержит кавычек вокруг числа и даты', () => {
+    const tableContent = `name: TEST
 fillType: Registry
 type: 1
 userCanEditContent: false
@@ -34,7 +33,7 @@ defaults:
     date: 2023-01-01
     desc:`;
 
-		const expectedContent = `name: TEST
+    const expectedContent = `name: TEST
 fillType: Registry
 type: 1
 userCanEditContent: false
@@ -62,7 +61,7 @@ defaults:
       date: 2023-01-01T00:00:00.000Z
       desc: 
 `;
-		const fixedTable = ContentHelper.fixTableYaml(YamlHelper.parse(tableContent));
-		assert.strictEqual(fixedTable, expectedContent);
-	});
+    const fixedTable = ContentHelper.fixTableYaml(YamlHelper.parse(tableContent));
+    assert.strictEqual(fixedTable, expectedContent);
+  });
 });

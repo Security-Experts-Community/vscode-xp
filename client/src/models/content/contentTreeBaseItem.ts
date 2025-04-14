@@ -1,5 +1,5 @@
-import * as path from "path";
-import * as vscode from "vscode";
+import * as path from 'path';
+import * as vscode from 'vscode';
 
 import { MetaInfo } from '../metaInfo/metaInfo';
 import { Configuration } from '../configuration';
@@ -11,162 +11,179 @@ import { XpException } from '../xpException';
  * Базовый класс для всех item-ом дерева контента.
  */
 export abstract class ContentTreeBaseItem extends vscode.TreeItem {
-	constructor(protected _name : string, 
-		protected _parentPath : string) {
-		super(_name, vscode.TreeItemCollapsibleState.None);
-		this.label = _name;
-	}
+  constructor(
+    protected name: string,
+    protected _parentPath: string
+  ) {
+    super(name, vscode.TreeItemCollapsibleState.None);
+    this.label = name;
+  }
 
-	public abstract getObjectType() : string;
-	public isFolder(): boolean {
-		return false;
-	}
+  public abstract getObjectType(): string;
+  public isFolder(): boolean {
+    return false;
+  }
 
-	public generateObjectId() : string {
-		const ruleName = this.getName();
-		const contentPrefix = Configuration.get().getContentPrefix();
-		if(contentPrefix === "") {
-			return undefined;
-		}
+  public generateObjectId(): string {
+    const ruleName = this.getName();
+    const contentPrefix = Configuration.get().getContentPrefix();
+    if (contentPrefix === '') {
+      return undefined;
+    }
 
-		const objectType = this.getObjectType();
-		return KbHelper.generateObjectId(ruleName, contentPrefix, objectType);
-	}
+    const objectType = this.getObjectType();
+    return KbHelper.generateObjectId(ruleName, contentPrefix, objectType);
+  }
 
-	public setCommand(command: vscode.Command) : void {
-		this.command = command;
-	}
+  public setCommand(command: vscode.Command): void {
+    this.command = command;
+  }
 
-	public getCommand() : vscode.Command {
-		return this.command;
-	}
+  public getCommand(): vscode.Command {
+    return this.command;
+  }
 
-	public getContentRootPath(config: Configuration): string{
-		if(!this._parentPath) {
-			throw new ArgumentException(`Не задан путь к директории правила '${this.getName()}'.`);
-		}
+  public getContentRootFolderName(config: Configuration): string {
+    const contentRootPath = this.getContentRootPath(config);
+    const contentRootFolder = path.basename(contentRootPath);
+    return contentRootFolder;
+  }
 
-		const pathEntities = this.getDirectoryPath().split(path.sep);
-		const rootPaths = config.getContentRoots().map(folder => {return path.basename(folder);});
-		for (const rootPath of rootPaths){
-			const  packagesDirectoryIndex = pathEntities.findIndex( pe => pe.toLocaleLowerCase() === rootPath);
-			if(packagesDirectoryIndex === -1){
-				continue;
-			}
+  public getContentRootPath(config: Configuration): string {
+    if (!this._parentPath) {
+      throw new ArgumentException(`Не задан путь к директории правила '${this.getName()}'.`);
+    }
 
-			// Удаляем лишние элементы пути и собираем результирующий путь.
-			pathEntities.splice(packagesDirectoryIndex + 1);
-			const packageDirectoryPath = pathEntities.join(path.sep);
-			return packageDirectoryPath;
-		}
+    const pathEntities = this.getDirectoryPath().split(path.sep);
+    const rootPaths = config.getContentRoots().map((folder) => {
+      return path.basename(folder);
+    });
+    for (const rootPath of rootPaths) {
+      const packagesDirectoryIndex = pathEntities.findIndex(
+        (pe) => pe.toLocaleLowerCase() === rootPath
+      );
+      if (packagesDirectoryIndex === -1) {
+        continue;
+      }
 
-		throw new XpException(`Путь к правилу '${this.getName()}' не содержит ни одну из корневых директорий: [${rootPaths.join(", ")}].`);
-	}
+      // Удаляем лишние элементы пути и собираем результирующий путь.
+      pathEntities.splice(packagesDirectoryIndex + 1);
+      const packageDirectoryPath = pathEntities.join(path.sep);
+      return packageDirectoryPath;
+    }
 
-	/**
-	 * Переименовывает item.
-	 */
-	public async rename(newRuleName: string) : Promise<void>{return undefined;}
+    throw new XpException(
+      `Путь к правилу ${this.getName()} не содержит ни одну из корневых директорий: [${rootPaths.join(', ')}]. Приведите структуру в соответствие ([пример](https://github.com/Security-Experts-Community/open-xp-rules)) и повторите`
+    );
+  }
 
-	/**
-	 * Задает имя метки, которая отображается в дереве.
-	 * @param newName новое имя метки.
-	 */
-	public setName(newName:string) : void {
-		this.label = newName;
-		this._name = newName;
-	}
+  /**
+   * Переименовывает item.
+   */
+  public async rename(newRuleName: string): Promise<void> {
+    return undefined;
+  }
 
-	/**
-	 * Получает имя метки, которая отображается в дереве.
-	 * @returns  имя метки, которая отображается в дереве.
-	 */
-	public getName() :string {
-		return this._name;
-	}
+  /**
+   * Задает имя метки, которая отображается в дереве.
+   * @param newName новое имя метки.
+   */
+  public setName(newName: string): void {
+    this.label = newName;
+    this.name = newName;
+  }
 
-	/**
-	 * Задает имя файла правила (корреляции, нормализации, обогащения, макроса и т.д.)
-	 * @param fileName 
-	 */
-	public setFileName(fileName : string) : void {
-		this._fileName = fileName;
-	}
+  /**
+   * Получает имя метки, которая отображается в дереве.
+   * @returns  имя метки, которая отображается в дереве.
+   */
+  public getName(): string {
+    return this.name;
+  }
 
-	/**
-	 * Возвращает имя файла правила
-	 * @returns возвращает имя файла правила или undefined для директорий.
-	 */
-	public getFileName() : string {
-		return this._fileName;
-	}
+  /**
+   * Задает имя файла правила (корреляции, нормализации, обогащения, макроса и т.д.)
+   * @param fileName
+   */
+  public setFileName(fileName: string): void {
+    this.fileName = fileName;
+  }
 
-	/**
-	 * Возвращает путь к файлу правила
-	 * @returns возвращает путь к файлу правила (корреляции, нормализации, обогащения, макроса и т.д.) или undefined для директорий.
-	 */
-	public getFilePath() : string {
-		if(!this._fileName) {
-			return undefined;
-		}
-		return path.join(this._parentPath, this._name, this._fileName);
-	}
+  /**
+   * Возвращает имя файла правила
+   * @returns возвращает имя файла правила или undefined для директорий.
+   */
+  public getFileName(): string {
+    return this.fileName;
+  }
 
-	public setLabel(newLabel:string) : void {
-		this.label = newLabel;
-	}
+  /**
+   * Возвращает путь к файлу правила
+   * @returns возвращает путь к файлу правила (корреляции, нормализации, обогащения, макроса и т.д.) или undefined для директорий.
+   */
+  public getFilePath(): string {
+    if (!this.fileName) {
+      return undefined;
+    }
+    return path.join(this._parentPath, this.name, this.fileName);
+  }
 
-	public setHighlightsLabel(newLabel:string) : void {
-		this.label = {
-			label:newLabel, highlights:[[0,newLabel.length]]
-		};
-	}
+  public setLabel(newLabel: string): void {
+    this.label = newLabel;
+  }
 
-	public setParentPath(parentPath: string) : void{
-		this._parentPath = parentPath;
-	}
+  public setHighlightsLabel(newLabel: string): void {
+    this.label = {
+      label: newLabel,
+      highlights: [[0, newLabel.length]]
+    };
+  }
 
-	public getParentPath() : string{
-		return this._parentPath;
-	}
+  public setParentPath(parentPath: string): void {
+    this._parentPath = parentPath;
+  }
 
-	public getMetaInfoFilePath(): string {
-		return path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
-	}
+  public getParentPath(): string {
+    return this._parentPath;
+  }
 
-	public setMetaInfo(metaInfo : MetaInfo): void {
-		this._metaInfo = metaInfo;
-	}
+  public getMetaInfoFilePath(): string {
+    return path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
+  }
 
-	public getMetaInfo() : MetaInfo {
-		return this._metaInfo;
-	}
+  public setMetaInfo(metaInfo: MetaInfo): void {
+    this._metaInfo = metaInfo;
+  }
 
-	public getDirectoryPath() : string {
-		if(!this._parentPath) {
-			return undefined;
-		}
+  public getMetaInfo(): MetaInfo {
+    return this._metaInfo;
+  }
 
-		return path.join(this._parentPath, this.getName());
-	}
+  public getDirectoryPath(): string {
+    if (!this._parentPath) {
+      return undefined;
+    }
 
-	protected getRuleEncoding() : BufferEncoding {
-		return "utf-8";
-	}
+    return path.join(this._parentPath, this.getName());
+  }
 
-	protected getResourcesPath(): string{
-		return path.join(Configuration.get().getExtensionPath(), 'resources');
-	}
+  protected getRuleEncoding(): BufferEncoding {
+    return 'utf-8';
+  }
 
-	public getChildren() : ContentTreeBaseItem [] {
-		return this._children;
-	}
+  protected getResourcesPath(): string {
+    return path.join(Configuration.get().getExtensionPath(), 'resources');
+  }
 
-	public setChildren(children: ContentTreeBaseItem []) : void {
-		this._children = children;
-	}
+  public getChildren(): ContentTreeBaseItem[] {
+    return this._children;
+  }
 
-	private _fileName : string;
-	private _metaInfo: MetaInfo = new MetaInfo();
-	private _children: ContentTreeBaseItem [] = [];
+  public setChildren(children: ContentTreeBaseItem[]): void {
+    this._children = children;
+  }
+
+  private fileName: string;
+  private _metaInfo: MetaInfo = new MetaInfo();
+  private _children: ContentTreeBaseItem[] = [];
 }

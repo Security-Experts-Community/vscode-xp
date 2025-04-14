@@ -17,11 +17,14 @@ rule Windows_Logon: User_Login
     }
 
     on User_Login {
+        $status = status
+
         $subject.account.name = subject.account.name
         $subject.account.domain = subject.account.domain
         $subject.account.session_id = subject.account.session_id
         $subject.account.id = subject.account.id
         $subject.account.privileges = subject.account.privileges
+        $subject.account.fullname = subject.account.fullname
 
         $subject.process.id = subject.process.id
         $subject.process.name = subject.process.name
@@ -76,7 +79,6 @@ emit {
     $subject = "account"
     $action = "login"
     $object = "system"
-    $status = "success"
 
     $importance = ""
 

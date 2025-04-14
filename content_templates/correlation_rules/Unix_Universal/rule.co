@@ -12,7 +12,7 @@ rule Unix_Universal: Event
     init {
         $labels = "w_auto|CheckWL_Linux_Specific_Only"
     }
-       
+
     on Event {
         $status = status
 

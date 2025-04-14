@@ -1,44 +1,59 @@
 {
 	"xp.commonCommandCategory": "VSCode-XP",
 	
-	"xp.commonCommands.showOutputChannel": "Показать вывод расширения",
+	"xp.commonCommands.showOutputChannel": "Показать выходные данные",
+
+	"xp.commonCommands.showExtensionSettings" : "Параметры расширения",
 
 	"xp.views.knowledgebaseTree.title": "Дерево объектов",
 	"xp.views.knowledgebaseTree.refreshContentTreeCommand": "Обновить",
 	"xp.views.knowledgebaseTree.openKnowledgebaseCommand": "Открыть базу знаний",
 	"xp.views.knowledgebaseTree.correlateEventsCommand": "Коррелировать события",
 
-	"xp.views.knowledgebaseTree.createPackageCommand": "Создать пакет экспертизы",
-	"xp.views.knowledgebaseTree.createCorrelationCommand": "Создать правило корреляции",
-	"xp.views.knowledgebaseTree.createEnrichmentCommand": "Создать правило обогащения",
-	"xp.views.knowledgebaseTree.createNormalizationCommand": "Создать правило нормализации",
-	"xp.views.knowledgebaseTree.createTableListsCommand": "Создать табличный список",
-	"xp.views.knowledgebaseTree.createMacroCommand": "Создать макрос",
-	"xp.views.knowledgebaseTree.createFolderCommand": "Создать папку",
+	"xp.views.knowledgebaseTree.createSubmenu": "Создать",
+	"xp.views.knowledgebaseTree.createPackageCommand": "Новый пакет экспертизы",
+	"xp.views.knowledgebaseTree.createCorrelationCommand": "Новое правило корреляции",
+	"xp.views.knowledgebaseTree.createEnrichmentCommand": "Новое правило обогащения",
+	"xp.views.knowledgebaseTree.createNormalizationCommand": "Новое правило нормализации",
+	"xp.views.knowledgebaseTree.createAggregationCommand": "Новое правило агрегации",
+	"xp.views.knowledgebaseTree.createTableListsCommand": "Новый табличный список",
+	"xp.views.knowledgebaseTree.createMacroCommand": "Новый макрос",
+	"xp.views.knowledgebaseTree.createFolderCommand": "Новую папку",
 
-	"xp.views.knowledgebaseTree.verifyFolderCommand": "Проверить объекты",
+	"xp.views.knowledgebaseTree.verifyFolderCommand": "Запустить валидацию",
 	"xp.views.knowledgebaseTree.deleteCommand": "Удалить",
 	"xp.views.knowledgebaseTree.renameCommand": "Переименовать",
 	"xp.views.knowledgebaseTree.duplicateCommand": "Создать копию",
 
 	"xp.views.knowledgebaseTree.showIntegrationTestsCommand": "Интеграционные тесты",
+	"xp.views.knowledgebaseTree.showModularTestsCommand": "Модульные тесты",
 	"xp.views.knowledgebaseTree.showMetainfoCommand": "Метаданные",
-	"xp.views.knowledgebaseTree.showLocalizationCommand": "Локализации",
-	"xp.views.knowledgebaseTree.showTableDefaultValuesCommand": "Значения по умолчанию",
+	"xp.views.knowledgebaseTree.showLocalizationCommand": "Локализация",
 
 	"xp.views.knowledgebaseTree.buildAllGraphsCommand": "Компилировать все правила и списки",
 	"xp.views.knowledgebaseTree.buildAllLocalizationsCommand": "Компилировать все правила локализации",
 	"xp.views.knowledgebaseTree.buildAllNormalizationsCommand": "Компилировать все правила нормализации",
-	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Компилировать все файлы .wld",
+	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Компилировать все WLD-файлы",
 	
-	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Коррелировать событий из лог-файлов",
+	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Коррелировать события из файлов",
 
-	"xp.views.knowledgebaseTree.importKbFileCommand": "Импортировать из файла .kb",
-	"xp.views.knowledgebaseTree.exportKbFileCommand": "Экспортировать в файл .kb",
+	"xp.views.knowledgebaseTree.importKbFileCommand": "Импортировать из KB-файла",
+	"xp.views.knowledgebaseTree.exportKbFileCommand": "Экспортировать в KB-файл",
 
 	"xp.views.knowledgebaseTree.defaultContent": "Это расширение помогает разрабатывать правила для обработки событий на языке eXtraction and Processing (XP).\nЧтобы начать, [откройте базу знаний](command:xp.contentTree.openKnowledgebaseCommand) или создайте новую.\nПриятной работы!",
 
-	"xp.views.modularTestsListView.title": "Модульные тесты",
-	"xp.views.modularTestsListView.defaultContent": "Модульные тесты отсутствуют"
+	"xp.xpConfig.kbtBaseDirectoryDescription": "Путь к папке c [Knowledge Base Toolkit](https://github.com/vxcontrol/xp-kbt/releases)",
+	"xp.xpConfig.outputDirectoryPathDescription": "Путь к папке, в которой сохраняются временные объекты. Эта папка очищается автоматически при каждом запуске расширения",
+	"xp.xpConfig.correlatorTimeoutDescription": "Макс. время корреляции в секундах. Если оно будет превышено, корреляция будет прервана",
+	"xp.xpConfig.lspServerExecutablePathDescription": "Путь до исполняемого файла LSP сервера",
+
+	"xp.xpConfig.originDescription": "Информация о поставщике. Используется при экспорте объектов в KB-файл",
+	"xp.xpConfig.origin.contentPrefixDescription": "Префикс поставщика объектов. Должен совпадать с ObjectId. По умолчанию, пользовательским правилам соответствует префикс LOC, системным — PT. Если не указать префикс, у создаваемых правил не будет ObjectId",
+	"xp.xpConfig.origin.ruDescription": "Отображаемое имя (RU)",
+	"xp.xpConfig.origin.enDescription": "Отображаемое имя (EN)",
+	"xp.xpConfig.origin.idDescription": "GUID поставщика (глобальный уникальный идентификатор)",
+
+	"xp.xpConfig.logLevelDescription": "Уровень журналирования",
+	"xp.xpConfig.defaultAuthor": "Имя автора по умолчанию"
 }
 

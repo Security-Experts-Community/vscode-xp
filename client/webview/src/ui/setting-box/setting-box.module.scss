@@ -1,0 +1,19 @@
+.root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px 18px;
+  row-gap: 2px;
+
+  & > *:first-child {
+    margin-bottom: 2px;
+  }
+
+  & > * {
+    width: 100% !important;
+  }
+
+  &:hover {
+    background-color: var(--vscode-settings-rowHoverBackground);
+  }
+}

@@ -116,13 +116,13 @@
 				<div class="manage_buttons">
 					<!-- Получить ожидаемое событие можно только при наличии нормализованных событий -->
 					{{#CanGetExpectedEvent}}
-						<input name="fast_test" type="button" value="{{Locale.GetExpectedEvent}}  ">
+						<input name="update_expect_event" type="button" value="{{Locale.GetExpectedEvent}}">
+						<input name="show_actual_event" type="button" value="{{Locale.ShowActualEvent}}">
 					{{/CanGetExpectedEvent}}
 					<!-- Сравнить полученные результаты можно только если тест прошёл неуспешно -->
 					{{#IsFailed}}
 						<input id="open_result_diff" type="button" value="{{Locale.CompareResults}}">
 					{{/IsFailed}}
-
 					<!-- <input id="clean_test_button" type="button" value="{{Locale.ClearExpectedEvent}}" alt="Исключает из кода теста технические поля события"> -->
 				</div>
 
@@ -479,13 +479,13 @@
 
 							let baseTestElement;
 							const testNumberString = message.testNumber;
+
 							if(!testNumberString) {
 								// Получаем текущий тест.
 								const activeTestNumber = $("#active_test_number").val();
 								baseTestElement = $("#" + activeTestNumber); 
 							} else {
-								const testNumber = parseInt(testNumberString);
-								baseTestElement = $("#" + activeTestNumber); 
+								baseTestElement = $("#" + testNumberString);
 							}
 
 							// Задаем новое значение сырых событий.
@@ -517,15 +517,12 @@
 			}
 
 			$(document).ready(function() {
-
-
-
 				addEventListenerOnClickForStopPropaginationAndDeleteTest()
 
 				const activeTestNumber = $("#active_test_number").val();
 
 				// Открытие теста по номеру.
-			  	openTest(activeTestNumber);
+				openTest(activeTestNumber);
 
 				// Выводим восклицательный знак у неуспешно прошедших тестов
 				$(".failure").each(function(index, elem) {
@@ -542,7 +539,6 @@
 				
 				// Нормализация события
 				$(document).on("click",'[name="normalize"]', function () {
-
 					// Получаем текущий тест.
 					const activeTestNumber = $("#active_test_number").val();
 					const baseTestElement = $("#" + activeTestNumber);
@@ -580,19 +576,52 @@
 					});
 				});
 
-				// Быстрый тест
-				$(document).on("click",'[name="fast_test"]', function () {
-
+				// Показываем фактическое событие
+				$(document).on("click",'[name="show_actual_event"]', function () {
 					// Получаем текущий тест.
-					const activeTestNumber = $("#active_test_number").val();
-					var baseTestElement = $("#" + activeTestNumber); 
+					const selectedTestNumber = $("#active_test_number").val();
+					var baseTestElement = $("#" + selectedTestNumber); 
 
 					// Передает тест как параметр запроса.
 					const test = baseTestElement.data("test");
 					const rawEvents = baseTestElement.find('[name="raw_events"]').text();
 					vscode.postMessage({
-						activeTestNumber : activeTestNumber,
+						selectedTestNumber : selectedTestNumber,
+						command: 'ShowActualEventCommand',
+						rawEvents : rawEvents,
+						test: test
+					});
+				});
+
+				// Получение и обновление ожидаемого события
+				$(document).on("click",'[name="update_expect_event"]', function () {
+					// Получаем текущий тест.
+					const selectedTestNumber = $("#active_test_number").val();
+					var baseTestElement = $("#" + selectedTestNumber); 
+
+					// Передает тест как параметр запроса.
+					const test = baseTestElement.data("test");
+					const rawEvents = baseTestElement.find('[name="raw_events"]').text();
+					vscode.postMessage({
 						command: 'GetExpectedEventCommand',
+						selectedTestNumber : selectedTestNumber,
+						rawEvents : rawEvents,
+						test: test
+					});
+				});
+
+				$(document).on("click",'#open_result_diff', function () {
+					// Получаем текущий тест.
+					const selectedTestNumber = $("#active_test_number").val();
+					var baseTestElement = $("#" + selectedTestNumber); 
+
+					// Передает тест как параметр запроса.
+					const test = baseTestElement.data("test");
+					const rawEvents = baseTestElement.find('[name="raw_events"]').text();
+
+					vscode.postMessage({
+						command: 'ShowTestResultsDiffCommand',
+						selectedTestNumber : selectedTestNumber,
 						rawEvents : rawEvents,
 						test: test
 					});
@@ -690,19 +719,11 @@
 					});
 				});
 
-				$(document).on("click",'#open_result_diff', function () {
-					const selectedTestNumber = $("#active_test_number").val();
-					vscode.postMessage({
-						command: 'ShowTestResultsDiffCommand',
-						selectedTestNumber : selectedTestNumber
-					});
-				});
-
 
 				// TODO: Перенести выше.
 				// Добавляем наши ключевые слова в json.
 				const xpTestCode = hljs.getLanguage('json');
-				xpTestCode.keywords.literal.push('not', 'expect', 'table_list', 'default');
+				xpTestCode.keywords.literal.push('any', 'not', 'expect', 'table_list', 'default');
 				xpTestCode.contains.push({begin:"#", end: "$", scope: "comment"});
 				hljs.registerLanguage(
 					'xp-test-code', 

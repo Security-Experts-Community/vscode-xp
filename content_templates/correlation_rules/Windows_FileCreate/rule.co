@@ -13,8 +13,10 @@ rule Windows_FileCreate: File_Create
     init {
         $labels = "w_auto|CheckWL_File_Creation"
     }
-       
+
     on File_Create {
+        $status = status
+
         $subject.account.id = subject.account.id
         $subject.account.domain = subject.account.domain
         $subject.account.fullname = subject.account.fullname
@@ -26,7 +28,7 @@ rule Windows_FileCreate: File_Create
         $subject.process.path = subject.process.path
         $subject.process.fullpath = subject.process.fullpath
         $subject.process.guid = subject.process.guid
-     
+
         $object.name = object.name
         $object.path = object.path
         $object.fullpath = object.fullpath
@@ -43,7 +45,7 @@ rule Windows_FileCreate: File_Create
         $event_src.subsys = event_src.subsys
         $event_src.category = event_src.category
         $event_src.rule = event_src.rule
-               
+
         $alert.key =           
         $alert.context = 
         $alert.regex_match =
@@ -55,7 +57,6 @@ emit {
     $subject = "process"
     $action = "create"
     $object = "file_object"
-    $status = "success"
 
     $importance = 
 

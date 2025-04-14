@@ -19,7 +19,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Get release version
@@ -50,13 +50,12 @@ jobs:
             echo "EXT_ISPREVIEW=0" >> $GITHUB_ENV
             echo "EXT_ISPREVIEW=0"
           fi
-
       - name: Get tag message body
         run: |
           EOF=${{ github.sha }}
           echo "msg<<$EOF" >> $GITHUB_OUTPUT
           echo "$(git tag -l --format='%(contents:body)' ${{ github.ref_name }})" >> $GITHUB_OUTPUT
-          echo "$EOF" >> $GITHUB_OUTPUT      
+          echo "$EOF" >> $GITHUB_OUTPUT
         id: get_tag_message
 
       - name: Stamp version
@@ -65,7 +64,6 @@ jobs:
           cp /tmp/package.json ./package.json
           npm ci
           npm run vscode:prepublish
-
       - name: Package release extension
         if: env.EXT_ISPREVIEW != 1
         run: npx vsce package -o "./vscode-xp-${{ env.EXT_VERSION }}.vsix"
@@ -76,26 +74,17 @@ jobs:
 
       - name: Create release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: v${{ env.EXT_VERSION }}
+          name: v${{ env.EXT_VERSION }}
           draft: false
           prerelease: ${{env.EXT_ISPREVIEW == 1}}
           body: |
             ${{ steps.get_tag_message.outputs.msg }}
-
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./vscode-xp-${{ env.EXT_VERSION }}.vsix
-          asset_name: vscode-xp-${{ env.EXT_VERSION }}.vsix
-          asset_content_type: application/zip
+          files: ./vscode-xp-${{ env.EXT_VERSION }}.vsix
 
       - name: Publish at VSCode marketplace
         if: env.EXT_ISPREVIEW != 1

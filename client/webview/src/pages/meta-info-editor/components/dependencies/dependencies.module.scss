@@ -1,0 +1,56 @@
+.root {
+  position: absolute;
+  inset: 0;
+  margin: 8px 0;
+  overflow-y: scroll;
+}
+
+.content {
+  max-width: min(100%, 1000px);
+  height: 100%;
+  margin: 0 auto;
+}
+
+.noDependenciesMessage {
+  padding: 0 14px;
+  font-style: italic;
+  opacity: 0.8;
+}
+
+.section {
+  border-radius: 3px;
+}
+
+.dependency {
+  display: flex;
+  align-items: center;
+  min-height: 26px;
+  padding: 2px 0;
+}
+
+.dependencyContent {
+  display: flex;
+  align-items: center;
+  padding: 0 0 0 8px;
+
+  & > span {
+    color: var(--vscode-foreground);
+  }
+}
+
+.dependencyLink {
+  margin-left: 4px;
+  font-size: 16px;
+
+  &,
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+.dependencyGoToFileButton {
+  span {
+    position: relative;
+    left: -2px;
+  }
+}

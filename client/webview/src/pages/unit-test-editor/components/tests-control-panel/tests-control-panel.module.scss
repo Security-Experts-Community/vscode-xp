@@ -1,0 +1,16 @@
+.root {
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+}
+
+.tests {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.addTestButton {
+  margin: 0 4px;
+}

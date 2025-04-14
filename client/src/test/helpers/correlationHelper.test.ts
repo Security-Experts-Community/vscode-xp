@@ -1,4 +1,3 @@
-
 import * as vscode from 'vscode';
 import * as assert from 'assert';
 import * as fs from 'fs';
@@ -10,11 +9,8 @@ import { ContentHelper } from '../../helpers/contentHelper';
 import { Configuration } from '../../models/configuration';
 
 suite('CorrelationHelper', async () => {
-
-	test('Переименование множества строк для вайтлистинга', async () => {
-
-		const ruleCode =
-`event AddType_Pipeline:
+  test('Переименование множества строк для вайтлистинга', async () => {
+    const ruleCode = `event AddType_Pipeline:
 key:
 	event_src.host
 filter {
@@ -75,25 +71,34 @@ emit {
 }
 `;
 
-		const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode("Super_Duper_Correlation", ruleCode);
-		assert.ok(!newRuleCode.includes("WinAPI_Access_from_Powershell"));
-	});
+    const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode(
+      'Super_Duper_Correlation',
+      ruleCode
+    );
+    assert.ok(!newRuleCode.includes('WinAPI_Access_from_Powershell'));
+  });
 
-	test('Переименование имени корреляции с пробельным символом перед : ', async () => {
-		const ruleCode = `rule Active_Directory_Snapshot : Event {`;
-		const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode("Super_Duper_Correlation", ruleCode);
+  test('Переименование имени корреляции с пробельным символом перед : ', async () => {
+    const ruleCode = `rule Active_Directory_Snapshot : Event {`;
+    const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode(
+      'Super_Duper_Correlation',
+      ruleCode
+    );
 
-		const expectedRuleCode = "rule Super_Duper_Correlation: Event {";
-		assert.strictEqual(newRuleCode, expectedRuleCode);
-	});
+    const expectedRuleCode = 'rule Super_Duper_Correlation: Event {';
+    assert.strictEqual(newRuleCode, expectedRuleCode);
+  });
 
-	test('Переименование имени корреляции без пробельного символом перед : ', async () => {
-		const ruleCode = 
-`rule CVE_2021_41379_Subrule_Start_elevation: create_elevation_service and start_elevation within 1m`;
+  test('Переименование имени корреляции без пробельного символом перед : ', async () => {
+    const ruleCode = `rule CVE_2021_41379_Subrule_Start_elevation: create_elevation_service and start_elevation within 1m`;
 
-		const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode("Super_Duper_Correlation", ruleCode);
+    const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode(
+      'Super_Duper_Correlation',
+      ruleCode
+    );
 
-		const expectedRuleCode = "rule Super_Duper_Correlation: create_elevation_service and start_elevation within 1m";
-		assert.strictEqual(newRuleCode, expectedRuleCode);
-	});
+    const expectedRuleCode =
+      'rule Super_Duper_Correlation: create_elevation_service and start_elevation within 1m';
+    assert.strictEqual(newRuleCode, expectedRuleCode);
+  });
 });

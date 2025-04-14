@@ -1,0 +1,53 @@
+.root {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  height: 35px;
+  padding: 1px 4px 0 12px;
+  border-bottom: 1px solid transparent;
+  user-select: none;
+  cursor: pointer;
+
+  &:hover {
+    .label,
+    .controls {
+      opacity: 1;
+    }
+  }
+
+  &.isSelected {
+    border-bottom-color: var(--vscode-settings-headerForeground);
+    color: var(--vscode-settings-headerForeground);
+
+    .controls {
+      display: flex;
+    }
+  }
+
+  &.isSuccess .icon {
+    color: var(--vscode-charts-green);
+  }
+
+  &.isFailed .icon {
+    color: var(--vscode-charts-red);
+  }
+}
+
+.controls {
+  display: none;
+  align-items: center;
+  padding: 0 2px;
+  opacity: 0.75;
+}
+
+.icon {
+  margin-right: 8px;
+}
+
+.label {
+  white-space: nowrap;
+  padding-right: 6px;
+  padding-bottom: 2px;
+  font-size: 13px;
+  opacity: 0.9;
+}

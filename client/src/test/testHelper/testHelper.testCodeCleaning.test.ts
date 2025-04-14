@@ -3,11 +3,8 @@ import * as assert from 'assert';
 import { TestHelper } from '../../helpers/testHelper';
 
 suite('TestHelper.testCodeCleaning', () => {
-
-    test('Удаление uuid из двух событий', async () => {
-
-        const testCode = 
-`{
+  test('Удаление uuid из двух событий', async () => {
+    const testCode = `{
     "normalized": true,
     "uuid": "c38ab502-3958-4c73-b1db-9e7d8c92afec"
 }
@@ -16,40 +13,33 @@ suite('TestHelper.testCodeCleaning', () => {
     "uuid": "c38ab502-3958-4c73-b1db-9e7d8c92afec"
 }`;
 
-const expectedTestCode = 
-`{
+    const expectedTestCode = `{
     "normalized": true
 }
 {
-    "normalized": true
-}`;
-
-        const actualTestCode = TestHelper.cleanTestCode(testCode);
-        assert.strictEqual(actualTestCode, expectedTestCode);
-    });
-
-    test('Удаление последнего поля uuid', async () => {
-
-        const testCode = 
-`expect 1 {
-    "normalized": true,
-    "uuid": "c38ab502-3958-4c73-b1db-9e7d8c92afec"
-}`;
-
-    
-    const expectedTestCode = 
-`expect 1 {
     "normalized": true
 }`;
 
     const actualTestCode = TestHelper.cleanTestCode(testCode);
     assert.strictEqual(actualTestCode, expectedTestCode);
-});
+  });
 
-    test('Удаление subevents, _subjects, _object, subevents и subevents.time', async () => {
+  test('Удаление последнего поля uuid', async () => {
+    const testCode = `expect 1 {
+    "normalized": true,
+    "uuid": "c38ab502-3958-4c73-b1db-9e7d8c92afec"
+}`;
 
-        const testCode = 
-`expect 1 {
+    const expectedTestCode = `expect 1 {
+    "normalized": true
+}`;
+
+    const actualTestCode = TestHelper.cleanTestCode(testCode);
+    assert.strictEqual(actualTestCode, expectedTestCode);
+  });
+
+  test('Удаление subevents, _subjects, _object, subevents и subevents.time', async () => {
+    const testCode = `expect 1 {
     "subject.account.name": "pushkin",
     "src.port": 63691,
     "category.low": "Permission Groups Discovery",
@@ -205,9 +195,7 @@ const expectedTestCode =
     "category.generic": "Attack"
 }`;
 
-    
-    const expectedTestCode = 
-`expect 1 {
+    const expectedTestCode = `expect 1 {
     "subject.account.name": "pushkin",
     "src.port": 63691,
     "category.low": "Permission Groups Discovery",
@@ -240,12 +228,10 @@ const expectedTestCode =
 
     const actualTestCode = TestHelper.cleanTestCode(testCode);
     assert.strictEqual(actualTestCode, expectedTestCode);
-});
+  });
 
-	test('Удаление generator.version, uuid', async () => {
-
-		const testCode = 
-`expect 1 {
+  test('Удаление generator.version, uuid', async () => {
+    const testCode = `expect 1 {
     "src.port": 63691,
     "mime": "application/x-pt-eventlog",
     "object.query": "(objectClass=displaySpecifier)",
@@ -288,8 +274,7 @@ const expectedTestCode =
     "msgid": "1644"
 }`;
 
-const expectedTestCode = 
-`expect 1 {
+    const expectedTestCode = `expect 1 {
     "src.port": 63691,
     "mime": "application/x-pt-eventlog",
     "object.query": "(objectClass=displaySpecifier)",
@@ -330,15 +315,12 @@ const expectedTestCode =
     "msgid": "1644"
 }`;
 
-        const actualTestCode = TestHelper.cleanTestCode(testCode);
-        assert.strictEqual(actualTestCode, expectedTestCode);
-	});
+    const actualTestCode = TestHelper.cleanTestCode(testCode);
+    assert.strictEqual(actualTestCode, expectedTestCode);
+  });
 
-
-test('Удаление из вывода быстрого теста subevents, _subjects, _object, subevents и subevents.time', async () => {
-
-    const testCode = 
-`SUCCESS!
+  test('Удаление из вывода быстрого теста subevents, _subjects, _object, subevents и subevents.time', async () => {
+    const testCode = `SUCCESS!
 Got results:
 
 {
@@ -499,8 +481,7 @@ Got results:
 }
 [INFO] Creating temp directory C:\\Output\\temp\\2022-07-28_18-46-16_25.0.9349`;
 
-        const expectedTestCode = 
-`SUCCESS!
+    const expectedTestCode = `SUCCESS!
 Got results:
 
 {
@@ -535,36 +516,30 @@ Got results:
 }
 [INFO] Creating temp directory C:\\Output\\temp\\2022-07-28_18-46-16_25.0.9349`;
 
-        const actualTestCode = TestHelper.cleanTestCode(testCode);
-        assert.strictEqual(actualTestCode, expectedTestCode);
-    });
+    const actualTestCode = TestHelper.cleanTestCode(testCode);
+    assert.strictEqual(actualTestCode, expectedTestCode);
+  });
 
-    test('Удаление siem_id', async () => {
-
-        const testCode = 
-`table_list default
+  test('Удаление siem_id', async () => {
+    const testCode = `table_list default
 expect 1 {
     "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",
     "siem_id": "e1b2c118-1a86-11ea-9632-e3fa28d252ab",
     "status": "success"
 }`;
 
-        const expectedTestCode = 
-`table_list default
+    const expectedTestCode = `table_list default
 expect 1 {
     "primary_siem_app_id": "00000000-0000-0000-0000-000000000005",
     "status": "success"
 }`;
 
-        const actualTestCode = TestHelper.cleanTestCode(testCode);
-        assert.strictEqual(actualTestCode, expectedTestCode);
-    });
+    const actualTestCode = TestHelper.cleanTestCode(testCode);
+    assert.strictEqual(actualTestCode, expectedTestCode);
+  });
 
-
-    test('Удаление time', async () => {
-
-        const testCode = 
-`SUCCESS!
+  test('Удаление time', async () => {
+    const testCode = `SUCCESS!
 Got results:
 
 {
@@ -574,8 +549,7 @@ Got results:
 }
 [INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`;
 
-        const extectedTestCode = 
-`SUCCESS!
+    const extectedTestCode = `SUCCESS!
 Got results:
 
 {
@@ -584,15 +558,12 @@ Got results:
 }
 [INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`;
 
-        const actualTestCode = TestHelper.cleanTestCode(testCode);
-        assert.strictEqual(actualTestCode, extectedTestCode);
-    });
+    const actualTestCode = TestHelper.cleanTestCode(testCode);
+    assert.strictEqual(actualTestCode, extectedTestCode);
+  });
 
-
-    test('Удаление labels', async () => {
-
-        const testCode = 
-`SUCCESS!
+  test('Удаление labels', async () => {
+    const testCode = `SUCCESS!
 Got results:
 
 {
@@ -603,8 +574,7 @@ Got results:
 }
 [INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`;
 
-        const expectedTestCode = 
-`SUCCESS!
+    const expectedTestCode = `SUCCESS!
 Got results:
 
 {
@@ -614,9 +584,7 @@ Got results:
 }
 [INFO] Creating temp directory C:\\Output\\temp\\2022-12-20_15-29-25_25.0.9349`;
 
-        const actualTestCode = TestHelper.cleanTestCode(testCode);
-        assert.strictEqual(actualTestCode, expectedTestCode);
-    });
-
+    const actualTestCode = TestHelper.cleanTestCode(testCode);
+    assert.strictEqual(actualTestCode, expectedTestCode);
+  });
 });
-

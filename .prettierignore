@@ -1,0 +1,7 @@
+node_modules
+build
+dist
+out
+*.min.js
+client/templates/**
+content_templates/**

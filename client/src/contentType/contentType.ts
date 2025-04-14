@@ -1,4 +1,4 @@
 export enum ContentType {
-	SIEM = 'SIEM',
-	EDR = 'EDR'
+  SIEM = 'SIEM',
+  EDR = 'EDR'
 }
