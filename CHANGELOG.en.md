@@ -1,5 +1,14 @@
 # Change Log
 
+## 3.20.4 (Release)
+
+- Returned to a single tab with unit tests due to caching the rule when opening webview
+- Added a warning dialog when attempting to open unit tests of another normalization formula
+- Fixed the issue of double hover from Language Server
+- Fixed the algorithm for generating the localization rule identifier for normalizations
+- Changes in rule templates
+- Updated the MITRE ATT&CK matrix to version 17
+
 ## 3.20.3 (Release)
 
 - Fixed position of compositeFields to the complex_key list
