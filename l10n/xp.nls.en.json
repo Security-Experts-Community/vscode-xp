@@ -282,5 +282,6 @@
     "View.UnitTests.TestsAreRunning": "Running modular tests of the rule \"{0}\"",
     "View.UnitTests.TestIsRunning": "Test #{0} is running",
     "View.UnitTests.RuleIsNotLoaded": "The rule is not loaded yet. Repeat it again",
-    "View.UnitTests.NoSuchTestForTheRule": "There's no test #{0} for the rule \"{1}\""
+    "View.UnitTests.NoSuchTestForTheRule": "There's no test #{0} for the rule \"{1}\"",
+    "View.UnitTests.CloseWarning": "Are you sure you want to open modular tests of another rule?"
 }

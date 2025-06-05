@@ -183,7 +183,7 @@ export class Configuration {
       case 'darwin':
         return OsType.Mac;
       default:
-        throw new Error('Платформа не поддерживается');
+        throw new Error(`Платформа ${osType} не поддерживается`);
     }
   }
 

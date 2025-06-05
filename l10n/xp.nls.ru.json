@@ -282,5 +282,6 @@
     "View.UnitTests.TestsAreRunning": "Выполняются модульные тесты правила \"{0}\"",
     "View.UnitTests.TestIsRunning": "Выполняется тест #{0}",
     "View.UnitTests.RuleIsNotLoaded": "Правило еще не успело загрузится. Повторите еще раз",
-    "View.UnitTests.NoSuchTestForTheRule": "Не найдено теста #{0} для правила \"{1}\""
+    "View.UnitTests.NoSuchTestForTheRule": "Не найдено теста #{0} для правила \"{1}\"",
+    "View.UnitTests.CloseWarning": "Точно ли хотите открыть модульные тесты другого правила?"
 }

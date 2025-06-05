@@ -137,9 +137,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
       )
     );
 
-    // Показывает общую информацию по наведению на конструкцию.
-    await XpHoverProvider.init(config);
-
     // Не очень понятно как тут сделать разумно.
     const tokenModifiers = ['declaration', 'documentation'];
     const tokenTypes = ['function', 'variable'];
@@ -248,6 +245,10 @@ async function configureLSPClient(
   /**
    * Legacy LSP server
    */
+
+  // Показывает общую информацию по наведению на конструкцию.
+  await XpHoverProvider.init(config);
+
   const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
 
   const debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };

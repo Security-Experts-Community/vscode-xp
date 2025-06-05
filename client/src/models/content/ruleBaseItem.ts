@@ -490,7 +490,7 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
    * Генерирует свободный идентификатор локализации
    * @returns возвращает свободный идентификатор локализации
    */
-  private generateLocalizationId(): string {
+  protected generateLocalizationId(): string {
     let name = this.getName();
     if (!name) {
       name = 'name';
