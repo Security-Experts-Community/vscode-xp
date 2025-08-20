@@ -132,7 +132,7 @@ export class GetExpectedEventCommand {
         fastTest.setRule(this.params.rule);
 
         // Специальный тест быстрого теста.
-        const testRunner = this.params.rule.getUnitTestRunner();
+        const testRunner = this.params.rule.getUnitTestRunner(this.params.config);
         const resultTest = await testRunner.run(fastTest);
 
         if (resultTest.getStatus() === TestStatus.Failed) {

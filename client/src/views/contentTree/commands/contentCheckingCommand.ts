@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs';
 
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { Correlation } from '../../../models/content/correlation';
@@ -24,10 +23,11 @@ import { OperationCanceledException } from '../../../models/operationCanceledExc
 import { StringHelper } from '../../../helpers/stringHelper';
 import { ParserHelper } from '../../../helpers/parserHelper';
 import { ViewCommand } from '../../../models/command/command';
-import { SiemjManager } from '../../../models/siemj/siemjManager';
+import { GetSIEMJVersion, SiemjManager } from '../../../models/siemj/siemjManager';
 import { TestHelper } from '../../../helpers/testHelper';
 import { BuildLocalizationsCommand } from './buildLocalizationsCommand';
 import { Aggregation } from '../../../models/content/aggregation';
+import { RegExpHelper } from '../../../helpers/regExpHelper';
 
 /**
  * Проверяет контент по требованиям. В настоящий момент реализована только проверка интеграционных тестов и локализаций.
@@ -125,7 +125,7 @@ export class ContentCheckingCommand extends ViewCommand {
 
         // Проверка локализаций
         if (thereAreRulesWithLocalizations) {
-          const parser = new SiemJOutputParser(this.config);
+          const parser = new SiemJOutputParser(this.config, GetSIEMJVersion(this.config));
           const command = new BuildLocalizationsCommand(this.config, {
             outputParser: parser,
             localizationsPath: this.selectedItem.getDirectoryPath()
@@ -190,8 +190,10 @@ export class ContentCheckingCommand extends ViewCommand {
       }
     }
 
-    const outputParser = new SiemJOutputParser(this.config);
-    const testRunner = new IntegrationTestRunner(this.config, outputParser);
+    const contentRoot = this.config.getContentRoots()[0];
+    const siemjManager = new SiemjManager(this.config);
+    const configBuilder = siemjManager.getConfigBuilder(contentRoot);
+    const testRunner = new IntegrationTestRunner(this.config, configBuilder);
 
     if (
       correlationBuildingConfigured ||
@@ -289,7 +291,7 @@ export class ContentCheckingCommand extends ViewCommand {
     tests.forEach((t) => t.setStatus(TestStatus.Unknown));
     const testHandler = async (unitTest: BaseUnitTest) => {
       const rule = unitTest.getRule();
-      const testRunner = rule.getUnitTestRunner();
+      const testRunner = rule.getUnitTestRunner(this.config);
       return testRunner.run(unitTest);
     };
 
@@ -359,10 +361,11 @@ export class ContentCheckingCommand extends ViewCommand {
     // const locExamples = await siemjManager.buildLocalizationExamplesFromIntegrationTestResult(rule, ruleTmpFilesRuleName);
 
     const siemjManager = new SiemjManager(this.config, options.cancellationToken);
-
+    var testRuleFiles = RegExpHelper.getEnrichedCorrTestEventsFileNameNew(siemjResult.rawOutput);
     const locExamples = await siemjManager.buildLocalizationExamplesFromIntegrationTestResult(
       rule,
-      this.integrationTestTmpFilesPath
+      this.integrationTestTmpFilesPath,
+      testRuleFiles
     );
     if (locExamples.length === 0) {
       rule.setStatus(ContentItemStatus.Unverified, 'Локализации не были получены');

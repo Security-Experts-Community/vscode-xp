@@ -38,6 +38,8 @@
     "Error.LocalizationBuilding": "Не удалось скомпилировать правила локализации. Исправьте [ошибки в файлах](command:workbench.action.showErrorsWarnings). Если ошибок нет, проверьте [выходные данные](command:xp.commonCommands.showOutputChannel)",
     "Error.InvalidPath": "Недопустимые символы в пути {0}. Исправьте путь и повторите попытку",
 
+    "LSPServer.ServerExecutableFoundAt": "Исполняемый файл XPLang LSP сервера найден по пути {0}",
+    "LSPServer.UsingLegacyLSPServer": "Не удалось найти исполняемый файл XPLang LSP сервера, будет использована старая версия LSP сервера",
     "LSPServer.ServerHasStarted": "XPLang LSP сервер успешно запущен. PID: {0}",
 
     "View.ObjectTree.Message.TheKnowledgeBaseIsNotInitialized": "База знаний не найдена. Создать стандартные папки для продукта {0}?",

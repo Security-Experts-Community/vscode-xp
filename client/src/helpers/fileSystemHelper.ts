@@ -97,7 +97,7 @@ export class FileSystemHelper {
     return new Promise((resolve) => {
       fs.access(path, fs.constants.F_OK, (err) => {
         if (err) {
-          return fs.rename(path, newPath, (err) => {
+          return fs.rename(path, newPath, () => {
             resolve();
           });
         }
@@ -198,7 +198,7 @@ export class FileSystemHelper {
     try {
       file = fs.readFileSync(filePath, this._fileEncoding);
     } catch (error) {
-      throw new Error(`Не удалось прочитать файл '${filePath}'`);
+      throw new Error(`Не удалось прочитать файл '${filePath}': ${error.message}`);
     }
 
     return file.toString();
@@ -261,7 +261,9 @@ export class FileSystemHelper {
       .map((entity) => path.join(dirPath, entity.name));
 
     for (const entityDirPath of entityDirPaths) {
-      await fs.promises.rmdir(entityDirPath, { recursive: true });
+      if (fs.existsSync(entityDirPath)) {
+        await fs.promises.rmdir(entityDirPath, { recursive: true });
+      }
     }
 
     const entityFilePaths = (await fs.promises.readdir(dirPath, { withFileTypes: true }))
@@ -269,17 +271,21 @@ export class FileSystemHelper {
       .map((entity) => path.join(dirPath, entity.name));
 
     for (const entityFilePath of entityFilePaths) {
-      await fs.promises.unlink(entityFilePath);
+      if (fs.existsSync(entityFilePath)) {
+        await fs.promises.unlink(entityFilePath);
+      }
     }
   }
 
-  public static async recursivelyDeleteDirectory(dirPath: string) {
+  public static async recursivelyDeleteDirectory(dirPath: string): Promise<void> {
     try {
       if (fs.existsSync(dirPath)) {
         await fs.promises.rmdir(dirPath, { recursive: true });
       }
     } catch (error) {
-      Log.warn(`Не удалось удалить директорию временных файлов интеграционных тестов ${dirPath}`);
+      Log.warn(
+        `Не удалось удалить директорию временных файлов интеграционных тестов ${dirPath}: ${error.message}`
+      );
     }
   }
 

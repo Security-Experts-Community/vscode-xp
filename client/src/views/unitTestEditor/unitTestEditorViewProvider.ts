@@ -348,19 +348,23 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
             message: this.config.getMessage('View.UnitTests.TestIsRunning', test.getNumber())
           });
 
-          const runner = this.rule.getUnitTestRunner();
+          const runner = this.rule.getUnitTestRunner(this.config);
           const updatedTest = await runner.run(test);
           const actualData = updatedTest.getActualData();
+          const status = updatedTest.getStatus();
 
           this._updateTestInWebview({
             testNumber,
+            status,
             actualData
           });
         } catch (error) {
           const outputData = test.getOutput();
-          test.setStatus(TestStatus.Failed);
+          const status = TestStatus.Failed;
+          test.setStatus(status);
           this._updateTestInWebview({
             testNumber,
+            status: status,
             actualData: outputData
           });
 

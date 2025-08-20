@@ -10,19 +10,54 @@ import { XpException } from '../xpException';
 import { RuleBaseItem } from '../content/ruleBaseItem';
 import { SiemjConfigHelper } from './siemjConfigHelper';
 import { FileSystemException } from '../fileSystemException';
-import { SiemjConfBuilder } from './siemjConfigBuilder';
+import { AbstractSiemjConfBuilder, SiemjConfBuilder } from './siemjConfigBuilder';
+import { Siemj2ConfBuilder } from './siemjConfigBuilder';
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { LocalizationExample } from '../content/localization';
 import { TestHelper } from '../../helpers/testHelper';
-import { RegExpHelper } from '../../helpers/regExpHelper';
+import { IResultTestFiles, RegExpHelper } from '../../helpers/regExpHelper';
 import { OperationCanceledException } from '../operationCanceledException';
 import { Correlation } from '../content/correlation';
+
+export enum SIEMJVersion {
+  First = 1,
+  Second
+}
+
+export function GetRawSIEMJVersion(config: Configuration): string {
+  return ProcessHelper.readProcessArgsOutputSync(config.getSiemjPath(), ['-v'], 'utf8').trim();
+}
+
+export function GetSIEMJVersion(config: Configuration): SIEMJVersion {
+  const result = GetRawSIEMJVersion(config);
+  if (result.includes('siemj 1.')) {
+    return SIEMJVersion.First;
+  } else {
+    if (result.includes('siemj 2.')) {
+      return SIEMJVersion.Second;
+    } else {
+      throw new XpException(`Unexpected SIEMJ version: ${result}`);
+    }
+  }
+}
 
 export class SiemjManager {
   constructor(
     private config: Configuration,
     private token?: vscode.CancellationToken
   ) {}
+
+  public getConfigBuilder(contentRootPath: string): AbstractSiemjConfBuilder {
+    var siemjVersion = GetSIEMJVersion(this.config);
+    switch (siemjVersion) {
+      case SIEMJVersion.First:
+        return new SiemjConfBuilder(this.config, contentRootPath);
+      case SIEMJVersion.Second:
+        return new Siemj2ConfBuilder(this.config, contentRootPath);
+      default:
+        vscode.window.showErrorMessage(`Ошибка определения версии SIEMJ: ${siemjVersion}`);
+    }
+  }
 
   public async buildSchema(rule: RuleBaseItem): Promise<string> {
     await SiemjConfigHelper.clearArtifacts(this.config);
@@ -36,7 +71,7 @@ export class SiemjManager {
     }
 
     // Получаем нужный конфиг для нормализации событий.
-    const configBuilder = new SiemjConfBuilder(this.config, contentRootPath);
+    const configBuilder = this.getConfigBuilder(contentRootPath);
     configBuilder.addTablesSchemaBuilding();
     const siemjConfContent = configBuilder.build();
 
@@ -76,8 +111,7 @@ export class SiemjManager {
       fs.mkdirSync(outputFolder, { recursive: true });
     }
 
-    // Получаем нужный конфиг для нормализации событий.
-    const configBuilder = new SiemjConfBuilder(this.config, contentRootPath);
+    const configBuilder = this.getConfigBuilder(contentRootPath);
     configBuilder.addNormalizationsGraphBuilding(false);
     configBuilder.addTablesSchemaBuilding();
     configBuilder.addEventsNormalization({ rawEventsFilePath: rawEventsFilePath });
@@ -132,7 +166,7 @@ export class SiemjManager {
       fs.mkdirSync(outputFolder, { recursive: true });
     }
 
-    const configBuilder = new SiemjConfBuilder(this.config, contentRootPath);
+    const configBuilder = this.getConfigBuilder(contentRootPath);
     configBuilder.addNormalizationsGraphBuilding(false);
     configBuilder.addTablesSchemaBuilding();
     configBuilder.addTablesDbBuilding();
@@ -164,6 +198,7 @@ export class SiemjManager {
     return enrichEventsContent;
   }
 
+  // TODO: replace with generic siemj execution
   public async executeSiemjConfigForRule(
     rule: RuleBaseItem,
     siemjConfContent: string
@@ -246,7 +281,8 @@ export class SiemjManager {
    */
   public async buildLocalizationExamplesFromIntegrationTestResult(
     rule: RuleBaseItem,
-    integrationTestsTmpDirPath: string
+    integrationTestsTmpDirPath: string,
+    testResultFiles: Map<string, IResultTestFiles>
   ): Promise<LocalizationExample[]> {
     const contentFullPath = rule.getPackagePath(this.config);
     if (!fs.existsSync(contentFullPath)) {
@@ -258,30 +294,45 @@ export class SiemjManager {
         `Файлы интеграционных тестов по пути '${integrationTestsTmpDirPath}' не были получены`
       );
     }
-
-    // Нужно собрать все корреляционные события в один файл, который и передать на генерацию локализаций.
-    // raw_events_1_norm_enr_cor(r)?_enr.json
-    const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
-    const correlatedEventFilePaths = files.filter((fp) => {
-      return RegExpHelper.getEnrichedCorrTestEventsFileName(rule.getName()).test(fp);
-    });
-
-    if (correlatedEventFilePaths.length === 0) {
-      // Возникли ошибки при генерации локализаций.
-      return [];
-    }
-
     const correlateEvents: string[] = [];
-    for (const correlatedEventFilePath of correlatedEventFilePaths) {
-      let correlateEventsFileContent =
-        await FileSystemHelper.readContentFile(correlatedEventFilePath);
-      correlateEventsFileContent = correlateEventsFileContent.trimEnd();
-      if (correlateEventsFileContent) {
-        correlateEvents.push(correlateEventsFileContent);
-      }
-    }
+    switch (GetSIEMJVersion(this.config)) {
+      case SIEMJVersion.First:
+        // Нужно собрать все корреляционные события в один файл, который и передать на генерацию локализаций.
+        // raw_events_1_norm_enr_cor(r)?_enr.json
+        const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
+        const correlatedEventFilePaths = files.filter((fp) => {
+          return RegExpHelper.getEnrichedCorrTestEventsFileName(rule.getName()).test(fp);
+        });
 
-    return this.buildLocalizationExamples(rule, correlateEvents, integrationTestsTmpDirPath);
+        if (correlatedEventFilePaths.length === 0) {
+          // Возникли ошибки при генерации локализаций.
+          return [];
+        }
+
+        for (const correlatedEventFilePath of correlatedEventFilePaths) {
+          let correlateEventsFileContent =
+            await FileSystemHelper.readContentFile(correlatedEventFilePath);
+          correlateEventsFileContent = correlateEventsFileContent.trimEnd();
+          if (correlateEventsFileContent) {
+            correlateEvents.push(correlateEventsFileContent);
+          }
+        }
+
+        return this.buildLocalizationExamples(rule, correlateEvents, integrationTestsTmpDirPath);
+
+      case SIEMJVersion.Second:
+        for (const [, resultFiles] of testResultFiles) {
+          let correlateEventsFileContent = await FileSystemHelper.readContentFile(
+            resultFiles.actualEventsFilePath
+          );
+          correlateEventsFileContent = correlateEventsFileContent.trimEnd();
+          if (correlateEventsFileContent) {
+            correlateEvents.push(correlateEventsFileContent);
+          }
+        }
+
+        return this.buildLocalizationExamples(rule, correlateEvents, integrationTestsTmpDirPath);
+    }
   }
 
   public async buildLocalizationExamples(
@@ -324,7 +375,10 @@ export class SiemjManager {
       await fs.promises.unlink(enLocalizationFilePath);
     }
 
-    const configBuilder = new SiemjConfBuilder(this.config, rule.getContentRootPath(this.config));
+    const contentRootPath = rule.getContentRootPath(this.config);
+    const configBuilder = this.getConfigBuilder(contentRootPath);
+
+    // const configBuilder = new SiemjConfBuilder(this.config, );
     configBuilder.addLocalizationsBuilding({
       rulesSrcPath: rule.getDirectoryPath(),
       force: true

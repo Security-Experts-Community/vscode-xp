@@ -38,6 +38,8 @@
     "Error.LocalizationBuilding": "Could not compile localization rules. Fix [errors in files](command:workbench.action.showErrorsWarnings). If no errors were found, refer to [output data](command:xp.commonCommands.showOutputChannel).",
     "Error.InvalidPath": "Invalid characters in the path {0}. Fix the path and try again.",
 
+    "LSPServer.ServerExecutableFoundAt": "XPLang LSP server executable found at {0}",
+    "LSPServer.UsingLegacyLSPServer": "Can't find XPLang LSP server executable, switch to legacy version",
     "LSPServer.ServerHasStarted": "XPLang LSP server has successfully started. PID: {0}",
 
     "View.ObjectTree.Message.TheKnowledgeBaseIsNotInitialized": "The knowledge base was not found. Create standard folders for {0}?",

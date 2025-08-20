@@ -3,18 +3,17 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { SiemjConfigHelper } from '../siemj/siemjConfigHelper';
-import { SiemJOutputParser, SiemjExecutionResult } from '../siemj/siemJOutputParser';
+import { SiemjExecutionResult } from '../siemj/siemJOutputParser';
+
 import { Configuration } from '../configuration';
 import { RuleBaseItem } from '../content/ruleBaseItem';
 import { TestStatus } from './testStatus';
-import { SiemjConfBuilder } from '../siemj/siemjConfigBuilder';
+import { AbstractSiemjConfBuilder } from '../siemj/siemjConfigBuilder';
 import { XpException } from '../xpException';
 import { SiemjManager } from '../siemj/siemjManager';
 import { OperationCanceledException } from '../operationCanceledException';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { KbHelper } from '../../helpers/kbHelper';
-import { Log } from '../../extension';
 
 export enum CompilationType {
   DontCompile = 'DontCompile',
@@ -49,7 +48,7 @@ export class IntegrationTestRunner {
 
   constructor(
     private config: Configuration,
-    private outputParser: SiemJOutputParser
+    private configBuilder: AbstractSiemjConfBuilder
   ) {}
 
   public async compileArtifacts(
@@ -68,30 +67,32 @@ export class IntegrationTestRunner {
       await fs.promises.mkdir(outputDirPath, { recursive: true });
     }
 
-    const configBuilder = new SiemjConfBuilder(this.config, contentRoot);
+    const siemjManager = new SiemjManager(this.config, this.options.cancellationToken);
+    this.configBuilder = siemjManager.getConfigBuilder(contentRoot);
+
     const gitApi = await VsCodeApiHelper.getGitExtension();
     if (!gitApi) {
       // Нет git-а - пересобираем все нормализации.
-      configBuilder.addNormalizationsGraphBuilding(true);
+      this.configBuilder.addNormalizationsGraphBuilding(true);
     } else {
       // Есть хоть одна измененная нормализация, пересобираем все.
       if (VsCodeApiHelper.isWorkDirectoryUsingGit(gitApi, contentRoot)) {
         const changePaths = VsCodeApiHelper.gitWorkingTreeChanges(gitApi, contentRoot);
         const isNormalizationsChanged = changePaths.some((cp) => cp.endsWith('.xp'));
         if (isNormalizationsChanged) {
-          configBuilder.addNormalizationsGraphBuilding(true);
+          this.configBuilder.addNormalizationsGraphBuilding(true);
         } else {
-          configBuilder.addNormalizationsGraphBuilding(false);
+          this.configBuilder.addNormalizationsGraphBuilding(false);
         }
       } else {
-        configBuilder.addNormalizationsGraphBuilding(true);
+        this.configBuilder.addNormalizationsGraphBuilding(true);
       }
     }
 
-    configBuilder.addAggregationGraphBuilding();
-    configBuilder.addTablesSchemaBuilding();
-    configBuilder.addTablesDbBuilding();
-    configBuilder.addEnrichmentsGraphBuilding();
+    this.configBuilder.addAggregationGraphBuilding();
+    this.configBuilder.addTablesSchemaBuilding();
+    this.configBuilder.addTablesDbBuilding();
+    this.configBuilder.addEnrichmentsGraphBuilding();
 
     // Параметры сборки графа корреляций в зависимости от опций.
     switch (options.correlationCompilation) {
@@ -102,11 +103,11 @@ export class IntegrationTestRunner {
           (depCorrPath) => !depCorrPath.startsWith(options.currPackagePath)
         );
         correlationPaths.push(options.currPackagePath);
-        configBuilder.addCorrelationsGraphBuilding(true, correlationPaths);
+        this.configBuilder.addCorrelationsGraphBuilding(true, correlationPaths);
         break;
       }
       case CompilationType.AllPackages: {
-        configBuilder.addCorrelationsGraphBuilding(true);
+        this.configBuilder.addCorrelationsGraphBuilding(true);
         break;
       }
       case CompilationType.Auto: {
@@ -115,7 +116,7 @@ export class IntegrationTestRunner {
           throw new XpException('Опции запуска интеграционных тестов неконсистентны');
         }
 
-        configBuilder.addCorrelationsGraphBuilding(true, options.dependentCorrelations);
+        this.configBuilder.addCorrelationsGraphBuilding(true, options.dependentCorrelations);
         break;
       }
       case CompilationType.DontCompile: {
@@ -129,8 +130,7 @@ export class IntegrationTestRunner {
       }
     }
 
-    const siemjManager = new SiemjManager(this.config, this.options.cancellationToken);
-    const siemjConfContent = configBuilder.build();
+    const siemjConfContent = this.configBuilder.build();
     const siemjExecutionResult = await siemjManager.executeSiemjConfig(
       contentRoot,
       siemjConfContent
@@ -139,7 +139,9 @@ export class IntegrationTestRunner {
       throw new OperationCanceledException(this.config.getMessage('OperationWasAbortedByUser'));
     }
 
-    const siemjResult = await this.outputParser.parse(siemjExecutionResult.output);
+    const outputParser = this.configBuilder.getOutputParser();
+
+    const siemjResult = await outputParser.parse(siemjExecutionResult.output);
     return siemjResult;
   }
 
@@ -178,23 +180,15 @@ export class IntegrationTestRunner {
       await fs.promises.mkdir(outputDirPath, { recursive: true });
     }
 
-    const configBuilder = new SiemjConfBuilder(this.config, rootPath);
+    const siemjManager = new SiemjManager(this.config, this.options.cancellationToken);
+    this.configBuilder = siemjManager.getConfigBuilder(rootPath);
+    this.configBuilder.addTestsRun(rule.getDirectoryPath(), this.options.tmpFilesPath);
 
-    // TODO: временно отключена генерация временных файлов, так как siemkb_tests.exe падает со следующей ошибкой:
-    // TEST_RULES :: log4cplus:ERROR Unable to open file: C:\Users\user\AppData\Local\Temp\eXtraction and Processing\tmp\5239e794-c14a-7526-113c-52479c1694d6\AdAstra_TraceMode_File_Suspect_Operation_Inst_Fldr\2024-04-18_19-06-45_unknown_sdk_227gsqqu\AdAstra_TraceMode_File_Suspect_Operation_Inst_Fldr\tests\raw_events_4_norm_enr.log
-    // TEST_RULES :: Error: SDK: Cannot open fpta db C:\Users\user\AppData\Local\Temp\eXtraction and Processing\tmp\5239e794-c14a-7526-113c-52479c1694d6\AdAstra_TraceMode_File_Suspect_Operation_Inst_Fldr\2024-04-18_19-06-45_unknown_sdk_227gsqqu\AdAstra_TraceMode_File_Suspect_Operation_Inst_Fldr\tests\raw_events_4_fpta.db : it's not exists
-
-    // const testTmpDirectory = path.join(this.options.tmpFilesPath, rule.getName());
-    // configBuilder.addTestsRun(rule.getDirectoryPath(), testTmpDirectory);
-
-    configBuilder.addTestsRun(rule.getDirectoryPath(), this.options.tmpFilesPath);
-
-    const siemjConfContent = configBuilder.build();
+    const siemjConfContent = this.configBuilder.build();
     if (!siemjConfContent) {
       throw new XpException(this.config.getMessage('CouldNotGenerateSiemjConf'));
     }
 
-    const siemjManager = new SiemjManager(this.config, this.options.cancellationToken);
     const siemjExecutionResult = await siemjManager.executeSiemjConfigForRule(
       rule,
       siemjConfContent
@@ -204,7 +198,8 @@ export class IntegrationTestRunner {
       throw new OperationCanceledException(this.config.getMessage('OperationWasAbortedByUser'));
     }
 
-    const siemjResult = await this.outputParser.parse(siemjExecutionResult.output);
+    const outputParser = this.configBuilder.getOutputParser();
+    const siemjResult = await outputParser.parse(siemjExecutionResult.output);
 
     const executedTests = rule.getIntegrationTests();
     // Все тесты прошли, статусы не проверяем, все тесты зеленые.
@@ -280,44 +275,42 @@ export class IntegrationTestRunner {
       await fs.promises.mkdir(outputDirPath, { recursive: true });
     }
 
-    const configBuilder = new SiemjConfBuilder(this.config, rootPath);
-
     const gitApi = await VsCodeApiHelper.getGitExtension();
     if (!gitApi) {
       // Нет git-а - пересобираем все нормализации.
-      configBuilder.addNormalizationsGraphBuilding(true);
+      this.configBuilder.addNormalizationsGraphBuilding(true);
     } else {
       // Есть хоть одна измененная нормализация, пересобираем все.
       if (VsCodeApiHelper.isWorkDirectoryUsingGit(gitApi, rootPath)) {
         const changePaths = VsCodeApiHelper.gitWorkingTreeChanges(gitApi, rootPath);
         const isNormalizationsChanged = changePaths.some((cp) => cp.endsWith('.xp'));
         if (isNormalizationsChanged) {
-          configBuilder.addNormalizationsGraphBuilding(true);
+          this.configBuilder.addNormalizationsGraphBuilding(true);
         } else {
-          configBuilder.addNormalizationsGraphBuilding(false);
+          this.configBuilder.addNormalizationsGraphBuilding(false);
         }
       } else {
-        configBuilder.addNormalizationsGraphBuilding(true);
+        this.configBuilder.addNormalizationsGraphBuilding(true);
       }
     }
 
-    configBuilder.addAggregationGraphBuilding();
-    configBuilder.addTablesSchemaBuilding();
-    configBuilder.addTablesDbBuilding();
-    configBuilder.addEnrichmentsGraphBuilding();
+    this.configBuilder.addAggregationGraphBuilding();
+    this.configBuilder.addTablesSchemaBuilding();
+    this.configBuilder.addTablesDbBuilding();
+    this.configBuilder.addEnrichmentsGraphBuilding();
 
     // Параметры сборки графа корреляций в зависимости от опций.
     switch (options.correlationCompilation) {
       case CompilationType.CurrentRule: {
-        configBuilder.addCorrelationsGraphBuilding(true, rule.getDirectoryPath());
+        this.configBuilder.addCorrelationsGraphBuilding(true, rule.getDirectoryPath());
         break;
       }
       case CompilationType.CurrentPackage: {
-        configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this.config));
+        this.configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this.config));
         break;
       }
       case CompilationType.AllPackages: {
-        configBuilder.addCorrelationsGraphBuilding(true);
+        this.configBuilder.addCorrelationsGraphBuilding(true);
         break;
       }
       case CompilationType.Auto: {
@@ -326,7 +319,7 @@ export class IntegrationTestRunner {
           throw new XpException('Опции запуска интеграционных тестов неконсистентны');
         }
 
-        configBuilder.addCorrelationsGraphBuilding(true, options.dependentCorrelations);
+        this.configBuilder.addCorrelationsGraphBuilding(true, options.dependentCorrelations);
         break;
       }
       case CompilationType.DontCompile: {
@@ -341,8 +334,8 @@ export class IntegrationTestRunner {
     }
 
     // Получаем путь к директории с результатами теста.
-    configBuilder.addTestsRun(rule.getDirectoryPath(), options.tmpFilesPath);
-    const siemjConfContent = configBuilder.build();
+    this.configBuilder.addTestsRun(rule.getDirectoryPath(), options.tmpFilesPath);
+    const siemjConfContent = this.configBuilder.build();
     if (!siemjConfContent) {
       throw new XpException(this.config.getMessage('CouldNotGenerateSiemjConf'));
     }
@@ -358,7 +351,8 @@ export class IntegrationTestRunner {
       throw new OperationCanceledException(this.config.getMessage('OperationWasAbortedByUser'));
     }
 
-    const siemjResult = await this.outputParser.parse(siemjExecutionResult.output);
+    const outputParser = this.configBuilder.getOutputParser();
+    const siemjResult = await outputParser.parse(siemjExecutionResult.output);
 
     // Все тесты прошли, статусы не проверяем, все тесты зеленые.
     if (siemjResult.testsStatus) {

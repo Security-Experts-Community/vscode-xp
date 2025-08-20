@@ -7,7 +7,6 @@ import { DialogHelper } from '../../helpers/dialogHelper';
 import { ContentTreeProvider } from '../contentTree/contentTreeProvider';
 import { SiemjManager } from '../../models/siemj/siemjManager';
 import { XpException } from '../../models/xpException';
-import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { RunIntegrationTestDialog } from '../runIntegrationDialog';
 import { LocalizationEditorViewProvider } from './localizationEditorViewProvider';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
@@ -21,7 +20,7 @@ import { Correlation } from '../../models/content/correlation';
 import { Normalization } from '../../models/content/normalization';
 import { TestStatus } from '../../models/tests/testStatus';
 import { BaseUnitTest } from '../../models/tests/baseUnitTest';
-// import { UnitTestsListViewProvider } from '../unitTestEditor/unitTestsListViewProvider';
+import { IResultTestFiles, RegExpHelper } from '../../helpers/regExpHelper';
 
 /**
  * Команда выполняющая сборку всех графов: нормализации, агрегации, обогащения и корреляции.
@@ -187,9 +186,16 @@ export class CheckLocalizationCommand extends ViewCommand {
             `Получение корреляционных событий на основе интеграционных тестов правила`
           );
 
-          const outputParser = new SiemJOutputParser(this.params.config);
-          const testRunner = new IntegrationTestRunner(this.params.config, outputParser);
+          const contentRoot = this.params.rule.getContentRootPath(this.params.config);
+          const siemjManager = new SiemjManager(this.params.config);
+          const configBuilder = siemjManager.getConfigBuilder(contentRoot);
+
+          const testRunner = new IntegrationTestRunner(this.params.config, configBuilder);
           const siemjResult = await testRunner.runOnce(this.params.rule, options);
+
+          var testRuleFiles = RegExpHelper.getEnrichedCorrTestEventsFileNameNew(
+            siemjResult.rawOutput
+          );
 
           if (!siemjResult.testsStatus) {
             throw new XpException(
@@ -198,7 +204,7 @@ export class CheckLocalizationCommand extends ViewCommand {
           }
         }
 
-        const locExamples = await this.getLocalization(progress);
+        const locExamples = await this.getLocalization(progress, testRuleFiles);
         return locExamples;
       }
     );
@@ -216,7 +222,7 @@ export class CheckLocalizationCommand extends ViewCommand {
         tests.forEach((t) => t.setStatus(TestStatus.Unknown));
 
         const testHandler = async (unitTest: BaseUnitTest) => {
-          const testRunner = this.params.rule.getUnitTestRunner();
+          const testRunner = this.params.rule.getUnitTestRunner(this.params.config);
           return testRunner.run(unitTest, {
             useAppendix: true
           });
@@ -263,7 +269,8 @@ export class CheckLocalizationCommand extends ViewCommand {
   }
 
   private async getLocalization(
-    progress: vscode.Progress<{ message?: string; increment?: number }>
+    progress: vscode.Progress<{ message?: string; increment?: number }>,
+    results: Map<string, IResultTestFiles>
   ): Promise<LocalizationExample[]> {
     Log.progress(
       progress,
@@ -273,7 +280,8 @@ export class CheckLocalizationCommand extends ViewCommand {
     const siemjManager = new SiemjManager(this.params.config);
     const locExamples = await siemjManager.buildLocalizationExamplesFromIntegrationTestResult(
       this.params.rule,
-      this.params.tmpDirPath
+      this.params.tmpDirPath,
+      results
     );
     return locExamples;
   }

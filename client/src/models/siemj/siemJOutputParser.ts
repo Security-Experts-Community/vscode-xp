@@ -7,6 +7,9 @@ import { Log } from '../../extension';
 import { Configuration } from '../configuration';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 
+import { XpException } from '../../models/xpException';
+import { SIEMJVersion } from './siemjManager';
+
 export class FileDiagnostics {
   public uri: vscode.Uri;
   public diagnostics: vscode.Diagnostic[] = [];
@@ -20,10 +23,75 @@ export class SiemjExecutionResult {
   public failedTestNumbers: number[] = [];
   public tmpDirectoryPath: string;
   public testCount?: number;
+  public rawOutput: string;
+}
+
+interface ISiemJOutputPatterns {
+  exitCodeSection: RegExp;
+  buildRulesError: RegExp;
+  buildLocalizationError: RegExp;
+  testRulesFound: RegExp;
+  testRulesFail: RegExp;
+  testsSucceeded: RegExp;
 }
 
 export class SiemJOutputParser {
-  constructor(private config: Configuration) {}
+  private FirstSiemjPatterns: ISiemJOutputPatterns = {
+    // SIEMJ :: -------------------- SUBPROCESS EXIT CODE: 3221225477 --------------------
+    exitCodeSection:
+      /SIEMJ :: -------------------- SUBPROCESS EXIT CODE: (\d+) --------------------/gm,
+
+    buildRulesError: /BUILD_RULES \[Err\] :: (\S+?):(\d+):(\d+):([\S ]+)/gm,
+
+    // BUILD_EVENT_LOCALIZATION :: [ERROR] Each EventDescriptions entry must be a dict of 2 non-empty elements: C:\\knowledgebase\\packages\\package\\normalization_formulas\\Login_success\\i18n\\i18n_en.yaml
+    buildLocalizationError: /BUILD_EVENT_LOCALIZATION :: \[ERROR\] (.*?): (.*?)$/gm,
+
+    // TEST_RULES [Err] :: Collected 5 tests.
+    // TEST_RULES :: Collected 6 tests.
+    testRulesFound: /Collected (\d+) tests./gm,
+
+    // TEST_RULES :: Test Started: tests\\raw_events_1.json
+    // TEST_RULES :: Expected results are not obtained.
+    testRulesFail:
+      /Test Started: tests\\raw_events_(\d+).json\s+TEST_RULES :: Expected results are not obtained./gm,
+
+    testsSucceeded: /All tests OK/gm
+  };
+
+  private SecondSiemjPatterns: ISiemJOutputPatterns = {
+    // SIEMJ :: -------------------- SUBPROCESS EXIT CODE: 3221225477 --------------------
+    exitCodeSection:
+      /SIEMJ :: -------------------- SUBPROCESS EXIT CODE: (\d+) --------------------/gm,
+
+    buildRulesError: /BUILD_RULES \[Err\] :: (\S+?):(\d+):(\d+):([\S ]+)/gm,
+
+    // BUILD_EVENT_LOCALIZATION :: [ERROR] Each EventDescriptions entry must be a dict of 2 non-empty elements: C:\\knowledgebase\\packages\\package\\normalization_formulas\\Login_success\\i18n\\i18n_en.yaml
+    buildLocalizationError: /BUILD_EVENT_LOCALIZATION :: \[ERROR\] (.*?): (.*?)$/gm,
+
+    testRulesFound: /(\d+) tests found/gm,
+
+    testRulesFail:
+      /Test start: tests.test_conds_(\d+).tc\s+TEST_PIPELINE :: The expected results for the events were not obtained./gm,
+    testsSucceeded: /All tests passed successfully/gm
+  };
+
+  private siemjPatterns: ISiemJOutputPatterns;
+
+  constructor(
+    private config: Configuration,
+    siemjVersion: SIEMJVersion
+  ) {
+    switch (siemjVersion) {
+      case SIEMJVersion.First:
+        this.siemjPatterns = this.FirstSiemjPatterns;
+        break;
+      case SIEMJVersion.Second:
+        this.siemjPatterns = this.SecondSiemjPatterns;
+        break;
+      default:
+        throw new XpException('Unknown SIEMJ version.');
+    }
+  }
   /**
    * Разбирает ошибки из вывода SIEMJ.
    * @param siemjOutput вывод SIEMJ.
@@ -38,6 +106,7 @@ export class SiemJOutputParser {
 
     // Корректировка диагностиков (выделение конкретных токенов) по анализу файлов с ошибками
     result.fileDiagnostics = await this.correctDiagnosticBeginCharRanges(result.fileDiagnostics);
+    result.rawOutput = siemjOutput;
     return result;
   }
 
@@ -47,9 +116,7 @@ export class SiemJOutputParser {
    * @param result
    */
   private processSectionsExitCode(siemjOutput: string, result: SiemjExecutionResult) {
-    // SIEMJ :: -------------------- SUBPROCESS EXIT CODE: 3221225477 --------------------
-    const pattern =
-      /SIEMJ :: -------------------- SUBPROCESS EXIT CODE: (\d+) --------------------/gm;
+    const pattern = this.siemjPatterns.exitCodeSection;
     let m: RegExpExecArray | null;
     while ((m = pattern.exec(siemjOutput))) {
       if (m.length != 2) {
@@ -68,10 +135,8 @@ export class SiemJOutputParser {
   }
 
   private processBuildRules(siemjOutput: string, result: SiemjExecutionResult) {
-    // [ERROR] Compilation failed:
-    // c:\Work\-=SIEM=-\Content\knowledgebase\packages\esc\correlation_rules\active_directory\Active_Directory_Snapshot\rule.co:27:29: syntax error, unexpected '='
     const fileDiagnostics: FileDiagnostics[] = [];
-    const pattern = /BUILD_RULES \[Err\] :: (\S+?):(\d+):(\d+):([\S ]+)/gm;
+    const pattern = this.siemjPatterns.buildRulesError;
     let m: RegExpExecArray | null;
     while ((m = pattern.exec(siemjOutput))) {
       if (m.length != 5) {
@@ -124,9 +189,8 @@ export class SiemJOutputParser {
   }
 
   private processBuildLocalization(siemjOutput: string, result: SiemjExecutionResult) {
-    // BUILD_EVENT_LOCALIZATION :: [ERROR] Each EventDescriptions entry must be a dict of 2 non-empty elements: C:\\Content\\knowledgebase\\packages\\package\\normalization_formulas\\Login_success\\i18n\\i18n_en.yaml
     const fileDiagnostics: FileDiagnostics[] = [];
-    const pattern = /BUILD_EVENT_LOCALIZATION :: \[ERROR\] (.*?): (.*?)$/gm;
+    const pattern = this.siemjPatterns.buildLocalizationError;
     let m: RegExpExecArray | null;
     while ((m = pattern.exec(siemjOutput))) {
       if (m.length != 3) {
@@ -174,10 +238,7 @@ export class SiemJOutputParser {
   }
 
   private processTestRules(siemjOutput: string, result: SiemjExecutionResult) {
-    // Количество тестов не собрали.
-    // TEST_RULES [Err] :: Collected 5 tests.
-    // TEST_RULES :: Collected 6 tests.
-    const runningTestRegExp = /Collected (\d+) tests./gm;
+    const runningTestRegExp = this.siemjPatterns.testRulesFound;
     if (!siemjOutput.match(runningTestRegExp)) {
       result.testsStatus = false;
       return;
@@ -194,7 +255,7 @@ export class SiemJOutputParser {
     result.testCount = testCount;
 
     // Все тесты прошли.
-    if (siemjOutput.includes(this.TESTS_SUCCESS_SUBSTRING)) {
+    if (this.siemjPatterns.testsSucceeded.exec(siemjOutput)) {
       result.testsStatus = true;
       return;
     }
@@ -203,10 +264,7 @@ export class SiemJOutputParser {
     result.testsStatus = false;
 
     // Не все прошли, значит есть ошибки.
-    // TEST_RULES :: Test Started: tests\\raw_events_1.json
-    // TEST_RULES :: Expected results are not obtained.
-    const failedTestRegExp =
-      /Test Started: tests\\raw_events_(\d+).json\s+TEST_RULES :: Expected results are not obtained./gm;
+    const failedTestRegExp = this.siemjPatterns.testRulesFail;
 
     let t: RegExpExecArray | null;
     while ((t = failedTestRegExp.exec(siemjOutput))) {
@@ -260,6 +318,6 @@ export class SiemJOutputParser {
     return fileDiagnostics;
   }
 
-  private readonly TESTS_SUCCESS_SUBSTRING = 'All tests OK';
-  private readonly ERRORS_FOUND_SUBSTRING = 'TEST_RULES [Err] :: Errors found.';
+  // private readonly TESTS_SUCCESS_SUBSTRING = 'All tests OK';
+  // private readonly ERRORS_FOUND_SUBSTRING = 'TEST_RULES [Err] :: Errors found.';
 }

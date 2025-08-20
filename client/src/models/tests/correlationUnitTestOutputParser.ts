@@ -10,47 +10,50 @@ export class CorrelationUnitTestOutputParser implements UnitTestOutputParser {
       return output;
     }
 
-    const testResults = /(?:Got these results:\s*)(\{.*\})(?:\s*(\{.*\}))*/m.exec(output);
-    if (!testResults) {
+    const testResults = /(?:Got these results:\s*)(\{.*\})(?:\s*(\{.*\}))*/ms.exec(output);
+    if (!testResults || testResults.length < 2) {
       return output;
     }
-    const pattern = testResults.filter((s): s is string => !!s);
-    if (pattern && pattern.length > 1) {
-      const results = pattern.slice(1);
-      const expected = /\{.*?\}/m.exec(expectation);
-      const multipleExpectation = !!/expect\s+(\d+|not).*expect\s+(\d+|not)/ms.exec(expectation);
-      if (results.length == 1 && !multipleExpectation) {
-        const result = JSON.parse(results[0]);
-        if (expected) {
-          const expectedJson = JSON.parse(expected[0]);
-          const expectedKeys = Object.keys(expectedJson);
-          const filteredResult = Object.keys(result)
-            .filter((key) => expectedKeys.includes(key))
-            .reduce((obj, key) => {
-              obj[key] = result[key];
-              return obj;
-            }, {});
 
-          const difference = diffJson(filteredResult, expectedJson);
+    return testResults[1];
 
-          let result_diff = '';
-          for (const part of difference) {
-            const sign = part.added ? '+' : part.removed ? '-' : ' ';
-            const lines = part.value.split(/\r?\n/).filter((line) => {
-              return line != '';
-            });
-            for (const line of lines) {
-              result_diff += sign + line + '\n';
-            }
-          }
-          return result_diff;
-        } else {
-          return results[0];
-        }
-      } else {
-        return output;
-      }
-    }
+    // const pattern = testResults.filter((s): s is string => !!s);
+    // if (pattern && pattern.length > 1) {
+    //   const results = pattern.slice(1);
+    //   const expected = /\{.*?\}/m.exec(expectation);
+    //   const multipleExpectation = !!/expect\s+(\d+|not).*expect\s+(\d+|not)/ms.exec(expectation);
+    //   if (results.length == 1 && !multipleExpectation) {
+    //     const result = JSON.parse(results[0]);
+    //     if (expected) {
+    //       const expectedJson = JSON.parse(expected[0]);
+    //       const expectedKeys = Object.keys(expectedJson);
+    //       const filteredResult = Object.keys(result)
+    //         .filter((key) => expectedKeys.includes(key))
+    //         .reduce((obj, key) => {
+    //           obj[key] = result[key];
+    //           return obj;
+    //         }, {});
+
+    //       const difference = diffJson(filteredResult, expectedJson);
+
+    //       let result_diff = '';
+    //       for (const part of difference) {
+    //         const sign = part.added ? '+' : part.removed ? '-' : ' ';
+    //         const lines = part.value.split(/\r?\n/).filter((line) => {
+    //           return line != '';
+    //         });
+    //         for (const line of lines) {
+    //           result_diff += sign + line + '\n';
+    //         }
+    //       }
+    //       return result_diff;
+    //     } else {
+    //       return results[0];
+    //     }
+    //   } else {
+    //     return output;
+    //   }
+    // }
   }
 
   public parseSuccessOutput(output: string): string {

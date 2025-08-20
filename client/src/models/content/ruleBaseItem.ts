@@ -35,7 +35,7 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
   public abstract convertUnitTestFromObject(object: any): BaseUnitTest;
   public abstract createNewUnitTest(): BaseUnitTest;
   public abstract clearUnitTests(): void;
-  public abstract getUnitTestRunner(): UnitTestRunner;
+  public abstract getUnitTestRunner(config: Configuration): UnitTestRunner;
   public abstract getUnitTestOutputParser(): UnitTestOutputParser;
 
   protected abstract getLocalizationPrefix(): string;

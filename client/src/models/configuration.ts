@@ -16,6 +16,7 @@ import { LocalizationService } from '../l10n/localizationService';
 import { Origin } from './content/userSettingsManager';
 import { DialogHelper } from '../helpers/dialogHelper';
 import { LogLevel } from '../logger';
+import { Log } from '../extension';
 
 export type EncodingType = 'windows-1251' | 'utf-8' | 'utf-16';
 
@@ -60,6 +61,48 @@ export class Configuration {
       this.pathHelper = SIEMPathHelper.get();
     }
     this.context.workspaceState.update('ContentType', contentType);
+  }
+
+  public setKBTVersion(kbtVersion: string): void {
+    this.context.workspaceState.update('KBTVersion', kbtVersion);
+  }
+
+  public getLSPTaxonomyPath(): string {
+    const configuration = this.getKBTLSPConfiguration();
+    return configuration.get<string>('taxonomy_path');
+  }
+
+  public craftLSPTaxonomyPath(): string {
+    return path.join(this.getKbtBaseDirectory(), '/knowledgebase/contracts/taxonomy/taxonomy.json');
+  }
+
+  public getLSPi18nTaxonomyPath(): string {
+    const configuration = this.getKBTLSPConfiguration();
+    return configuration.get<string>('taxonomy_i18n_path');
+  }
+
+  public craftLSPi18nTaxonomyPath(): string {
+    return path.join(
+      this.getKbtBaseDirectory(),
+      'knowledgebase/contracts/taxonomy/i18n/i18n_ru.yaml'
+    );
+  }
+
+  public async updateLSPTaxonomyPath(): Promise<void> {
+    const configuration = this.getKBTLSPConfiguration();
+    const taxonomyPath = this.craftLSPTaxonomyPath();
+    await configuration.update('taxonomy_path', taxonomyPath, true, false);
+  }
+
+  public async updateLSPi18nTaxonomyPath(): Promise<void> {
+    const configuration = this.getKBTLSPConfiguration();
+    const taxonomyPath = this.craftLSPi18nTaxonomyPath();
+    await configuration.update('taxonomy_i18n_path', taxonomyPath, true, false);
+  }
+
+  public updateLSPSchemaTaxonomyPath(schemaPath: string): void {
+    const configuration = this.getKBTLSPConfiguration();
+    configuration.update('schema_path', schemaPath);
   }
 
   public getFirstWorkspaceFolder(): string {
@@ -205,11 +248,34 @@ export class Configuration {
    * @returns путь к директории со всеми SDK утилитами.
    */
   public getKbtBaseDirectory(): string {
+    const kbtVersionsDirectory = this.getKbtVersionsDirectory();
+    if (!kbtVersionsDirectory) {
+      return this.getKbtBaseDirectoryOld();
+    }
+    const currentKBTVersion = this.getKbtVersion();
+    const kbtBasePath = path.join(kbtVersionsDirectory, currentKBTVersion);
+    if (!kbtBasePath) {
+      throw new XpException(this.getMessage('Error.KbtDirectoryPathIsNotSet'));
+    }
+
+    if (!fs.existsSync(kbtBasePath)) {
+      throw new XpException(this.getMessage('Error.KbtDirectoryPathIsNoExist', kbtBasePath));
+    }
+
+    return kbtBasePath;
+  }
+
+  public getKbtBaseDirectoryOld(): string {
     const configuration = this.getWorkspaceConfiguration();
     const basePath = configuration.get<string>('kbtBaseDirectory');
     this.checkKbtSetting(configuration);
 
     return basePath;
+  }
+
+  public getKbtVersionsDirectory(): string {
+    const configuration = this.getWorkspaceConfiguration();
+    return configuration.get<string>('kbtVersionsDirectory');
   }
 
   /**
@@ -229,6 +295,10 @@ export class Configuration {
     const contentTypeString = this.context.workspaceState.get<string>('ContentType');
     const contentType: ContentType = ContentType[contentTypeString];
     return contentType;
+  }
+
+  public getKbtVersion(): string {
+    return this.context.workspaceState.get<string>('KBTVersion');
   }
 
   public getSiemjPath(): string {
@@ -478,6 +548,68 @@ export class Configuration {
     return fullPath;
   }
 
+  public getEvtTestsFullPath(): string {
+    let appName = '';
+    switch (this.getOsType()) {
+      case OsType.Windows:
+        appName = 'evt-tests.exe';
+        break;
+      case OsType.Linux:
+        appName = 'evt-tests';
+        break;
+      case OsType.Mac:
+        throw new XpException(this.getMessage('Error.MacOsIsNotNativelySupported'));
+
+      default:
+        throw new XpException('Платформа не поддерживается');
+    }
+
+    const fullPath = path.join(this.getSiemSdkDirectoryPath(), 'cli', appName);
+    this.checkKbtSingleToolPath(fullPath);
+
+    return fullPath;
+  }
+
+  public getKBTLSPFullPath(): string {
+    let appName = '';
+    switch (this.getOsType()) {
+      case OsType.Windows:
+        appName = 'evt-xp-language-server.exe';
+        break;
+      case OsType.Linux:
+        appName = 'evt-xp-language-server';
+        break;
+      case OsType.Mac:
+        throw new XpException(this.getMessage('Error.MacOsIsNotNativelySupported'));
+
+      default:
+        throw new XpException('Платформа не поддерживается');
+    }
+
+    let fullPath = path.join(this.getSiemSdkDirectoryPath(), 'cli', appName);
+    if (!fs.existsSync(fullPath)) {
+      Log.warn(
+        `Can't find LSP server executable in KBT directory: '${fullPath}'. Trying to find direct LSP server path in settings`
+      );
+
+      // Try to find direct LSP path setting
+      const directLSPPath = this.getDirectLSPServerExecutablePath();
+      if (!directLSPPath) {
+        Log.warn("Can't find LSP server path direct settings");
+        throw new XpException(this.getMessage('Error.UtilityPathIsIncorrect', fullPath));
+      }
+
+      // Found setting, check if executable presents
+      if (!fs.existsSync(directLSPPath)) {
+        Log.warn(`Can't find LSP server executable by direct setting: '${directLSPPath}'`);
+        throw new XpException(this.getMessage('Error.UtilityPathIsIncorrect', fullPath));
+      }
+      fullPath = directLSPPath;
+    }
+
+    return fullPath;
+  }
+
   public getOutputDirectoryPath(rootFolder?: string): string {
     if (rootFolder) {
       return path.join(this.getBaseOutputDirectoryPath(), rootFolder);
@@ -608,6 +740,10 @@ export class Configuration {
       this.getOutputDirectoryPath(rootFolder),
       this.pathHelper.getNormalizationsGraphFileName()
     );
+  }
+
+  public getTestPipelineConfigName(): string {
+    return 'test_pipeline_config_file.json';
   }
 
   public getEnrichmentsGraphFilePath(rootFolder: string): string {
@@ -775,6 +911,10 @@ export class Configuration {
     return vscode.workspace.getConfiguration(this.CONFIGURATION_PREFIX);
   }
 
+  public getKBTLSPConfiguration(): vscode.WorkspaceConfiguration {
+    return vscode.workspace.getConfiguration(this.LSP_CONFIGURATION_PREFIX);
+  }
+
   /**
    * Возвращает таймаут работы коррелятора.
    * @returns
@@ -783,6 +923,12 @@ export class Configuration {
     const configuration = this.getWorkspaceConfiguration();
     const correlatorTimeout = configuration.get<number>('correlatorTimeout');
     return correlatorTimeout;
+  }
+
+  public getDirectLSPServerExecutablePath(): string {
+    const configuration = this.getWorkspaceConfiguration();
+    const lspServerExecutablePath = configuration.get<string>('lspServerExecutablePath');
+    return lspServerExecutablePath;
   }
 
   public getLogLevel(): LogLevel {
@@ -917,6 +1063,7 @@ export class Configuration {
   private localizationService: LocalizationService;
 
   private readonly CONFIGURATION_PREFIX = 'xpConfig';
+  private readonly LSP_CONFIGURATION_PREFIX = 'xplang_ls';
   private readonly BUILD_TOOLS_DIR_NAME = 'build-tools';
 
   private readonly MAC_OS_MESSAGE_ABOUT_MAC_OS_SUPPORT =
