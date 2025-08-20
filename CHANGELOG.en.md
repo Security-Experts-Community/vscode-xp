@@ -1,5 +1,12 @@
 # Change Log
 
+## 3.21.0 (Pre-Release)
+
+- Support for multiple KBT versions with switching via UI
+- Fields for paths required for a new LSP server have appeared in the settings
+- Automatic update of LSP server settings when changing the KBT version
+- New utilities and config for SIEMJ are supported
+
 ## 3.20.4 (Release)
 
 - Returned to a single tab with unit tests due to caching the rule when opening webview
