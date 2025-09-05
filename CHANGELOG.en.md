@@ -1,5 +1,12 @@
 # Change Log
 
+## 3.21.2 (Pre-Release)
+
+- Updated tag when wrapping in an envelope, now the value 'vscode_xp' is set
+- Added scope_id field when wrapping a raw event in an envelope
+- Added default values for descriotion in localizations of correlation and normalization rules
+- Temporarily disabled checking that descriptions in localization are not empty
+
 ## 3.21.1 (Pre-Release)
 
 - For new versions of KBT, the TABLES_SCHEMA metarunner is supported, which launches a new version of the mktables utility

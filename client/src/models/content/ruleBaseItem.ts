@@ -322,9 +322,10 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
   }
 
   protected async saveLocalization(fullPath: string): Promise<void> {
-    if (!this.getRuDescription() && !this.getEnDescription()) {
-      return;
-    }
+    // TODO: check that empty descriptions are allowed
+    // if (!this.getRuDescription() && !this.getEnDescription()) {
+    //   return;
+    // }
 
     const localizationDirPath = path.join(fullPath, Localization.LOCALIZATIONS_DIRNAME);
     if (!fs.existsSync(localizationDirPath)) {
