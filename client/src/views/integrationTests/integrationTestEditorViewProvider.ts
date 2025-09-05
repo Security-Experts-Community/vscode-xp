@@ -264,6 +264,39 @@ export class IntegrationTestEditorViewProvider {
             it.getNormalizedEvents()
           );
 
+          let diff = '';
+          let normState = '';
+          let tlState = '';
+
+          try {
+            if (it.getStatus() === TestStatus.Failed) {
+              let correlateEventsFileContent = await FileSystemHelper.readContentFile(
+                it.getResultFiles().detailedReportFilePath
+              );
+
+              const tlRegex =
+                /Contents of the table lists \(EnrichmentRule, CorrelationRule, Registry from test conditions\):\s+({.*})/;
+              const tlMatch = correlateEventsFileContent.match(tlRegex);
+              if (tlMatch && tlMatch.length === 2) {
+                tlState = tlMatch[1];
+              }
+
+              const normStateRegex = /[FromEnricher]\s+({.*})\n/;
+              const normStateMatch = correlateEventsFileContent.match(normStateRegex);
+              if (normStateMatch && normStateMatch.length === 2) {
+                const jsonObject = JSON.parse(normStateMatch[1]);
+                normState = JSON.stringify(jsonObject, null, 2);
+              }
+
+              const diffRegex =
+                /Different:\s+((:?\s+[\w.]+: ".*?" => ".*?"\s|\s+[\w.]+: \d+ => \d+\s)+)/;
+              const diffMatch = correlateEventsFileContent.match(diffRegex);
+              if (diffMatch && diffMatch.length === 3) {
+                diff = diffMatch[1];
+              }
+            }
+          } catch (e) {}
+
           plain['IntegrationTests'].push({
             TestNumber: it.getNumber(),
             RawEvents: rawEvents,
@@ -272,6 +305,9 @@ export class IntegrationTestEditorViewProvider {
             TestOutput: it.getOutput(),
             JsonedTestObject: jsonedTestObject,
             TestStatus: this.testStatusToUiStyle(it),
+            Diff: diff,
+            NormState: normState,
+            TLState: tlState,
             IsFailed: it.getStatus() === TestStatus.Failed,
             CanGetExpectedEvent: this.canGetExpectedEvent(it)
           });

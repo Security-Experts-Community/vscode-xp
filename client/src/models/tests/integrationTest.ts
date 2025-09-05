@@ -6,9 +6,18 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { XpException } from '../xpException';
 import { RuleBaseItem } from '../content/ruleBaseItem';
 import { Configuration } from '../configuration';
+import { IResultTestFiles } from '../../helpers/regExpHelper';
 
 // TODO: вынести общие методы из класс BaseUnitTest.
 export class IntegrationTest {
+  public setResultFiles(resultFiles: IResultTestFiles): void {
+    this._resultFiles = resultFiles;
+  }
+
+  public getResultFiles(): IResultTestFiles {
+    return this._resultFiles;
+  }
+
   private constructor() {
     //
   }
@@ -221,6 +230,7 @@ export class IntegrationTest {
   }
 
   private _ruleDirectoryPath: string;
+  protected _resultFiles: IResultTestFiles;
 
   protected _number: number;
   protected _rawEvents = '';

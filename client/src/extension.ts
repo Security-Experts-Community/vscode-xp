@@ -69,7 +69,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     Log.info(`OS Release: ${os.release()}`);
 
     await UserSettingsManager.init(config);
-    await ToolsManager.init(config);
+    // await ToolsManager.init(config);
 
     try {
       await config.checkUserSetting();

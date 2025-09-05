@@ -107,6 +107,71 @@
 			</div>
 			{{/NormEvents}}
 
+			<!-- TL State -->
+			{{#TLState}}
+			<div class="test_block">
+				<div class="block_header">
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
+					<label for="tl_state" class="label">TL State:</label>
+				</div>
+				<div class="manage_buttons">
+				</div>
+				<div class="text" style="display: none;">
+					<div 
+						contenteditable="true" 
+						oncut="return false"
+						onpaste="return false"
+						onkeydown="if(event.metaKey) return true; return false;"
+						class="xp_code json_highlight" 
+						name="tl_state">{{TLState}}</div>
+				</div>
+			</div>
+			{{/TLState}}
+
+			<!-- Diff -->
+			{{#Diff}}
+			<div class="test_block">
+				<div class="block_header">
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
+					<label for="events_diff" class="label">Diff:</label>
+				</div>
+				<div class="manage_buttons">
+				</div>
+				<div class="text" style="display: none;">
+					<div 
+						contenteditable="true" 
+						oncut="return false"
+						onpaste="return false"
+						onkeydown="if(event.metaKey) return true; return false;"
+						class="xp_code json_highlight" 
+						name="events_diff">{{Diff}}</div>
+				</div>
+			</div>
+			{{/Diff}}
+
+			<!-- NormState -->
+			{{#NormState}}
+			<div class="test_block">
+				<div class="block_header">
+					<div class="scrolldown" onclick="toggleTextarea(this)">ᐯ</div>
+					<label for="norm_state" class="label">Final Event State:</label>
+				</div>
+				<div class="manage_buttons">
+				</div>
+				<div class="text" style="display: none;">
+					<div 
+						contenteditable="true" 
+						oncut="return false"
+						onpaste="return false"
+						onkeydown="if(event.metaKey) return true; return false;"
+						class="xp_code json_highlight" 
+						name="norm_state">{{NormState}}</div>
+				</div>
+			</div>
+			{{/NormState}}
+
+			
+
 			<!-- Test Conditions -->
 			<div class="test_block">
 				<div class="block_header">

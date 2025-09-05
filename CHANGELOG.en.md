@@ -1,5 +1,12 @@
 # Change Log
 
+## 3.21.1 (Pre-Release)
+
+- For new versions of KBT, the TABLES_SCHEMA metarunner is supported, which launches a new version of the mktables utility
+- Fixed an error when determining the SIEMJ version on Windows
+- Additional fields were added to the view with integration tests to display information about an unsuccessful launch (appear only with the new version of KBT)
+- Fixed an error in validation of the normalization unit test when using new utilities
+
 ## 3.21.0 (Pre-Release)
 
 - Support for multiple KBT versions with switching via UI

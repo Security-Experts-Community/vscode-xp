@@ -529,7 +529,7 @@ export class Siemj2ConfBuilder extends AbstractSiemjConfBuilder {
     const contract = this.config.getTablesContract();
     const tablesSchemaBuildingSection = `
 [make-tables-schema]
-type=BUILD_TABLES_SCHEMA
+type=TABLES_SCHEMA
 table_list_schema_src=${this.contentRootPath}
 contract=${contract}
 out=\${output_folder}`;
@@ -600,10 +600,10 @@ out=${output}
     );
     const test_pipeline_config = `{
   "graphs": {
-    "normalization": "${formulas}",
-    "correlation": "${corrules}",
-    "aggregation": "${argrules}",
-    "enrichment": "${enrules}"
+    "normalization": ${JSON.stringify(formulas)},
+    "correlation": ${JSON.stringify(corrules)},
+    "aggregation": ${JSON.stringify(argrules)},
+    "enrichment": ${JSON.stringify(enrules)}
   },
   "fields": {
     "exclude-non-taxonomy-fields": true,
@@ -618,12 +618,12 @@ out=${output}
       "aggregation_name"
     ]
   },
-  "root": "${testsRuleFullPath}",
-  "rules-filters": "${this.config.getRulesDirFilters()}",
-  "fpta-defaults": "${table_list_defaults}",
-  "taxonomy": "${this.config.getTaxonomyFullPath()}",
-  "schema": "${table_list_schema}",
-  "appendix": "${this.config.getAppendixFullPath()}"
+  "root": ${JSON.stringify(testsRuleFullPath)},
+  "rules-filters": ${JSON.stringify(this.config.getRulesDirFilters())},
+  "fpta-defaults": ${JSON.stringify(table_list_defaults)},
+  "taxonomy": ${JSON.stringify(this.config.getTaxonomyFullPath())},
+  "schema": ${JSON.stringify(table_list_schema)},
+  "appendix": ${JSON.stringify(this.config.getAppendixFullPath())}
 } 
     `;
 

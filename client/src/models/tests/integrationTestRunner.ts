@@ -14,6 +14,7 @@ import { SiemjManager } from '../siemj/siemjManager';
 import { OperationCanceledException } from '../operationCanceledException';
 import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
+import { RegExpHelper } from '../../helpers/regExpHelper';
 
 export enum CompilationType {
   DontCompile = 'DontCompile',
@@ -353,7 +354,10 @@ export class IntegrationTestRunner {
 
     const outputParser = this.configBuilder.getOutputParser();
     const siemjResult = await outputParser.parse(siemjExecutionResult.output);
-
+    var testRuleFiles = RegExpHelper.getEnrichedCorrTestEventsFileNameNew(siemjResult.rawOutput);
+    executedTests.forEach((test) =>
+      test.setResultFiles(testRuleFiles.get(test.getNumber().toString()))
+    );
     // Все тесты прошли, статусы не проверяем, все тесты зеленые.
     if (siemjResult.testsStatus) {
       executedTests.forEach((it) => it.setStatus(TestStatus.Success));

@@ -30,10 +30,10 @@ export function GetRawSIEMJVersion(config: Configuration): string {
 
 export function GetSIEMJVersion(config: Configuration): SIEMJVersion {
   const result = GetRawSIEMJVersion(config);
-  if (result.includes('siemj 1.')) {
+  if (result.match(/siemj(:?\.exe)? 1\./)) {
     return SIEMJVersion.First;
   } else {
-    if (result.includes('siemj 2.')) {
+    if (result.match(/siemj(:?\.exe)? 2\./)) {
       return SIEMJVersion.Second;
     } else {
       throw new XpException(`Unexpected SIEMJ version: ${result}`);
