@@ -275,7 +275,15 @@ export class Configuration {
 
   public getKbtVersionsDirectory(): string {
     const configuration = this.getWorkspaceConfiguration();
-    return configuration.get<string>('kbtVersionsDirectory');
+    const kbtVersionsDirectory = configuration.get<string>('kbtVersionsDirectory');
+    
+    // If no explicit kbtVersionsDirectory is set, use global storage as default
+    if (!kbtVersionsDirectory) {
+      const globalStorageUri = this.context.globalStorageUri;
+      return vscode.Uri.joinPath(globalStorageUri, 'kbt').fsPath;
+    }
+    
+    return kbtVersionsDirectory;
   }
 
   /**
