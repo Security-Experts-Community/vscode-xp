@@ -67,8 +67,46 @@ export class SetKBTVersionCommand {
       }
     }
 
+    // Store the old version for comparison
+    const oldKbtVersion = config.getKbtVersion();
+    
     config.setKBTVersion(kbtVersion);
     Log.info(`Current KBT version: ${kbtVersion}`);
+
+    // Update kbtBaseDirectory to point to the new version
+    const kbtVersionsDirectory = config.getKbtVersionsDirectory();
+    if (kbtVersionsDirectory) {
+      const newKbtBaseDirectory = join(kbtVersionsDirectory, kbtVersion);
+      try {
+        // Only update if the directory exists
+        if (fs.existsSync(newKbtBaseDirectory)) {
+          const configuration = config.getWorkspaceConfiguration();
+          configuration.update('kbtBaseDirectory', newKbtBaseDirectory, true, false);
+          Log.info(`Updated kbtBaseDirectory to: ${newKbtBaseDirectory}`);
+        }
+      } catch (error) {
+        Log.warn(`Failed to update kbtBaseDirectory: ${error.message}`);
+      }
+    }
+
+    // Update lspServerExecutablePath to point to the new version
+    try {
+      // Use the existing getKBTLSPFullPath method to determine the LSP server path
+      // This ensures consistency with the rest of the codebase
+      const lspServerPath = config.getKBTLSPFullPath();
+      
+      // Check if the path is valid and update the configuration
+      const configuration = config.getWorkspaceConfiguration();
+      if (lspServerPath && fs.existsSync(lspServerPath)) {
+        configuration.update('lspServerExecutablePath', lspServerPath, true, false);
+        Log.info(`Updated lspServerExecutablePath to: ${lspServerPath}`);
+      } else {
+        configuration.update('lspServerExecutablePath', '', true, false);
+        Log.warn(`LSP server not found`);
+      }
+    } catch (error) {
+      Log.warn(`Failed to update lspServerExecutablePath: ${error.message}`);
+    }
 
     Log.debug('-= Updating LSP configuration =-');
 
