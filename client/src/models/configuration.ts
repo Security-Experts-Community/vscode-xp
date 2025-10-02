@@ -85,7 +85,7 @@ export class Configuration {
   public craftLSPi18nTaxonomyPath(): string {
     return path.join(
       this.getKbtBaseDirectory(),
-      'knowledgebase/contracts/taxonomy/i18n/i18n_ru.yaml'
+      'knowledgebase/contracts/taxonomy/i18n/'
     );
   }
 
