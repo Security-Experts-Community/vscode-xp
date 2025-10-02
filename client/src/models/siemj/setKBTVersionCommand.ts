@@ -110,19 +110,11 @@ export class SetKBTVersionCommand {
 
     Log.debug('-= Updating LSP configuration =-');
 
-    const currentLSPTaxonomyPath = config.getLSPTaxonomyPath();
-    Log.debug(`Current LSP taxonomy path: ${currentLSPTaxonomyPath}`);
-    if (config.craftLSPTaxonomyPath() === currentLSPTaxonomyPath) {
-      await config.updateLSPTaxonomyPath();
-      Log.debug(`New LSP taxonomy path: ${config.getLSPTaxonomyPath()}`);
-    }
+    await config.updateLSPTaxonomyPath();
+    Log.debug(`New LSP taxonomy path: ${config.getLSPTaxonomyPath()}`);
 
-    const currentLSPi18nTaxonomyPath = config.getLSPi18nTaxonomyPath();
-    Log.debug(`Current LSP i18n taxonomy path: ${currentLSPi18nTaxonomyPath}`);
-    if (config.craftLSPi18nTaxonomyPath() === currentLSPi18nTaxonomyPath) {
-      await config.updateLSPi18nTaxonomyPath();
-      Log.debug(`New LSP i18n taxonomy path: ${config.getLSPi18nTaxonomyPath()}`);
-    }
+    await config.updateLSPi18nTaxonomyPath();
+    Log.debug(`New LSP i18n taxonomy path: ${config.getLSPi18nTaxonomyPath()}`);
 
     const propertiesFile = join(config.getKbtBaseDirectory(), 'properties');
 
