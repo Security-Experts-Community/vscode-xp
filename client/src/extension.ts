@@ -248,7 +248,7 @@ async function configureLSPClient(
         }
       };
 
-      client = new LanguageClient(command, serverOptions, clientOptions);
+      client = new LanguageClient(command, 'XP Language Server', serverOptions, clientOptions);
 
       return client
         .start()
