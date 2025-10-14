@@ -21,6 +21,7 @@ import { Log } from '../extension';
 export type EncodingType = 'windows-1251' | 'utf-8' | 'utf-16';
 
 export class Configuration {
+  private static autoSelectKBTExecuted = false;
   private constructor(context: vscode.ExtensionContext) {
     this.context = context;
 
@@ -84,7 +85,7 @@ export class Configuration {
   public craftLSPi18nTaxonomyPath(): string {
     return path.join(
       this.getKbtBaseDirectory(),
-      'knowledgebase/contracts/taxonomy/i18n/i18n_ru.yaml'
+      'knowledgebase/contracts/taxonomy/i18n/'
     );
   }
 
@@ -268,14 +269,115 @@ export class Configuration {
   public getKbtBaseDirectoryOld(): string {
     const configuration = this.getWorkspaceConfiguration();
     const basePath = configuration.get<string>('kbtBaseDirectory');
+    
+    // If kbtBaseDirectory is not set, try to auto-select first available KBT
+    if (!basePath) {
+      this.autoSelectKBT();
+      // Get the base path after auto-selection without recursive call
+      const newBasePath = configuration.get<string>('kbtBaseDirectory');
+      if (newBasePath) {
+        return newBasePath;
+      }
+      // Fallback if auto-selection didn't work
+      throw new XpException(this.getMessage('Error.KbtDirectoryPathIsNotSet'));
+    }
+    
     this.checkKbtSetting(configuration);
 
     return basePath;
   }
 
+  /**
+   * Helper method to select the first available KBT version and set the kbtBaseDirectory
+   * if it hasn't been set previously
+   */
+  private selectAndSetKBT(): boolean {
+    try {
+      const kbtVersionsDirectory = this.getKbtVersionsDirectory();
+      
+      // Check if kbtVersionsDirectory exists
+      if (!kbtVersionsDirectory || !fs.existsSync(kbtVersionsDirectory)) {
+        Log.warn('KBT versions directory not found');
+        return false;
+      }
+      
+      // Read the directory contents to find available KBT versions
+      const kbtVersions = fs.readdirSync(kbtVersionsDirectory);
+      
+      // Filter for valid KBT version folders (matching the pattern kbt.x.x)
+      const kbtVersionFolders = kbtVersions.filter((folder) => folder.match(/^kbt(\.\d+)+$/));
+      
+      if (kbtVersionFolders.length === 0) {
+        Log.warn('No KBT version folders found in the KBT versions directory');
+        return false;
+      }
+      
+      // Sort versions to ensure consistent selection (optional)
+      kbtVersionFolders.sort();
+      
+      // Select the first available version
+      const firstKBTVersion = kbtVersionFolders[0];
+      
+      // Set the KBT version in workspace state
+      this.setKBTVersion(firstKBTVersion);
+      
+      // Set the kbtBaseDirectory configuration if not already set
+      const configuration = this.getWorkspaceConfiguration();
+      const kbtBaseDirectory = configuration.get<string>('kbtBaseDirectory');
+      
+      if (!kbtBaseDirectory) {
+        const kbtBasePath = path.join(kbtVersionsDirectory, firstKBTVersion);
+        // Validate that the path actually exists before setting it
+        if (fs.existsSync(kbtBasePath)) {
+          configuration.update('kbtBaseDirectory', kbtBasePath, true, false);
+          Log.info(`Automatically set KBT base directory to: ${kbtBasePath}`);
+          return true;
+        } else {
+          Log.warn(`KBT base path does not exist: ${kbtBasePath}`);
+          return false;
+        }
+      }
+      
+      Log.info(`Automatically selected KBT version: ${firstKBTVersion}`);
+      return true;
+    } catch (error) {
+      Log.warn(`Failed to auto-select KBT: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Automatically selects the first available KBT version and sets the kbtBaseDirectory
+   * if it hasn't been set previously
+   */
+  private autoSelectKBT(): void {
+    try {
+      // Prevent multiple executions
+      if (Configuration.autoSelectKBTExecuted) {
+        return;
+      }
+      
+      const success = this.selectAndSetKBT();
+      if (success) {
+        Configuration.autoSelectKBTExecuted = true;
+      }
+    } catch (error) {
+      Log.warn(`Failed to auto-select KBT: ${error.message}`);
+      Configuration.autoSelectKBTExecuted = true;
+    }
+  }
+
   public getKbtVersionsDirectory(): string {
     const configuration = this.getWorkspaceConfiguration();
-    return configuration.get<string>('kbtVersionsDirectory');
+    const kbtVersionsDirectory = configuration.get<string>('kbtVersionsDirectory');
+    
+    // If no explicit kbtVersionsDirectory is set, use global storage as default
+    if (!kbtVersionsDirectory) {
+      const globalStorageUri = this.context.globalStorageUri;
+      return vscode.Uri.joinPath(globalStorageUri, 'kbt').fsPath;
+    }
+    
+    return kbtVersionsDirectory;
   }
 
   /**
@@ -589,22 +691,9 @@ export class Configuration {
     let fullPath = path.join(this.getSiemSdkDirectoryPath(), 'cli', appName);
     if (!fs.existsSync(fullPath)) {
       Log.warn(
-        `Can't find LSP server executable in KBT directory: '${fullPath}'. Trying to find direct LSP server path in settings`
+        `Can't find LSP server executable in KBT directory: '${fullPath}'.`
       );
-
-      // Try to find direct LSP path setting
-      const directLSPPath = this.getDirectLSPServerExecutablePath();
-      if (!directLSPPath) {
-        Log.warn("Can't find LSP server path direct settings");
-        throw new XpException(this.getMessage('Error.UtilityPathIsIncorrect', fullPath));
-      }
-
-      // Found setting, check if executable presents
-      if (!fs.existsSync(directLSPPath)) {
-        Log.warn(`Can't find LSP server executable by direct setting: '${directLSPPath}'`);
-        throw new XpException(this.getMessage('Error.UtilityPathIsIncorrect', fullPath));
-      }
-      fullPath = directLSPPath;
+      return null;
     }
 
     return fullPath;
@@ -931,6 +1020,68 @@ export class Configuration {
     return lspServerExecutablePath;
   }
 
+  /**
+   * Automatically sets kbtVersionsDirectory if not already set
+   */
+  public autoSetKbtVersionsDirectory(): void {
+    const configuration = this.getWorkspaceConfiguration();
+    const kbtVersionsDirectory = configuration.get<string>('kbtVersionsDirectory');
+    
+    if (!kbtVersionsDirectory) {
+      // Use global storage as default if not explicitly set
+      const globalStorageUri = this.context.globalStorageUri;
+      const defaultKbtVersionsDirectory = vscode.Uri.joinPath(globalStorageUri, 'kbt').fsPath;
+      
+      try {
+        configuration.update('kbtVersionsDirectory', defaultKbtVersionsDirectory, true, false);
+        Log.info(`Automatically set kbtVersionsDirectory to: ${defaultKbtVersionsDirectory}`);
+      } catch (error) {
+        Log.warn(`Failed to automatically set kbtVersionsDirectory: ${error.message}`);
+      }
+    }
+  }
+
+  /**
+   * Automatically sets kbtBaseDirectory if not already set
+   */
+  public autoSetKbtBaseDirectory(): void {
+    const configuration = this.getWorkspaceConfiguration();
+    const kbtBaseDirectory = configuration.get<string>('kbtBaseDirectory');
+    
+    if (!kbtBaseDirectory) {
+      // Try to auto-select KBT if we can find it
+      try {
+        this.selectAndSetKBT();
+      } catch (error) {
+        Log.warn(`Failed to auto-select KBT for kbtBaseDirectory: ${error.message}`);
+      }
+    }
+  }
+
+  /**
+   * Automatically sets lspServerExecutablePath if not already set
+   */
+  public autoSetLspServerExecutablePath(): void {
+    const configuration = this.getWorkspaceConfiguration();
+    const lspServerExecutablePath = configuration.get<string>('lspServerExecutablePath');
+    
+    if (!lspServerExecutablePath) {
+      try {
+        // Try to find the LSP server executable in the KBT directory
+        const fullPath = this.getKBTLSPFullPath();
+        
+        if (fullPath) {
+          configuration.update('lspServerExecutablePath', fullPath, true, false);
+          Log.info(`Automatically set lspServerExecutablePath to: ${fullPath}`);
+        } else {
+          Log.warn('LSP server executable not found');
+        }
+      } catch (error) {
+        Log.warn(`Failed to automatically set lspServerExecutablePath: ${error.message}`);
+      }
+    }
+  }
+
   public getLogLevel(): LogLevel {
     const configuration = this.getWorkspaceConfiguration();
     const logLevel = configuration.get<string>('logLevel');
@@ -1006,7 +1157,6 @@ export class Configuration {
 
     // Порядок обратный по приоритету, так как вторая ошибка появится выше чем первая.
     await this.checkAndCreateOutputDirectory(extensionConfig);
-    this.checkKbtSetting(extensionConfig);
   }
 
   private checkKbtSetting(extensionConfig: vscode.WorkspaceConfiguration) {
