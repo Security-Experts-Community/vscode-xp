@@ -71,6 +71,23 @@ export async function activate(context: ExtensionContext): Promise<void> {
     await UserSettingsManager.init(config);
     // await ToolsManager.init(config);
 
+    // Ensure automatic KBT selection happens early
+    try {
+      // This will trigger auto-selection if needed
+      const kbtBaseDirectory = config.getKbtBaseDirectoryOld();
+    } catch (error) {
+      Log.warn(`Error during KBT auto-selection: ${error.message}`);
+    }
+
+    // Automatically set configuration options if not already set
+    try {
+      config.autoSetKbtVersionsDirectory();
+      config.autoSetKbtBaseDirectory();
+      config.autoSetLspServerExecutablePath();
+    } catch (error) {
+      Log.warn(`Error during automatic configuration setting: ${error.message}`);
+    }
+
     try {
       await config.checkUserSetting();
     } catch (error) {
@@ -231,7 +248,7 @@ async function configureLSPClient(
         }
       };
 
-      client = new LanguageClient(command, serverOptions, clientOptions);
+      client = new LanguageClient(command, 'XP Language Server', serverOptions, clientOptions);
 
       return client
         .start()
