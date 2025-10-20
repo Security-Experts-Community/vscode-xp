@@ -158,8 +158,25 @@ export class Enveloper {
         rawEvent = regExResult[1];
       }
 
+      // Попытка забрать прокинуть SystemTime  в recv_time из события windows, если оно есть
+      try {
+        var raw_system_time = '';
+        const possible_win = JSON.parse(rawEvent);
+        if (possible_win.Event.System.TimeCreated.SystemTime) {
+          raw_system_time = possible_win.Event.System.TimeCreated.SystemTime;
+        }
+      }
+      catch (error) {
+        // Попадаем сюда если не удалось прочитать json и игнорируем
+      }
+      finally {}
+
       // '2012-11-04T14:51:06.157Z'
-      const date = new Date().toISOString();
+      if (raw_system_time != "") {
+        var date = raw_system_time;
+      } else {
+        var date = new Date().toISOString();
+      }
       const uuidSeed = index + 1;
 
       const envelopedRawEvents = {
