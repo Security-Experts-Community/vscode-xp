@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as os from 'os';
 
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
@@ -25,6 +26,9 @@ import { StringHelper } from '../../helpers/stringHelper';
 import { SaveAllCommand } from './command/saveAllCommand';
 import { Aggregation } from '../../models/content/aggregation';
 import { ShowActualEventCommand } from './command/showActualEventCommand';
+import { GetSIEMJVersion, SIEMJVersion } from '../../models/siemj/siemjManager';
+import { transpileModule } from 'typescript';
+import { match } from 'assert';
 
 export class IntegrationTestEditorViewProvider {
   public static readonly viewId = 'IntegrationTestEditorView';
@@ -265,7 +269,7 @@ export class IntegrationTestEditorViewProvider {
           );
 
           let diff = '';
-          let normState = '';
+          let events = '';
           let tlState = '';
 
           try {
@@ -275,28 +279,42 @@ export class IntegrationTestEditorViewProvider {
               );
 
               const tlRegex =
-                /Contents of the table lists \(EnrichmentRule, CorrelationRule, Registry from test conditions\):\s+({.*})/;
+                /Contents of the table lists \(EnrichmentRule, CorrelationRule, Registry from test conditions\):\s+({.*})/s;
               const tlMatch = correlateEventsFileContent.match(tlRegex);
               if (tlMatch && tlMatch.length === 2) {
                 tlState = tlMatch[1];
               }
 
-              const normStateRegex = /[FromEnricher]\s+({.*})\n/;
-              const normStateMatch = correlateEventsFileContent.match(normStateRegex);
-              if (normStateMatch && normStateMatch.length === 2) {
-                const jsonObject = JSON.parse(normStateMatch[1]);
-                normState = JSON.stringify(jsonObject, null, 2);
-              }
+              const eventsPart = correlateEventsFileContent.split('[FromCorrelator]')[0];
+              const lines = eventsPart.split(os.EOL).filter((l) => l.startsWith('[FromEnricher]'));
 
-              const diffRegex =
-                /Different:\s+((:?\s+[\w.]+: ".*?" => ".*?"\s|\s+[\w.]+: \d+ => \d+\s)+)/;
-              const diffMatch = correlateEventsFileContent.match(diffRegex);
-              if (diffMatch && diffMatch.length === 3) {
-                diff = diffMatch[1];
+              for (const l of lines) {
+                const evt = l.replace('[FromEnricher]', '').trim();
+                const jsonObject = JSON.parse(evt);
+                const normState = JSON.stringify(jsonObject, null, 2);
+                events += normState + '\n';
+              }
+              events = events.trim();
+              if (correlateEventsFileContent.includes('Missing:')) {
+                const missingRegex = /(Missing:.*)Event conditions:/s;
+                const diffMatch = correlateEventsFileContent.match(missingRegex);
+                if (diffMatch && diffMatch.length === 2) {
+                  diff = diffMatch[1];
+                }
+              }
+              if (correlateEventsFileContent.includes('Different:')) {
+                const diffRegex =
+                  /Different:\s+((:?\s+[\w.]+: ".*?" => ".*?"\s|\s+[\w.]+: \d+ => \d+\s)+)/s;
+                const diffMatch = correlateEventsFileContent.match(diffRegex);
+                if (diffMatch && diffMatch.length === 3) {
+                  diff = diffMatch[1];
+                }
               }
             }
           } catch (e) {}
 
+          // TODO: extend logic for Enrichment rules tests
+          const actualEventFound = await this.searchForActualEvent(it);
           plain['IntegrationTests'].push({
             TestNumber: it.getNumber(),
             RawEvents: rawEvents,
@@ -306,10 +324,10 @@ export class IntegrationTestEditorViewProvider {
             JsonedTestObject: jsonedTestObject,
             TestStatus: this.testStatusToUiStyle(it),
             Diff: diff,
-            NormState: normState,
+            NormState: events,
             TLState: tlState,
             IsFailed: it.getStatus() === TestStatus.Failed,
-            CanGetExpectedEvent: this.canGetExpectedEvent(it)
+            CanGetExpectedEvent: this.canGetExpectedEvent(it, actualEventFound)
           });
         }
       }
@@ -326,17 +344,56 @@ export class IntegrationTestEditorViewProvider {
     }
   }
 
+  private async searchForActualEvent(it: IntegrationTest): Promise<boolean> {
+    const ruleName = this.rule.getName();
+    if (!fs.existsSync(this.testsTmpFilesPath)) {
+      return false;
+    }
+    try {
+      // Получаем фактическое событие.
+      var actualEventsFilePath = TestHelper.getEnrichedCorrEventFilePath(
+        this.config,
+        this.testsTmpFilesPath,
+        ruleName,
+        it.getNumber()
+      );
+    } catch (e) {
+      return false;
+    }
+
+    if (!actualEventsFilePath || !fs.existsSync(actualEventsFilePath)) {
+      return false;
+    }
+
+    const actualEventsString = await FileSystemHelper.readContentFile(actualEventsFilePath);
+    if (!actualEventsString) {
+      return false;
+    }
+
+    const siemjVersion = GetSIEMJVersion(this.config);
+    if (siemjVersion == SIEMJVersion.Second) {
+      if (!actualEventsString.match(/\[FromCorrelator\]/)) {
+        return false;
+      }
+      return true;
+    }
+    return true;
+  }
+
   /**
    * Функция возвращает значение, показывающее возможность получить ожидаемое событие
    * @param it интеграционный тест
    * @returns возможно ли для данного теста получить ожидаемое событие
    */
-  private canGetExpectedEvent(it: IntegrationTest): boolean {
+  private canGetExpectedEvent(it: IntegrationTest, actualEventFound?: boolean): boolean {
     if (TestHelper.isNegativeTest(it.getTestCode())) {
       return false;
     }
 
     if (it.getStatus() === TestStatus.Success || it.getStatus() === TestStatus.Failed) {
+      if (actualEventFound !== undefined) {
+        return actualEventFound;
+      }
       return true;
     }
 

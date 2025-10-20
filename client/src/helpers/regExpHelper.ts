@@ -10,7 +10,7 @@ export class RegExpHelper {
     return /expect\s*(\d+|not)\s*{(.*)}/gm;
   }
 
-  public static getEnrichedNormTestEventsFileName(ruleName: string, testNumber?: number): RegExp {
+  public static getEnrichedNormTestEventsFileNameV1(ruleName: string, testNumber?: number): RegExp {
     let regExpTemplate: string;
     if (testNumber) {
       regExpTemplate = `.+?${ruleName}.+?raw_events_${testNumber}_norm_(agg_)?enr\.json`;
@@ -21,12 +21,23 @@ export class RegExpHelper {
     return RegExp(regExpTemplate, 'i');
   }
 
-  public static getEnrichedCorrTestEventsFileName(ruleName: string, testNumber?: number): RegExp {
+  public static getEnrichedCorrTestEventsFileNameV1(ruleName: string, testNumber?: number): RegExp {
     let regExpTemplate: string;
     if (testNumber) {
       regExpTemplate = `.+?${ruleName}.+?raw_events_${testNumber}_norm_(agg_)?enr_cor(r)?_(agg_)?enr\.json`;
     } else {
       regExpTemplate = `.+?${ruleName}.+?raw_events_\\d+_norm_(agg_)?enr_cor(r)?_(agg_)?enr\.json`;
+    }
+
+    return RegExp(regExpTemplate, 'i');
+  }
+
+  public static getEnrichedCorrTestEventsFileNameV2(ruleName: string, testNumber?: number): RegExp {
+    let regExpTemplate: string;
+    if (testNumber) {
+      regExpTemplate = `.*test_conds_${testNumber}_result.txt`;
+    } else {
+      regExpTemplate = `.*test_conds_(\d+)_result.txt`;
     }
 
     return RegExp(regExpTemplate, 'i');

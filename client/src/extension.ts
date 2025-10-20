@@ -134,6 +134,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
     RetroCorrelationViewController.init(config);
     CommonCommands.init(config);
 
+    config.setSIEMJVersion();
+
     siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(
       XPPackingTaskProvider.Type,
       new XPPackingTaskProvider(config)

@@ -13,6 +13,8 @@ import { Correlation, CorrelationEvent } from '../models/content/correlation';
 import { ArgumentException } from '../models/argumentException';
 import { JsHelper } from './jsHelper';
 import { Normalization } from '../models/content/normalization';
+import { Configuration } from '../models/configuration';
+import { GetSIEMJVersion, SIEMJVersion } from '../models/siemj/siemjManager';
 
 export type EventMimeType =
   | 'application/x-pt-eventlog'
@@ -195,6 +197,7 @@ export class TestHelper {
    * @param testNumber
    */
   public static getEnrichedNormEventFilePath(
+    config: Configuration,
     integrationTestsTmpDirPath: string,
     ruleName: string,
     testNumber: number
@@ -202,7 +205,15 @@ export class TestHelper {
     // c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
     const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
     const resultEvents = files.filter((fp) => {
-      return RegExpHelper.getEnrichedNormTestEventsFileName(ruleName, testNumber).test(fp);
+      const siemjVersion = GetSIEMJVersion(config);
+      switch (siemjVersion) {
+        case SIEMJVersion.First:
+          return RegExpHelper.getEnrichedNormTestEventsFileNameV1(ruleName, testNumber).test(fp);
+        case SIEMJVersion.Second:
+          return RegExpHelper.getEnrichedCorrTestEventsFileNameV2(ruleName, testNumber).test(fp);
+        default:
+          throw new XpException('Unknown SIEMJ version.');
+      }
     });
 
     if (resultEvents.length === 1) {
@@ -224,14 +235,22 @@ export class TestHelper {
    * @param testNumber
    */
   public static getEnrichedCorrEventFilePath(
+    config: Configuration,
     integrationTestsTmpDirPath: string,
     ruleName: string,
     testNumber: number
   ): string {
-    // c:\Users\username\AppData\Local\Temp\eXtraction and Processing\eca77764-57c3-519a-3ad1-db70584b924e\2023-10-02_18-43-35_unknown_sdk_gbto4rfk\RuleName\tests\
     const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
     const resultEvents = files.filter((fp) => {
-      return RegExpHelper.getEnrichedCorrTestEventsFileName(ruleName, testNumber).test(fp);
+      const siemjVersion = GetSIEMJVersion(config);
+      switch (siemjVersion) {
+        case SIEMJVersion.First:
+          return RegExpHelper.getEnrichedCorrTestEventsFileNameV1(ruleName, testNumber).test(fp);
+        case SIEMJVersion.Second:
+          return RegExpHelper.getEnrichedCorrTestEventsFileNameV2(ruleName, testNumber).test(fp);
+        default:
+          throw new XpException('Unknown SIEMJ version.');
+      }
     });
 
     if (resultEvents.length === 1) {
@@ -247,6 +266,46 @@ export class TestHelper {
     return undefined;
   }
 
+  public static extractEventsFromResultString(
+    config: Configuration,
+    actualEventsString: string,
+    ruleName: string,
+    testNumber: number
+  ): string[] {
+    const siemjVersion = GetSIEMJVersion(config);
+    if (siemjVersion == SIEMJVersion.Second) {
+      if (!actualEventsString.match(/\[FromCorrelator\]/)) {
+        throw new XpException(
+          `Фактическое событие интеграционного теста №${testNumber} правила ${ruleName} пусто`
+        );
+      }
+      const eventsPart = actualEventsString.split('[FromCorrelator]')[1];
+      const lines = eventsPart.split(os.EOL).filter((l) => l.startsWith('[FromEnricher]'));
+
+      if (lines.length != 1) {
+        throw new XpException(
+          `Неожиданная структура файла с результатами запуска теста ${testNumber} правила ${ruleName}`
+        );
+      }
+
+      const evt = lines[0].replace('[FromEnricher]', '').trim();
+      const jsonObject = JSON.parse(evt);
+      return [JSON.stringify(jsonObject)];
+
+      // const normStateRegex = /\[FromCorrelator\].*\[FromEnricher\]\s+({.*})\n/gs;
+      // const normStateMatch = [...actualEventsString.matchAll(normStateRegex)];
+
+      // //TODO: check if more than one correlation event
+      // if (normStateMatch && normStateMatch.length === 1) {
+      //   const jsonObject = JSON.parse(normStateMatch[0][1]);
+      //   return [JSON.stringify(jsonObject)];
+      // }
+    } else {
+      return actualEventsString.split(os.EOL).filter((l) => l);
+    }
+  }
+
+  // TODO: delete unused function
   public static getCorrEventEventFilePath(
     integrationTestsTmpDirPath: string,
     ruleName: string,

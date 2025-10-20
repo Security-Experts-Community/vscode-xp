@@ -69,7 +69,7 @@ export class SetKBTVersionCommand {
 
     // Store the old version for comparison
     const oldKbtVersion = config.getKbtVersion();
-    
+
     config.setKBTVersion(kbtVersion);
     Log.info(`Current KBT version: ${kbtVersion}`);
 
@@ -94,7 +94,7 @@ export class SetKBTVersionCommand {
       // Use the existing getKBTLSPFullPath method to determine the LSP server path
       // This ensures consistency with the rest of the codebase
       const lspServerPath = config.getKBTLSPFullPath();
-      
+
       // Check if the path is valid and update the configuration
       const configuration = config.getWorkspaceConfiguration();
       if (lspServerPath && fs.existsSync(lspServerPath)) {
@@ -124,6 +124,8 @@ export class SetKBTVersionCommand {
         Log.info(`Choosed KBT utilities versions:\n${kbtProperties.trim()}`);
       }
     }
+
+    config.setSIEMJVersion();
 
     item.text = kbtVersion;
     // Подсказка при наведении.
