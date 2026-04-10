@@ -1,5 +1,12 @@
 # Change Log
 
+## 3.21.3 (Pre-Release)
+
+- Merged PR for updating envelope fields (special thanks to @zatraahali)
+- Merged PR for automatically selecting the KBT version (special thanks to @antstas)
+- The logic for receiving correlation events for a new KBT version when clicking buttons in integration tests has been updated
+- The SIEMJ version is now remembered when loading the plugin and changing KBT to avoid multiple unnecessary SIEMJ launches
+
 ## 3.21.2 (Pre-Release)
 
 - Updated tag when wrapping in an envelope, now the value 'vscode_xp' is set

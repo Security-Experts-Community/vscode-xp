@@ -12,6 +12,7 @@ import { XpException } from '../../../models/xpException';
 import { Log } from '../../../extension';
 import { FileSystemException } from '../../../models/fileSystemException';
 import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
+import { GetSIEMJVersion, SIEMJVersion } from '../../..//models/siemj/siemjManager';
 
 export class ShowTestResultsDiffCommand extends Command {
   constructor(private params: IntegrationTestParams) {
@@ -81,11 +82,14 @@ export class ShowTestResultsDiffCommand extends Command {
     await FileSystemHelper.writeContentFile(expectedEventTestFilePath, formattedExpectedEvent);
 
     // Получаем фактическое событие.
-    const actualEventsFilePath = TestHelper.getEnrichedCorrEventFilePath(
+
+    var actualEventsFilePath = TestHelper.getEnrichedCorrEventFilePath(
+      this.params.config,
       this.params.tmpDirPath,
       ruleName,
       this.params.testNumber
     );
+
     if (!actualEventsFilePath) {
       throw new XpException(
         `Результаты интеграционного теста №${this.params.testNumber} правила ${ruleName} не найдены`
@@ -101,14 +105,21 @@ export class ShowTestResultsDiffCommand extends Command {
 
     // Событие может прилетать не одно
     const actualEventsString = await FileSystemHelper.readContentFile(actualEventsFilePath);
-    if (!actualEventsString) {
+
+    const actualEvents = TestHelper.extractEventsFromResultString(
+      this.params.config,
+      actualEventsString,
+      ruleName,
+      this.params.testNumber
+    );
+
+    if (!actualEvents) {
       throw new XpException(
         `Фактическое событий интеграционного теста №${this.params.testNumber} правила ${ruleName} пусто`
       );
     }
 
-    const actualEvents = actualEventsString.split(os.EOL).filter((l) => l);
-
+    // TODO: check if suitable for new logic
     // Отбираем ожидаемое событие по имени правила
     // const actualFilteredEvents = TestHelper.filterCorrelationEvents(actualEvents, ruleName);
     let actualFilteredEvents = actualEvents;

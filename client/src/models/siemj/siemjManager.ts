@@ -29,15 +29,14 @@ export function GetRawSIEMJVersion(config: Configuration): string {
 }
 
 export function GetSIEMJVersion(config: Configuration): SIEMJVersion {
-  const result = GetRawSIEMJVersion(config);
-  if (result.match(/siemj(:?\.exe)? 1\./)) {
-    return SIEMJVersion.First;
-  } else {
-    if (result.match(/siemj(:?\.exe)? 2\./)) {
+  const version = config.getCurrentSIEMJVersion();
+  switch (version) {
+    case '1':
+      return SIEMJVersion.First;
+    case '2':
       return SIEMJVersion.Second;
-    } else {
-      throw new XpException(`Unexpected SIEMJ version: ${result}`);
-    }
+    default:
+      throw new XpException(`Unexpected SIEMJ version: ${version}`);
   }
 }
 
@@ -301,7 +300,7 @@ export class SiemjManager {
         // raw_events_1_norm_enr_cor(r)?_enr.json
         const files = FileSystemHelper.getRecursiveFilesSync(integrationTestsTmpDirPath);
         const correlatedEventFilePaths = files.filter((fp) => {
-          return RegExpHelper.getEnrichedCorrTestEventsFileName(rule.getName()).test(fp);
+          return RegExpHelper.getEnrichedCorrTestEventsFileNameV1(rule.getName()).test(fp);
         });
 
         if (correlatedEventFilePaths.length === 0) {

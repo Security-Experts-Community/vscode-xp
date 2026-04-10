@@ -183,11 +183,11 @@
 					{{#CanGetExpectedEvent}}
 						<input name="update_expect_event" type="button" value="{{Locale.GetExpectedEvent}}">
 						<input name="show_actual_event" type="button" value="{{Locale.ShowActualEvent}}">
-					{{/CanGetExpectedEvent}}
 					<!-- Сравнить полученные результаты можно только если тест прошёл неуспешно -->
 					{{#IsFailed}}
 						<input id="open_result_diff" type="button" value="{{Locale.CompareResults}}">
 					{{/IsFailed}}
+					{{/CanGetExpectedEvent}}
 					<!-- <input id="clean_test_button" type="button" value="{{Locale.ClearExpectedEvent}}" alt="Исключает из кода теста технические поля события"> -->
 				</div>
 

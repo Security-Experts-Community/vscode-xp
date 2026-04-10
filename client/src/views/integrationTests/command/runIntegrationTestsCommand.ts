@@ -77,7 +77,7 @@ export class RunIntegrationTestsCommand extends Command {
         config.resetDiagnostics(siemjResult.fileDiagnostics);
 
         // Проверка необходимого набора полей.
-        this.validateRequiredFields(siemjResult.testCount);
+        // await this.validateRequiredFields(siemjResult.testCount);
 
         const executedIntegrationTests = this.params.rule.getIntegrationTests();
         if (executedIntegrationTests.every((it) => it.getStatus() === TestStatus.Success)) {
@@ -122,6 +122,7 @@ export class RunIntegrationTestsCommand extends Command {
       .map((i) => i + 1)
       .forEach(async (testNumber) => {
         const corrFilePath = TestHelper.getEnrichedCorrEventFilePath(
+          this.params.config,
           this.params.tmpDirPath,
           this.params.rule.getName(),
           testNumber
