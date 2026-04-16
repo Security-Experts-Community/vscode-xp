@@ -132,7 +132,7 @@ export class GetExpectedEventCommand {
         fastTest.setRule(this.params.rule);
 
         // Специальный тест быстрого теста.
-        const testRunner = this.params.rule.getUnitTestRunner();
+        const testRunner = this.params.rule.getUnitTestRunner(this.params.config);
         const resultTest = await testRunner.run(fastTest);
 
         if (resultTest.getStatus() === TestStatus.Failed) {
@@ -218,7 +218,12 @@ export class GetExpectedEventCommand {
       );
     }
 
-    const actualEvents = actualEventsString.split(os.EOL).filter((l) => l);
+    const actualEvents = TestHelper.extractEventsFromResultString(
+      this.params.config,
+      actualEventsString,
+      ruleName,
+      this.params.test.getNumber()
+    );
 
     let expectedFilteredEvents: string[];
     if (rule instanceof Correlation) {
@@ -256,6 +261,7 @@ export class GetExpectedEventCommand {
 
     if (rule instanceof Correlation) {
       return TestHelper.getEnrichedCorrEventFilePath(
+        this.params.config,
         this.params.tmpDirPath,
         ruleName,
         this.params.test.getNumber()
@@ -265,6 +271,7 @@ export class GetExpectedEventCommand {
     if (rule instanceof Enrichment) {
       // Проверяем сначала нормализованное обогащенное событие
       const enrichedNormFilePath = TestHelper.getEnrichedNormEventFilePath(
+        this.params.config,
         this.params.tmpDirPath,
         ruleName,
         this.params.test.getNumber()
@@ -277,6 +284,7 @@ export class GetExpectedEventCommand {
 
       // Может быть обогащено нормализованное событие, либо корреляция
       const enrichedCorrFilePath = TestHelper.getEnrichedCorrEventFilePath(
+        this.params.config,
         this.params.tmpDirPath,
         ruleName,
         this.params.test.getNumber()

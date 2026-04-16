@@ -163,10 +163,21 @@ export class LocalizationEditorViewProvider {
     const extensionBaseUri = this.view.webview.asWebviewUri(resourcesUri);
 
     const locExamples = this.rule.getLocalizationExamples();
+
+    let ruDescription = this.rule.getRuDescription();
+    if (!ruDescription) {
+      ruDescription = 'Заполните описание';
+    }
+
+    let enDescription = this.rule.getEnDescription();
+    if (!enDescription) {
+      enDescription = 'Fill in the description';
+    }
+
     const templatePlainObject = {
       RuleName: this.rule.getName(),
-      RuDescription: this.rule.getRuDescription(),
-      EnDescription: this.rule.getEnDescription(),
+      RuDescription: ruDescription,
+      EnDescription: enDescription,
       Localizations: plainLocalizations,
       ExtensionBaseUri: extensionBaseUri,
       LocalizationExamples: locExamples,

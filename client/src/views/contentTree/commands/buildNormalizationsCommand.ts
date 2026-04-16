@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 import { SiemjConfigHelper } from '../../../models/siemj/siemjConfigHelper';
 import { SiemJOutputParser } from '../../../models/siemj/siemJOutputParser';
 import { Configuration } from '../../../models/configuration';
-import { SiemjConfBuilder } from '../../../models/siemj/siemjConfigBuilder';
 import { XpException } from '../../../models/xpException';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { Log } from '../../../extension';
@@ -86,13 +85,15 @@ export class BuildNormalizationsCommand extends ViewCommand {
           } finally {
             const tmpPath = this.config.getTmpDirectoryPath(rootFolder);
             try {
-              // Очищаем временные файлы.
-              if (fs.lstatSync(tmpPath).isDirectory()) {
-                await fs.promises.rmdir(tmpPath, { recursive: true });
-              } else {
-                await fs.promises.access(tmpPath).then(() => {
-                  return fs.promises.unlink(tmpPath);
-                });
+              if (fs.existsSync(tmpPath)) {
+                // Очищаем временные файлы.
+                if (fs.lstatSync(tmpPath).isDirectory()) {
+                  await fs.promises.rmdir(tmpPath, { recursive: true });
+                } else {
+                  await fs.promises.access(tmpPath).then(() => {
+                    return fs.promises.unlink(tmpPath);
+                  });
+                }
               }
             } catch (e) {
               Log.warn('Очистка временных файлов', e);
@@ -112,10 +113,9 @@ export class BuildNormalizationsCommand extends ViewCommand {
       if (!fs.existsSync(outputDirectory)) {
         fs.mkdirSync(outputDirectory, { recursive: true });
       }
-
-      const configBuilder = new SiemjConfBuilder(config, rootPath);
-      configBuilder.addNormalizationsGraphBuilding();
-
+      const siemjManager = new SiemjManager(this.config);
+      const configBuilder = siemjManager.getConfigBuilder(rootPath);
+      configBuilder.addNormalizationsGraphBuilding(true);
       const siemjConfContent = configBuilder.build();
       return { packagesRoot: rootFolder, configContent: siemjConfContent };
     });

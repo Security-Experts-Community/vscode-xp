@@ -1,5 +1,42 @@
 # Change Log
 
+## 3.21.3 (Pre-Release)
+
+- Merged PR for updating envelope fields (special thanks to @zatraahali)
+- Merged PR for automatically selecting the KBT version (special thanks to @antstas)
+- The logic for receiving correlation events for a new KBT version when clicking buttons in integration tests has been updated
+- The SIEMJ version is now remembered when loading the plugin and changing KBT to avoid multiple unnecessary SIEMJ launches
+
+## 3.21.2 (Pre-Release)
+
+- Updated tag when wrapping in an envelope, now the value 'vscode_xp' is set
+- Added scope_id field when wrapping a raw event in an envelope
+- Added default values for descriotion in localizations of correlation and normalization rules
+- Temporarily disabled checking that descriptions in localization are not empty
+
+## 3.21.1 (Pre-Release)
+
+- For new versions of KBT, the TABLES_SCHEMA metarunner is supported, which launches a new version of the mktables utility
+- Fixed an error when determining the SIEMJ version on Windows
+- Additional fields were added to the view with integration tests to display information about an unsuccessful launch (appear only with the new version of KBT)
+- Fixed an error in validation of the normalization unit test when using new utilities
+
+## 3.21.0 (Pre-Release)
+
+- Support for multiple KBT versions with switching via UI
+- Fields for paths required for a new LSP server have appeared in the settings
+- Automatic update of LSP server settings when changing the KBT version
+- New utilities and config for SIEMJ are supported
+
+## 3.20.4 (Release)
+
+- Returned to a single tab with unit tests due to caching the rule when opening webview
+- Added a warning dialog when attempting to open unit tests of another normalization formula
+- Fixed the issue of double hover from Language Server
+- Fixed the algorithm for generating the localization rule identifier for normalizations
+- Changes in rule templates
+- Updated the MITRE ATT&CK matrix to version 17
+
 ## 3.20.3 (Release)
 
 - Fixed position of compositeFields to the complex_key list

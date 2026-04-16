@@ -41,6 +41,7 @@ import { OpenTableCommand } from './commands/openTableCommand';
 import { CommandHelper } from '../../helpers/commandHelper';
 import { SortHelper } from '../../helpers/sortHelper';
 import { Log } from '../../extension';
+import { GetSIEMJVersion } from '../../models/siemj/siemjManager';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeBaseItem> {
   static async init(config: Configuration, knowledgebaseDirectoryPath: string): Promise<void> {
@@ -252,7 +253,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 
     context.subscriptions.push(
       vscode.commands.registerCommand(ContentTreeProvider.buildAllCommand, async () => {
-        const parser = new SiemJOutputParser(config);
+        const parser = new SiemJOutputParser(config, GetSIEMJVersion(config));
         const command = new BuildAllGraphsAndTableListsCommand(config, parser);
         await CommandHelper.singleExecutionCommand(command);
       })
@@ -260,7 +261,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 
     context.subscriptions.push(
       vscode.commands.registerCommand(ContentTreeProvider.buildLocalizationsCommand, async () => {
-        const parser = new SiemJOutputParser(config);
+        const parser = new SiemJOutputParser(config, GetSIEMJVersion(config));
         const command = new BuildLocalizationsCommand(config, { outputParser: parser });
         await CommandHelper.singleExecutionCommand(command);
       })
@@ -268,7 +269,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 
     context.subscriptions.push(
       vscode.commands.registerCommand(ContentTreeProvider.buildNormalizationsCommand, async () => {
-        const parser = new SiemJOutputParser(config);
+        const parser = new SiemJOutputParser(config, GetSIEMJVersion(config));
         const command = new BuildNormalizationsCommand(config, parser);
         await CommandHelper.singleExecutionCommand(command);
       })
@@ -276,7 +277,7 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 
     context.subscriptions.push(
       vscode.commands.registerCommand(ContentTreeProvider.buildWldCommand, async () => {
-        const parser = new SiemJOutputParser(config);
+        const parser = new SiemJOutputParser(config, GetSIEMJVersion(config));
         const command = new BuildWldCommand(config, parser);
         await CommandHelper.singleExecutionCommand(command);
       })

@@ -1,11 +1,16 @@
 import * as vscode from 'vscode';
 
+export interface IResultTestFiles {
+  detailedReportFilePath: string;
+  actualEventsFilePath: string;
+}
+
 export class RegExpHelper {
   public static getExpectSectionRegExp(): RegExp {
     return /expect\s*(\d+|not)\s*{(.*)}/gm;
   }
 
-  public static getEnrichedNormTestEventsFileName(ruleName: string, testNumber?: number): RegExp {
+  public static getEnrichedNormTestEventsFileNameV1(ruleName: string, testNumber?: number): RegExp {
     let regExpTemplate: string;
     if (testNumber) {
       regExpTemplate = `.+?${ruleName}.+?raw_events_${testNumber}_norm_(agg_)?enr\.json`;
@@ -16,7 +21,7 @@ export class RegExpHelper {
     return RegExp(regExpTemplate, 'i');
   }
 
-  public static getEnrichedCorrTestEventsFileName(ruleName: string, testNumber?: number): RegExp {
+  public static getEnrichedCorrTestEventsFileNameV1(ruleName: string, testNumber?: number): RegExp {
     let regExpTemplate: string;
     if (testNumber) {
       regExpTemplate = `.+?${ruleName}.+?raw_events_${testNumber}_norm_(agg_)?enr_cor(r)?_(agg_)?enr\.json`;
@@ -25,6 +30,44 @@ export class RegExpHelper {
     }
 
     return RegExp(regExpTemplate, 'i');
+  }
+
+  public static getEnrichedCorrTestEventsFileNameV2(ruleName: string, testNumber?: number): RegExp {
+    let regExpTemplate: string;
+    if (testNumber) {
+      regExpTemplate = `.*test_conds_${testNumber}_result.txt`;
+    } else {
+      regExpTemplate = `.*test_conds_(\d+)_result.txt`;
+    }
+
+    return RegExp(regExpTemplate, 'i');
+  }
+
+  public static getEnrichedCorrTestEventsFileNameNew(
+    consoleOutput: string
+  ): Map<string, IResultTestFiles> {
+    var resulults = new Map<string, IResultTestFiles>();
+
+    const detaledReportRegex = /Detailed report: (.*test_conds_(\d+)_result.txt)/g;
+    for (const fileInfo of [...consoleOutput.matchAll(detaledReportRegex)]) {
+      const testNumber = fileInfo[2];
+      const detailedReportFilePath = fileInfo[1];
+      if (!resulults.has(testNumber)) {
+        resulults.set(testNumber, { detailedReportFilePath: '', actualEventsFilePath: '' });
+      }
+      resulults.get(testNumber).detailedReportFilePath = detailedReportFilePath;
+    }
+
+    const actualEventsRegex = /Actual events: (.*test_conds_(\d+)_events.txt)/g;
+    for (const fileInfo of [...consoleOutput.matchAll(actualEventsRegex)]) {
+      const testNumber = fileInfo[2];
+      const actualEventsFilePath = fileInfo[1];
+      if (!resulults.has(testNumber)) {
+        resulults.set(testNumber, { detailedReportFilePath: '', actualEventsFilePath: '' });
+      }
+      resulults.get(testNumber).actualEventsFilePath = actualEventsFilePath;
+    }
+    return resulults;
   }
 
   public static getCorrTestEventsFileName(ruleName: string, testNumber?: number): RegExp {
@@ -58,6 +101,15 @@ export class RegExpHelper {
     }
 
     return jsons;
+  }
+
+  public static parseJsonsFromMultilineStringSIEMJ2(str: string): string {
+    const regExp = /^Event (\{[\s\S]+\}):/gm;
+    const currResult = regExp.exec(str);
+    if (currResult.length == 2) {
+      return currResult[1];
+    }
+    return '';
   }
 
   /**

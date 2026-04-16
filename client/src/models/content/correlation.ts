@@ -10,12 +10,12 @@ import { RuleBaseItem } from './ruleBaseItem';
 import { CorrelationUnitTest } from '../tests/correlationUnitTest';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
-import { KbHelper } from '../../helpers/kbHelper';
 import { Configuration } from '../configuration';
 import { ContentHelper } from '../../helpers/contentHelper';
 import { BaseUnitTest } from '../tests/baseUnitTest';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { CorrelationUnitTestsRunner } from '../tests/correlationUnitTestsRunner';
+import { CorrelationUnitTestsRunnerViaEvtTests } from '../tests/correlationUnitTestsRunnerViaEvtTests';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { CorrelationUnitTestOutputParser } from '../tests/correlationUnitTestOutputParser';
 import { XpException } from '../xpException';
@@ -24,6 +24,8 @@ import { MetaInfoEventDescription } from '../metaInfo/metaInfoEventDescription';
 import { XPObjectType } from './xpObjectType';
 import { FileSystemException } from '../fileSystemException';
 import { ParserHelper } from '../../helpers/parserHelper';
+
+import { GetSIEMJVersion, SIEMJVersion } from '../siemj/siemjManager';
 
 export class CorrelationEvent {
   correlation_name: string;
@@ -46,9 +48,19 @@ export class Correlation extends RuleBaseItem {
     return new CorrelationUnitTestOutputParser();
   }
 
-  public getUnitTestRunner(): UnitTestRunner {
+  public getUnitTestRunner(config: Configuration): UnitTestRunner {
     const outputParser = this.getUnitTestOutputParser();
-    return new CorrelationUnitTestsRunner(Configuration.get(), outputParser);
+
+    const siemjVersion = GetSIEMJVersion(config);
+
+    switch (siemjVersion) {
+      case SIEMJVersion.First:
+        return new CorrelationUnitTestsRunner(Configuration.get(), outputParser);
+      case SIEMJVersion.Second:
+        return new CorrelationUnitTestsRunnerViaEvtTests(Configuration.get(), outputParser);
+      default:
+        vscode.window.showErrorMessage(`Ошибка определения версии SIEMJ: ${siemjVersion}`);
+    }
   }
   public reloadUnitTests(): void {
     const unitTests = CorrelationUnitTest.parseFromRuleDirectory(this);

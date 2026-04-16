@@ -12,6 +12,8 @@
 !package.nls.json
 !package.nls.*.json
 
+!language-configuration.json 
+
 !resources/**
 !syntaxes/**
 !tools/**
