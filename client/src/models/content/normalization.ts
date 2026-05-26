@@ -9,6 +9,7 @@ import { BaseUnitTest } from '../tests/baseUnitTest';
 import { NormalizationUnitTest } from '../tests/normalizationUnitTest';
 import { UnitTestRunner } from '../tests/unitTestsRunner';
 import { NormalizationUnitTestsRunner } from '../tests/normalizationUnitTestRunner';
+import { NormalizationUnitTestsRunnerViaEvtTests } from '../tests/normalizationUnitTestsRunnerViaEvtTests';
 import { Configuration } from '../configuration';
 import { UnitTestOutputParser } from '../tests/unitTestOutputParser';
 import { NormalizationUnitTestOutputParser } from '../tests/normalizationUnitTestOutputParser';
@@ -16,6 +17,7 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { XPObjectType } from './xpObjectType';
 import { ContentHelper } from '../../helpers/contentHelper';
 import { XpException } from '../xpException';
+import { GetSIEMJVersion, SIEMJVersion } from '../siemj/siemjManager';
 
 export class Normalization extends RuleBaseItem {
   protected getLocalizationPrefix(): string {
@@ -67,8 +69,16 @@ export class Normalization extends RuleBaseItem {
   }
 
   public getUnitTestRunner(): UnitTestRunner {
+    const config = Configuration.get();
     const outputParser = this.getUnitTestOutputParser();
-    return new NormalizationUnitTestsRunner(Configuration.get(), outputParser);
+    switch (GetSIEMJVersion(config)) {
+      case SIEMJVersion.First:
+        return new NormalizationUnitTestsRunner(config, outputParser);
+      case SIEMJVersion.Second:
+        return new NormalizationUnitTestsRunnerViaEvtTests(config, outputParser);
+      default:
+        return new NormalizationUnitTestsRunner(config, outputParser);
+    }
   }
 
   public reloadUnitTests(): void {
