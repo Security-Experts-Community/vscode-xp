@@ -78,25 +78,17 @@ export class Configuration {
     const siemjPath = this.getSiemjPath();
     const result = ProcessHelper.readProcessArgsOutputSync(siemjPath, ['-v'], 'utf8').trim();
 
-    // Диагностика: показываем сырой вывод, чтобы было ясно, что распарсили.
     Log.info(`SIEMJ version probe: '${siemjPath} -v' raw output: "${result}"`);
 
-    // "siemj 2.1.542 (build ...)" и т.п. — ищем первую токенизированную мажорную версию.
-    const versionMatch = result.match(/\b(\d+)\.\d+(?:\.\d+)?/);
-    if (!versionMatch) {
+    if (result.match(/siemj(:?\.exe)? 1\./)) {
+      this.SIEMJVersion = '1';
+    } else if (result.match(/siemj(:?\.exe)? 2\./)) {
+      this.SIEMJVersion = '2';
+    } else {
       throw new XpException(`Unexpected SIEMJ version: ${result}`);
     }
 
-    const major = versionMatch[1];
-    if (major === '1') {
-      this.SIEMJVersion = '1';
-    } else if (major === '2') {
-      this.SIEMJVersion = '2';
-    } else {
-      throw new XpException(`Unsupported SIEMJ major version: ${major} (raw: ${result})`);
-    }
-
-    Log.info(`SIEMJ version detected: major=${major} → SIEMJVersion=${this.SIEMJVersion}`);
+    Log.info(`SIEMJ version detected: SIEMJVersion=${this.SIEMJVersion}`);
   }
 
   public getLSPTaxonomyPath(): string {
