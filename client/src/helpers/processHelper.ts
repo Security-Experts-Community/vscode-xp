@@ -44,10 +44,6 @@ export class ProcessHelper {
       encoding
     });
 
-    if (childProcess.status != 0) {
-      return childProcess.stdout;
-    }
-
     return childProcess.stdout;
   }
 

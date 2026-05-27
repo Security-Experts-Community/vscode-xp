@@ -17,7 +17,7 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { XPObjectType } from './xpObjectType';
 import { ContentHelper } from '../../helpers/contentHelper';
 import { XpException } from '../xpException';
-import { GetSIEMJVersion, SIEMJVersion } from '../siemj/siemjManager';
+import { Log } from '../../extension';
 
 export class Normalization extends RuleBaseItem {
   protected getLocalizationPrefix(): string {
@@ -71,13 +71,18 @@ export class Normalization extends RuleBaseItem {
   public getUnitTestRunner(): UnitTestRunner {
     const config = Configuration.get();
     const outputParser = this.getUnitTestOutputParser();
-    switch (GetSIEMJVersion(config)) {
-      case SIEMJVersion.First:
-        return new NormalizationUnitTestsRunner(config, outputParser);
-      case SIEMJVersion.Second:
-        return new NormalizationUnitTestsRunnerViaEvtTests(config, outputParser);
-      default:
-        return new NormalizationUnitTestsRunner(config, outputParser);
+
+    // Предпочитаем evt-tests (новая утилита из xp-sdk/cli), если она доступна.
+    // Если её нет в KBT — откатываемся на legacy normalize.exe из build-tools.
+    try {
+      config.getEvtTestsFullPath();
+      Log.debug(`Normalization unit tests: используется evt-tests run normalize`);
+      return new NormalizationUnitTestsRunnerViaEvtTests(config, outputParser);
+    } catch (error) {
+      Log.debug(
+        `Normalization unit tests: evt-tests не найден, откат на normalize.exe (${error?.message ?? error})`
+      );
+      return new NormalizationUnitTestsRunner(config, outputParser);
     }
   }
 
