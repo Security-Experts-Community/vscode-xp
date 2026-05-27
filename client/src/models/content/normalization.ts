@@ -74,11 +74,9 @@ export class Normalization extends RuleBaseItem {
     const outputParser = this.getUnitTestOutputParser();
 
     if (GetSIEMJVersion(config) === SIEMJVersion.Second) {
-      Log.debug(`Normalization unit tests: SIEMJ v2, используется evt-tests run normalize`);
       return new NormalizationUnitTestsRunnerViaEvtTests(config, outputParser);
     }
 
-    Log.debug(`Normalization unit tests: SIEMJ v1, используется normalize.exe`);
     return new NormalizationUnitTestsRunner(config, outputParser);
   }
 
