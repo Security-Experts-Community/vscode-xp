@@ -12,6 +12,7 @@ import { UnitTestOutputParser } from './unitTestOutputParser';
 import { XpException } from '../xpException';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { JsHelper } from '../../helpers/jsHelper';
+import { EVENT_PRIORITY_FIELDS } from '../../helpers/testHelper';
 
 export class NormalizationUnitTestsRunner implements UnitTestRunner {
   constructor(
@@ -93,7 +94,8 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
     try {
       const actualEventObject = JSON.parse(actualEvent);
       // Сохраняем фактическое события для последующего обновления ожидаемого.
-      const actualEventString = JsHelper.formatJsonObject(actualEventObject);
+      const sortedActualEventObject = JsHelper.sortEventKeys(actualEventObject, EVENT_PRIORITY_FIELDS);
+      const actualEventString = JsHelper.formatJsonObject(sortedActualEventObject);
       unitTest.setActualEvent(actualEventString);
 
       clearActualEventObject = this.clearIrrelevantFields(actualEventObject);
