@@ -23,6 +23,8 @@ export type EventMimeType =
   | 'text/csv'
   | 'text/xml';
 
+export const EVENT_PRIORITY_FIELDS = ['subject', 'action', 'object', 'status'];
+
 export class TestHelper {
   /**
    * Проверяет, может быть проверена локализация у правила
@@ -496,7 +498,7 @@ export class TestHelper {
     return defaultLocRegExp.test(localization);
   }
 
-  public static formatTestCodeAndEvents(testCode: string): string {
+  public static formatTestCodeAndEvents(testCode: string, priorityFields?: string[]): string {
     const compressedNormalizedEventReg = /({\S.+})\s*$/gm;
 
     let formattedTestCode = testCode;
@@ -512,12 +514,12 @@ export class TestHelper {
       // Форматируем событие и сортируем поля объекта, чтобы поля групп типа subject.* были рядом.
       try {
         const compressEventJson = JSON.parse(escapedCompressedEvent);
-        const orderedCompressEventJson = Object.keys(compressEventJson)
-          .sort()
-          .reduce((obj, key) => {
-            obj[key] = compressEventJson[key];
-            return obj;
-          }, {});
+        const orderedCompressEventJson = priorityFields
+          ? JsHelper.sortEventKeys(compressEventJson, priorityFields)
+          : Object.keys(compressEventJson).sort().reduce((obj, key) => {
+              obj[key] = compressEventJson[key];
+              return obj;
+            }, {});
         const formattedEvent = JsHelper.formatJsonObject(orderedCompressEventJson);
         formattedTestCode = formattedTestCode.replace(compressedEvent, function () {
           return formattedEvent;
