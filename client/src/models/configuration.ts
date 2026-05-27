@@ -75,20 +75,20 @@ export class Configuration {
   }
 
   public setSIEMJVersion(): void {
-    const siemjPath = this.getSiemjPath();
-    const result = ProcessHelper.readProcessArgsOutputSync(siemjPath, ['-v'], 'utf8').trim();
-
-    Log.info(`SIEMJ version probe: '${siemjPath} -v' raw output: "${result}"`);
-
+    let result = ProcessHelper.readProcessArgsOutputSync(
+      this.getSiemjPath(),
+      ['-v'],
+      'utf8'
+    ).trim();
     if (result.match(/siemj(:?\.exe)? 1\./)) {
       this.SIEMJVersion = '1';
-    } else if (result.match(/siemj(:?\.exe)? 2\./)) {
-      this.SIEMJVersion = '2';
     } else {
-      throw new XpException(`Unexpected SIEMJ version: ${result}`);
+      if (result.match(/siemj(:?\.exe)? 2\./)) {
+        this.SIEMJVersion = '2';
+      } else {
+        throw new XpException(`Unexpected SIEMJ version: ${result}`);
+      }
     }
-
-    Log.info(`SIEMJ version detected: SIEMJVersion=${this.SIEMJVersion}`);
   }
 
   public getLSPTaxonomyPath(): string {
