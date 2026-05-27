@@ -65,10 +65,15 @@ export class JsHelper {
     const keys = Object.keys(object);
     const priorityKeys = priorityFields.filter(k => keys.includes(k));
     const remainingKeys = keys.filter(k => !priorityFields.includes(k)).sort();
-    return [...priorityKeys, ...remainingKeys].reduce((obj: any, key) => {
+    console.log('[DEBUG sortEventKeys] priorityFields:', priorityFields);
+    console.log('[DEBUG sortEventKeys] priorityKeys found:', priorityKeys);
+    console.log('[DEBUG sortEventKeys] first 5 remainingKeys:', remainingKeys.slice(0, 5));
+    const result = [...priorityKeys, ...remainingKeys].reduce((obj: any, key) => {
       obj[key] = object[key];
       return obj;
     }, {}) as T;
+    console.log('[DEBUG sortEventKeys] result first 5 keys:', Object.keys(result).slice(0, 5));
+    return result;
   }
 
   /**
