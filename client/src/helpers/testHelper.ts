@@ -492,6 +492,28 @@ export class TestHelper {
     return jsonlCleaned;
   }
 
+  /**
+   * Сортирует поля каждого события в JSONL: сначала subject/action/object/status,
+   * затем остальные поля по алфавиту. Возвращает pretty-printed JSON.
+   */
+  public static sortNormalizedEventsJsonl(jsonlStr: string): string {
+    if (!jsonlStr) {
+      return jsonlStr;
+    }
+    return StringHelper.splitTextOnLines(jsonlStr)
+      .filter(line => line.trim())
+      .map(line => {
+        try {
+          const obj = JSON.parse(line);
+          const sorted = JsHelper.sortEventKeys(obj, EVENT_PRIORITY_FIELDS);
+          return JsHelper.formatJsonObject(sorted);
+        } catch {
+          return line;
+        }
+      })
+      .join(os.EOL);
+  }
+
   public static isDefaultLocalization(localization: string): boolean {
     // account start process success на узле wks01.testlab.esc
     const defaultLocRegExp = /^[a-z_0-9]+ [a-z_0-9]+ [a-z_0-9]+ [a-z_0-9]+ (на узле|on host) \S+$/g;
@@ -501,22 +523,15 @@ export class TestHelper {
   public static formatTestCodeAndEvents(testCode: string, priorityFields?: string[]): string {
     const compressedNormalizedEventReg = /({\S.+})\s*$/gm;
 
-    console.log('[DEBUG formatTestCodeAndEvents] called, priorityFields:', priorityFields);
-    console.log('[DEBUG formatTestCodeAndEvents] testCode length:', testCode?.length, 'first 120 chars:', testCode?.slice(0, 120));
-
     let formattedTestCode = testCode;
     let comNormEventResult: RegExpExecArray | null;
-    let matchCount = 0;
     while ((comNormEventResult = compressedNormalizedEventReg.exec(testCode))) {
-      matchCount++;
       if (comNormEventResult.length != 2) {
         continue;
       }
 
       const compressedEvent = comNormEventResult[1];
       const escapedCompressedEvent = TestHelper.escapeRawEvent(compressedEvent);
-
-      console.log(`[DEBUG formatTestCodeAndEvents] match #${matchCount}, compressedEvent first 80:`, compressedEvent.slice(0, 80));
 
       // Форматируем событие и сортируем поля объекта, чтобы поля групп типа subject.* были рядом.
       try {
@@ -533,13 +548,11 @@ export class TestHelper {
         });
       } catch (error) {
         // Если не удалось отформатировать, пропускаем и пишем в лог.
-        console.log('[DEBUG formatTestCodeAndEvents] parse/sort error:', error?.message);
         Log.error(error, `Не удалось отформатировать событие ${compressedEvent}`);
         continue;
       }
     }
 
-    console.log('[DEBUG formatTestCodeAndEvents] total matches:', matchCount);
     return formattedTestCode;
   }
 

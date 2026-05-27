@@ -264,14 +264,10 @@ export class IntegrationTestEditorViewProvider {
 
           const rawEvents = it.getRawEvents();
           const formattedTestCode = TestHelper.formatTestCodeAndEvents(it.getTestCode());
-          const rawNormEvents = it.getNormalizedEvents();
-          console.log('[DEBUG updateView] getNormalizedEvents length:', rawNormEvents?.length, 'first 150:', rawNormEvents?.slice(0, 150));
-          console.log('[DEBUG updateView] EVENT_PRIORITY_FIELDS:', EVENT_PRIORITY_FIELDS);
           const formattedNormalizedEvents = TestHelper.formatTestCodeAndEvents(
-            rawNormEvents,
+            it.getNormalizedEvents(),
             EVENT_PRIORITY_FIELDS
           );
-          console.log('[DEBUG updateView] formattedNormalizedEvents first 150:', formattedNormalizedEvents?.slice(0, 150));
 
           let diff = '';
           let events = '';
