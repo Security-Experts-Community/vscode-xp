@@ -9,6 +9,7 @@ export interface ExecutionProcessOptions {
   encoding?: EncodingType;
   outputChannel?: vscode.OutputChannel;
   cancellationToken?: vscode.CancellationToken;
+  cwd?: string;
   /**
    * Проверяет выполнимость команды (например, отсутствия нужного модуля в директориях PATH).
    * Если команда не выполнима, будет прошено исключение.
@@ -80,7 +81,10 @@ export class ProcessHelper {
             throw result.error;
           }
         }
-        child = child_process.spawn(command, params);
+        child = child_process.spawn(command, params, {
+          cwd: options.cwd,
+          env: process.env
+        });
       } catch (error) {
         reject(error);
         return;
@@ -106,7 +110,7 @@ export class ProcessHelper {
           options.outputChannel.append(encodedData);
         }
 
-        if (options.cancellationToken.isCancellationRequested) {
+        if (options.cancellationToken?.isCancellationRequested) {
           child.kill();
           executionResult.exitCode = child.exitCode;
           executionResult.isInterrupted = true;
@@ -122,7 +126,7 @@ export class ProcessHelper {
           options.outputChannel.append(encodedData);
         }
 
-        if (options.cancellationToken.isCancellationRequested) {
+        if (options.cancellationToken?.isCancellationRequested) {
           child.kill();
           executionResult.exitCode = child.exitCode;
           executionResult.isInterrupted = true;
@@ -138,7 +142,7 @@ export class ProcessHelper {
           options.outputChannel.append(encodedData);
         }
 
-        if (options.cancellationToken.isCancellationRequested) {
+        if (options.cancellationToken?.isCancellationRequested) {
           child.kill();
           executionResult.exitCode = child.exitCode;
           executionResult.isInterrupted = true;

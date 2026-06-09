@@ -3,6 +3,8 @@
 	
 	"xp.commonCommands.showOutputChannel": "Показать выходные данные",
 
+	"xp.commonCommands.configureMacOSContainerBackend": "Настроить контейнерный backend для macOS",
+
 	"xp.commonCommands.showExtensionSettings" : "Параметры расширения",
 
 	"xp.views.knowledgebaseTree.title": "Дерево объектов",
@@ -56,4 +58,3 @@
 	"xp.xpConfig.logLevelDescription": "Уровень журналирования",
 	"xp.xpConfig.defaultAuthor": "Имя автора по умолчанию"
 }
-

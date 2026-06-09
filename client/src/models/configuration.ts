@@ -4,7 +4,6 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { Guid } from 'guid-typescript';
-import { FileSystemException } from './fileSystemException';
 import { XpException as XpException } from './xpException';
 import { ContentType } from '../contentType/contentType';
 import { Localization } from './content/localization';
@@ -15,9 +14,15 @@ import { FileDiagnostics } from './siemj/siemJOutputParser';
 import { LocalizationService } from '../l10n/localizationService';
 import { Origin } from './content/userSettingsManager';
 import { DialogHelper } from '../helpers/dialogHelper';
+import { FileSystemHelper } from '../helpers/fileSystemHelper';
 import { LogLevel } from '../logger';
 import { Log } from '../extension';
-import { ProcessHelper } from '../helpers/processHelper';
+import {
+  DockerToolRunner,
+  ToolExecutionMode,
+  ToolRunner,
+  ToolRunnerFactory
+} from '../tools/toolRunner';
 
 export type EncodingType = 'windows-1251' | 'utf-8' | 'utf-16';
 
@@ -74,16 +79,12 @@ export class Configuration {
     return this.SIEMJVersion;
   }
 
-  public setSIEMJVersion(): void {
-    let result = ProcessHelper.readProcessArgsOutputSync(
-      this.getSiemjPath(),
-      ['-v'],
-      'utf8'
-    ).trim();
-    if (result.match(/siemj(:?\.exe)? 1\./)) {
+  public async setSIEMJVersion(): Promise<void> {
+    const result = (await this.getToolRunner().runSiemj(['-v'], { encoding: 'utf-8' })).output.trim();
+    if (result.match(/siemj(?:\.real|\.exe)?\s+1\./)) {
       this.SIEMJVersion = '1';
     } else {
-      if (result.match(/siemj(:?\.exe)? 2\./)) {
+      if (result.match(/siemj(?:\.real|\.exe)?\s+2\./)) {
         this.SIEMJVersion = '2';
       } else {
         throw new XpException(`Unexpected SIEMJ version: ${result}`);
@@ -97,7 +98,7 @@ export class Configuration {
   }
 
   public craftLSPTaxonomyPath(): string {
-    return path.join(this.getKbtBaseDirectory(), '/knowledgebase/contracts/taxonomy/taxonomy.json');
+    return this.getTaxonomyFullPath();
   }
 
   public getLSPi18nTaxonomyPath(): string {
@@ -106,7 +107,7 @@ export class Configuration {
   }
 
   public craftLSPi18nTaxonomyPath(): string {
-    return path.join(this.getKbtBaseDirectory(), 'knowledgebase/contracts/taxonomy/i18n/');
+    return path.join(this.getTaxonomyDirPath(), 'i18n');
   }
 
   public async updateLSPTaxonomyPath(): Promise<void> {
@@ -217,6 +218,46 @@ export class Configuration {
     return this.context.extensionMode;
   }
 
+  public getToolExecutionMode(): ToolExecutionMode {
+    const mode = this.getWorkspaceConfiguration().get<ToolExecutionMode>('toolExecutionMode');
+    return mode ?? 'auto';
+  }
+
+  public isLocalMacOS(): boolean {
+    return process.platform === 'darwin' && !vscode.env.remoteName;
+  }
+
+  public shouldUseDockerToolRunner(): boolean {
+    return ToolRunnerFactory.resolveMode(this.getToolExecutionMode()) === 'docker';
+  }
+
+  public getToolRunner(): ToolRunner {
+    return ToolRunnerFactory.create({
+      mode: this.getToolExecutionMode(),
+      kbtBaseDirectory: this.tryGetKbtBaseDirectoryForLocalRunner(),
+      outputDirectoryPath: this.getBaseOutputDirectoryPath(),
+      docker: {
+        containerName: this.getWorkspaceConfiguration().get<string>('docker.containerName'),
+        composeFile: this.getWorkspaceConfiguration().get<string>('docker.composeFile'),
+        serviceName: this.getWorkspaceConfiguration().get<string>('docker.serviceName'),
+        workspaceHostPath: this.getWorkspaceConfiguration().get<string>('docker.workspaceHostPath'),
+        workspaceContainerPath: this.getWorkspaceConfiguration().get<string>(
+          'docker.workspaceContainerPath'
+        ),
+        kbtBaseDirectory: this.getWorkspaceConfiguration().get<string>('docker.kbtBaseDirectory'),
+        outputDirectoryPath: this.getDockerOutputDirectoryPath()
+      }
+    });
+  }
+
+  public getMacOSShowContainerSetupPrompt(): boolean {
+    return this.getWorkspaceConfiguration().get<boolean>('macos.showContainerSetupPrompt') ?? true;
+  }
+
+  public async setMacOSShowContainerSetupPrompt(value: boolean): Promise<void> {
+    await this.getWorkspaceConfiguration().update('macos.showContainerSetupPrompt', value, true);
+  }
+
   public getContext(): vscode.ExtensionContext {
     return this.context;
   }
@@ -269,6 +310,13 @@ export class Configuration {
    * @returns путь к директории со всеми SDK утилитами.
    */
   public getKbtBaseDirectory(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return (
+        this.getWorkspaceConfiguration().get<string>('docker.kbtBaseDirectory') ||
+        '/home/coder/xp-kbt'
+      );
+    }
+
     const kbtVersionsDirectory = this.getKbtVersionsDirectory();
     if (!kbtVersionsDirectory) {
       return this.getKbtBaseDirectoryOld();
@@ -424,6 +472,10 @@ export class Configuration {
   }
 
   public getSiemjPath(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath('extra-tools/siemj/siemj');
+    }
+
     let appName = '';
     switch (this.getOsType()) {
       case OsType.Windows:
@@ -446,6 +498,10 @@ export class Configuration {
   }
 
   public getSiemkbTestsPath(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath('build-tools/siemkb_tests');
+    }
+
     let appName = '';
     switch (this.getOsType()) {
       case OsType.Windows:
@@ -468,6 +524,10 @@ export class Configuration {
   }
 
   public getRccCli(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath('xp-sdk/cli/rcc');
+    }
+
     let appName = '';
     switch (this.getOsType()) {
       case OsType.Windows:
@@ -490,6 +550,10 @@ export class Configuration {
   }
 
   public getMkTablesPath(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath('build-tools/mktables');
+    }
+
     let appName = '';
     switch (this.getOsType()) {
       case OsType.Windows:
@@ -512,6 +576,10 @@ export class Configuration {
   }
 
   public getFPTAFillerPath(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath('xp-sdk/fpta_filler');
+    }
+
     let appName = '';
     switch (this.getOsType()) {
       case OsType.Windows:
@@ -534,6 +602,10 @@ export class Configuration {
   }
 
   public getLocalizationBuilder(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath('build-tools/build_l10n_rules');
+    }
+
     let appName = '';
     switch (this.getOsType()) {
       case OsType.Windows:
@@ -556,6 +628,10 @@ export class Configuration {
   }
 
   public getSiemKBTests(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath('build-tools/siemkb_tests');
+    }
+
     let appName = '';
     switch (this.getOsType()) {
       case OsType.Windows:
@@ -578,6 +654,10 @@ export class Configuration {
   }
 
   public getNormalizerCli(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath('xp-sdk/cli/normalizer-cli');
+    }
+
     let appName = '';
     switch (this.getOsType()) {
       case OsType.Windows:
@@ -600,6 +680,10 @@ export class Configuration {
   }
 
   public getNormalizer(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath('build-tools/normalize');
+    }
+
     let appName = '';
     switch (this.getOsType()) {
       case OsType.Windows:
@@ -623,6 +707,10 @@ export class Configuration {
 
   public getKbPackFullPath(): string {
     const appName = 'kbpack.dll';
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath(path.posix.join('extra-tools', 'kbpack', appName));
+    }
+
     const fullPath = path.join(this.getKbtBaseDirectory(), 'extra-tools', 'kbpack', appName);
     this.checkKbtSingleToolPath(fullPath);
 
@@ -649,6 +737,10 @@ export class Configuration {
   }
 
   public getEcatestFullPath(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath('build-tools/ecatest');
+    }
+
     let appName = '';
     switch (this.getOsType()) {
       case OsType.Windows:
@@ -671,6 +763,10 @@ export class Configuration {
   }
 
   public getEvtTestsFullPath(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath('xp-sdk/cli/evt-tests');
+    }
+
     let appName = '';
     switch (this.getOsType()) {
       case OsType.Windows:
@@ -693,6 +789,10 @@ export class Configuration {
   }
 
   public getKBTLSPFullPath(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return null;
+    }
+
     let appName = '';
     switch (this.getOsType()) {
       case OsType.Windows:
@@ -934,6 +1034,12 @@ export class Configuration {
    * @returns путь к папке с директориями контрактов.
    */
   private getContractsDirectory(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return this.getDockerKbtToolPath(
+        path.posix.join('knowledgebase', Configuration.CONTRACTS_DIR_NAME)
+      );
+    }
+
     return path.join(this.getKbtBaseDirectory(), 'knowledgebase', Configuration.CONTRACTS_DIR_NAME);
   }
 
@@ -948,7 +1054,7 @@ export class Configuration {
       Configuration.TAXONOMY_DIR_NAME,
       taxonomyFileName
     );
-    this.checkKbtSingleToolPath(fullPath);
+    this.checkReadablePath(fullPath);
 
     return fullPath;
   }
@@ -959,7 +1065,7 @@ export class Configuration {
    */
   public getTaxonomyDirPath(): string {
     const fullPath = path.join(this.getContractsDirectory(), Configuration.TAXONOMY_DIR_NAME);
-    this.checkKbtSingleToolPath(fullPath);
+    this.checkReadablePath(fullPath);
 
     return fullPath;
   }
@@ -976,7 +1082,7 @@ export class Configuration {
   public getAppendixFullPath(): string {
     const appendixFileName = 'appendix.xp';
     const fullPath = path.join(this.getContractsDirectory(), 'xp_appendix', appendixFileName);
-    this.checkKbtSingleToolPath(fullPath);
+    this.checkReadablePath(fullPath);
 
     return fullPath;
   }
@@ -992,7 +1098,7 @@ export class Configuration {
       'tabular_lists',
       tabularContractsFileName
     );
-    this.checkKbtSingleToolPath(fullPath);
+    this.checkReadablePath(fullPath);
 
     return fullPath;
   }
@@ -1042,6 +1148,10 @@ export class Configuration {
    * Automatically sets kbtVersionsDirectory if not already set
    */
   public autoSetKbtVersionsDirectory(): void {
+    if (this.shouldUseDockerToolRunner()) {
+      return;
+    }
+
     const configuration = this.getWorkspaceConfiguration();
     const kbtVersionsDirectory = configuration.get<string>('kbtVersionsDirectory');
 
@@ -1063,6 +1173,10 @@ export class Configuration {
    * Automatically sets kbtBaseDirectory if not already set
    */
   public autoSetKbtBaseDirectory(): void {
+    if (this.shouldUseDockerToolRunner()) {
+      return;
+    }
+
     const configuration = this.getWorkspaceConfiguration();
     const kbtBaseDirectory = configuration.get<string>('kbtBaseDirectory');
 
@@ -1080,6 +1194,11 @@ export class Configuration {
    * Automatically sets lspServerExecutablePath if not already set
    */
   public autoSetLspServerExecutablePath(): void {
+    if (this.shouldUseDockerToolRunner()) {
+      Log.info('Skipping local KBT LSP auto-detection in Docker tool execution mode');
+      return;
+    }
+
     const configuration = this.getWorkspaceConfiguration();
     const lspServerExecutablePath = configuration.get<string>('lspServerExecutablePath');
 
@@ -1128,23 +1247,10 @@ export class Configuration {
 
   public getBaseOutputDirectoryPath(): string {
     const extensionSettings = this.getWorkspaceConfiguration();
-    const outputDirectoryPath = extensionSettings.get<string>('outputDirectoryPath');
-
-    if (!outputDirectoryPath || outputDirectoryPath === '') {
-      throw new FileSystemException(
-        this.getMessage('Error.OutputDirectoryPathIsNotSet'),
-        outputDirectoryPath
-      );
-    }
-
-    if (!fs.existsSync(outputDirectoryPath)) {
-      throw new FileSystemException(
-        this.getMessage('Error.IncorrectOutputDirectoryPath', outputDirectoryPath),
-        outputDirectoryPath
-      );
-    }
-
-    return outputDirectoryPath;
+    const configuredPath = extensionSettings.get<string>('outputDirectoryPath');
+    return this.normalizeLegacyHostOutputDirectoryPath(
+      configuredPath || this.getDefaultBaseOutputDirectoryPath()
+    );
   }
 
   /**
@@ -1164,9 +1270,139 @@ export class Configuration {
     return ruLocalizationFilePath;
   }
 
+  public async readTextFile(fullPath: string): Promise<string> {
+    if (this.shouldUseDockerToolRunner() && this.isDockerContainerPath(fullPath)) {
+      return (
+        await this.getToolRunner().runTool('cat', [fullPath], {
+          encoding: 'utf-8'
+        })
+      ).output;
+    }
+
+    return FileSystemHelper.readContentFile(fullPath);
+  }
+
+  public mapPathForExecution(fullPath: string): string {
+    if (!this.shouldUseDockerToolRunner()) {
+      return fullPath;
+    }
+
+    const toolRunner = this.getToolRunner();
+    if (toolRunner instanceof DockerToolRunner) {
+      return toolRunner.getPathMapper().mapCommandArgument(fullPath);
+    }
+
+    return fullPath;
+  }
+
+  public getDockerOutputDirectoryPath(): string {
+    const configuredPath = this.getWorkspaceConfiguration().get<string>('docker.outputDirectoryPath');
+    return this.normalizeLegacyDockerOutputDirectoryPath(
+      configuredPath || this.getDefaultDockerOutputDirectoryPath()
+    );
+  }
+
   private checkKbtSingleToolPath(fullPath: string): void {
+    if (this.shouldUseDockerToolRunner() && this.isDockerContainerPath(fullPath)) {
+      return;
+    }
+
     if (!fs.existsSync(fullPath)) {
       throw new XpException(this.getMessage('Error.UtilityPathIsIncorrect', fullPath));
+    }
+  }
+
+  private checkReadablePath(fullPath: string): void {
+    if (this.shouldUseDockerToolRunner() && this.isDockerContainerPath(fullPath)) {
+      return;
+    }
+
+    if (!fs.existsSync(fullPath)) {
+      throw new XpException(`Required XP file was not found: ${fullPath}`);
+    }
+  }
+
+  private getDockerKbtToolPath(relativePath: string): string {
+    const dockerKbtBaseDirectory =
+      this.getWorkspaceConfiguration().get<string>('docker.kbtBaseDirectory') ||
+      '/home/coder/xp-kbt';
+    return path.posix.join(dockerKbtBaseDirectory, relativePath.replace(/\\/g, '/'));
+  }
+
+  private getDockerWorkspaceHostPath(): string | undefined {
+    const configuredPath = this.getWorkspaceConfiguration().get<string>('docker.workspaceHostPath');
+    if (configuredPath) {
+      return configuredPath;
+    }
+
+    return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  }
+
+  private getWorkspaceRootPath(): string | undefined {
+    return vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  }
+
+  private getDefaultBaseOutputDirectoryPath(): string {
+    const workspaceRootPath = this.getWorkspaceRootPath();
+    if (workspaceRootPath) {
+      return path.join(workspaceRootPath, 'tmp', 'xp-output');
+    }
+
+    return path.join(os.tmpdir(), Configuration.getExtensionDirectoryName(), 'tmp', 'xp-output');
+  }
+
+  private getDefaultDockerOutputDirectoryPath(): string {
+    const workspaceContainerPath =
+      this.getWorkspaceConfiguration().get<string>('docker.workspaceContainerPath') ||
+      '/workspaces/knowledgebase';
+    return path.posix.join(workspaceContainerPath, 'tmp', 'xp-output');
+  }
+
+  private normalizeLegacyHostOutputDirectoryPath(outputDirectoryPath: string): string {
+    const workspaceRootPath = this.getWorkspaceRootPath();
+    if (!workspaceRootPath) {
+      return outputDirectoryPath;
+    }
+
+    const legacyPath = path.join(workspaceRootPath, '.xp-output');
+    if (path.resolve(outputDirectoryPath) === path.resolve(legacyPath)) {
+      return this.getDefaultBaseOutputDirectoryPath();
+    }
+
+    return outputDirectoryPath;
+  }
+
+  private normalizeLegacyDockerOutputDirectoryPath(outputDirectoryPath: string): string {
+    const workspaceContainerPath =
+      this.getWorkspaceConfiguration().get<string>('docker.workspaceContainerPath') ||
+      '/workspaces/knowledgebase';
+    const legacyPath = path.posix.join(workspaceContainerPath, '.xp-output');
+    if (outputDirectoryPath.replace(/\\/g, '/') === legacyPath) {
+      return this.getDefaultDockerOutputDirectoryPath();
+    }
+
+    return outputDirectoryPath;
+  }
+
+  public isDockerContainerPath(fullPath: string): boolean {
+    const workspaceHostPath = this.getDockerWorkspaceHostPath();
+    if (workspaceHostPath && fullPath.startsWith(workspaceHostPath)) {
+      return false;
+    }
+
+    return fullPath.startsWith('/');
+  }
+
+  private tryGetKbtBaseDirectoryForLocalRunner(): string | undefined {
+    if (this.shouldUseDockerToolRunner()) {
+      return undefined;
+    }
+
+    try {
+      return this.getKbtBaseDirectory();
+    } catch (error) {
+      Log.warn(`Failed to resolve local KBT directory: ${error.message}`);
+      return undefined;
     }
   }
 
@@ -1192,12 +1428,7 @@ export class Configuration {
   private async checkAndCreateOutputDirectory(
     extensionConfig: vscode.WorkspaceConfiguration
   ): Promise<void> {
-    const outputDirectoryPath = extensionConfig.get<string>('outputDirectoryPath');
-
-    if (!outputDirectoryPath) {
-      DialogHelper.showError(this.getMessage('Error.OutputDirectoryPathIsNotSet'));
-      return;
-    }
+    const outputDirectoryPath = this.getBaseOutputDirectoryPath();
 
     try {
       await fs.promises.mkdir(outputDirectoryPath, { recursive: true });

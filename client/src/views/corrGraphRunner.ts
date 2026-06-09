@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { FileSystemHelper } from '../helpers/fileSystemHelper';
-import { ProcessHelper } from '../helpers/processHelper';
 import { Configuration } from '../models/configuration';
 import { XpException } from '../models/xpException';
 import { Log } from '../extension';
@@ -76,7 +75,6 @@ export class CorrGraphRunner {
 
     // Сохраняем конфигурационный файл для siemj.
     const siemjConfigPath = path.join(randTmpDir, Configuration.SIEMJ_CONFIG_FILENAME);
-    const siemjExePath = this.options.config.getSiemjPath();
     await FileSystemHelper.writeContentFile(siemjConfigPath, siemjConfContent);
 
     // Без удаления базы возникали странные ошибки filler-а, но это не точно.
@@ -93,7 +91,7 @@ export class CorrGraphRunner {
 
     // Типовая команда выглядит так:
     // "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-    await ProcessHelper.execute(siemjExePath, ['-c', siemjConfigPath, 'main'], {
+    await this.options.config.getToolRunner().runSiemj(['-c', siemjConfigPath, 'main'], {
       encoding: this.options.config.getSiemjOutputEncoding(),
       outputChannel: this.options.config.getOutputChannel(),
       cancellationToken: this.options.cancellationToken

@@ -4,7 +4,7 @@ import * as os from 'os';
 import * as vscode from 'vscode';
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { ExecutionResult, ProcessHelper } from '../../helpers/processHelper';
+import { ExecutionResult } from '../../helpers/processHelper';
 import { Configuration } from '../configuration';
 import { XpException } from '../xpException';
 import { RuleBaseItem } from '../content/ruleBaseItem';
@@ -25,7 +25,7 @@ export enum SIEMJVersion {
 }
 
 export function GetRawSIEMJVersion(config: Configuration): string {
-  return ProcessHelper.readProcessArgsOutputSync(config.getSiemjPath(), ['-v'], 'utf8').trim();
+  return config.getCurrentSIEMJVersion();
 }
 
 export function GetSIEMJVersion(config: Configuration): SIEMJVersion {
@@ -221,14 +221,13 @@ export class SiemjManager {
 
     const siemjConfigPath = this.config.getTmpSiemjConfigPath(contentRootFolder);
     await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
-    const siemjExePath = this.config.getSiemjPath();
-
     // Типовая команда выглядит так:
     // "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-    const result = await ProcessHelper.execute(siemjExePath, ['-c', siemjConfigPath, 'main'], {
+    const result = await this.config.getToolRunner().runSiemj(['-c', siemjConfigPath, 'main'], {
       encoding: this.config.getSiemjOutputEncoding(),
       outputChannel: this.config.getOutputChannel(),
-      cancellationToken: this.token
+      cancellationToken: this.token,
+      allowNonZeroExitCode: true
     });
 
     if (result.isInterrupted) {
@@ -260,14 +259,13 @@ export class SiemjManager {
 
     const siemjConfigPath = this.config.getTmpSiemjConfigPath(contentRootFolder);
     await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
-    const siemjExePath = this.config.getSiemjPath();
-
     // Типовая команда выглядит так:
     // "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-    const result = await ProcessHelper.execute(siemjExePath, ['-c', siemjConfigPath, 'main'], {
+    const result = await this.config.getToolRunner().runSiemj(['-c', siemjConfigPath, 'main'], {
       encoding: this.config.getSiemjOutputEncoding(),
       outputChannel: this.config.getOutputChannel(),
-      cancellationToken: this.token
+      cancellationToken: this.token,
+      allowNonZeroExitCode: true
     });
     return result;
   }

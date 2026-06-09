@@ -5,7 +5,7 @@ import * as os from 'os';
 import * as vscode from 'vscode';
 
 import { DialogHelper } from '../../../helpers/dialogHelper';
-import { ExecutionResult, ProcessHelper } from '../../../helpers/processHelper';
+import { ExecutionResult } from '../../../helpers/processHelper';
 import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
 import { Configuration } from '../../../models/configuration';
 import { ContentTreeProvider } from '../contentTreeProvider';
@@ -31,7 +31,7 @@ export class UnpackKbCommand extends ViewCommand {
   public async execute(): Promise<void> {
     // Проверка наличия утилиты сборки kb-файлов.
     const knowledgeBasePackagerCli = this.config.getKbPackFullPath();
-    if (!fs.existsSync(knowledgeBasePackagerCli)) {
+    if (!this.config.shouldUseDockerToolRunner() && !fs.existsSync(knowledgeBasePackagerCli)) {
       DialogHelper.showError(
         'Путь к утилите сборке kb-файла задан не верно. Измените его в настройках и повторите попытку'
       );
@@ -95,7 +95,7 @@ export class UnpackKbCommand extends ViewCommand {
         const cmd = 'dotnet';
         let executeResult: ExecutionResult;
         try {
-          executeResult = await ProcessHelper.execute(cmd, params, {
+          executeResult = await this.config.getToolRunner().runTool(cmd, params, {
             encoding: 'utf-8',
             outputChannel: this.config.getOutputChannel(),
             checkCommandBeforeExecution: true,

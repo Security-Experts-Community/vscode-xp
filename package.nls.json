@@ -3,6 +3,8 @@
 	
 	"xp.commonCommands.showOutputChannel": "Show Output Data",
 
+	"xp.commonCommands.configureMacOSContainerBackend": "Configure macOS Container Backend",
+
 	"xp.commonCommands.showExtensionSettings" : "Extension Settings",
 
 	"xp.views.knowledgebaseTree.title": "Object Tree",
@@ -44,6 +46,15 @@
 
 	"xp.xpConfig.kbtBaseDirectoryDescription": "Path of the folder with the [Knowledge Base Toolkit](https://github.com/vxcontrol/xp-kbt/releases)",
 	"xp.xpConfig.outputDirectoryPathDescription": "Path of the folder where temporary objects are saved. The folder is emptied automatically every time you start the extension.",
+	"xp.xpConfig.toolExecutionModeDescription": "How XP external tools are executed. Auto keeps local execution on Linux/Windows and uses Docker for local macOS VS Code.",
+	"xp.xpConfig.docker.containerNameDescription": "Name of the running Docker container with xp-kbt and related XP tools.",
+	"xp.xpConfig.docker.composeFileDescription": "Optional docker-compose.yml path for a container backend preset.",
+	"xp.xpConfig.docker.serviceNameDescription": "Optional Docker Compose service name for the XP backend.",
+	"xp.xpConfig.docker.workspaceHostPathDescription": "Host path to the mounted knowledgebase.",
+	"xp.xpConfig.docker.workspaceContainerPathDescription": "Container path where the knowledgebase is mounted.",
+	"xp.xpConfig.docker.kbtBaseDirectoryDescription": "Container path to the xp-kbt base directory.",
+	"xp.xpConfig.docker.outputDirectoryPathDescription": "Container path corresponding to xpConfig.outputDirectoryPath.",
+	"xp.xpConfig.macos.showContainerSetupPromptDescription": "Show the macOS container backend setup prompt on extension activation.",
 	"xp.xpConfig.correlatorTimeoutDescription": "Max correlation time in seconds. If the time is exceeded, the correlation will be canceled.",
 	"xp.xpConfig.lspServerExecutablePathDescription": "Path of the LSP server executable",
 
@@ -56,4 +67,3 @@
 	"xp.xpConfig.logLevelDescription": "Log level",
 	"xp.xpConfig.defaultAuthor": "Default author name"
 }
-

@@ -444,6 +444,11 @@
         "category": "%xp.commonCommandCategory%"
       },
       {
+        "command": "xp.commonCommands.configureMacOSContainerBackend",
+        "title": "%xp.commonCommands.configureMacOSContainerBackend%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
         "command": "xp.retroCorrelationShow",
         "title": "%xp.views.knowledgebaseTree.showRetroCorrelationCommand%",
         "category": "%xp.commonCommandCategory%"
@@ -655,6 +660,65 @@
           "scope": "window",
           "type": "string",
           "markdownDescription": "%xp.xpConfig.outputDirectoryPathDescription%"
+        },
+        "xpConfig.toolExecutionMode": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "auto",
+            "local",
+            "docker"
+          ],
+          "default": "auto",
+          "markdownDescription": "%xp.xpConfig.toolExecutionModeDescription%"
+        },
+        "xpConfig.docker.containerName": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "markdownDescription": "%xp.xpConfig.docker.containerNameDescription%"
+        },
+        "xpConfig.docker.composeFile": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "markdownDescription": "%xp.xpConfig.docker.composeFileDescription%"
+        },
+        "xpConfig.docker.serviceName": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "markdownDescription": "%xp.xpConfig.docker.serviceNameDescription%"
+        },
+        "xpConfig.docker.workspaceHostPath": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "markdownDescription": "%xp.xpConfig.docker.workspaceHostPathDescription%"
+        },
+        "xpConfig.docker.workspaceContainerPath": {
+          "scope": "window",
+          "type": "string",
+          "default": "/workspaces/knowledgebase",
+          "markdownDescription": "%xp.xpConfig.docker.workspaceContainerPathDescription%"
+        },
+        "xpConfig.docker.kbtBaseDirectory": {
+          "scope": "window",
+          "type": "string",
+          "default": "/home/coder/xp-kbt",
+          "markdownDescription": "%xp.xpConfig.docker.kbtBaseDirectoryDescription%"
+        },
+        "xpConfig.docker.outputDirectoryPath": {
+          "scope": "window",
+          "type": "string",
+          "default": "/workspaces/knowledgebase/tmp/xp-output",
+          "markdownDescription": "%xp.xpConfig.docker.outputDirectoryPathDescription%"
+        },
+        "xpConfig.macos.showContainerSetupPrompt": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "%xp.xpConfig.macos.showContainerSetupPromptDescription%"
         },
 				"xpConfig.lspServerExecutablePath": {
 					"type": "string",

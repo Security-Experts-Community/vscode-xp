@@ -125,7 +125,7 @@ export class SetKBTVersionCommand {
       }
     }
 
-    config.setSIEMJVersion();
+    await config.setSIEMJVersion();
 
     item.text = kbtVersion;
     // Подсказка при наведении.

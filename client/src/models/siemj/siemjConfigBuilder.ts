@@ -600,10 +600,10 @@ out=${output}
     );
     const test_pipeline_config = `{
   "graphs": {
-    "normalization": ${JSON.stringify(formulas)},
-    "correlation": ${JSON.stringify(corrules)},
-    "aggregation": ${JSON.stringify(argrules)},
-    "enrichment": ${JSON.stringify(enrules)}
+    "normalization": ${JSON.stringify(this.config.mapPathForExecution(formulas))},
+    "correlation": ${JSON.stringify(this.config.mapPathForExecution(corrules))},
+    "aggregation": ${JSON.stringify(this.config.mapPathForExecution(argrules))},
+    "enrichment": ${JSON.stringify(this.config.mapPathForExecution(enrules))}
   },
   "fields": {
     "exclude-non-taxonomy-fields": true,
@@ -618,12 +618,12 @@ out=${output}
       "aggregation_name"
     ]
   },
-  "root": ${JSON.stringify(testsRuleFullPath)},
-  "rules-filters": ${JSON.stringify(this.config.getRulesDirFilters())},
-  "fpta-defaults": ${JSON.stringify(table_list_defaults)},
-  "taxonomy": ${JSON.stringify(this.config.getTaxonomyFullPath())},
-  "schema": ${JSON.stringify(table_list_schema)},
-  "appendix": ${JSON.stringify(this.config.getAppendixFullPath())}
+  "root": ${JSON.stringify(this.config.mapPathForExecution(testsRuleFullPath))},
+  "rules-filters": ${JSON.stringify(this.config.mapPathForExecution(this.config.getRulesDirFilters()))},
+  "fpta-defaults": ${JSON.stringify(this.config.mapPathForExecution(table_list_defaults))},
+  "taxonomy": ${JSON.stringify(this.config.mapPathForExecution(this.config.getTaxonomyFullPath()))},
+  "schema": ${JSON.stringify(this.config.mapPathForExecution(table_list_schema))},
+  "appendix": ${JSON.stringify(this.config.mapPathForExecution(this.config.getAppendixFullPath()))}
 } 
     `;
 

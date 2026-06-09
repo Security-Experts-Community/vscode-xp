@@ -39,6 +39,7 @@ import { LocalizationEditorViewProvider } from './views/localization/localizatio
 import { CommonCommands } from './models/command/commonCommands';
 import { ToolsManager } from './models/content/toolsManager';
 import { SetKBTVersionCommand } from './models/siemj/setKBTVersionCommand';
+import { MacOSContainerSetup } from './tools/macosContainerSetup';
 
 export let Log: Logger;
 let client: LanguageClient;
@@ -71,12 +72,14 @@ export async function activate(context: ExtensionContext): Promise<void> {
     await UserSettingsManager.init(config);
     // await ToolsManager.init(config);
 
-    // Ensure automatic KBT selection happens early
-    try {
-      // This will trigger auto-selection if needed
-      const kbtBaseDirectory = config.getKbtBaseDirectoryOld();
-    } catch (error) {
-      Log.warn(`Error during KBT auto-selection: ${error.message}`);
+    if (!config.shouldUseDockerToolRunner()) {
+      // Ensure automatic KBT selection happens early for local tool execution.
+      try {
+        // This will trigger auto-selection if needed
+        const kbtBaseDirectory = config.getKbtBaseDirectoryOld();
+      } catch (error) {
+        Log.warn(`Error during KBT auto-selection: ${error.message}`);
+      }
     }
 
     // Automatically set configuration options if not already set
@@ -93,6 +96,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
     } catch (error) {
       ExceptionHelper.show(error);
     }
+
+    await MacOSContainerSetup.maybePrompt(config);
 
     // Конфигурирование LSP.
     await configureLSPClient(client, context, config);
@@ -134,7 +139,14 @@ export async function activate(context: ExtensionContext): Promise<void> {
     RetroCorrelationViewController.init(config);
     CommonCommands.init(config);
 
-    config.setSIEMJVersion();
+    try {
+      await config.setSIEMJVersion();
+    } catch (error) {
+      Log.warn(`Failed to determine SIEMJ version: ${error.message}`);
+      if (!config.isLocalMacOS()) {
+        throw error;
+      }
+    }
 
     siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(
       XPPackingTaskProvider.Type,

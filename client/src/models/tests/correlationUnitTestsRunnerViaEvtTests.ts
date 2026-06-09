@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { ProcessHelper } from '../../helpers/processHelper';
 import { TestHelper } from '../../helpers/testHelper';
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { Configuration } from '../configuration';
@@ -60,15 +59,14 @@ export class CorrelationUnitTestsRunnerViaEvtTests implements UnitTestRunner {
 
     // Очищаем и показываем окно Output
     const ruleFilePath = test.getRuleFullPath();
-    const evt_tests = this.config.getEvtTestsFullPath();
     const taxonomyFilePath = this.config.getTaxonomyFullPath();
     const testFilepath = test.getTestExpectationPath();
     const fptDefaults = this.config.getCorrelationDefaultsFilePath(rootFolder);
     const schemaFilePath = this.config.getSchemaFullPath(rootFolder);
     const ruleFiltersDirPath = this.config.getRulesDirFilters();
 
-    const output = await ProcessHelper.execute(
-      evt_tests,
+    const output = await this.config.getToolRunner().runTool(
+      this.config.getEvtTestsFullPath(),
       [
         'run',
         'correlate',
