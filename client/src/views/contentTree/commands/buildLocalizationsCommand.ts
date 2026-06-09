@@ -6,11 +6,11 @@ import { ProcessHelper } from '../../../helpers/processHelper';
 import { SiemjConfigHelper } from '../../../models/siemj/siemjConfigHelper';
 import { SiemJOutputParser } from '../../../models/siemj/siemJOutputParser';
 import { Configuration } from '../../../models/configuration';
-import { SiemjConfBuilder } from '../../../models/siemj/siemjConfigBuilder';
 import { XpException } from '../../../models/xpException';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { ViewCommand } from '../../../models/command/command';
 import { Log } from '../../../extension';
+import { SiemjManager } from '../../../models/siemj/siemjManager';
 
 export class BuildLocalizationsParams {
   outputParser: SiemJOutputParser;
@@ -121,7 +121,8 @@ export class BuildLocalizationsCommand extends ViewCommand {
         fs.mkdirSync(outputDirectory, { recursive: true });
       }
 
-      const configBuilder = new SiemjConfBuilder(config, rootPath);
+      const siemjManager = new SiemjManager(this.config);
+      const configBuilder = siemjManager.getConfigBuilder(rootPath);
       if (this.params.localizationsPath) {
         configBuilder.addLocalizationsBuilding({
           rulesSrcPath: this.params.localizationsPath,

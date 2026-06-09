@@ -38,6 +38,7 @@ import { UserSettingsManager as UserSettingsManager } from './models/content/use
 import { LocalizationEditorViewProvider } from './views/localization/localizationEditorViewProvider';
 import { CommonCommands } from './models/command/commonCommands';
 import { ToolsManager } from './models/content/toolsManager';
+import { SetKBTVersionCommand } from './models/siemj/setKBTVersionCommand';
 
 export let Log: Logger;
 let client: LanguageClient;
@@ -68,7 +69,24 @@ export async function activate(context: ExtensionContext): Promise<void> {
     Log.info(`OS Release: ${os.release()}`);
 
     await UserSettingsManager.init(config);
-    await ToolsManager.init(config);
+    // await ToolsManager.init(config);
+
+    // Ensure automatic KBT selection happens early
+    try {
+      // This will trigger auto-selection if needed
+      const kbtBaseDirectory = config.getKbtBaseDirectoryOld();
+    } catch (error) {
+      Log.warn(`Error during KBT auto-selection: ${error.message}`);
+    }
+
+    // Automatically set configuration options if not already set
+    try {
+      config.autoSetKbtVersionsDirectory();
+      config.autoSetKbtBaseDirectory();
+      config.autoSetLspServerExecutablePath();
+    } catch (error) {
+      Log.warn(`Error during automatic configuration setting: ${error.message}`);
+    }
 
     try {
       await config.checkUserSetting();
@@ -107,10 +125,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
     MetainfoViewProvider.init(config);
     RunningCorrelationGraphProvider.init(config);
     TableListsEditorViewProvider.init(config);
+    const kbtVersionsDirectory = config.getKbtVersionsDirectory();
+    if (kbtVersionsDirectory) {
+      SetKBTVersionCommand.init(config);
+    }
     SetContentTypeCommand.init(config);
     InitKBRootCommand.init(config);
     RetroCorrelationViewController.init(config);
     CommonCommands.init(config);
+
+    config.setSIEMJVersion();
 
     siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(
       XPPackingTaskProvider.Type,
@@ -136,9 +160,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
         new XpRenameProvide()
       )
     );
-
-    // Показывает общую информацию по наведению на конструкцию.
-    await XpHoverProvider.init(config);
 
     // Не очень понятно как тут сделать разумно.
     const tokenModifiers = ['declaration', 'documentation'];
@@ -195,59 +216,74 @@ async function configureLSPClient(
   context: vscode.ExtensionContext,
   config: Configuration
 ) {
-  const { lspServerExecutablePath } = config.getWorkspaceConfiguration();
+  try {
+    const lspServerExecutablePath = config.getKBTLSPFullPath();
 
-  if (lspServerExecutablePath) {
-    const command = lspServerExecutablePath;
-    const args: string[] = [];
+    if (lspServerExecutablePath) {
+      Log.info(config.getMessage('LSPServer.ServerExecutableFoundAt', lspServerExecutablePath));
+      const command = lspServerExecutablePath;
+      const args: string[] = [];
 
-    const documentSelector = [
-      { scheme: 'file', language: 'xp' },
-      { scheme: 'file', language: 'en' },
-      { scheme: 'file', language: 'agr' },
-      { scheme: 'file', language: 'co' },
-      { scheme: 'file', language: 'flt' }
-    ];
+      const documentSelector = [
+        { scheme: 'file', language: 'xp' },
+        { scheme: 'file', language: 'en' },
+        { scheme: 'file', language: 'agr' },
+        { scheme: 'file', language: 'co' },
+        { scheme: 'file', language: 'flt' }
+      ];
 
-    const serverOptions: ServerOptions = {
-      command,
-      args,
-      options: {
-        cwd: __dirname
-      }
-    };
-
-    const clientOptions: LanguageClientOptions = {
-      documentSelector,
-      synchronize: {
-        configurationSection: config.getExtensionSettingsPrefix()
-      },
-      initializationOptions: {
-        locale: vscode.env.language
-      }
-    };
-
-    client = new LanguageClient(command, serverOptions, clientOptions);
-
-    return client
-      .start()
-      .then(() => {
-        const serverProcess = client['_serverProcess'];
-        if (serverProcess) {
-          const pid = serverProcess.pid;
-          vscode.window.showInformationMessage(
-            config.getMessage('LSPServer.ServerHasStarted', pid)
-          );
+      const serverOptions: ServerOptions = {
+        command,
+        args,
+        options: {
+          cwd: __dirname
         }
-      })
-      .catch((error) => {
-        vscode.window.showErrorMessage('Failed to start XPLang Language Server: ' + error.message);
-      });
+      };
+
+      const clientOptions: LanguageClientOptions = {
+        documentSelector,
+        synchronize: {
+          configurationSection: [config.getExtensionSettingsPrefix(), 'xplang_ls']
+        },
+        initializationOptions: {
+          locale: vscode.env.language
+        }
+      };
+
+      client = new LanguageClient(command, 'XP Language Server', serverOptions, clientOptions);
+
+      return client
+        .start()
+        .then(() => {
+          const serverProcess = client['_serverProcess'];
+          if (serverProcess) {
+            const pid = serverProcess.pid;
+            Log.info(config.getMessage('LSPServer.ServerHasStarted', pid));
+            vscode.window.showInformationMessage(
+              config.getMessage('LSPServer.ServerHasStarted', pid)
+            );
+          }
+        })
+        .catch((error) => {
+          vscode.window.showErrorMessage(
+            'Failed to start XPLang Language Server: ' + error.message
+          );
+        });
+    }
+  } catch (e) {
+    // if error just use legacy server
+    Log.warn(`Exception while searching XPLang LSP server: ${e.message}`);
   }
+
+  Log.info(config.getMessage('LSPServer.UsingLegacyLSPServer'));
 
   /**
    * Legacy LSP server
    */
+
+  // Показывает общую информацию по наведению на конструкцию.
+  await XpHoverProvider.init(config);
+
   const serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));
 
   const debugOptions = { execArgv: ['--nolazy', '--inspect=6009'] };

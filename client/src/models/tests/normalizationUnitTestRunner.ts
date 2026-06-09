@@ -54,6 +54,12 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
       return unitTest;
     }
 
+    if (utilityOutput.includes('\nFAIL\n') || utilityOutput.includes('Normalization failed at')) {
+      throw new XpException(
+        'Нормализация не вернул никакого события. Некорректен код нормализации или входные данные. [Смотри Output](command:xp.commonCommands.showOutputChannel)'
+      );
+    }
+
     const normalizedEventResult = RegExpHelper.parseJsonsFromMultilineString(utilityOutput);
     if (!normalizedEventResult || normalizedEventResult.length != 1) {
       throw new XpException(

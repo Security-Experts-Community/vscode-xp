@@ -22,6 +22,38 @@ export class Normalization extends RuleBaseItem {
     return 'normalization';
   }
 
+  protected getId(): string {
+    const matches = this._ruleCode.match(/id\s*=\s*"(.*?)"/);
+    if (matches.length != 2) {
+      return this.name;
+    }
+    return matches[1];
+  }
+
+  /**
+   * Генерирует свободный идентификатор локализации
+   * @returns возвращает свободный идентификатор локализации
+   */
+  protected generateLocalizationId(): string {
+    let id = this.getId();
+    if (!id) {
+      id = this.name;
+      if (!id) {
+        throw new XpException(
+          'Проблема создания ID локализации. Не нашлось ID в правиле и задано пустое имя правила'
+        );
+      }
+    }
+
+    const localizations = this.getLocalizations();
+
+    if (localizations.length == 0) {
+      return `${id}`;
+    } else {
+      return `${id}_${localizations.length + 1}`;
+    }
+  }
+
   public clearUnitTests(): void {
     const testDirPath = this.getTestsPath();
     fs.readdirSync(testDirPath)

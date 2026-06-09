@@ -6,9 +6,9 @@ import { FileSystemHelper } from '../helpers/fileSystemHelper';
 import { ProcessHelper } from '../helpers/processHelper';
 import { Configuration } from '../models/configuration';
 import { XpException } from '../models/xpException';
-import { SiemjConfBuilder } from '../models/siemj/siemjConfigBuilder';
 import { Log } from '../extension';
 import { DialogHelper } from '../helpers/dialogHelper';
+import { SiemjManager } from '../models/siemj/siemjManager';
 
 export class CorrGraphRunnerOptions {
   config: Configuration;
@@ -50,7 +50,9 @@ export class CorrGraphRunner {
       await fs.promises.mkdir(outputFolder, { recursive: true });
     }
 
-    const configBuilder = new SiemjConfBuilder(this.options.config, rootPath);
+    const siemjManager = new SiemjManager(this.options.config);
+    const configBuilder = siemjManager.getConfigBuilder(rootPath);
+
     configBuilder.addNormalizationsGraphBuilding(this.options.forceNormalizationsGraphBuilding);
     configBuilder.addTablesSchemaBuilding(this.options.forceTablesSchemaBuilding);
     configBuilder.addTablesDbBuilding(this.options.forceTablesDbBuilding);

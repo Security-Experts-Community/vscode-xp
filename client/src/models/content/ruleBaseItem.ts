@@ -35,7 +35,7 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
   public abstract convertUnitTestFromObject(object: any): BaseUnitTest;
   public abstract createNewUnitTest(): BaseUnitTest;
   public abstract clearUnitTests(): void;
-  public abstract getUnitTestRunner(): UnitTestRunner;
+  public abstract getUnitTestRunner(config: Configuration): UnitTestRunner;
   public abstract getUnitTestOutputParser(): UnitTestOutputParser;
 
   protected abstract getLocalizationPrefix(): string;
@@ -322,9 +322,10 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
   }
 
   protected async saveLocalization(fullPath: string): Promise<void> {
-    if (!this.getRuDescription() && !this.getEnDescription()) {
-      return;
-    }
+    // TODO: check that empty descriptions are allowed
+    // if (!this.getRuDescription() && !this.getEnDescription()) {
+    //   return;
+    // }
 
     const localizationDirPath = path.join(fullPath, Localization.LOCALIZATIONS_DIRNAME);
     if (!fs.existsSync(localizationDirPath)) {
@@ -490,7 +491,7 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
    * Генерирует свободный идентификатор локализации
    * @returns возвращает свободный идентификатор локализации
    */
-  private generateLocalizationId(): string {
+  protected generateLocalizationId(): string {
     let name = this.getName();
     if (!name) {
       name = 'name';

@@ -158,8 +158,25 @@ export class Enveloper {
         rawEvent = regExResult[1];
       }
 
+      // Попытка забрать прокинуть SystemTime  в recv_time из события windows, если оно есть
+      try {
+        var raw_system_time = '';
+        const possible_win = JSON.parse(rawEvent);
+        if (possible_win.Event.System.TimeCreated.SystemTime) {
+          raw_system_time = possible_win.Event.System.TimeCreated.SystemTime;
+        }
+      }
+      catch (error) {
+        // Попадаем сюда если не удалось прочитать json и игнорируем
+      }
+      finally {}
+
       // '2012-11-04T14:51:06.157Z'
-      const date = new Date().toISOString();
+      if (raw_system_time != "") {
+        var date = raw_system_time;
+      } else {
+        var date = new Date().toISOString();
+      }
       const uuidSeed = index + 1;
 
       const envelopedRawEvents = {
@@ -167,12 +184,13 @@ export class Enveloper {
         recv_ipv4: '127.0.0.1',
         recv_time: date.toString(),
         task_id: '00000000-0000-0000-0000-000000000000',
-        tag: 'some_tag',
+        tag: 'vscode_xp',
         mime: mimeType,
         normalized: false,
         input_id: '00000000-0000-0000-0000-000000000000',
         type: 'raw',
-        siem_id: '00000000-0000-0000-0000-000000000000', 
+        scope_id: '00000000-0000-0000-0000-000000000000',
+        siem_id: '00000000-0000-0000-0000-000000000000',
         site_id: '00000000-0000-0000-0000-000000000000',
         tenant_id: '00000000-0000-0000-0000-000000000000',
         primary_siem_app_id: '00000000-0000-0000-0000-000000000000',

@@ -58,7 +58,7 @@ export class ProcessHelper {
    * @param options дополнительные настройки
    * @returns возвращает результат выполнения команды по ее окончанию
    */
-  public static execute(
+  public static async execute(
     command: string,
     params: string[],
     options: ExecutionProcessOptions
@@ -90,7 +90,7 @@ export class ProcessHelper {
       executionResult.output = '';
 
       if (options.cancellationToken) {
-        options.cancellationToken.onCancellationRequested((e) => {
+        options.cancellationToken.onCancellationRequested(() => {
           child.kill();
           executionResult.exitCode = child.exitCode;
           executionResult.isInterrupted = true;
@@ -190,7 +190,7 @@ export class ProcessHelper {
         output += data.toString();
       });
 
-      child.on('close', function (code) {
+      child.on('close', function () {
         resolve(output);
       });
     });

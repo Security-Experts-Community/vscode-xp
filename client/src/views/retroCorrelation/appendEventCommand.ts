@@ -15,6 +15,7 @@ import moment from 'moment';
 
 import { OsType } from '../../models/locator/pathLocator';
 import { DateHelper } from '../../helpers/dateHelper';
+import { ToolsManager } from '../../models/content/toolsManager';
 
 export class AppendEventMessage implements WebViewMessage {
   cmdName: string;
@@ -84,6 +85,8 @@ export class AppendEventsCommand extends WebViewCommand<AppendEventMessage> {
       );
       return;
     }
+
+    await ToolsManager.init(Configuration.get());
 
     const tmpDirPath = this.message.getTmpDir;
     const jsonFiles = FileSystemHelper.readFilesNameFilter(tmpDirPath, /.+?\.json$/g);

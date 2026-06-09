@@ -38,6 +38,8 @@
     "Error.LocalizationBuilding": "Не удалось скомпилировать правила локализации. Исправьте [ошибки в файлах](command:workbench.action.showErrorsWarnings). Если ошибок нет, проверьте [выходные данные](command:xp.commonCommands.showOutputChannel)",
     "Error.InvalidPath": "Недопустимые символы в пути {0}. Исправьте путь и повторите попытку",
 
+    "LSPServer.ServerExecutableFoundAt": "Исполняемый файл XPLang LSP сервера найден по пути {0}",
+    "LSPServer.UsingLegacyLSPServer": "Не удалось найти исполняемый файл XPLang LSP сервера, будет использована старая версия LSP сервера",
     "LSPServer.ServerHasStarted": "XPLang LSP сервер успешно запущен. PID: {0}",
 
     "View.ObjectTree.Message.TheKnowledgeBaseIsNotInitialized": "База знаний не найдена. Создать стандартные папки для продукта {0}?",
@@ -282,5 +284,6 @@
     "View.UnitTests.TestsAreRunning": "Выполняются модульные тесты правила \"{0}\"",
     "View.UnitTests.TestIsRunning": "Выполняется тест #{0}",
     "View.UnitTests.RuleIsNotLoaded": "Правило еще не успело загрузится. Повторите еще раз",
-    "View.UnitTests.NoSuchTestForTheRule": "Не найдено теста #{0} для правила \"{1}\""
+    "View.UnitTests.NoSuchTestForTheRule": "Не найдено теста #{0} для правила \"{1}\"",
+    "View.UnitTests.CloseWarning": "Точно ли хотите открыть модульные тесты другого правила?"
 }

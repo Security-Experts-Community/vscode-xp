@@ -5,7 +5,7 @@
   "author": "Dmitry Fedosov (@DmitryOffsec)",
   "icon": "resources/xp.png",
   "license": "MIT",
-  "version": "3.20.3",
+  "version": "3.21.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -454,6 +454,11 @@
         "category": "%xp.commonCommandCategory%"
       },
       {
+        "command": "xpContentEditor.setKBTVersion",
+        "title": "Выбрать версию KBT",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
         "command": "xp.contentTree.openKnowledgebaseCommand",
         "title": "%xp.views.knowledgebaseTree.openKnowledgebaseCommand%",
         "category": "%xp.commonCommandCategory%",
@@ -621,10 +626,30 @@
       "type": "object",
       "title": "xp",
       "properties": {
+        "xplang_ls.taxonomy_path": {
+          "scope": "window",
+          "type": "string",
+          "markdownDescription": "LSP taxonomy path"
+        },
+        "xplang_ls.taxonomy_i18n_path": {
+          "scope": "window",
+          "type": "string",
+          "markdownDescription": "LSP i18n taxonomy path"
+        },
+        "xplang_ls.schema_path": {
+          "scope": "window",
+          "type": "string",
+          "markdownDescription": "LSP schema path"
+        },
         "xpConfig.kbtBaseDirectory": {
           "scope": "window",
           "type": "string",
           "markdownDescription": "%xp.xpConfig.kbtBaseDirectoryDescription%"
+        },
+        "xpConfig.kbtVersionsDirectory": {
+          "scope": "window",
+          "type": "string",
+          "markdownDescription": "Folder with all availible versions of KBT"
         },
         "xpConfig.outputDirectoryPath": {
           "scope": "window",

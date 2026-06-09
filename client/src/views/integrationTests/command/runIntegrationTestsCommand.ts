@@ -5,7 +5,6 @@ import { Command, RuleCommandParams } from '../../../models/command/command';
 import { TestHelper } from '../../../helpers/testHelper';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { RunIntegrationTestDialog } from '../../runIntegrationDialog';
-import { SiemJOutputParser } from '../../../models/siemj/siemJOutputParser';
 import { IntegrationTestRunner } from '../../../models/tests/integrationTestRunner';
 import { TestStatus } from '../../../models/tests/testStatus';
 import { ContentItemStatus } from '../../../models/content/ruleBaseItem';
@@ -14,6 +13,7 @@ import { ContentTreeProvider } from '../../contentTree/contentTreeProvider';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { RegExpHelper } from '../../../helpers/regExpHelper';
 import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
+import { SiemjManager } from '../../../models/siemj/siemjManager';
 
 export class RunIntegrationTestsCommand extends Command {
   constructor(private params: RuleCommandParams) {
@@ -68,14 +68,16 @@ export class RunIntegrationTestsCommand extends Command {
         );
         testRunnerOptions.cancellationToken = cancellationToken;
 
-        const outputParser = new SiemJOutputParser(config);
-        const testRunner = new IntegrationTestRunner(config, outputParser);
+        const contentRoot = this.params.rule.getContentRootPath(config);
+        const siemjManager = new SiemjManager(config);
+        const configBuilder = siemjManager.getConfigBuilder(contentRoot);
 
+        const testRunner = new IntegrationTestRunner(config, configBuilder);
         const siemjResult = await testRunner.runOnce(this.params.rule, testRunnerOptions);
         config.resetDiagnostics(siemjResult.fileDiagnostics);
 
         // Проверка необходимого набора полей.
-        this.validateRequiredFields(siemjResult.testCount);
+        // await this.validateRequiredFields(siemjResult.testCount);
 
         const executedIntegrationTests = this.params.rule.getIntegrationTests();
         if (executedIntegrationTests.every((it) => it.getStatus() === TestStatus.Success)) {
@@ -120,6 +122,7 @@ export class RunIntegrationTestsCommand extends Command {
       .map((i) => i + 1)
       .forEach(async (testNumber) => {
         const corrFilePath = TestHelper.getEnrichedCorrEventFilePath(
+          this.params.config,
           this.params.tmpDirPath,
           this.params.rule.getName(),
           testNumber

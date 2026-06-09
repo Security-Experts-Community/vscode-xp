@@ -151,7 +151,10 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
     test.setStatus(TestStatus.Failed);
     const expectation = test.getTestExpectation();
     const failedOutput = this._outputParser.parseFailedOutput(output.output, expectation);
-    test.setOutput(failedOutput);
+    if (failedOutput) {
+      test.setActualEvent(failedOutput);
+      test.setOutput(failedOutput);
+    }
 
     // Парсим ошибки из вывода.
     let diagnostics = this._outputParser.parse(output.output);

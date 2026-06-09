@@ -40,8 +40,9 @@ export class ShowActualEventCommand extends Command {
       return;
     }
 
-    // Получаем фактическое событие.
-    const actualEventsFilePath = TestHelper.getEnrichedCorrEventFilePath(
+    // Получаем путь к файлу с фактическим (корреляционным) событием.
+    var actualEventsFilePath = TestHelper.getEnrichedCorrEventFilePath(
+      this.params.config,
       this.params.tmpDirPath,
       ruleName,
       this.params.testNumber
@@ -66,9 +67,14 @@ export class ShowActualEventCommand extends Command {
         `Фактическое событий интеграционного теста №${this.params.testNumber} правила ${ruleName} пусто`
       );
     }
+    const actualEvents = TestHelper.extractEventsFromResultString(
+      this.params.config,
+      actualEventsString,
+      ruleName,
+      this.params.test.getNumber()
+    );
 
     // Очищаем события от технических полей и форматируем для вывода.
-    const actualEvents = actualEventsString.split(os.EOL).filter((l) => l);
     const actualFilteredEvents = TestHelper.cleanJsonlEventFromTechnicalFields(actualEvents).join(
       os.EOL
     );

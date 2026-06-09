@@ -4,7 +4,6 @@ import * as path from 'path';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { Configuration } from '../../models/configuration';
 import { XpException } from '../../models/xpException';
-import { SiemjConfBuilder } from '../../models/siemj/siemjConfigBuilder';
 import { SiemjManager } from '../../models/siemj/siemjManager';
 
 export class CorrGraphRunner {
@@ -29,7 +28,8 @@ export class CorrGraphRunner {
       await fs.promises.mkdir(outputFolder, { recursive: true });
     }
 
-    const configBuilder = new SiemjConfBuilder(this.config, rootPath);
+    const siemjManager = new SiemjManager(this.config);
+    const configBuilder = siemjManager.getConfigBuilder(rootPath);
     configBuilder.addNormalizationsGraphBuilding(false);
     configBuilder.addTablesSchemaBuilding();
     configBuilder.addTablesDbBuilding();
@@ -61,7 +61,6 @@ export class CorrGraphRunner {
       await fs.promises.unlink(corrEventFilePath);
     }
 
-    const siemjManager = new SiemjManager(this.config);
     await siemjManager.executeSiemjConfig(correlationsFullPath, siemjConfContent);
 
     const corrEventsFilePath = this.config.getCorrelatedEventsFilePath(rootFolder);
