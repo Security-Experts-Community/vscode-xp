@@ -520,7 +520,7 @@ export class TestHelper {
     return defaultLocRegExp.test(localization);
   }
 
-  public static formatTestCodeAndEvents(testCode: string, priorityFields?: string[]): string {
+  public static formatTestCodeAndEvents(testCode: string, priorityFields: string[] = []): string {
     const compressedNormalizedEventReg = /({\S.+})\s*$/gm;
 
     let formattedTestCode = testCode;
@@ -536,12 +536,8 @@ export class TestHelper {
       // Форматируем событие и сортируем поля объекта, чтобы поля групп типа subject.* были рядом.
       try {
         const compressEventJson = JSON.parse(escapedCompressedEvent);
-        const orderedCompressEventJson = priorityFields
-          ? JsHelper.sortEventKeys(compressEventJson, priorityFields)
-          : Object.keys(compressEventJson).sort().reduce((obj, key) => {
-              obj[key] = compressEventJson[key];
-              return obj;
-            }, {});
+        // С пустым priorityFields поля сортируются просто по алфавиту.
+        const orderedCompressEventJson = JsHelper.sortEventKeys(compressEventJson, priorityFields);
         const formattedEvent = JsHelper.formatJsonObject(orderedCompressEventJson);
         formattedTestCode = formattedTestCode.replace(compressedEvent, function () {
           return formattedEvent;

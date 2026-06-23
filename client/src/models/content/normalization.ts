@@ -17,7 +17,6 @@ import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { XPObjectType } from './xpObjectType';
 import { ContentHelper } from '../../helpers/contentHelper';
 import { XpException } from '../xpException';
-import { Log } from '../../extension';
 import { GetSIEMJVersion, SIEMJVersion } from '../siemj/siemjManager';
 
 export class Normalization extends RuleBaseItem {
