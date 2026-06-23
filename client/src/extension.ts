@@ -127,14 +127,14 @@ export async function activate(context: ExtensionContext): Promise<void> {
     TableListsEditorViewProvider.init(config);
     const kbtVersionsDirectory = config.getKbtVersionsDirectory();
     if (kbtVersionsDirectory) {
-      SetKBTVersionCommand.init(config);
+      await SetKBTVersionCommand.init(config);
+    } else {
+      config.setSIEMJVersion();
     }
     SetContentTypeCommand.init(config);
     InitKBRootCommand.init(config);
     RetroCorrelationViewController.init(config);
     CommonCommands.init(config);
-
-    config.setSIEMJVersion();
 
     siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(
       XPPackingTaskProvider.Type,

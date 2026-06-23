@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { Configuration } from '../../models/configuration';
 import { BaseUnitTest } from '../../models/tests/baseUnitTest';
-import { TestHelper } from '../../helpers/testHelper';
+import { EVENT_PRIORITY_FIELDS, TestHelper } from '../../helpers/testHelper';
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import { RegExpHelper } from '../../helpers/regExpHelper';
@@ -251,7 +251,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
     for (const unitTest of unitTests) {
       const status = unitTest.getStatus();
       const inputData = unitTest.getTestInputData();
-      const expectationData = TestHelper.formatTestCodeAndEvents(unitTest.getTestExpectation());
+      const expectationData = TestHelper.formatTestCodeAndEvents(unitTest.getTestExpectation(), EVENT_PRIORITY_FIELDS);
       const actualData = unitTest.getActualData();
 
       tests.push({

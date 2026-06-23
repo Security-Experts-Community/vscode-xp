@@ -135,6 +135,7 @@ export class SiemjManager {
       );
     }
 
+    normEventsContent = TestHelper.sortNormalizedEventsJsonl(normEventsContent);
     return normEventsContent;
   }
 
@@ -194,6 +195,7 @@ export class SiemjManager {
       );
     }
 
+    enrichEventsContent = TestHelper.sortNormalizedEventsJsonl(enrichEventsContent);
     return enrichEventsContent;
   }
 

@@ -5,18 +5,30 @@ import { Configuration } from '../configuration';
 import { TestStatus } from './testStatus';
 import { BaseUnitTest } from './baseUnitTest';
 import { SDKUtilitiesWrappers } from '../../tools/sdkUtilitiesWrappers';
+import { NormalizationUnitTest } from './normalizationUnitTest';
 import { diffJson } from 'diff';
 import { UnitTestOptions, UnitTestRunner } from './unitTestsRunner';
 import { UnitTestOutputParser } from './unitTestOutputParser';
 import { XpException } from '../xpException';
 import { RegExpHelper } from '../../helpers/regExpHelper';
 import { JsHelper } from '../../helpers/jsHelper';
+import { EVENT_PRIORITY_FIELDS } from '../../helpers/testHelper';
 
 export class NormalizationUnitTestsRunner implements UnitTestRunner {
   constructor(
-    private config: Configuration,
-    private outputParser: UnitTestOutputParser
+    protected config: Configuration,
+    protected outputParser: UnitTestOutputParser
   ) {}
+
+  protected async getNormalizerOutput(
+    unitTest: BaseUnitTest,
+    options?: UnitTestOptions
+  ): Promise<string> {
+    const SDKTools = new SDKUtilitiesWrappers(this.config);
+    return SDKTools.testNormalization(unitTest as NormalizationUnitTest, {
+      useAppendix: options?.useAppendix
+    });
+  }
 
   public async run(unitTest: BaseUnitTest, options?: UnitTestOptions): Promise<BaseUnitTest> {
     // Нормализатор не переваривает кириллицу в пути
@@ -31,11 +43,7 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
       );
     }
 
-    // Парсим ошибки из вывода.
-    const SDKTools = new SDKUtilitiesWrappers(this.config);
-    const utilityOutput = await SDKTools.testNormalization(unitTest, {
-      useAppendix: options?.useAppendix
-    });
+    const utilityOutput = await this.getNormalizerOutput(unitTest, options);
     if (!utilityOutput) {
       throw new XpException(
         'Нормализатор не вернул никакого события. Исправьте правило нормализации и повторите'
@@ -86,7 +94,8 @@ export class NormalizationUnitTestsRunner implements UnitTestRunner {
     try {
       const actualEventObject = JSON.parse(actualEvent);
       // Сохраняем фактическое события для последующего обновления ожидаемого.
-      const actualEventString = JsHelper.formatJsonObject(actualEventObject);
+      const sortedActualEventObject = JsHelper.sortEventKeys(actualEventObject, EVENT_PRIORITY_FIELDS);
+      const actualEventString = JsHelper.formatJsonObject(sortedActualEventObject);
       unitTest.setActualEvent(actualEventString);
 
       clearActualEventObject = this.clearIrrelevantFields(actualEventObject);
