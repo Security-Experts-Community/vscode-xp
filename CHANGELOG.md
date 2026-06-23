@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.21.4 (Pre-Release)
+
+- Влит PR по добавлению новых имен журналов в выпадающий список редактора metainfo (special thanks @paran0id34)
+- Влиты PR по применению evt-tests для модульных тестов правил нормализации и добавлению нового include в конфиг тестов
+
 ## 3.21.3 (Pre-Release)
 
 - Влит PR по обновлению полей конверта (special thanks @zatraahali)
