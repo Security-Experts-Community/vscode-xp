@@ -611,7 +611,8 @@ out=${output}
       "body"
     ],
     "include": [
-      "_dropped"
+      "_dropped",
+      "_applied_enrichment_rules"
     ],
     "filter-expect-events": [
       "correlation_name",

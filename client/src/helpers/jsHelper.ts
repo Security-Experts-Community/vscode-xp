@@ -57,6 +57,20 @@ export class JsHelper {
     }, {});
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public static sortEventKeys<T extends Record<string, any>>(
+    object: T,
+    priorityFields: string[]
+  ): T {
+    const keys = Object.keys(object);
+    const priorityKeys = priorityFields.filter(k => keys.includes(k));
+    const remainingKeys = keys.filter(k => !priorityFields.includes(k)).sort();
+    return [...priorityKeys, ...remainingKeys].reduce((obj: any, key) => {
+      obj[key] = object[key];
+      return obj;
+    }, {}) as T;
+  }
+
   /**
    * Возвращает глубокую копию объекта с отсортированными в соотсветствии со
    * схемой полями на корневом уровне вложенности

@@ -132,22 +132,21 @@ export async function activate(context: ExtensionContext): Promise<void> {
     TableListsEditorViewProvider.init(config);
     const kbtVersionsDirectory = config.getKbtVersionsDirectory();
     if (kbtVersionsDirectory) {
-      SetKBTVersionCommand.init(config);
+      await SetKBTVersionCommand.init(config);
+    } else {
+      try {
+        await config.setSIEMJVersion();
+      } catch (error) {
+        Log.warn(`Failed to determine SIEMJ version: ${error.message}`);
+        if (!config.isLocalMacOS()) {
+          throw error;
+        }
+      }
     }
     SetContentTypeCommand.init(config);
     InitKBRootCommand.init(config);
     RetroCorrelationViewController.init(config);
     CommonCommands.init(config);
-
-    try {
-      await config.setSIEMJVersion();
-    } catch (error) {
-      Log.warn(`Failed to determine SIEMJ version: ${error.message}`);
-      if (!config.isLocalMacOS()) {
-        throw error;
-      }
-    }
-
     siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(
       XPPackingTaskProvider.Type,
       new XPPackingTaskProvider(config)

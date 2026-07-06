@@ -23,6 +23,8 @@ export type EventMimeType =
   | 'text/csv'
   | 'text/xml';
 
+export const EVENT_PRIORITY_FIELDS = ['subject', 'action', 'object', 'status'];
+
 export class TestHelper {
   /**
    * Проверяет, может быть проверена локализация у правила
@@ -490,13 +492,35 @@ export class TestHelper {
     return jsonlCleaned;
   }
 
+  /**
+   * Сортирует поля каждого события в JSONL: сначала subject/action/object/status,
+   * затем остальные поля по алфавиту. Возвращает pretty-printed JSON.
+   */
+  public static sortNormalizedEventsJsonl(jsonlStr: string): string {
+    if (!jsonlStr) {
+      return jsonlStr;
+    }
+    return StringHelper.splitTextOnLines(jsonlStr)
+      .filter(line => line.trim())
+      .map(line => {
+        try {
+          const obj = JSON.parse(line);
+          const sorted = JsHelper.sortEventKeys(obj, EVENT_PRIORITY_FIELDS);
+          return JsHelper.formatJsonObject(sorted);
+        } catch {
+          return line;
+        }
+      })
+      .join(os.EOL);
+  }
+
   public static isDefaultLocalization(localization: string): boolean {
     // account start process success на узле wks01.testlab.esc
     const defaultLocRegExp = /^[a-z_0-9]+ [a-z_0-9]+ [a-z_0-9]+ [a-z_0-9]+ (на узле|on host) \S+$/g;
     return defaultLocRegExp.test(localization);
   }
 
-  public static formatTestCodeAndEvents(testCode: string): string {
+  public static formatTestCodeAndEvents(testCode: string, priorityFields: string[] = []): string {
     const compressedNormalizedEventReg = /({\S.+})\s*$/gm;
 
     let formattedTestCode = testCode;
@@ -512,12 +536,8 @@ export class TestHelper {
       // Форматируем событие и сортируем поля объекта, чтобы поля групп типа subject.* были рядом.
       try {
         const compressEventJson = JSON.parse(escapedCompressedEvent);
-        const orderedCompressEventJson = Object.keys(compressEventJson)
-          .sort()
-          .reduce((obj, key) => {
-            obj[key] = compressEventJson[key];
-            return obj;
-          }, {});
+        // С пустым priorityFields поля сортируются просто по алфавиту.
+        const orderedCompressEventJson = JsHelper.sortEventKeys(compressEventJson, priorityFields);
         const formattedEvent = JsHelper.formatJsonObject(orderedCompressEventJson);
         formattedTestCode = formattedTestCode.replace(compressedEvent, function () {
           return formattedEvent;

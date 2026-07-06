@@ -1,5 +1,10 @@
 # Change Log
 
+## 3.21.4 (Pre-Release)
+
+- Merged PR for adding new journal names to the metainfo editor drop-down list (special thanks @paran0id34)
+- Merged PR for using evt-tests for unit tests of normalization rules and adding a new include to the test config.
+
 ## 3.21.3 (Pre-Release)
 
 - Merged PR for updating envelope fields (special thanks to @zatraahali)

@@ -5,7 +5,7 @@ import * as os from 'os';
 
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
-import { EventMimeType, TestHelper } from '../../helpers/testHelper';
+import { EventMimeType, EVENT_PRIORITY_FIELDS, TestHelper } from '../../helpers/testHelper';
 import { IntegrationTest } from '../../models/tests/integrationTest';
 import { Correlation } from '../../models/content/correlation';
 import { Enrichment } from '../../models/content/enrichment';
@@ -265,7 +265,8 @@ export class IntegrationTestEditorViewProvider {
           const rawEvents = it.getRawEvents();
           const formattedTestCode = TestHelper.formatTestCodeAndEvents(it.getTestCode());
           const formattedNormalizedEvents = TestHelper.formatTestCodeAndEvents(
-            it.getNormalizedEvents()
+            it.getNormalizedEvents(),
+            EVENT_PRIORITY_FIELDS
           );
 
           let diff = '';
