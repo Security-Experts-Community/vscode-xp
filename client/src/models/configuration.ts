@@ -133,25 +133,21 @@ export class Configuration {
   }
 
   public async updateLSPTaxonomyPath(): Promise<void> {
-    const configuration = this.getKBTLSPConfiguration();
     const taxonomyPath = this.craftLSPTaxonomyPath();
-    await configuration.update('taxonomy_path', taxonomyPath, true, false);
+    await this.updateKbtLspSetting('taxonomy_path', taxonomyPath);
   }
 
   public async updateLSPi18nTaxonomyPath(): Promise<void> {
-    const configuration = this.getKBTLSPConfiguration();
     const taxonomyPath = this.craftLSPi18nTaxonomyPath();
-    await configuration.update('taxonomy_i18n_path', taxonomyPath, true, false);
+    await this.updateKbtLspSetting('taxonomy_i18n_path', taxonomyPath);
   }
 
   public async updateLSPSchemaTaxonomyPath(schemaPath: string): Promise<void> {
-    const configuration = this.getKBTLSPConfiguration();
-    await configuration.update('schema_path', schemaPath, true, false);
+    await this.updateKbtLspSetting('schema_path', schemaPath);
   }
 
   public async clearLSPSchemaPath(): Promise<void> {
-    const configuration = this.getKBTLSPConfiguration();
-    await configuration.update('schema_path', '', true, false);
+    await this.updateKbtLspSetting('schema_path', '');
   }
 
   public async ensureLspSchemaPath(): Promise<string | undefined> {
@@ -165,13 +161,21 @@ export class Configuration {
       const contentRootFolder = path.basename(contentRoot);
       const schemaPath = this.getSchemaFullPath(contentRootFolder);
       if (fs.existsSync(schemaPath)) {
-        await this.getKBTLSPConfiguration().update('schema_path', schemaPath, true, false);
+        await this.updateKbtLspSetting('schema_path', schemaPath);
         return schemaPath;
       }
     }
 
-    await this.clearLSPSchemaPath();
-    return undefined;
+    const placeholderRootFolder =
+      contentRoots.length > 0 ? path.basename(contentRoots[0]) : 'packages';
+    const placeholderSchemaPath = this.getSchemaFullPath(placeholderRootFolder);
+    await fs.promises.mkdir(path.dirname(placeholderSchemaPath), { recursive: true });
+    if (!fs.existsSync(placeholderSchemaPath)) {
+      await fs.promises.writeFile(placeholderSchemaPath, '{}', 'utf-8');
+    }
+
+    await this.updateKbtLspSetting('schema_path', placeholderSchemaPath);
+    return placeholderSchemaPath;
   }
 
   private shouldUseNativeMacLspPaths(): boolean {
@@ -1229,6 +1233,15 @@ export class Configuration {
 
   public getKBTLSPConfiguration(): vscode.WorkspaceConfiguration {
     return vscode.workspace.getConfiguration(this.LSP_CONFIGURATION_PREFIX);
+  }
+
+  private async updateKbtLspSetting(
+    section: 'taxonomy_path' | 'taxonomy_i18n_path' | 'schema_path',
+    value: string
+  ): Promise<void> {
+    const configuration = this.getKBTLSPConfiguration();
+    await configuration.update(section, value, vscode.ConfigurationTarget.Global, false);
+    await configuration.update(section, value, vscode.ConfigurationTarget.Workspace, false);
   }
 
   /**
