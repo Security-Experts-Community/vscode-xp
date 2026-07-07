@@ -56,9 +56,13 @@ Relevant settings:
 - `xpConfig.docker.workspaceContainerPath`
 - `xpConfig.docker.kbtBaseDirectory`
 - `xpConfig.docker.outputDirectoryPath`
+- `xpConfig.lspServerExecutablePath`
+- `xpConfig.formatterExecutablePath`
 - `xpConfig.macos.showContainerSetupPrompt`
 
 While the container is being created and KBT is being installed, the extension writes detailed progress to the `eXtraction and Processing` output channel. The setup notification includes a direct action to open that output.
+
+On local macOS, the legacy in-extension LSP is disabled. If you want definition lookup, hover, diagnostics and other language-server features, set `xpConfig.lspServerExecutablePath` to a native macOS `evt-xp-language-server` binary. Formatting can also use a native macOS binary via `xpConfig.formatterExecutablePath`. If that formatter path is empty, formatting falls back to Docker in Docker tool mode.
 
 Troubleshooting:
 
@@ -66,6 +70,8 @@ Troubleshooting:
 - Container not running: start a container with XP tools, choose an already running container in the wizard, or rerun the setup wizard and choose to create a new container.
 - Path mapping failed: check that `workspaceHostPath` points to the local knowledgebase and `workspaceContainerPath` matches the bind mount in the container.
 - Tool not found in container: run the setup wizard again and choose `Download latest xp-kbt`, `Choose xp-kbt version`, or check `xpConfig.docker.kbtBaseDirectory`.
+- Native LSP starts but reports schema warnings: run a build flow that generates the table schema, for example a normalization or correlation test/build that includes schema generation, and then restart or reload the extension if needed.
+- Native LSP is not required on macOS: if you do not have a native `evt-xp-language-server`, leave `xpConfig.lspServerExecutablePath` empty. Docker-backed build/test operations will continue to work without LSP features.
 
 ## Event normalization
 

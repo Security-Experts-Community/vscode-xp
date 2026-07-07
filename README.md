@@ -56,9 +56,13 @@ Backend может быть любым Docker-контейнером, в кот�
 - `xpConfig.docker.workspaceContainerPath`
 - `xpConfig.docker.kbtBaseDirectory`
 - `xpConfig.docker.outputDirectoryPath`
+- `xpConfig.lspServerExecutablePath`
+- `xpConfig.formatterExecutablePath`
 - `xpConfig.macos.showContainerSetupPrompt`
 
 Во время создания контейнера и установки KBT расширение пишет подробный прогресс в канал вывода `eXtraction and Processing`. Из уведомления setup wizard можно сразу открыть этот канал через ссылку на output.
+
+На локальной macOS legacy LSP, встроенный в расширение, отключён. Если нужны переход к определению, hover, diagnostics и другие возможности language server, укажите в `xpConfig.lspServerExecutablePath` путь до нативного macOS-бинарника `evt-xp-language-server`. Форматирование тоже может использовать нативный macOS-бинарник через `xpConfig.formatterExecutablePath`. Если путь к форматтеру пустой, то в Docker-режиме форматирование будет выполняться через контейнер.
 
 Troubleshooting:
 
@@ -66,6 +70,8 @@ Troubleshooting:
 - Container not running: запустите контейнер с XP tools, выберите уже запущенный контейнер в wizard или повторите setup wizard и выберите создание нового контейнера.
 - Path mapping failed: проверьте, что `workspaceHostPath` указывает на локальную knowledgebase, а `workspaceContainerPath` совпадает с bind mount в контейнере.
 - Tool not found in container: запустите setup wizard ещё раз и выберите `Download latest xp-kbt`, `Choose xp-kbt version`, либо проверьте `xpConfig.docker.kbtBaseDirectory`.
+- Native LSP starts but reports schema warnings: запустите сценарий сборки, который генерирует table schema, например сборку/тест, включающий генерацию схемы, а затем при необходимости перезапустите или перезагрузите расширение.
+- Native LSP на macOS не обязателен: если у вас нет нативного `evt-xp-language-server`, оставьте `xpConfig.lspServerExecutablePath` пустым. Docker-операции сборки и тестирования продолжат работать и без LSP-функций.
 
 ## Нормализация событий
 
