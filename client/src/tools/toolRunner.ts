@@ -236,10 +236,6 @@ export class DockerToolRunner implements ToolRunner {
       return mounted;
     }
 
-    if (names.length === 1) {
-      return names[0];
-    }
-
     return undefined;
   }
 
