@@ -24,7 +24,7 @@ export class ExceptionHelper {
       case 'OperationCanceledException': {
         const typedError = error as XpException;
 
-        Log.info(null, typedError);
+        ExceptionHelper.writeInfo(outputChannel, typedError.message ?? '');
         vscode.window.showInformationMessage(typedError.message);
         break;
       }
@@ -48,8 +48,8 @@ export class ExceptionHelper {
         vscode.window.showErrorMessage(userMessage);
 
         // Пишем stack в output.
-        Log.error(resultDefaultMessage);
-        Log.error(error.message, error);
+        ExceptionHelper.writeError(outputChannel, resultDefaultMessage);
+        ExceptionHelper.writeError(outputChannel, error.message, error);
         outputChannel.show();
       }
     }
@@ -62,12 +62,52 @@ export class ExceptionHelper {
     // Есть вложенные исключения.
     if (error instanceof XpException && error.getInnerException()) {
       // Пишем текущие исключение.
-      Log.error(error.message, error);
+      ExceptionHelper.writeError(outputChannel, error.message, error);
 
       // Пишем вложенное.
       ExceptionHelper.recursiveWriteXpExceptionToOutput(error.getInnerException(), outputChannel);
     } else {
-      Log.error(error.message, error);
+      ExceptionHelper.writeError(outputChannel, error.message, error);
     }
+  }
+
+  private static writeInfo(outputChannel: vscode.OutputChannel, message: string): void {
+    if (Log) {
+      Log.info(message);
+      return;
+    }
+
+    outputChannel.appendLine(`${ExceptionHelper.timestamp()} [Info] ${message}`);
+  }
+
+  private static writeError(
+    outputChannel: vscode.OutputChannel,
+    message: string,
+    error?: Error | unknown
+  ): void {
+    if (Log) {
+      if (error) {
+        Log.error(message, error);
+      } else {
+        Log.error(message);
+      }
+      return;
+    }
+
+    outputChannel.appendLine(`${ExceptionHelper.timestamp()} [Error] ${message ?? ''}`);
+    if (error) {
+      outputChannel.appendLine(String((error as Error)?.stack ?? error));
+    }
+  }
+
+  private static timestamp(): string {
+    const date = new Date();
+    const yyyy = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `[${day}.${month}.${yyyy} ${hours}:${minutes}:${seconds}]`;
   }
 }

@@ -223,7 +223,7 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
       testDirectoryPath = path.join(ruleDirPath, RuleBaseItem.TESTS_DIRNAME);
     }
 
-    // Очищаем старые тесты, так как если их стало меньше, то будут оставаться удалённые.
+    // Удаляем только те файлы тестов, для которых больше нет соответствующего теста.
     if (fs.existsSync(testDirectoryPath)) {
       let oldTestFilePaths = FileSystemHelper.readFilesNameFilter(
         testDirectoryPath,
@@ -237,8 +237,20 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 
       oldTestFilePaths = oldTestFilePaths.concat(rawEventFilePaths);
 
+      const actualFilePaths = new Set<string>();
+      for (const it of this.integrationTests) {
+        if (ruleDirPath) {
+          it.setRuleDirectoryPath(ruleDirPath);
+        }
+
+        actualFilePaths.add(it.getTestCodeFilePath());
+        actualFilePaths.add(it.getRawEventsFilePath());
+      }
+
       for (const it of oldTestFilePaths) {
-        await fs.promises.unlink(it);
+        if (!actualFilePaths.has(it)) {
+          await fs.promises.unlink(it);
+        }
       }
     }
 

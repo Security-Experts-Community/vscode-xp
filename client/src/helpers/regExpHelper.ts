@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { FileSystemHelper } from './fileSystemHelper';
 
 export interface IResultTestFiles {
   detailedReportFilePath: string;
@@ -68,6 +69,35 @@ export class RegExpHelper {
       resulults.get(testNumber).actualEventsFilePath = actualEventsFilePath;
     }
     return resulults;
+  }
+
+  public static getEnrichedCorrTestEventsFileNameFromDirectory(
+    directoryPath: string
+  ): Map<string, IResultTestFiles> {
+    const results = new Map<string, IResultTestFiles>();
+    const files = FileSystemHelper.getRecursiveFilesSync(directoryPath);
+
+    for (const filePath of files) {
+      const detailedReportMatch = /test_conds_(\d+)_result\.txt$/i.exec(filePath);
+      if (detailedReportMatch) {
+        const testNumber = detailedReportMatch[1];
+        if (!results.has(testNumber)) {
+          results.set(testNumber, { detailedReportFilePath: '', actualEventsFilePath: '' });
+        }
+        results.get(testNumber).detailedReportFilePath = filePath;
+      }
+
+      const actualEventsMatch = /test_conds_(\d+)_events\.txt$/i.exec(filePath);
+      if (actualEventsMatch) {
+        const testNumber = actualEventsMatch[1];
+        if (!results.has(testNumber)) {
+          results.set(testNumber, { detailedReportFilePath: '', actualEventsFilePath: '' });
+        }
+        results.get(testNumber).actualEventsFilePath = filePath;
+      }
+    }
+
+    return results;
   }
 
   public static getCorrTestEventsFileName(ruleName: string, testNumber?: number): RegExp {

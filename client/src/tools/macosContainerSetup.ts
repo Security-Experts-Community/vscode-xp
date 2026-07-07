@@ -28,7 +28,7 @@ export class MacOSContainerSetup {
       return;
     }
 
-    const setupIssue = this.getMacOSDockerSetupIssue(config);
+    const setupIssue = await this.getMacOSDockerSetupIssue(config);
     if (!config.getMacOSShowContainerSetupPrompt() && !setupIssue) {
       return;
     }
@@ -69,16 +69,20 @@ export class MacOSContainerSetup {
     }
   }
 
-  private static getMacOSDockerSetupIssue(config: Configuration): string | undefined {
-    if (!config.shouldUseDockerToolRunner()) {
-      return undefined;
-    }
-
+  private static async getMacOSDockerSetupIssue(
+    config: Configuration
+  ): Promise<string | undefined> {
     const xpConfig = config.getWorkspaceConfiguration();
     const containerName = xpConfig.get<string>('docker.containerName');
     const workspaceHostPath = xpConfig.get<string>('docker.workspaceHostPath');
     const workspaceContainerPath = xpConfig.get<string>('docker.workspaceContainerPath');
     const kbtBaseDirectory = xpConfig.get<string>('docker.kbtBaseDirectory');
+
+    if (!config.shouldUseDockerToolRunner()) {
+      return containerName || workspaceHostPath || workspaceContainerPath || kbtBaseDirectory
+        ? 'container backend is configured but not enabled'
+        : undefined;
+    }
 
     if (!containerName) {
       return 'container is not selected';
@@ -102,6 +106,21 @@ export class MacOSContainerSetup {
 
     if (!this.looksLikeKnowledgebaseRoot(workspaceHostPath)) {
       return 'selected host path does not look like a knowledgebase root';
+    }
+
+    const dockerAvailable = await this.isDockerAvailable();
+    if (!dockerAvailable) {
+      return 'Docker Desktop is not available';
+    }
+
+    const containerRunning = await this.isContainerRunning(containerName);
+    if (!containerRunning) {
+      return `container '${containerName}' is not running`;
+    }
+
+    const kbtAvailable = await this.isKbtAvailable(containerName, kbtBaseDirectory);
+    if (!kbtAvailable) {
+      return `KBT was not found in container at '${kbtBaseDirectory}'`;
     }
 
     return undefined;
@@ -465,6 +484,48 @@ export class MacOSContainerSetup {
     }
 
     return undefined;
+  }
+
+  private static async isDockerAvailable(): Promise<boolean> {
+    try {
+      const result = await ProcessHelper.execute('docker', ['version'], {
+        encoding: 'utf-8',
+        checkCommandBeforeExecution: true
+      });
+
+      return result.exitCode === 0;
+    } catch {
+      return false;
+    }
+  }
+
+  private static async isContainerRunning(containerName: string): Promise<boolean> {
+    const result = await ProcessHelper.execute(
+      'docker',
+      ['inspect', '-f', '{{.State.Running}}', containerName],
+      { encoding: 'utf-8' }
+    );
+
+    return result.exitCode === 0 && result.output.trim() === 'true';
+  }
+
+  private static async isKbtAvailable(
+    containerName: string,
+    kbtBaseDirectory: string
+  ): Promise<boolean> {
+    const result = await ProcessHelper.execute(
+      'docker',
+      [
+        'exec',
+        containerName,
+        'sh',
+        '-lc',
+        `test -x '${kbtBaseDirectory}/extra-tools/siemj/siemj' -o -x '${kbtBaseDirectory}/build-tools/normalize'`
+      ],
+      { encoding: 'utf-8' }
+    );
+
+    return result.exitCode === 0;
   }
 
   private static async resolveMissingKbt(

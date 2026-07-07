@@ -46,6 +46,7 @@
 
 	"xp.xpConfig.kbtBaseDirectoryDescription": "Путь к папке c [Knowledge Base Toolkit](https://github.com/vxcontrol/xp-kbt/releases)",
 	"xp.xpConfig.outputDirectoryPathDescription": "Путь к папке, в которой сохраняются временные объекты. Эта папка очищается автоматически при каждом запуске расширения",
+	"xp.xpConfig.lspModeDescription": "Какой XP language server использовать. Auto предпочитает LSP из KBT, когда он доступен, и откатывается на legacy LSP, встроенный в расширение.",
 	"xp.xpConfig.correlatorTimeoutDescription": "Макс. время корреляции в секундах. Если оно будет превышено, корреляция будет прервана",
 	"xp.xpConfig.lspServerExecutablePathDescription": "Путь до исполняемого файла LSP сервера",
 

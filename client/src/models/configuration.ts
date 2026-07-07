@@ -76,6 +76,11 @@ export class Configuration {
   }
 
   public getCurrentSIEMJVersion(): string {
+    if (this.SIEMJVersion) {
+      return this.SIEMJVersion;
+    }
+
+    this.SIEMJVersion = this.detectSIEMJVersionSync();
     return this.SIEMJVersion;
   }
 
@@ -90,6 +95,11 @@ export class Configuration {
         throw new XpException(`Unexpected SIEMJ version: ${result}`);
       }
     }
+  }
+
+  public getLSPMode(): 'auto' | 'legacy' | 'kbt' {
+    const mode = this.getWorkspaceConfiguration().get<'auto' | 'legacy' | 'kbt'>('lspMode');
+    return mode ?? 'auto';
   }
 
   public getLSPTaxonomyPath(): string {
@@ -1144,6 +1154,28 @@ export class Configuration {
     return lspServerExecutablePath;
   }
 
+  public getResolvedLSPServerExecutablePath(): string | undefined {
+    if (this.getLSPMode() === 'legacy') {
+      return undefined;
+    }
+
+    if (this.shouldUseDockerToolRunner()) {
+      return undefined;
+    }
+
+    const configuredPath = this.getDirectLSPServerExecutablePath();
+    if (configuredPath) {
+      if (!fs.existsSync(configuredPath)) {
+        Log.warn(`Configured LSP server executable was not found: '${configuredPath}'.`);
+        return undefined;
+      }
+
+      return configuredPath;
+    }
+
+    return this.getKBTLSPFullPath() ?? undefined;
+  }
+
   /**
    * Automatically sets kbtVersionsDirectory if not already set
    */
@@ -1194,8 +1226,15 @@ export class Configuration {
    * Automatically sets lspServerExecutablePath if not already set
    */
   public autoSetLspServerExecutablePath(): void {
+    if (this.getLSPMode() === 'legacy') {
+      Log.info('Skipping KBT LSP auto-detection because xpConfig.lspMode=legacy.');
+      return;
+    }
+
     if (this.shouldUseDockerToolRunner()) {
-      Log.info('Skipping local KBT LSP auto-detection in Docker tool execution mode');
+      Log.info(
+        'Skipping local KBT LSP auto-detection in Docker tool execution mode. External KBT LSP is not launched via Docker because host file URIs are not mapped into the LSP protocol yet.'
+      );
       return;
     }
 
@@ -1205,7 +1244,7 @@ export class Configuration {
     if (!lspServerExecutablePath) {
       try {
         // Try to find the LSP server executable in the KBT directory
-        const fullPath = this.getKBTLSPFullPath();
+        const fullPath = this.getResolvedLSPServerExecutablePath();
 
         if (fullPath) {
           configuration.update('lspServerExecutablePath', fullPath, true, false);
@@ -1404,6 +1443,32 @@ export class Configuration {
       Log.warn(`Failed to resolve local KBT directory: ${error.message}`);
       return undefined;
     }
+  }
+
+  private detectSIEMJVersionSync(): string {
+    if (this.shouldUseDockerToolRunner()) {
+      return '2';
+    }
+
+    try {
+      const evtTestsPath = this.getEvtTestsFullPath();
+      if (evtTestsPath && fs.existsSync(evtTestsPath)) {
+        return '2';
+      }
+    } catch (error) {
+      Log.warn(`Failed to infer SIEMJ version from evt-tests: ${error.message}`);
+    }
+
+    try {
+      const lspPath = this.getKBTLSPFullPath();
+      if (lspPath && fs.existsSync(lspPath)) {
+        return '2';
+      }
+    } catch (error) {
+      Log.warn(`Failed to infer SIEMJ version from KBT LSP path: ${error.message}`);
+    }
+
+    return '1';
   }
 
   public async checkUserSetting(): Promise<void> {

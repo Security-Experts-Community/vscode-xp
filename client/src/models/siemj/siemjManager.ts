@@ -321,7 +321,7 @@ export class SiemjManager {
 
       case SIEMJVersion.Second:
         for (const [, resultFiles] of testResultFiles) {
-          let correlateEventsFileContent = await FileSystemHelper.readContentFile(
+          let correlateEventsFileContent = await this.config.readTextFile(
             resultFiles.actualEventsFilePath
           );
           correlateEventsFileContent = correlateEventsFileContent.trimEnd();

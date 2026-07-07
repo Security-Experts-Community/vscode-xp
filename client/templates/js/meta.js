@@ -129,9 +129,15 @@ function saveMetaInfo() {
 	});
 }
 
+const isMacOS = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+
+function hasPrimaryModifier(event) {
+	return isMacOS ? event.metaKey : event.ctrlKey;
+}
+
 // Сохраняем все тесты по хот кею Ctrl+S
 $(document).on("keydown", e => {
-	if (e.ctrlKey && e.code == 'KeyS') {
+	if (hasPrimaryModifier(e) && e.code == 'KeyS') {
 		e.preventDefault();
 		saveMetaInfo();
 	}

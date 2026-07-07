@@ -39,7 +39,7 @@
   "engines": {
     "vscode": "^1.75.0"
   },
-  "main": "./client/out/extension",
+  "main": "./client/out/extension.js",
   "capabilities": {
     "untrustedWorkspaces": {
       "supported": true
@@ -671,6 +671,17 @@
           ],
           "default": "auto",
           "markdownDescription": "%xp.xpConfig.toolExecutionModeDescription%"
+        },
+        "xpConfig.lspMode": {
+          "scope": "window",
+          "type": "string",
+          "enum": [
+            "auto",
+            "legacy",
+            "kbt"
+          ],
+          "default": "auto",
+          "markdownDescription": "%xp.xpConfig.lspModeDescription%"
         },
         "xpConfig.docker.containerName": {
           "scope": "window",

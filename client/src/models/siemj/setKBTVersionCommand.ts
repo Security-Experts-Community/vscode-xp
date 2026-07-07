@@ -13,6 +13,10 @@ export class SetKBTVersionCommand {
   static Name = 'xpContentEditor.setKBTVersion';
 
   static async init(config: Configuration): Promise<void> {
+    if (config.shouldUseDockerToolRunner()) {
+      return;
+    }
+
     const context = config.getContext();
     const setKBTVersionCommand = new SetKBTVersionCommand();
 
@@ -91,9 +95,9 @@ export class SetKBTVersionCommand {
 
     // Update lspServerExecutablePath to point to the new version
     try {
-      // Use the existing getKBTLSPFullPath method to determine the LSP server path
+      // Use the resolved LSP path helper so an explicit setting or a discovered KBT path stay aligned.
       // This ensures consistency with the rest of the codebase
-      const lspServerPath = config.getKBTLSPFullPath();
+      const lspServerPath = config.getResolvedLSPServerExecutablePath();
 
       // Check if the path is valid and update the configuration
       const configuration = config.getWorkspaceConfiguration();

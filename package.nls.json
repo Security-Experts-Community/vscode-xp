@@ -47,6 +47,7 @@
 	"xp.xpConfig.kbtBaseDirectoryDescription": "Path of the folder with the [Knowledge Base Toolkit](https://github.com/vxcontrol/xp-kbt/releases)",
 	"xp.xpConfig.outputDirectoryPathDescription": "Path of the folder where temporary objects are saved. The folder is emptied automatically every time you start the extension.",
 	"xp.xpConfig.toolExecutionModeDescription": "How XP external tools are executed. Auto keeps local execution on Linux/Windows and uses Docker for local macOS VS Code.",
+	"xp.xpConfig.lspModeDescription": "Which XP language server to use. Auto prefers the KBT-provided LSP when available and falls back to the legacy in-extension LSP.",
 	"xp.xpConfig.docker.containerNameDescription": "Name of the running Docker container with xp-kbt and related XP tools.",
 	"xp.xpConfig.docker.composeFileDescription": "Optional docker-compose.yml path for a container backend preset.",
 	"xp.xpConfig.docker.serviceNameDescription": "Optional Docker Compose service name for the XP backend.",

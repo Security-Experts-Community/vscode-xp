@@ -2,11 +2,11 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as os from 'os';
-import { format } from 'prettier';
 
 import { workspace, ExtensionContext } from 'vscode';
 
 import {
+  InitializeParams,
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
@@ -40,15 +40,44 @@ import { CommonCommands } from './models/command/commonCommands';
 import { ToolsManager } from './models/content/toolsManager';
 import { SetKBTVersionCommand } from './models/siemj/setKBTVersionCommand';
 import { MacOSContainerSetup } from './tools/macosContainerSetup';
+import { XpDocumentFormattingProvider } from './providers/xpDocumentFormattingProvider';
 
 export let Log: Logger;
 let client: LanguageClient;
 let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
 
+interface LspStartupResult {
+  client: LanguageClient;
+  usesKbtFormatter: boolean;
+}
+
+class XpLanguageClient extends LanguageClient {
+  protected fillInitializeParams(params: InitializeParams): void {
+    super.fillInitializeParams(params);
+
+    const capabilities = (params.capabilities ??= {} as InitializeParams['capabilities']);
+    const workspaceCapabilities = ((capabilities as any).workspace ??= {});
+    if (workspaceCapabilities.workspaceFolders === undefined) {
+      workspaceCapabilities.workspaceFolders = true;
+    }
+
+    const textDocumentCapabilities = ((capabilities as any).textDocument ??= {});
+    const semanticTokens = (textDocumentCapabilities.semanticTokens ??= {});
+    semanticTokens.dynamicRegistration ??= false;
+    semanticTokens.requests ??= { range: false, full: { delta: false } };
+    semanticTokens.tokenTypes ??= [];
+    semanticTokens.tokenModifiers ??= [];
+    semanticTokens.formats ??= ['relative'];
+    semanticTokens.multilineTokenSupport ??= true;
+    semanticTokens.overlappingTokenSupport ??= true;
+  }
+}
+
 export async function activate(context: ExtensionContext): Promise<void> {
   try {
     // Инициализация реестр глобальных параметров.
     const config = await Configuration.init(context);
+    Log = Logger.init(config);
 
     let extensionVersion;
     try {
@@ -59,7 +88,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
       Log.warn(`Failed to get the extension version`, error);
     }
 
-    Log = Logger.init(config);
     Log.info(
       `Extension activation ${extensionVersion ?? ''} has started '${Configuration.getExtensionDisplayName()}'`
     );
@@ -100,7 +128,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
     await MacOSContainerSetup.maybePrompt(config);
 
     // Конфигурирование LSP.
-    await configureLSPClient(client, context, config);
+    const lspStartupResult = await configureLSPClient(context, config);
+    client = lspStartupResult.client;
 
     const rootPath =
       vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
@@ -115,12 +144,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
         quotingType: "'"
       },
       undefined,
-      (text: string) =>
-        format(text, {
-          parser: 'yaml',
-          singleQuote: true,
-          tabWidth: 2
-        })
+      async (text: string) => text
     );
 
     ContentTreeProvider.init(config, rootPath);
@@ -130,8 +154,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
     MetainfoViewProvider.init(config);
     RunningCorrelationGraphProvider.init(config);
     TableListsEditorViewProvider.init(config);
-    const kbtVersionsDirectory = config.getKbtVersionsDirectory();
-    if (kbtVersionsDirectory) {
+    const kbtVersionsDirectory = config.shouldUseDockerToolRunner()
+      ? undefined
+      : config.getKbtVersionsDirectory();
+    if (kbtVersionsDirectory && !config.shouldUseDockerToolRunner()) {
       await SetKBTVersionCommand.init(config);
     } else {
       try {
@@ -161,6 +187,12 @@ export async function activate(context: ExtensionContext): Promise<void> {
     // Автодополнение функций.
     await XpCompletionItemProvider.init(config);
     await XpEnumValuesCompletionItemProvider.init(config);
+    if (lspStartupResult.usesKbtFormatter) {
+      Log.info('Skipping fallback XP formatter registration because KBT LSP formatting is active.');
+    } else {
+      XpDocumentFormattingProvider.init(config);
+      Log.info('Registered fallback XP formatter because KBT LSP formatting is not active.');
+    }
 
     context.subscriptions.push(
       vscode.languages.registerRenameProvider(
@@ -223,29 +255,40 @@ export async function deactivate(): Promise<void> | undefined {
 }
 
 async function configureLSPClient(
-  client: LanguageClient,
   context: vscode.ExtensionContext,
   config: Configuration
-) {
+): Promise<LspStartupResult> {
+  const documentSelector = [
+    { scheme: 'file', language: 'xp' },
+    { scheme: 'file', language: 'en' },
+    { scheme: 'file', language: 'agr' },
+    { scheme: 'file', language: 'co' },
+    { scheme: 'file', language: 'flt' }
+  ];
+
+  const initializationOptions = await buildKbtLspInitializationOptions(config);
+
   try {
-    const lspServerExecutablePath = config.getKBTLSPFullPath();
+    if (config.getLSPMode() === 'legacy') {
+      Log.info('Skipping external KBT LSP startup because xpConfig.lspMode=legacy.');
+    } else if (config.shouldUseDockerToolRunner()) {
+      const proxyModule = context.asAbsolutePath(path.join('client', 'out', 'lspDockerProxy.js'));
+      const extensionConfig = config.getWorkspaceConfiguration();
+      const proxyConfig = {
+        containerName: extensionConfig.get<string>('docker.containerName'),
+        workspaceHostPath: extensionConfig.get<string>('docker.workspaceHostPath'),
+        workspaceContainerPath: extensionConfig.get<string>('docker.workspaceContainerPath'),
+        kbtBaseDirectory:
+          extensionConfig.get<string>('docker.kbtBaseDirectory') || '/home/coder/xp-kbt',
+        outputHostPath: extensionConfig.get<string>('outputDirectoryPath'),
+        outputContainerPath: config.getDockerOutputDirectoryPath()
+      };
 
-    if (lspServerExecutablePath) {
-      Log.info(config.getMessage('LSPServer.ServerExecutableFoundAt', lspServerExecutablePath));
-      const command = lspServerExecutablePath;
-      const args: string[] = [];
-
-      const documentSelector = [
-        { scheme: 'file', language: 'xp' },
-        { scheme: 'file', language: 'en' },
-        { scheme: 'file', language: 'agr' },
-        { scheme: 'file', language: 'co' },
-        { scheme: 'file', language: 'flt' }
-      ];
-
+      const encodedConfig = Buffer.from(JSON.stringify(proxyConfig), 'utf-8').toString('base64');
       const serverOptions: ServerOptions = {
-        command,
-        args,
+        command: process.execPath,
+        args: [proxyModule, encodedConfig],
+        transport: TransportKind.stdio,
         options: {
           cwd: __dirname
         }
@@ -256,30 +299,74 @@ async function configureLSPClient(
         synchronize: {
           configurationSection: [config.getExtensionSettingsPrefix(), 'xplang_ls']
         },
-        initializationOptions: {
-          locale: vscode.env.language
-        }
+        initializationOptions
       };
 
-      client = new LanguageClient(command, 'XP Language Server', serverOptions, clientOptions);
+      const dockerClient = new XpLanguageClient(
+        'xpDockerLanguageServer',
+        'XP Docker Language Server',
+        serverOptions,
+        clientOptions
+      );
 
-      return client
-        .start()
-        .then(() => {
-          const serverProcess = client['_serverProcess'];
-          if (serverProcess) {
-            const pid = serverProcess.pid;
-            Log.info(config.getMessage('LSPServer.ServerHasStarted', pid));
-            vscode.window.showInformationMessage(
-              config.getMessage('LSPServer.ServerHasStarted', pid)
-            );
+      await dockerClient.start();
+      notifyAboutStartedLspServer(config, dockerClient, 'Docker-backed XPLang LSP proxy');
+      Log.info(
+        `Docker-backed XPLang LSP proxy has started using '${proxyModule}' for container '${proxyConfig.containerName}'.`
+      );
+      return {
+        client: dockerClient,
+        usesKbtFormatter: true
+      };
+    } else {
+      const lspServerExecutablePath = config.getResolvedLSPServerExecutablePath();
+
+      if (lspServerExecutablePath) {
+        Log.info(config.getMessage('LSPServer.ServerExecutableFoundAt', lspServerExecutablePath));
+        const command = lspServerExecutablePath;
+        const args: string[] = [];
+
+        const serverOptions: ServerOptions = {
+          command,
+          args,
+          transport: TransportKind.stdio,
+          options: {
+            cwd: __dirname
           }
-        })
-        .catch((error) => {
-          vscode.window.showErrorMessage(
-            'Failed to start XPLang Language Server: ' + error.message
-          );
-        });
+        };
+
+        const clientOptions: LanguageClientOptions = {
+          documentSelector,
+          synchronize: {
+            configurationSection: [config.getExtensionSettingsPrefix(), 'xplang_ls']
+          },
+          initializationOptions
+        };
+
+        const externalClient = new XpLanguageClient(
+          command,
+          'XP Language Server',
+          serverOptions,
+          clientOptions
+        );
+
+        return externalClient
+          .start()
+          .then(() => {
+            notifyAboutStartedLspServer(config, externalClient, 'KBT XPLang LSP server');
+
+            return {
+              client: externalClient,
+              usesKbtFormatter: true
+            };
+          })
+          .catch((error) => {
+            vscode.window.showErrorMessage(
+              'Failed to start XPLang Language Server: ' + error.message
+            );
+            throw error;
+          });
+      }
     }
   } catch (e) {
     // if error just use legacy server
@@ -322,6 +409,14 @@ async function configureLSPClient(
       {
         scheme: 'file',
         language: 'en'
+      },
+      {
+        scheme: 'file',
+        language: 'agr'
+      },
+      {
+        scheme: 'file',
+        language: 'flt'
       }
     ],
     synchronize: {
@@ -331,6 +426,63 @@ async function configureLSPClient(
   };
 
   // Создаем клиент, запускаем его и сервер.
-  client = new LanguageClient('languageServer', 'Language Server', serverOptions, clientOptions);
-  client.start();
+  const legacyClient = new LanguageClient('languageServer', 'Language Server', serverOptions, clientOptions);
+  try {
+    await legacyClient.start();
+    notifyAboutStartedLspServer(config, legacyClient, 'Legacy XPLang LSP server');
+    Log.info(`Legacy XPLang LSP server has started from '${serverModule}'.`);
+  } catch (error) {
+    Log.error(`Failed to start legacy XPLang LSP server from '${serverModule}'.`, error);
+    throw error;
+  }
+
+  return {
+    client: legacyClient,
+    usesKbtFormatter: false
+  };
+}
+
+async function buildKbtLspInitializationOptions(config: Configuration): Promise<Record<string, string>> {
+  const initializationOptions: Record<string, string> = {
+    locale: vscode.env.language
+  };
+
+  try {
+    const taxonomyPath = config.craftLSPTaxonomyPath();
+    const taxonomyI18nPath = config.craftLSPi18nTaxonomyPath();
+    initializationOptions.taxonomy_path = taxonomyPath;
+    initializationOptions.taxonomy_i18n_path = taxonomyI18nPath;
+
+    await config.updateLSPTaxonomyPath();
+    await config.updateLSPi18nTaxonomyPath();
+
+    const schemaPath = config.getKBTLSPConfiguration().get<string>('schema_path');
+    if (schemaPath) {
+      initializationOptions.schema_path = config.mapPathForExecution(schemaPath);
+    }
+  } catch (error) {
+    Log.warn(`Failed to prepare KBT LSP initialization options: ${error.message}`);
+  }
+
+  return initializationOptions;
+}
+
+function notifyAboutStartedLspServer(
+  config: Configuration,
+  startedClient: LanguageClient,
+  serverKind: string
+): void {
+  const serverProcess = startedClient['_serverProcess'];
+  const pid = serverProcess?.pid;
+
+  if (pid) {
+    const message = config.getMessage('LSPServer.ServerHasStarted', pid);
+    Log.info(message);
+    void vscode.window.showInformationMessage(message);
+    return;
+  }
+
+  const message = `${serverKind} has started.`;
+  Log.info(message);
+  void vscode.window.showInformationMessage(message);
 }

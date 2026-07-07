@@ -179,15 +179,15 @@
 					<label for="expect" class="label">{{Locale.TestCondition}}:</label>
 				</div>
 				<div class="manage_buttons">
-					<!-- Получить ожидаемое событие можно только при наличии нормализованных событий -->
 					{{#CanGetExpectedEvent}}
 						<input name="update_expect_event" type="button" value="{{Locale.GetExpectedEvent}}">
-						<input name="show_actual_event" type="button" value="{{Locale.ShowActualEvent}}">
-					<!-- Сравнить полученные результаты можно только если тест прошёл неуспешно -->
-					{{#IsFailed}}
-						<input id="open_result_diff" type="button" value="{{Locale.CompareResults}}">
-					{{/IsFailed}}
 					{{/CanGetExpectedEvent}}
+					{{#CanShowActualEvent}}
+						<input name="show_actual_event" type="button" value="{{Locale.ShowActualEvent}}">
+					{{/CanShowActualEvent}}
+					{{#CanCompareResults}}
+						<input id="open_result_diff" type="button" value="{{Locale.CompareResults}}">
+					{{/CanCompareResults}}
 					<!-- <input id="clean_test_button" type="button" value="{{Locale.ClearExpectedEvent}}" alt="Исключает из кода теста технические поля события"> -->
 				</div>
 
@@ -221,6 +221,27 @@
 			// Глобальное определение переменных.
 			const redos = [];
 			const undos = [];
+			const isMacOS = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+
+			function hasPrimaryModifier(event) {
+				return isMacOS ? event.metaKey : event.ctrlKey;
+			}
+
+			function isUndoShortcut(event) {
+				return hasPrimaryModifier(event) && !event.shiftKey && event.code == 'KeyZ';
+			}
+
+			function isRedoShortcut(event) {
+				if (isMacOS) {
+					return hasPrimaryModifier(event) && event.shiftKey && event.code == 'KeyZ';
+				}
+
+				return hasPrimaryModifier(event) && event.code == 'KeyY';
+			}
+
+			function isSelectAllShortcut(event) {
+				return hasPrimaryModifier(event) && event.code == 'KeyA';
+			}
 
 			function normalizeTestCode (testCode) {
 				if (!testCode || typeof testCode !== 'string') return testCode;
@@ -342,7 +363,7 @@
 							setCaret(pos);
 							e.preventDefault();
 							return;
-						} else if (e.ctrlKey && e.code == 'KeyZ') {
+						} else if (isUndoShortcut(e)) {
 							const prevHTML = undo(redos, undos, el.innerHTML)
 							if (prevHTML) {
 								const difference = (el.innerHTML.length - prevHTML.length) || 0;
@@ -350,7 +371,7 @@
 								el.innerHTML = prevHTML;
 								setCaret(pos - difference < 0 ? pos : pos - difference);
 							}
-						} else if (e.ctrlKey && e.code == 'KeyY') {
+						} else if (isRedoShortcut(e)) {
 							const prevHTML = redo(redos, undos, el.innerHTML)
 							if (prevHTML) {
 								const difference = (prevHTML.length - el.innerHTML.length) || 0;
@@ -373,7 +394,7 @@
 
 					// Обработка вставки символа с поддержкой выделения на Ctrl+A.
 					el.addEventListener('keyup', e => {
-						if ((e.keyCode >= 0x30 || e.keyCode == 0x20 || e.code === 'Delete' || e.code === 'Backspace') && !(e.ctrlKey && e.code == 'KeyA') && !(e.ctrlKey && e.code == 'KeyZ') && !(e.ctrlKey && e.code == 'KeyY')) {
+						if ((e.keyCode >= 0x30 || e.keyCode == 0x20 || e.code === 'Delete' || e.code === 'Backspace') && !isSelectAllShortcut(e) && !isUndoShortcut(e) && !isRedoShortcut(e)) {
 							const pos = caret();
 							el.innerHTML = hljs.highlight(el.innerText ? el.innerText : '', {language: language}).value
 							setCaret(pos);
@@ -753,9 +774,9 @@
 					saveAllTests();
 				});
 
-				// Сохраняем все тесты по хот кею Ctrl+S
+				// Сохраняем все тесты по хот кею Cmd+S на macOS и Ctrl+S на остальных платформах
 				$(document).on("keydown", e => {
-					if (e.ctrlKey && e.code == 'KeyS') {
+					if (hasPrimaryModifier(e) && e.code == 'KeyS') {
 						e.preventDefault();
 						saveAllTests();
 					}
