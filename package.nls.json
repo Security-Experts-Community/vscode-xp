@@ -47,7 +47,7 @@
 	"xp.xpConfig.kbtBaseDirectoryDescription": "Path of the folder with the [Knowledge Base Toolkit](https://github.com/vxcontrol/xp-kbt/releases)",
 	"xp.xpConfig.outputDirectoryPathDescription": "Path of the folder where temporary objects are saved. The folder is emptied automatically every time you start the extension.",
 	"xp.xpConfig.toolExecutionModeDescription": "How XP external tools are executed. Auto keeps local execution on Linux/Windows and uses Docker for local macOS VS Code.",
-	"xp.xpConfig.lspModeDescription": "Which XP language server to use. Auto prefers the KBT-provided LSP when available and falls back to the legacy in-extension LSP.",
+	"xp.xpConfig.lspModeDescription": "Which XP language server to use on Linux and Windows. On local macOS this setting is ignored; configure xpConfig.lspServerExecutablePath to use a native LSP binary, otherwise no LSP will be started.",
 	"xp.xpConfig.docker.containerNameDescription": "Name of the running Docker container with xp-kbt and related XP tools.",
 	"xp.xpConfig.docker.composeFileDescription": "Optional docker-compose.yml path for a container backend preset.",
 	"xp.xpConfig.docker.serviceNameDescription": "Optional Docker Compose service name for the XP backend.",
@@ -57,7 +57,8 @@
 	"xp.xpConfig.docker.outputDirectoryPathDescription": "Container path corresponding to xpConfig.outputDirectoryPath.",
 	"xp.xpConfig.macos.showContainerSetupPromptDescription": "Show the macOS container backend setup prompt on extension activation.",
 	"xp.xpConfig.correlatorTimeoutDescription": "Max correlation time in seconds. If the time is exceeded, the correlation will be canceled.",
-	"xp.xpConfig.lspServerExecutablePathDescription": "Path of the LSP server executable",
+	"xp.xpConfig.lspServerExecutablePathDescription": "Path of the LSP server executable. On local macOS this must point to a native evt-xp-language-server binary if you want LSP features.",
+	"xp.xpConfig.formatterExecutablePathDescription": "Optional path of the formatter executable. On local macOS this can point to a native evt-xp-formatter binary; if empty, Docker formatting will be used in Docker tool mode.",
 
 	"xp.xpConfig.originDescription": "Vendor information. Used to export objects to a KB file.",
 	"xp.xpConfig.origin.contentPrefixDescription": "Object vendor prefix. Must match ObjectId. By default, custom rules have the LOC prefix, and system rules have the PT prefix. If no prefix is specified, the rules you create will not have ObjectId either.",

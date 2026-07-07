@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as os from 'os';
+import { spawn } from 'child_process';
 
 import { workspace, ExtensionContext } from 'vscode';
 
@@ -10,6 +11,7 @@ import {
   LanguageClient,
   LanguageClientOptions,
   ServerOptions,
+  StreamInfo,
   TransportKind
 } from 'vscode-languageclient/node';
 
@@ -43,15 +45,25 @@ import { MacOSContainerSetup } from './tools/macosContainerSetup';
 import { XpDocumentFormattingProvider } from './providers/xpDocumentFormattingProvider';
 
 export let Log: Logger;
-let client: LanguageClient;
+let client: LanguageClient | undefined;
 let siemCustomPackingTaskProvider: vscode.Disposable | undefined;
 
 interface LspStartupResult {
-  client: LanguageClient;
+  client?: LanguageClient;
   usesKbtFormatter: boolean;
 }
 
 class XpLanguageClient extends LanguageClient {
+  public constructor(
+    id: string,
+    name: string,
+    serverOptions: ServerOptions,
+    clientOptions: LanguageClientOptions,
+    private readonly disableWorkspaceConfigurationCapability = false
+  ) {
+    super(id, name, serverOptions, clientOptions);
+  }
+
   protected fillInitializeParams(params: InitializeParams): void {
     super.fillInitializeParams(params);
 
@@ -59,6 +71,10 @@ class XpLanguageClient extends LanguageClient {
     const workspaceCapabilities = ((capabilities as any).workspace ??= {});
     if (workspaceCapabilities.workspaceFolders === undefined) {
       workspaceCapabilities.workspaceFolders = true;
+    }
+
+    if (this.disableWorkspaceConfigurationCapability) {
+      workspaceCapabilities.configuration = false;
     }
 
     const textDocumentCapabilities = ((capabilities as any).textDocument ??= {});
@@ -127,6 +143,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     await MacOSContainerSetup.maybePrompt(config);
 
+    await clearRuntimeDirectories(config);
+
     // Конфигурирование LSP.
     const lspStartupResult = await configureLSPClient(context, config);
     client = lspStartupResult.client;
@@ -178,9 +196,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
       new XPPackingTaskProvider(config)
     );
 
-    // Расширение нативного контекстного меню.
-    // TestsFormatContentMenuExtension.init(context);
-
     // Подпись функций.
     await XpSignatureHelpProvider.init(context);
 
@@ -210,29 +225,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
     const legend = new vscode.SemanticTokensLegend(tokenTypes, tokenModifiers);
     await XpDocumentHighlightProvider.init(config, legend);
 
-    // Очистка директории временных файлов.
-    const tmpDirectory = config.getTmpDirectoryPath();
-    if (fs.existsSync(tmpDirectory)) {
-      try {
-        await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
-        Log.info(`The temporary files directory '${tmpDirectory}' was successfully cleared`);
-      } catch (error) {
-        Log.warn(`Error clearing files from temporary directory '${tmpDirectory}'`, error);
-      }
-    }
-
-    // Очистка директории выходных файлов. Нужна для сохранения консистентности нормализаций.
-    const extensionSettings = config.getWorkspaceConfiguration();
-    const outputDirectoryPath = extensionSettings.get<string>('outputDirectoryPath');
-    if (fs.existsSync(outputDirectoryPath)) {
-      try {
-        await FileSystemHelper.deleteAllSubDirectoriesAndFiles(outputDirectoryPath);
-        Log.info(`The output directory '${outputDirectoryPath}' was successfully cleared`);
-      } catch (error) {
-        Log.warn(`Error clearing files from output directory '${outputDirectoryPath}'`, error);
-      }
-    }
-
     Log.info(`Extension '${Configuration.getExtensionDisplayName()}' is activated`);
   } catch (error) {
     ExceptionHelper.show(
@@ -254,6 +246,29 @@ export async function deactivate(): Promise<void> | undefined {
   return client.stop();
 }
 
+async function clearRuntimeDirectories(config: Configuration): Promise<void> {
+  const tmpDirectory = config.getTmpDirectoryPath();
+  if (fs.existsSync(tmpDirectory)) {
+    try {
+      await FileSystemHelper.deleteAllSubDirectoriesAndFiles(tmpDirectory);
+      Log.info(`The temporary files directory '${tmpDirectory}' was successfully cleared`);
+    } catch (error) {
+      Log.warn(`Error clearing files from temporary directory '${tmpDirectory}'`, error);
+    }
+  }
+
+  const extensionSettings = config.getWorkspaceConfiguration();
+  const outputDirectoryPath = extensionSettings.get<string>('outputDirectoryPath');
+  if (fs.existsSync(outputDirectoryPath)) {
+    try {
+      await FileSystemHelper.deleteAllSubDirectoriesAndFiles(outputDirectoryPath);
+      Log.info(`The output directory '${outputDirectoryPath}' was successfully cleared`);
+    } catch (error) {
+      Log.warn(`Error clearing files from output directory '${outputDirectoryPath}'`, error);
+    }
+  }
+}
+
 async function configureLSPClient(
   context: vscode.ExtensionContext,
   config: Configuration
@@ -269,78 +284,84 @@ async function configureLSPClient(
   const initializationOptions = await buildKbtLspInitializationOptions(config);
 
   try {
-    if (config.getLSPMode() === 'legacy') {
-      Log.info('Skipping external KBT LSP startup because xpConfig.lspMode=legacy.');
-    } else if (config.shouldUseDockerToolRunner()) {
-      const proxyModule = context.asAbsolutePath(path.join('client', 'out', 'lspDockerProxy.js'));
-      const extensionConfig = config.getWorkspaceConfiguration();
-      const proxyConfig = {
-        containerName: extensionConfig.get<string>('docker.containerName'),
-        workspaceHostPath: extensionConfig.get<string>('docker.workspaceHostPath'),
-        workspaceContainerPath: extensionConfig.get<string>('docker.workspaceContainerPath'),
-        kbtBaseDirectory:
-          extensionConfig.get<string>('docker.kbtBaseDirectory') || '/home/coder/xp-kbt',
-        outputHostPath: extensionConfig.get<string>('outputDirectoryPath'),
-        outputContainerPath: config.getDockerOutputDirectoryPath()
-      };
-
-      const encodedConfig = Buffer.from(JSON.stringify(proxyConfig), 'utf-8').toString('base64');
-      const serverOptions: ServerOptions = {
-        command: process.execPath,
-        args: [proxyModule, encodedConfig],
-        transport: TransportKind.stdio,
-        options: {
-          cwd: __dirname
-        }
-      };
-
-      const clientOptions: LanguageClientOptions = {
-        documentSelector,
-        synchronize: {
-          configurationSection: [config.getExtensionSettingsPrefix(), 'xplang_ls']
-        },
-        initializationOptions
-      };
-
-      const dockerClient = new XpLanguageClient(
-        'xpDockerLanguageServer',
-        'XP Docker Language Server',
-        serverOptions,
-        clientOptions
-      );
-
-      await dockerClient.start();
-      notifyAboutStartedLspServer(config, dockerClient, 'Docker-backed XPLang LSP proxy');
-      Log.info(
-        `Docker-backed XPLang LSP proxy has started using '${proxyModule}' for container '${proxyConfig.containerName}'.`
-      );
-      return {
-        client: dockerClient,
-        usesKbtFormatter: true
-      };
-    } else {
+    if (config.isLocalMacOS()) {
       const lspServerExecutablePath = config.getResolvedLSPServerExecutablePath();
-
       if (lspServerExecutablePath) {
         Log.info(config.getMessage('LSPServer.ServerExecutableFoundAt', lspServerExecutablePath));
-        const command = lspServerExecutablePath;
-        const args: string[] = [];
-
-        const serverOptions: ServerOptions = {
-          command,
-          args,
-          transport: TransportKind.stdio,
-          options: {
-            cwd: __dirname
-          }
-        };
+        const serverOptions = createNativeMacLspServerOptions(config, lspServerExecutablePath);
 
         const clientOptions: LanguageClientOptions = {
           documentSelector,
           synchronize: {
             configurationSection: [config.getExtensionSettingsPrefix(), 'xplang_ls']
           },
-          initializationOptions
+          initializationOptions,
+          outputChannel: config.getOutputChannel()
+        };
+
+        const externalClient = new XpLanguageClient(
+          lspServerExecutablePath,
+          'XP Language Server',
+          serverOptions,
+          clientOptions
+        );
+
+        return externalClient
+          .start()
+          .then(() => {
+            notifyAboutStartedLspServer(config, externalClient, 'KBT XPLang LSP server');
+
+            return {
+              client: externalClient,
+              usesKbtFormatter: true
+            };
+          })
+          .catch((error) => {
+            vscode.window.showErrorMessage(
+              'Failed to start XPLang Language Server: ' + error.message
+            );
+            throw error;
+          });
+      }
+
+      Log.info(
+        'Skipping XPLang LSP startup on macOS because xpConfig.lspServerExecutablePath is not configured. Legacy LSP is disabled on this platform.'
+      );
+      return {
+        client: undefined,
+        usesKbtFormatter: false
+      };
+    }
+
+    if (config.getLSPMode() === 'legacy') {
+      Log.info('Skipping external KBT LSP startup because xpConfig.lspMode=legacy.');
+    } else if (config.shouldUseDockerToolRunner()) {
+      Log.info(
+        'Skipping external KBT LSP startup in Docker tool execution mode. Falling back to the legacy in-extension LSP because the containerized KBT LSP still requires additional configuration/taxonomy plumbing.'
+      );
+    } else {
+      const lspServerExecutablePath = config.getResolvedLSPServerExecutablePath();
+
+      if (lspServerExecutablePath) {
+        Log.info(config.getMessage('LSPServer.ServerExecutableFoundAt', lspServerExecutablePath));
+        const serverOptions = config.isLocalMacOS()
+          ? createNativeMacLspServerOptions(config, lspServerExecutablePath)
+          : {
+              command: lspServerExecutablePath,
+              args: [],
+              transport: TransportKind.stdio,
+              options: {
+                cwd: __dirname
+              }
+            };
+
+        const clientOptions: LanguageClientOptions = {
+          documentSelector,
+          synchronize: {
+            configurationSection: [config.getExtensionSettingsPrefix(), 'xplang_ls']
+          },
+          initializationOptions,
+          outputChannel: config.getOutputChannel()
         };
 
         const externalClient = new XpLanguageClient(
@@ -422,7 +443,8 @@ async function configureLSPClient(
     synchronize: {
       // Notify the server about file changes to '.clientrc files contained in the workspace
       fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
-    }
+    },
+    outputChannel: config.getOutputChannel()
   };
 
   // Создаем клиент, запускаем его и сервер.
@@ -448,23 +470,61 @@ async function buildKbtLspInitializationOptions(config: Configuration): Promise<
   };
 
   try {
+    const shouldUseHostPathsForLsp = config.isLocalMacOS() && !!config.getResolvedLSPServerExecutablePath();
+    const mapLspPath = (value: string) =>
+      shouldUseHostPathsForLsp ? value : config.mapPathForExecution(value);
+
     const taxonomyPath = config.craftLSPTaxonomyPath();
     const taxonomyI18nPath = config.craftLSPi18nTaxonomyPath();
-    initializationOptions.taxonomy_path = taxonomyPath;
-    initializationOptions.taxonomy_i18n_path = taxonomyI18nPath;
 
     await config.updateLSPTaxonomyPath();
     await config.updateLSPi18nTaxonomyPath();
 
-    const schemaPath = config.getKBTLSPConfiguration().get<string>('schema_path');
-    if (schemaPath) {
-      initializationOptions.schema_path = config.mapPathForExecution(schemaPath);
-    }
+    initializationOptions.taxonomy_path = mapLspPath(taxonomyPath);
+    initializationOptions.taxonomy_i18n_path = mapLspPath(taxonomyI18nPath);
+
+    const schemaPath = await config.ensureLspSchemaPath();
+    initializationOptions.schema_path = mapLspPath(schemaPath);
+
+    Log.info(
+      `KBT LSP initialization options: taxonomy_path='${initializationOptions.taxonomy_path}', taxonomy_i18n_path='${initializationOptions.taxonomy_i18n_path}', schema_path='${initializationOptions.schema_path ?? ''}'`
+    );
   } catch (error) {
     Log.warn(`Failed to prepare KBT LSP initialization options: ${error.message}`);
   }
 
   return initializationOptions;
+}
+
+function createNativeMacLspServerOptions(
+  config: Configuration,
+  lspServerExecutablePath: string
+): ServerOptions {
+  return async (): Promise<StreamInfo> => {
+    const child = spawn(lspServerExecutablePath, [], {
+      cwd: path.dirname(lspServerExecutablePath),
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+
+    child.stderr.on('data', (chunk: Buffer | string) => {
+      const text = chunk.toString().trim();
+      if (text) {
+        config.getOutputChannel().appendLine(text);
+      }
+    });
+
+    const reader = child.stdout;
+    const writer = child.stdin;
+
+    if (!reader || !writer) {
+      throw new Error('Failed to initialize stdio pipes for native XPLang language server.');
+    }
+
+    return {
+      reader,
+      writer
+    };
+  };
 }
 
 function notifyAboutStartedLspServer(

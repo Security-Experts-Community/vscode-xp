@@ -98,6 +98,10 @@ export class Configuration {
   }
 
   public getLSPMode(): 'auto' | 'legacy' | 'kbt' {
+    if (this.isLocalMacOS()) {
+      return 'auto';
+    }
+
     const mode = this.getWorkspaceConfiguration().get<'auto' | 'legacy' | 'kbt'>('lspMode');
     return mode ?? 'auto';
   }
@@ -108,6 +112,10 @@ export class Configuration {
   }
 
   public craftLSPTaxonomyPath(): string {
+    if (this.shouldUseNativeMacLspPaths()) {
+      return this.getNativeMacTaxonomyFullPath();
+    }
+
     return this.getTaxonomyFullPath();
   }
 
@@ -117,6 +125,10 @@ export class Configuration {
   }
 
   public craftLSPi18nTaxonomyPath(): string {
+    if (this.shouldUseNativeMacLspPaths()) {
+      return this.getNativeMacTaxonomyI18nDirPath();
+    }
+
     return path.join(this.getTaxonomyDirPath(), 'i18n');
   }
 
@@ -135,6 +147,95 @@ export class Configuration {
   public updateLSPSchemaTaxonomyPath(schemaPath: string): void {
     const configuration = this.getKBTLSPConfiguration();
     configuration.update('schema_path', schemaPath);
+  }
+
+  public async clearLSPSchemaPath(): Promise<void> {
+    const configuration = this.getKBTLSPConfiguration();
+    await configuration.update('schema_path', undefined, true, false);
+  }
+
+  public async ensureLspSchemaPath(): Promise<string> {
+    const configuredSchemaPath = this.getKBTLSPConfiguration().get<string>('schema_path')?.trim();
+    if (configuredSchemaPath && fs.existsSync(configuredSchemaPath)) {
+      return configuredSchemaPath;
+    }
+
+    const contentRoots = this.getContentRoots();
+    for (const contentRoot of this.getContentRoots()) {
+      const contentRootFolder = path.basename(contentRoot);
+      const schemaPath = this.getSchemaFullPath(contentRootFolder);
+      if (fs.existsSync(schemaPath)) {
+        await this.getKBTLSPConfiguration().update('schema_path', schemaPath, true, false);
+        return schemaPath;
+      }
+    }
+
+    const placeholderRootFolder =
+      contentRoots.length > 0 ? path.basename(contentRoots[0]) : 'packages';
+    const placeholderSchemaPath = this.getSchemaFullPath(placeholderRootFolder);
+    await fs.promises.mkdir(path.dirname(placeholderSchemaPath), { recursive: true });
+    if (!fs.existsSync(placeholderSchemaPath)) {
+      await fs.promises.writeFile(placeholderSchemaPath, '{}', 'utf-8');
+    }
+
+    await this.getKBTLSPConfiguration().update('schema_path', placeholderSchemaPath, true, false);
+    return placeholderSchemaPath;
+  }
+
+  private shouldUseNativeMacLspPaths(): boolean {
+    return this.isLocalMacOS() && !!this.getResolvedLSPServerExecutablePath();
+  }
+
+  private getNativeMacKbtBaseDirectory(): string {
+    const configuration = this.getWorkspaceConfiguration();
+    const basePath = configuration.get<string>('kbtBaseDirectory');
+    if (basePath) {
+      if (!fs.existsSync(basePath)) {
+        throw new XpException(this.getMessage('Error.KbtDirectoryPathIsNoExist', basePath));
+      }
+
+      return basePath;
+    }
+
+    const lspServerExecutablePath = this.getResolvedLSPServerExecutablePath();
+    if (lspServerExecutablePath) {
+      const inferredBasePath = path.resolve(lspServerExecutablePath, '..', '..', '..');
+      if (fs.existsSync(inferredBasePath)) {
+        return inferredBasePath;
+      }
+    }
+
+    throw new XpException(
+      'Local KBT base directory is not configured. Set xpConfig.kbtBaseDirectory or point xpConfig.lspServerExecutablePath to a binary inside <kbt>/xp-sdk/cli/.'
+    );
+  }
+
+  private getNativeMacContractsDirectory(): string {
+    return path.join(
+      this.getNativeMacKbtBaseDirectory(),
+      'knowledgebase',
+      Configuration.CONTRACTS_DIR_NAME
+    );
+  }
+
+  private getNativeMacTaxonomyFullPath(): string {
+    const fullPath = path.join(
+      this.getNativeMacContractsDirectory(),
+      Configuration.TAXONOMY_DIR_NAME,
+      'taxonomy.json'
+    );
+    this.checkReadablePath(fullPath);
+    return fullPath;
+  }
+
+  private getNativeMacTaxonomyI18nDirPath(): string {
+    const fullPath = path.join(
+      this.getNativeMacContractsDirectory(),
+      Configuration.TAXONOMY_DIR_NAME,
+      'i18n'
+    );
+    this.checkReadablePath(fullPath);
+    return fullPath;
   }
 
   public getFirstWorkspaceFolder(): string {
@@ -1154,12 +1255,14 @@ export class Configuration {
     return lspServerExecutablePath;
   }
 
+  public getDirectFormatterExecutablePath(): string {
+    const configuration = this.getWorkspaceConfiguration();
+    const formatterExecutablePath = configuration.get<string>('formatterExecutablePath');
+    return formatterExecutablePath;
+  }
+
   public getResolvedLSPServerExecutablePath(): string | undefined {
     if (this.getLSPMode() === 'legacy') {
-      return undefined;
-    }
-
-    if (this.shouldUseDockerToolRunner()) {
       return undefined;
     }
 
@@ -1173,7 +1276,38 @@ export class Configuration {
       return configuredPath;
     }
 
+    if (this.isLocalMacOS()) {
+      return undefined;
+    }
+
+    if (this.shouldUseDockerToolRunner()) {
+      return undefined;
+    }
+
     return this.getKBTLSPFullPath() ?? undefined;
+  }
+
+  public getResolvedFormatterExecutablePath(): string | undefined {
+    const configuredPath = this.getDirectFormatterExecutablePath();
+    if (configuredPath) {
+      if (!fs.existsSync(configuredPath)) {
+        Log.warn(`Configured formatter executable was not found: '${configuredPath}'.`);
+        return undefined;
+      }
+
+      return configuredPath;
+    }
+
+    const kbtBaseDirectory = this.getKbtBaseDirectory();
+    const formatterName = process.platform === 'win32' ? 'evt-xp-formatter.exe' : 'evt-xp-formatter';
+    const formatterPath = path.join(kbtBaseDirectory, 'xp-sdk', 'cli', formatterName);
+
+    if (!this.shouldUseDockerToolRunner() && !fs.existsSync(formatterPath)) {
+      Log.warn(`Can't find formatter executable in KBT directory: '${formatterPath}'.`);
+      return undefined;
+    }
+
+    return formatterPath;
   }
 
   /**
@@ -1226,8 +1360,15 @@ export class Configuration {
    * Automatically sets lspServerExecutablePath if not already set
    */
   public autoSetLspServerExecutablePath(): void {
-    if (this.getLSPMode() === 'legacy') {
+    if (!this.isLocalMacOS() && this.getLSPMode() === 'legacy') {
       Log.info('Skipping KBT LSP auto-detection because xpConfig.lspMode=legacy.');
+      return;
+    }
+
+    if (this.isLocalMacOS()) {
+      Log.info(
+        'Skipping KBT LSP auto-detection on macOS. Set xpConfig.lspServerExecutablePath to use a native XPLang language server.'
+      );
       return;
     }
 

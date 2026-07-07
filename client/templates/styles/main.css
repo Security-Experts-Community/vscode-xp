@@ -61,6 +61,18 @@ body {
 	background-color: var(--vscode-button-secondaryHoverBackground);
 }
 
+#run_tests {
+	background-color: var(--vscode-button-background);
+	color: var(--vscode-button-foreground);
+	font-weight: normal;
+	padding: 0;
+	text-align: center;
+}
+
+#run_tests:hover {
+	background-color: var(--vscode-button-hoverBackground);
+}
+
 
 
 /* ------ COMMON ELEMENTS ------ */

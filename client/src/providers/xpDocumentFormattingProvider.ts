@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import { Log } from '../extension';
 import { Configuration } from '../models/configuration';
 import { XpException } from '../models/xpException';
+import { LocalToolRunner, ToolRunner } from '../tools/toolRunner';
 
 export class XpDocumentFormattingProvider implements vscode.DocumentFormattingEditProvider {
   private static readonly SUPPORTED_LANGUAGES = ['xp', 'en', 'co', 'agr', 'flt'];
@@ -27,7 +28,7 @@ export class XpDocumentFormattingProvider implements vscode.DocumentFormattingEd
   public async provideDocumentFormattingEdits(
     document: vscode.TextDocument
   ): Promise<vscode.TextEdit[]> {
-    const formatterPath = this.getFormatterPath();
+    const { formatterPath, runner } = this.getFormatterExecution();
     const tempDirectory = this.config.getRandTmpSubDirectoryPath();
     await fs.promises.mkdir(tempDirectory, { recursive: true });
 
@@ -38,7 +39,7 @@ export class XpDocumentFormattingProvider implements vscode.DocumentFormattingEd
 
     try {
       await fs.promises.writeFile(tempFilePath, document.getText(), 'utf-8');
-      await this.config.getToolRunner().runTool(formatterPath, [tempFilePath], {
+      await runner.runTool(formatterPath, [tempFilePath], {
         encoding: 'utf-8',
         cwd: path.dirname(tempFilePath)
       });
@@ -63,17 +64,34 @@ export class XpDocumentFormattingProvider implements vscode.DocumentFormattingEd
     }
   }
 
-  private getFormatterPath(): string {
-    const kbtBaseDirectory = this.config.getKbtBaseDirectory();
-    const formatterName = process.platform === 'win32' ? 'evt-xp-formatter.exe' : 'evt-xp-formatter';
-    const formatterPath = path.join(kbtBaseDirectory, 'xp-sdk', 'cli', formatterName);
+  private getFormatterExecution(): { formatterPath: string; runner: ToolRunner } {
+    const configuredFormatterPath = this.config.getDirectFormatterExecutablePath();
+    if (this.config.isLocalMacOS() && configuredFormatterPath) {
+      const resolvedFormatterPath = this.config.getResolvedFormatterExecutablePath();
+      if (!resolvedFormatterPath) {
+        throw new XpException(
+          `XP formatter was not found at '${configuredFormatterPath}'. Update xpConfig.formatterExecutablePath or clear it to fall back to Docker formatting.`
+        );
+      }
 
-    if (!this.config.shouldUseDockerToolRunner() && !fs.existsSync(formatterPath)) {
+      return {
+        formatterPath: resolvedFormatterPath,
+        runner: new LocalToolRunner()
+      };
+    }
+
+    const resolvedFormatterPath = this.config.getResolvedFormatterExecutablePath();
+    if (!resolvedFormatterPath) {
       throw new XpException(
-        `XP formatter was not found at '${formatterPath}'. Install a KBT version that includes evt-xp-formatter or disable document formatting for XP files.`
+        this.config.shouldUseDockerToolRunner()
+          ? 'XP formatter path is not configured for macOS and Docker formatter could not be resolved.'
+          : 'XP formatter was not found. Install a KBT version that includes evt-xp-formatter or configure xpConfig.formatterExecutablePath.'
       );
     }
 
-    return formatterPath;
+    return {
+      formatterPath: resolvedFormatterPath,
+      runner: this.config.getToolRunner()
+    };
   }
 }

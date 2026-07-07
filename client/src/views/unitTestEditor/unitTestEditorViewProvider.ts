@@ -14,6 +14,8 @@ import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Enrichment } from '../../models/content/enrichment';
 import { Aggregation } from '../../models/content/aggregation';
 import { TestStatus } from '../../models/tests/testStatus';
+import { CommonCommands } from '../../models/command/commonCommands';
+import { XpException } from '../../models/xpException';
 
 enum CloseUnitTestsAnswer {
   Yes = 1,
@@ -27,6 +29,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
     'ModularTestEditorView.onTestSelectionChange';
 
   private rule: RuleBaseItem;
+  private toolBackendErrorShown = false;
 
   public constructor(private readonly config: Configuration) {
     super();
@@ -317,13 +320,15 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
   private async runTest(testOrTestNumber: number | BaseUnitTest) {
     let test;
     let testNumber;
+    const isDirectInvocation = !(testOrTestNumber instanceof BaseUnitTest);
 
-    if (testOrTestNumber instanceof BaseUnitTest) {
+    if (!isDirectInvocation) {
       test = testOrTestNumber;
       testNumber = test.getNumber();
     } else {
       test = this.rule.getUnitTestByNumber(testOrTestNumber);
       testNumber = testOrTestNumber;
+      this.toolBackendErrorShown = false;
     }
 
     if (!test) {
@@ -368,7 +373,10 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
             actualData: outputData
           });
 
-          ExceptionHelper.show(error, 'Unexpected error while executing the modular test');
+          const handled = await this.handleToolBackendError(error);
+          if (!handled) {
+            ExceptionHelper.show(error, 'Unexpected error while executing the modular test');
+          }
         } finally {
           this._updateTestInWebview({
             testNumber,
@@ -381,6 +389,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
 
   private async runAllTests() {
     const tests = this.rule.getUnitTests();
+    this.toolBackendErrorShown = false;
 
     return vscode.window.withProgress(
       {
@@ -409,6 +418,47 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
         }
       }
     );
+  }
+
+  private async handleToolBackendError(error: unknown): Promise<boolean> {
+    if (this.toolBackendErrorShown || !(error instanceof XpException)) {
+      return false;
+    }
+
+    const message = error.message ?? '';
+    if (!this.isToolBackendUnavailableMessage(message)) {
+      return false;
+    }
+
+    this.toolBackendErrorShown = true;
+
+    const outputAction = 'Show Output';
+    const configureAction = 'Configure';
+    const actions = this.config.isLocalMacOS()
+      ? [outputAction, configureAction]
+      : [outputAction];
+
+    const selection = await vscode.window.showErrorMessage(message, ...actions);
+
+    if (selection === outputAction) {
+      await vscode.commands.executeCommand(CommonCommands.SHOW_OUTPUT_CHANNEL_COMMAND);
+    } else if (selection === configureAction) {
+      await vscode.commands.executeCommand(
+        CommonCommands.CONFIGURE_MACOS_CONTAINER_BACKEND_COMMAND
+      );
+    }
+
+    return true;
+  }
+
+  private isToolBackendUnavailableMessage(message: string): boolean {
+    return [
+      'Docker is not installed or is not available in PATH',
+      'Container not running.',
+      'is not running. Start a container with XP tools, then retry.',
+      'Path mapping failed.',
+      'Tool not found in container'
+    ].some((part) => message.includes(part));
   }
 
   private async _updateTestInWebview(payload: {

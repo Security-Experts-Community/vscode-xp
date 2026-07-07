@@ -112,7 +112,18 @@ export class GetExpectedEventCommand {
         title: `Получение ожидаемого события для теста №${this.params.test.getNumber()}`
       },
       async (progress) => {
-        const modularTestContent = `${integrationTestSimplifiedContent}\n\n${normalizedEvents}`;
+        const expectSectionMatch =
+          RegExpHelper.getExpectSectionRegExp().exec(integrationTestSimplifiedContent);
+        if (!expectSectionMatch) {
+          throw new XpException('Не удалось выделить секцию expect из интеграционного теста');
+        }
+
+        const expectSection = expectSectionMatch[0];
+        const inputSection = integrationTestSimplifiedContent
+          .slice(0, expectSectionMatch.index)
+          .trimEnd();
+        const modularTestContent = `${inputSection}\n${normalizedEvents}\n\n${expectSection}`;
+        const modularTestContentForRunner = TestHelper.compressTestCode(modularTestContent);
 
         // Сохраняем модульный тест во временный файл.
         const rootPath = this.params.config.getRootByPath(this.params.test.getRuleDirectoryPath());
@@ -124,7 +135,7 @@ export class GetExpectedEventCommand {
           randTmpPath,
           GetExpectedEventCommand.EXPECT_EVENT_FILENAME
         );
-        await FileSystemHelper.writeContentFile(fastTestFilePath, modularTestContent);
+        await FileSystemHelper.writeContentFile(fastTestFilePath, modularTestContentForRunner);
 
         // Создаем временный модульный тест для быстрого тестирования.
         const fastTest = new FastTest(this.params.test.getNumber());

@@ -5,7 +5,7 @@
   "author": "Dmitry Fedosov (@DmitryOffsec)",
   "icon": "resources/xp.png",
   "license": "MIT",
-  "version": "3.21.4",
+  "version": "3.21.5",
   "repository": {
     "type": "git",
     "url": "https://github.com/Security-Experts-Community/vscode-xp"
@@ -211,13 +211,6 @@
       ]
     },
     "menus": {
-      "editor/context": [
-        {
-          "when": "resourceLangId == test",
-          "command": "NativeEditorContextMenu.compressTest",
-          "group": "test@1"
-        }
-      ],
       "view/title": [
         {
           "command": "xp.contentTree.openKnowledgebaseCommand",
@@ -611,20 +604,9 @@
         "category": "%xp.commonCommandCategory%"
       },
       {
-        "command": "NativeEditorContextMenu.compressTest",
-        "title": "Сжать документ",
-        "category": "%xp.commonCommandCategory%"
-      },
-      {
         "command": "xp.contentTree.verifyFolder",
         "title": "%xp.views.knowledgebaseTree.verifyFolderCommand%",
         "category": "%xp.commonCommandCategory%"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "NativeEditorContextMenu.compressTest",
-        "key": "shift+alt+c"
       }
     ],
     "configuration": {
@@ -732,10 +714,17 @@
           "markdownDescription": "%xp.xpConfig.macos.showContainerSetupPromptDescription%"
         },
 				"xpConfig.lspServerExecutablePath": {
+					"scope": "window",
 					"type": "string",
 					"default": "",
 					"description": "%xp.xpConfig.lspServerExecutablePathDescription%"
 				},
+        "xpConfig.formatterExecutablePath": {
+          "scope": "window",
+          "type": "string",
+          "default": "",
+          "markdownDescription": "%xp.xpConfig.formatterExecutablePathDescription%"
+        },
         "xpConfig.correlatorTimeout": {
           "scope": "window",
           "type": "integer",

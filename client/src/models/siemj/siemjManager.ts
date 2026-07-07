@@ -82,6 +82,8 @@ export class SiemjManager {
       throw new XpException('Ошибка компиляции схемы БД. Результирующий файл не создан');
     }
 
+    this.config.updateLSPSchemaTaxonomyPath(schemaFilePath);
+
     return schemaFilePath;
   }
 

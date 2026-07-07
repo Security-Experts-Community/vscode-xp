@@ -23,15 +23,6 @@ const clientConfig = {
   ]
 };
 
-const clientLspProxyConfig = {
-  ...baseConfig,
-  platform: 'node',
-  mainFields: ['module', 'main'],
-  format: 'cjs',
-  entryPoints: ['./client/src/tools/lspDockerProxy.ts'],
-  outfile: `${clientOutDirectoryPath}/lspDockerProxy.js`
-};
-
 const uiConfig = {
   ...baseConfig,
   target: 'es2020',
@@ -82,10 +73,6 @@ const watchConfig = {
         ...watchConfig
       });
       await build({
-        ...clientLspProxyConfig,
-        ...watchConfig
-      });
-      await build({
         ...serverConfig,
         ...watchConfig
       });
@@ -97,8 +84,6 @@ const watchConfig = {
       console.log('\x1b[32m✓ \x1b[34mclient \x1b[37mbuild \x1b[32mcomplete\x1b[0m');
       await build(uiConfig);
       console.log('\x1b[32m✓ \x1b[35mui-toolkit \x1b[37mbuild \x1b[32mcomplete\x1b[0m');
-      await build(clientLspProxyConfig);
-      console.log('\x1b[32m✓ \x1b[33mlsp-docker-proxy \x1b[37mbuild \x1b[32mcomplete\x1b[0m');
       await build(serverConfig);
       console.log('\x1b[32m✓ \x1b[36mserver \x1b[37mbuild \x1b[32mcomplete\x1b[0m');
     }
