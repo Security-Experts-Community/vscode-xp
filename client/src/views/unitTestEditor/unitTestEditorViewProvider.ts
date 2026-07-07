@@ -14,8 +14,6 @@ import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Enrichment } from '../../models/content/enrichment';
 import { Aggregation } from '../../models/content/aggregation';
 import { TestStatus } from '../../models/tests/testStatus';
-import { CommonCommands } from '../../models/command/commonCommands';
-import { XpException } from '../../models/xpException';
 
 enum CloseUnitTestsAnswer {
   Yes = 1,
@@ -373,7 +371,12 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
             actualData: outputData
           });
 
-          const handled = await this.handleToolBackendError(error);
+          const handled =
+            !this.toolBackendErrorShown &&
+            (await ExceptionHelper.showToolBackendUnavailableError(error, this.config));
+          if (handled) {
+            this.toolBackendErrorShown = true;
+          }
           if (!handled) {
             ExceptionHelper.show(error, 'Unexpected error while executing the modular test');
           }
@@ -418,47 +421,6 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
         }
       }
     );
-  }
-
-  private async handleToolBackendError(error: unknown): Promise<boolean> {
-    if (this.toolBackendErrorShown || !(error instanceof XpException)) {
-      return false;
-    }
-
-    const message = error.message ?? '';
-    if (!this.isToolBackendUnavailableMessage(message)) {
-      return false;
-    }
-
-    this.toolBackendErrorShown = true;
-
-    const outputAction = 'Show Output';
-    const configureAction = 'Configure';
-    const actions = this.config.isLocalMacOS()
-      ? [outputAction, configureAction]
-      : [outputAction];
-
-    const selection = await vscode.window.showErrorMessage(message, ...actions);
-
-    if (selection === outputAction) {
-      await vscode.commands.executeCommand(CommonCommands.SHOW_OUTPUT_CHANNEL_COMMAND);
-    } else if (selection === configureAction) {
-      await vscode.commands.executeCommand(
-        CommonCommands.CONFIGURE_MACOS_CONTAINER_BACKEND_COMMAND
-      );
-    }
-
-    return true;
-  }
-
-  private isToolBackendUnavailableMessage(message: string): boolean {
-    return [
-      'Docker is not installed or is not available in PATH',
-      'Container not running.',
-      'is not running. Start a container with XP tools, then retry.',
-      'Path mapping failed.',
-      'Tool not found in container'
-    ].some((part) => message.includes(part));
   }
 
   private async _updateTestInWebview(payload: {

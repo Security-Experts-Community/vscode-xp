@@ -4,8 +4,17 @@ import { XpException } from '../models/xpException';
 import { Log } from '../extension';
 import { Configuration } from '../models/configuration';
 import { StringHelper } from './stringHelper';
+import { CommonCommands } from '../models/command/commonCommands';
 
 export class ExceptionHelper {
+  private static readonly TOOL_BACKEND_UNAVAILABLE_MESSAGES = [
+    'Docker is not installed or is not available in PATH',
+    'Container not running.',
+    'is not running. Start a container with XP tools, then retry.',
+    'Path mapping failed.',
+    'Tool not found in container'
+  ];
+
   public static async show(error: Error, defaultMessage?: string): Promise<void> {
     const errorType = error.constructor.name;
     const configuration = Configuration.get();
@@ -53,6 +62,44 @@ export class ExceptionHelper {
         outputChannel.show();
       }
     }
+  }
+
+  public static async showToolBackendUnavailableError(
+    error: unknown,
+    configuration = Configuration.get()
+  ): Promise<boolean> {
+    if (!(error instanceof XpException) || !this.isToolBackendUnavailableError(error)) {
+      return false;
+    }
+
+    const outputChannel = configuration.getOutputChannel();
+    this.recursiveWriteXpExceptionToOutput(error, outputChannel);
+
+    const outputAction = 'Show Output';
+    const configureAction = 'Configure';
+    const actions = configuration.isLocalMacOS()
+      ? [outputAction, configureAction]
+      : [outputAction];
+
+    const selection = await vscode.window.showErrorMessage(error.message, ...actions);
+
+    if (selection === outputAction) {
+      await vscode.commands.executeCommand(CommonCommands.SHOW_OUTPUT_CHANNEL_COMMAND);
+    } else if (selection === configureAction) {
+      await vscode.commands.executeCommand(
+        CommonCommands.CONFIGURE_MACOS_CONTAINER_BACKEND_COMMAND
+      );
+    }
+
+    return true;
+  }
+
+  public static isToolBackendUnavailableError(error: unknown): error is XpException {
+    if (!(error instanceof XpException)) {
+      return false;
+    }
+
+    return this.TOOL_BACKEND_UNAVAILABLE_MESSAGES.some((part) => error.message.includes(part));
   }
 
   private static recursiveWriteXpExceptionToOutput(

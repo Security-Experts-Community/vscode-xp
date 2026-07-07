@@ -676,10 +676,16 @@ export class IntegrationTestEditorViewProvider {
             await this.updateView(this.getSelectedTestNumber(message));
           }
         } catch (error) {
-          ExceptionHelper.show(
+          const handled = await ExceptionHelper.showToolBackendUnavailableError(
             error,
-            this.config.getMessage('View.IntegrationTests.Message.FailedToExecutionTests')
+            this.config
           );
+          if (!handled) {
+            ExceptionHelper.show(
+              error,
+              this.config.getMessage('View.IntegrationTests.Message.FailedToExecutionTests')
+            );
+          }
         } finally {
           IntegrationTestEditorViewProvider.SAVING_IN_PROGRESS = false;
         }
