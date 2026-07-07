@@ -484,7 +484,13 @@ async function buildKbtLspInitializationOptions(config: Configuration): Promise<
     initializationOptions.taxonomy_i18n_path = mapLspPath(taxonomyI18nPath);
 
     const schemaPath = await config.ensureLspSchemaPath();
-    initializationOptions.schema_path = mapLspPath(schemaPath);
+    if (schemaPath) {
+      initializationOptions.schema_path = mapLspPath(schemaPath);
+    } else {
+      Log.info(
+        'KBT LSP schema is not available yet. Starting without schema_path; build schema to enable schema-based diagnostics and completions.'
+      );
+    }
 
     Log.info(
       `KBT LSP initialization options: taxonomy_path='${initializationOptions.taxonomy_path}', taxonomy_i18n_path='${initializationOptions.taxonomy_i18n_path}', schema_path='${initializationOptions.schema_path ?? ''}'`

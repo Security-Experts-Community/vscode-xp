@@ -154,14 +154,14 @@ export class Configuration {
     await configuration.update('schema_path', undefined, true, false);
   }
 
-  public async ensureLspSchemaPath(): Promise<string> {
+  public async ensureLspSchemaPath(): Promise<string | undefined> {
     const configuredSchemaPath = this.getKBTLSPConfiguration().get<string>('schema_path')?.trim();
     if (configuredSchemaPath && fs.existsSync(configuredSchemaPath)) {
       return configuredSchemaPath;
     }
 
     const contentRoots = this.getContentRoots();
-    for (const contentRoot of this.getContentRoots()) {
+    for (const contentRoot of contentRoots) {
       const contentRootFolder = path.basename(contentRoot);
       const schemaPath = this.getSchemaFullPath(contentRootFolder);
       if (fs.existsSync(schemaPath)) {
@@ -170,16 +170,8 @@ export class Configuration {
       }
     }
 
-    const placeholderRootFolder =
-      contentRoots.length > 0 ? path.basename(contentRoots[0]) : 'packages';
-    const placeholderSchemaPath = this.getSchemaFullPath(placeholderRootFolder);
-    await fs.promises.mkdir(path.dirname(placeholderSchemaPath), { recursive: true });
-    if (!fs.existsSync(placeholderSchemaPath)) {
-      await fs.promises.writeFile(placeholderSchemaPath, '{}', 'utf-8');
-    }
-
-    await this.getKBTLSPConfiguration().update('schema_path', placeholderSchemaPath, true, false);
-    return placeholderSchemaPath;
+    await this.clearLSPSchemaPath();
+    return undefined;
   }
 
   private shouldUseNativeMacLspPaths(): boolean {
