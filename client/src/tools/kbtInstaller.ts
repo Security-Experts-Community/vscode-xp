@@ -143,7 +143,20 @@ export class KbtInstaller {
     const quotedTargetDirectory = this.shellQuote(targetDirectory);
 
     if (archivePath.endsWith('.zip')) {
-      return `unzip -q -o ${quotedArchivePath} -d ${quotedTargetDirectory}`;
+      const extractDirectory = `${archivePath}.extract`;
+      const quotedExtractDirectory = this.shellQuote(extractDirectory);
+
+      return [
+        `rm -rf ${quotedExtractDirectory}`,
+        `mkdir -p ${quotedExtractDirectory}`,
+        `unzip -q -o ${quotedArchivePath} -d ${quotedExtractDirectory}`,
+        `find ${quotedTargetDirectory} -mindepth 1 -maxdepth 1 -exec rm -rf {} +`,
+        `ENTRY_COUNT=$(find ${quotedExtractDirectory} -mindepth 1 -maxdepth 1 | wc -l | tr -d ' ')`,
+        `SOURCE_DIR=${quotedExtractDirectory}`,
+        `if [ "$ENTRY_COUNT" = "1" ]; then FIRST_ENTRY=$(find ${quotedExtractDirectory} -mindepth 1 -maxdepth 1 | head -n 1); if [ -d "$FIRST_ENTRY" ]; then SOURCE_DIR="$FIRST_ENTRY"; fi; fi`,
+        `find "$SOURCE_DIR" -mindepth 1 -maxdepth 1 -exec mv {} ${quotedTargetDirectory}/ \\;`,
+        `rm -rf ${quotedExtractDirectory}`
+      ].join(' && ');
     }
 
     return `tar -xzf ${quotedArchivePath} -C ${quotedTargetDirectory} --strip-components=1`;
