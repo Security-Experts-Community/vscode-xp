@@ -293,7 +293,7 @@ async function configureLSPClient(
         const clientOptions: LanguageClientOptions = {
           documentSelector,
           synchronize: {
-            configurationSection: [config.getExtensionSettingsPrefix()]
+            configurationSection: ['xplang_ls']
           },
           initializationOptions,
           outputChannel: config.getOutputChannel()
@@ -303,8 +303,7 @@ async function configureLSPClient(
           lspServerExecutablePath,
           'XP Language Server',
           serverOptions,
-          clientOptions,
-          true
+          clientOptions
         );
 
         return externalClient

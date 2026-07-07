@@ -144,14 +144,14 @@ export class Configuration {
     await configuration.update('taxonomy_i18n_path', taxonomyPath, true, false);
   }
 
-  public updateLSPSchemaTaxonomyPath(schemaPath: string): void {
+  public async updateLSPSchemaTaxonomyPath(schemaPath: string): Promise<void> {
     const configuration = this.getKBTLSPConfiguration();
-    configuration.update('schema_path', schemaPath);
+    await configuration.update('schema_path', schemaPath, true, false);
   }
 
   public async clearLSPSchemaPath(): Promise<void> {
     const configuration = this.getKBTLSPConfiguration();
-    await configuration.update('schema_path', undefined, true, false);
+    await configuration.update('schema_path', '', true, false);
   }
 
   public async ensureLspSchemaPath(): Promise<string | undefined> {
