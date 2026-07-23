@@ -7,7 +7,7 @@ import { Log } from '../../extension';
 import { XpException } from '../xpException';
 import { EventMimeType } from '../../helpers/testHelper';
 import { SiemJOutputParser } from './siemJOutputParser';
-import { GetRawSIEMJVersion, SIEMJVersion } from './siemjManager';
+import { GetNormalizedSIEMJVersion, SIEMJVersion } from './siemjManager';
 
 export class LocalizationsBuildingOptions {
   rulesSrcPath?: string;
@@ -353,7 +353,7 @@ out=${enOutput}`;
 type=SCENARIO
 scenario=${this.scenarios.join(' ')}
 `;
-    Log.info(`Current SIEMJ version: ${GetRawSIEMJVersion(this.config)}`);
+    Log.info(`Current SIEMJ version: ${GetNormalizedSIEMJVersion(this.config)}`);
     Log.info(Configuration.SIEMJ_CONFIG_FILENAME);
     Log.info(resultConfig);
     return resultConfig;

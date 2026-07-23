@@ -24,7 +24,8 @@ export enum SIEMJVersion {
   Second
 }
 
-export function GetRawSIEMJVersion(config: Configuration): string {
+/** Возвращает нормализованную версию SIEMJ в виде строки ('1' или '2'). */
+export function GetNormalizedSIEMJVersion(config: Configuration): string {
   return config.getCurrentSIEMJVersion();
 }
 
