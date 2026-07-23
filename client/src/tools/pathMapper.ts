@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 
 export interface PathMapping {
@@ -137,7 +138,37 @@ export class PathMapper {
   }
 
   private static normalizeHostPath(inputPath: string): string {
-    return path.resolve(inputPath);
+    const resolved = path.resolve(inputPath);
+
+    // path.resolve не разворачивает симлинки. На macOS системная tmp (/var/folders/…)
+    // — симлинк на /private/var/folders/…, поэтому одна и та же директория может прийти
+    // в двух формах и промахнуться мимо маппинга. Приводим к каноничному виду по
+    // существующему префиксу пути (сам файл может ещё не существовать).
+    try {
+      const existingPrefix = PathMapper.findExistingPrefix(resolved);
+      if (!existingPrefix) {
+        return resolved;
+      }
+
+      const canonicalPrefix = fs.realpathSync.native(existingPrefix);
+      const suffix = resolved.substring(existingPrefix.length);
+      return canonicalPrefix + suffix;
+    } catch {
+      return resolved;
+    }
+  }
+
+  private static findExistingPrefix(resolvedPath: string): string | undefined {
+    let current = resolvedPath;
+
+    while (current && current !== path.dirname(current)) {
+      if (fs.existsSync(current)) {
+        return current;
+      }
+      current = path.dirname(current);
+    }
+
+    return undefined;
   }
 
   private static normalizeContainerPath(inputPath: string): string {
