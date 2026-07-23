@@ -14,7 +14,6 @@ export type ToolExecutionMode = 'auto' | 'local' | 'docker';
 
 export interface ToolRunOptions extends ExecutionProcessOptions {
   cwd?: string;
-  allowNonZeroExitCode?: boolean;
 }
 
 export interface ToolRunner {
@@ -112,27 +111,27 @@ export class DockerToolRunner implements ToolRunner {
       encoding: options.encoding ?? 'utf-8'
     });
 
+    // Ошибки окружения ниже означают, что утилита вообще не запустилась (нет смысла
+    // разбирать её вывод), поэтому о них сообщаем всегда — в отличие от «обычных» ненулевых
+    // кодов, которые может вернуть штатно не прошедший тест.
     if (result.exitCode === 127 || result.output.includes('executable file not found')) {
       throw new XpException(
         `Tool not found in container '${containerName}'. Check xpConfig.docker.kbtBaseDirectory and make sure the container has XP tools installed. Missing command: '${mappedCommand}'.`
       );
     }
 
-    if (result.exitCode !== 0 && !result.isInterrupted && !options.allowNonZeroExitCode) {
-      if (
-        process.platform === 'darwin' &&
-        (result.exitCode === 132 || result.exitCode === 133)
-      ) {
-        throw new XpException(
-          `Command exited with code ${result.exitCode}. The XP tool binary is likely incompatible with the container CPU architecture. Re-run the macOS setup wizard and create a new XP tools container; it will use linux/amd64 for xp-kbt compatibility.`
-        );
-      }
-
+    if (
+      process.platform === 'darwin' &&
+      !result.isInterrupted &&
+      (result.exitCode === 132 || result.exitCode === 133)
+    ) {
       throw new XpException(
-        `Command exited with non-zero code ${result.exitCode}. Check XP output for details.`
+        `Command exited with code ${result.exitCode}. The XP tool binary is likely incompatible with the container CPU architecture. Re-run the macOS setup wizard and create a new XP tools container; it will use linux/amd64 for xp-kbt compatibility.`
       );
     }
 
+    // Прочие ненулевые коды не считаем фатальными на уровне раннера: их интерпретирует
+    // вызывающий (по выводу/созданным файлам). Так поведение совпадает с LocalToolRunner.
     return result;
   }
 

@@ -84,8 +84,7 @@ export class CorrelationUnitTestsRunnerViaEvtTests implements UnitTestRunner {
       ],
       {
         encoding: 'utf-8',
-        outputChannel: this.config.getOutputChannel(),
-        allowNonZeroExitCode: true
+        outputChannel: this.config.getOutputChannel()
       }
     );
 

@@ -44,8 +44,7 @@ export class NormalizationUnitTestsRunnerViaEvtTests extends NormalizationUnitTe
 
     const executeResult = await this.config.getToolRunner().runTool(evtTestsPath, params, {
       encoding: 'utf-8',
-      outputChannel: this.config.getOutputChannel(),
-      allowNonZeroExitCode: true
+      outputChannel: this.config.getOutputChannel()
     });
 
     if (!executeResult.output) {
