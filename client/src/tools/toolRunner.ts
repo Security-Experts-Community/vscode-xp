@@ -8,6 +8,11 @@ import {
   ProcessHelper
 } from '../helpers/processHelper';
 import { XpException } from '../models/xpException';
+import {
+  DEFAULT_CONTAINER_KBT_BASE_DIRECTORY,
+  getContainerToolRelativePath,
+  getLocalToolRelativePath
+} from './kbtToolPaths';
 import { PathMapper, PathMapping } from './pathMapper';
 
 export type ToolExecutionMode = 'auto' | 'local' | 'docker';
@@ -53,15 +58,15 @@ export class LocalToolRunner implements ToolRunner {
   }
 
   public runKbt(args: string[], options?: ToolRunOptions): Promise<ExecutionResult> {
-    return this.runTool(this.resolveKbtTool('kbtools'), args, options);
+    return this.runTool(this.resolveKbtTool(getLocalToolRelativePath('kbtools')), args, options);
   }
 
   public runSiemj(args: string[], options?: ToolRunOptions): Promise<ExecutionResult> {
-    return this.runTool(this.resolveKbtTool(path.join('extra-tools', 'siemj', this.exe('siemj'))), args, options);
+    return this.runTool(this.resolveKbtTool(getLocalToolRelativePath('siemj')), args, options);
   }
 
   public runNormalizer(args: string[], options?: ToolRunOptions): Promise<ExecutionResult> {
-    return this.runTool(this.resolveKbtTool(path.join('build-tools', this.exe('normalize'))), args, options);
+    return this.runTool(this.resolveKbtTool(getLocalToolRelativePath('normalize')), args, options);
   }
 
   private resolveKbtTool(relativePath: string): string {
@@ -69,11 +74,14 @@ export class LocalToolRunner implements ToolRunner {
       throw new XpException('KBT base directory is not configured.');
     }
 
-    return path.join(this.kbtBaseDirectory, relativePath);
-  }
+    const fullPath = path.join(this.kbtBaseDirectory, relativePath);
+    if (!fs.existsSync(fullPath)) {
+      throw new XpException(
+        `XP tool not found: '${fullPath}'. Check the xpConfig.kbtBaseDirectory setting and make sure XP tools are installed.`
+      );
+    }
 
-  private exe(command: string): string {
-    return process.platform === 'win32' ? `${command}.exe` : command;
+    return fullPath;
   }
 }
 
@@ -141,15 +149,19 @@ export class DockerToolRunner implements ToolRunner {
   }
 
   public runKbt(args: string[], options?: ToolRunOptions): Promise<ExecutionResult> {
-    return this.runTool(this.getContainerKbtTool('kbtools'), args, options);
+    return this.runTool(this.getContainerKbtTool(getContainerToolRelativePath('kbtools')), args, options);
   }
 
   public runSiemj(args: string[], options?: ToolRunOptions): Promise<ExecutionResult> {
-    return this.runTool(this.getContainerKbtTool('extra-tools/siemj/siemj'), args, options);
+    return this.runTool(this.getContainerKbtTool(getContainerToolRelativePath('siemj')), args, options);
   }
 
   public runNormalizer(args: string[], options?: ToolRunOptions): Promise<ExecutionResult> {
-    return this.runTool(this.getContainerKbtTool('build-tools/normalize'), args, options);
+    return this.runTool(
+      this.getContainerKbtTool(getContainerToolRelativePath('normalize')),
+      args,
+      options
+    );
   }
 
   public getPathMapper(): PathMapper {
@@ -331,7 +343,7 @@ export class DockerToolRunner implements ToolRunner {
   }
 
   private getContainerKbtTool(relativePath: string): string {
-    const baseDirectory = this.options.kbtBaseDirectory || '/home/coder/xp-kbt';
+    const baseDirectory = this.options.kbtBaseDirectory || DEFAULT_CONTAINER_KBT_BASE_DIRECTORY;
     return path.posix.join(baseDirectory, relativePath);
   }
 }

@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import { ProcessHelper } from '../helpers/processHelper';
 import { Configuration } from '../models/configuration';
 import { KbtInstaller } from './kbtInstaller';
+import { DEFAULT_CONTAINER_KBT_BASE_DIRECTORY } from './kbtToolPaths';
 import { Log } from '../extension';
 
 interface ContainerSelection {
@@ -17,7 +18,7 @@ export class MacOSContainerSetup {
   private static readonly DEFAULT_TOOLS_IMAGE = 'mcr.microsoft.com/dotnet/sdk:8.0';
   private static readonly DEFAULT_KNOWLEDGEBASE_CONTAINER_PATH = '/workspaces/knowledgebase';
   private static readonly KBT_PATH_CANDIDATES = [
-    '/home/coder/xp-kbt',
+    DEFAULT_CONTAINER_KBT_BASE_DIRECTORY,
     '/opt/xp-kbt',
     '/usr/local/xp-kbt',
     '/workspaces/xp-kbt'
@@ -556,13 +557,16 @@ export class MacOSContainerSetup {
       case 'Download latest xp-kbt':
         return KbtInstaller.installLatestIntoContainer(
           containerName,
-          '/home/coder/xp-kbt',
+          DEFAULT_CONTAINER_KBT_BASE_DIRECTORY,
           outputChannel
         );
       case 'Choose xp-kbt version':
         return this.chooseAndInstallKbtVersion(containerName, outputChannel);
       case 'Enter path manually':
-        return this.askContainerPath('KBT base directory in container', '/home/coder/xp-kbt');
+        return this.askContainerPath(
+          'KBT base directory in container',
+          DEFAULT_CONTAINER_KBT_BASE_DIRECTORY
+        );
       default:
         return undefined;
     }
@@ -590,7 +594,7 @@ export class MacOSContainerSetup {
 
     const targetDirectory = await this.askContainerPath(
       'KBT install directory in container',
-      `/home/coder/xp-kbt-${selectedRelease.release.tag_name}`
+      `${DEFAULT_CONTAINER_KBT_BASE_DIRECTORY}-${selectedRelease.release.tag_name}`
     );
 
     if (!targetDirectory) {

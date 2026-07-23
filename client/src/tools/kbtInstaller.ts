@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 
 import { ProcessHelper } from '../helpers/processHelper';
 import { Log } from '../extension';
+import { DEFAULT_CONTAINER_KBT_BASE_DIRECTORY } from './kbtToolPaths';
 
 interface GitHubReleaseAsset {
   name: string;
@@ -22,7 +23,7 @@ export class KbtInstaller {
 
   public static async installLatestIntoContainer(
     containerName: string,
-    targetDirectory = '/home/coder/xp-kbt',
+    targetDirectory = DEFAULT_CONTAINER_KBT_BASE_DIRECTORY,
     outputChannel?: vscode.OutputChannel
   ): Promise<string> {
     const release = await this.getLatestRelease();
@@ -36,7 +37,7 @@ export class KbtInstaller {
   public static async installReleaseIntoContainer(
     containerName: string,
     release: GitHubRelease,
-    targetDirectory = '/home/coder/xp-kbt',
+    targetDirectory = DEFAULT_CONTAINER_KBT_BASE_DIRECTORY,
     outputChannel?: vscode.OutputChannel
   ): Promise<string> {
     const asset = this.pickLinuxAsset(release);

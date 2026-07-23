@@ -23,6 +23,7 @@ import {
   ToolRunner,
   ToolRunnerFactory
 } from '../tools/toolRunner';
+import { DEFAULT_CONTAINER_KBT_BASE_DIRECTORY } from '../tools/kbtToolPaths';
 
 export type EncodingType = 'windows-1251' | 'utf-8' | 'utf-16';
 
@@ -420,7 +421,7 @@ export class Configuration {
     if (this.shouldUseDockerToolRunner()) {
       return (
         this.getWorkspaceConfiguration().get<string>('docker.kbtBaseDirectory') ||
-        '/home/coder/xp-kbt'
+        DEFAULT_CONTAINER_KBT_BASE_DIRECTORY
       );
     }
 
@@ -1510,7 +1511,7 @@ export class Configuration {
   private getDockerKbtToolPath(relativePath: string): string {
     const dockerKbtBaseDirectory =
       this.getWorkspaceConfiguration().get<string>('docker.kbtBaseDirectory') ||
-      '/home/coder/xp-kbt';
+      DEFAULT_CONTAINER_KBT_BASE_DIRECTORY;
     return path.posix.join(dockerKbtBaseDirectory, relativePath.replace(/\\/g, '/'));
   }
 
