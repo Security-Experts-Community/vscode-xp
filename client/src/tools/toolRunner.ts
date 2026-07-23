@@ -103,36 +103,41 @@ export class DockerToolRunner implements ToolRunner {
     }
 
     const mappedCommand = this.mapCommand(command);
-    const mappedArgs = await this.mapArgs(args);
-    const dockerArgs = this.buildDockerExecArgs(containerName, mappedCommand, mappedArgs, options);
+    const { args: mappedArgs, tempFiles } = await this.mapArgs(args);
 
-    const result = await ProcessHelper.execute('docker', dockerArgs, {
-      ...options,
-      encoding: options.encoding ?? 'utf-8'
-    });
+    try {
+      const dockerArgs = this.buildDockerExecArgs(containerName, mappedCommand, mappedArgs, options);
 
-    // Ошибки окружения ниже означают, что утилита вообще не запустилась (нет смысла
-    // разбирать её вывод), поэтому о них сообщаем всегда — в отличие от «обычных» ненулевых
-    // кодов, которые может вернуть штатно не прошедший тест.
-    if (result.exitCode === 127 || result.output.includes('executable file not found')) {
-      throw new XpException(
-        `Tool not found in container '${containerName}'. Check xpConfig.docker.kbtBaseDirectory and make sure the container has XP tools installed. Missing command: '${mappedCommand}'.`
-      );
+      const result = await ProcessHelper.execute('docker', dockerArgs, {
+        ...options,
+        encoding: options.encoding ?? 'utf-8'
+      });
+
+      // Ошибки окружения ниже означают, что утилита вообще не запустилась (нет смысла
+      // разбирать её вывод), поэтому о них сообщаем всегда — в отличие от «обычных» ненулевых
+      // кодов, которые может вернуть штатно не прошедший тест.
+      if (result.exitCode === 127 || result.output.includes('executable file not found')) {
+        throw new XpException(
+          `Tool not found in container '${containerName}'. Check xpConfig.docker.kbtBaseDirectory and make sure the container has XP tools installed. Missing command: '${mappedCommand}'.`
+        );
+      }
+
+      if (
+        process.platform === 'darwin' &&
+        !result.isInterrupted &&
+        (result.exitCode === 132 || result.exitCode === 133)
+      ) {
+        throw new XpException(
+          `Command exited with code ${result.exitCode}. The XP tool binary is likely incompatible with the container CPU architecture. Re-run the macOS setup wizard and create a new XP tools container; it will use linux/amd64 for xp-kbt compatibility.`
+        );
+      }
+
+      // Прочие ненулевые коды не считаем фатальными на уровне раннера: их интерпретирует
+      // вызывающий (по выводу/созданным файлам). Так поведение совпадает с LocalToolRunner.
+      return result;
+    } finally {
+      await this.cleanupTempFiles(tempFiles);
     }
-
-    if (
-      process.platform === 'darwin' &&
-      !result.isInterrupted &&
-      (result.exitCode === 132 || result.exitCode === 133)
-    ) {
-      throw new XpException(
-        `Command exited with code ${result.exitCode}. The XP tool binary is likely incompatible with the container CPU architecture. Re-run the macOS setup wizard and create a new XP tools container; it will use linux/amd64 for xp-kbt compatibility.`
-      );
-    }
-
-    // Прочие ненулевые коды не считаем фатальными на уровне раннера: их интерпретирует
-    // вызывающий (по выводу/созданным файлам). Так поведение совпадает с LocalToolRunner.
-    return result;
   }
 
   public runKbt(args: string[], options?: ToolRunOptions): Promise<ExecutionResult> {
@@ -285,26 +290,44 @@ export class DockerToolRunner implements ToolRunner {
     return this.pathMapper.hostToContainer(command);
   }
 
-  private async mapArgs(args: string[]): Promise<string[]> {
+  private async mapArgs(args: string[]): Promise<{ args: string[]; tempFiles: string[] }> {
     const mappedArgs: string[] = [];
+    const tempFiles: string[] = [];
 
     for (const arg of args) {
       if (arg.endsWith('.conf') && fs.existsSync(arg)) {
-        mappedArgs.push(await this.createMappedConfig(arg));
+        const mapped = await this.createMappedConfig(arg);
+        mappedArgs.push(mapped.containerPath);
+        tempFiles.push(mapped.hostTempPath);
       } else {
         mappedArgs.push(this.pathMapper.mapCommandArgument(arg));
       }
     }
 
-    return mappedArgs;
+    return { args: mappedArgs, tempFiles };
   }
 
-  private async createMappedConfig(configPath: string): Promise<string> {
+  private async createMappedConfig(
+    configPath: string
+  ): Promise<{ containerPath: string; hostTempPath: string }> {
     const content = await fs.promises.readFile(configPath, 'utf-8');
     const mappedContent = this.pathMapper.mapText(content);
     const mappedConfigPath = `${configPath}.container`;
     await fs.promises.writeFile(mappedConfigPath, mappedContent, 'utf-8');
-    return this.pathMapper.hostToContainer(mappedConfigPath);
+    return {
+      containerPath: this.pathMapper.hostToContainer(mappedConfigPath),
+      hostTempPath: mappedConfigPath
+    };
+  }
+
+  private async cleanupTempFiles(tempFiles: string[]): Promise<void> {
+    for (const tempFile of tempFiles) {
+      try {
+        await fs.promises.rm(tempFile, { force: true });
+      } catch (error) {
+        // Очистка временного файла не должна ронять запуск утилиты.
+      }
+    }
   }
 
   private getContainerKbtTool(relativePath: string): string {
