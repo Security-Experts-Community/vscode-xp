@@ -62,7 +62,6 @@ export class SDKUtilitiesWrappers {
     const formulaPath = rule.getFilePath();
 
     const rawEventPath = unitTest.getTestInputDataPath();
-    process.env.PTSIEM_SDK_ROOT = this.config.getSiemSdkDirectoryPath();
 
     // Запускаем утилиту с параметрами
     let normalizerParams = [
@@ -86,7 +85,8 @@ export class SDKUtilitiesWrappers {
     normalizerParams.push('-e');
 
     const executeResult = await this.config.getToolRunner().runNormalizer(normalizerParams, {
-      outputChannel: this.config.getOutputChannel()
+      outputChannel: this.config.getOutputChannel(),
+      env: { PTSIEM_SDK_ROOT: sdkPath }
     });
 
     if (!executeResult.output) {

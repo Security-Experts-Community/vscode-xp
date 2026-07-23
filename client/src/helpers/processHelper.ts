@@ -11,6 +11,11 @@ export interface ExecutionProcessOptions {
   cancellationToken?: vscode.CancellationToken;
   cwd?: string;
   /**
+   * Дополнительные переменные окружения для дочернего процесса. Наследуются поверх `process.env`
+   * без мутации глобального окружения расширения.
+   */
+  env?: Record<string, string>;
+  /**
    * Проверяет выполнимость команды (например, отсутствия нужного модуля в директориях PATH).
    * Если команда не выполнима, будет прошено исключение.
    */
@@ -83,7 +88,7 @@ export class ProcessHelper {
         }
         child = child_process.spawn(command, params, {
           cwd: options.cwd,
-          env: process.env
+          env: options.env ? { ...process.env, ...options.env } : process.env
         });
       } catch (error) {
         reject(error);

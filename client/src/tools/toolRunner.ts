@@ -164,6 +164,11 @@ export class DockerToolRunner implements ToolRunner {
       dockerArgs.push('-w', this.pathMapper.hostToContainer(options.cwd));
     }
 
+    // Пробрасываем переменные окружения внутрь контейнера, транслируя host-пути в container-пути.
+    for (const [name, value] of Object.entries(options.env ?? {})) {
+      dockerArgs.push('-e', `${name}=${this.pathMapper.hostToContainer(value)}`);
+    }
+
     dockerArgs.push(containerName, command, ...args);
     return dockerArgs;
   }
