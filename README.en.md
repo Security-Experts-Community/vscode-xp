@@ -46,6 +46,8 @@ When the extension starts in local macOS VS Code, it offers to configure the con
 
 If the automatic notification was dismissed or you want to rerun setup later, use the `XP: Configure macOS Container Backend` command from the Command Palette.
 
+**Installing xp-kbt inside the container.** When the wizard downloads `xp-kbt`, it runs `curl -fL <github-release-asset> | tar/unzip` inside the container and, if `curl`/`tar`/`unzip` are missing, may install them via `apt-get`/`apk`. This trusts the [`vxcontrol/xp-kbt`](https://github.com/vxcontrol/xp-kbt/releases) repository and the TLS connection to GitHub, and requires network access and root inside the container. The archive is not currently verified against a checksum. If this does not fit your security policy, install `xp-kbt` into the container yourself beforehand and point `xpConfig.docker.kbtBaseDirectory` at it instead of using the automatic download.
+
 Temporary extension artifacts are stored in `tmp/xp-output` inside the local knowledgebase by default. Inside the container, the matching path is `xpConfig.docker.outputDirectoryPath`, which defaults to `/workspaces/knowledgebase/tmp/xp-output`.
 
 Relevant settings:
