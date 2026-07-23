@@ -47,6 +47,21 @@ export class Configuration {
   public getRulesDirFilters(): string {
     return this.pathHelper.getRulesDirFilters();
   }
+
+  /**
+   * Путь к каталогу `common/rules_filters`, вычисленный относительно корня контента
+   * (директории, содержащей `packages`), а не корня воркспейса VS Code.
+   *
+   * `getRulesDirFilters()` строит путь от `getKbFullPath()` (корень воркспейса). Если воркспейс
+   * открыт на уровень выше самой базы знаний (например, папка-родитель, содержащая
+   * `knowledgebase/`), сегмент базы знаний теряется, и путь промахивается. Здесь база берётся
+   * из фактического корня контента, как это делает `rules_src`.
+   *
+   * @param contentRootPath путь к корню контента (директория `.../packages`).
+   */
+  public getRulesDirFiltersByContentRoot(contentRootPath: string): string {
+    return path.join(path.dirname(contentRootPath), 'common', 'rules_filters');
+  }
   public getContentRoots(): string[] {
     return this.pathHelper.getContentRoots();
   }

@@ -63,7 +63,9 @@ export class CorrelationUnitTestsRunnerViaEvtTests implements UnitTestRunner {
     const testFilepath = test.getTestExpectationPath();
     const fptDefaults = this.config.getCorrelationDefaultsFilePath(rootFolder);
     const schemaFilePath = this.config.getSchemaFullPath(rootFolder);
-    const ruleFiltersDirPath = this.config.getRulesDirFilters();
+    const ruleFiltersDirPath = this.config.getRulesDirFiltersByContentRoot(
+      rule.getContentRootPath(this.config)
+    );
 
     const output = await this.config.getToolRunner().runTool(
       this.config.getEvtTestsFullPath(),

@@ -86,6 +86,10 @@ export class LocalToolRunner implements ToolRunner {
 }
 
 export class DockerToolRunner implements ToolRunner {
+  private static dockerAvailable = false;
+  private static readonly containerRunningCheckedAt = new Map<string, number>();
+  private static readonly CONTAINER_CHECK_TTL_MS = 10_000;
+
   private readonly pathMapper: PathMapper;
 
   constructor(private readonly options: DockerToolRunnerOptions) {
@@ -190,6 +194,13 @@ export class DockerToolRunner implements ToolRunner {
   }
 
   private async ensureDockerAvailable(): Promise<void> {
+    // `docker version` — сравнительно медленная команда, а доступность Docker в рамках сессии
+    // практически не меняется. Кэшируем успешную проверку на уровне класса, чтобы не гонять её
+    // перед каждым `docker exec` (новый экземпляр раннера создаётся на каждую операцию).
+    if (DockerToolRunner.dockerAvailable) {
+      return;
+    }
+
     const result = await ProcessHelper.execute('docker', ['version'], {
       encoding: 'utf-8',
       checkCommandBeforeExecution: true
@@ -200,9 +211,19 @@ export class DockerToolRunner implements ToolRunner {
         'Docker is not installed or is not available in PATH. Install Docker Desktop and start it, then retry the XP command.'
       );
     }
+
+    DockerToolRunner.dockerAvailable = true;
   }
 
   private async ensureContainerRunning(containerName: string): Promise<void> {
+    // Кэшируем результат проверки на короткое время, чтобы серия последовательных вызовов
+    // (например, инициализация LSP или прогон теста) не порождала по `docker inspect` на каждый
+    // вызов. TTL небольшой, поэтому остановленный контейнер будет замечен достаточно быстро.
+    const lastCheck = DockerToolRunner.containerRunningCheckedAt.get(containerName);
+    if (lastCheck !== undefined && Date.now() - lastCheck < DockerToolRunner.CONTAINER_CHECK_TTL_MS) {
+      return;
+    }
+
     const result = await ProcessHelper.execute(
       'docker',
       ['inspect', '-f', '{{.State.Running}}', containerName],
@@ -210,10 +231,13 @@ export class DockerToolRunner implements ToolRunner {
     );
 
     if (result.exitCode !== 0 || !result.output.trim().includes('true')) {
+      DockerToolRunner.containerRunningCheckedAt.delete(containerName);
       throw new XpException(
         `Container '${containerName}' is not running. Start a container with XP tools, then retry.`
       );
     }
+
+    DockerToolRunner.containerRunningCheckedAt.set(containerName, Date.now());
   }
 
   private async getContainerName(): Promise<string> {

@@ -139,7 +139,7 @@ out=${output}`;
       rulesSrcPath = this.contentRootPath;
     }
 
-    const rulesFilters = this.config.getRulesDirFilters();
+    const rulesFilters = this.config.getRulesDirFiltersByContentRoot(this.contentRootPath);
     const table_list_schema = path.join('${output_folder}', this.config.getSchemaFileName());
     const output = path.join('${output_folder}', this.config.getCorrelationsGraphFileName());
     const cfgraphBuildingSection = `
@@ -167,7 +167,7 @@ out=${output}`;
       }
     }
 
-    const rulesFilters = this.config.getRulesDirFilters();
+    const rulesFilters = this.config.getRulesDirFiltersByContentRoot(this.contentRootPath);
     const table_list_schema = path.join('${output_folder}', this.config.getSchemaFileName());
     const output = path.join('${output_folder}', this.config.getEnrichmentsGraphFileName());
 
@@ -620,7 +620,7 @@ out=${output}
     ]
   },
   "root": ${JSON.stringify(this.config.mapPathForExecution(testsRuleFullPath))},
-  "rules-filters": ${JSON.stringify(this.config.mapPathForExecution(this.config.getRulesDirFilters()))},
+  "rules-filters": ${JSON.stringify(this.config.mapPathForExecution(this.config.getRulesDirFiltersByContentRoot(this.contentRootPath)))},
   "fpta-defaults": ${JSON.stringify(this.config.mapPathForExecution(table_list_defaults))},
   "taxonomy": ${JSON.stringify(this.config.mapPathForExecution(this.config.getTaxonomyFullPath()))},
   "schema": ${JSON.stringify(this.config.mapPathForExecution(table_list_schema))},
