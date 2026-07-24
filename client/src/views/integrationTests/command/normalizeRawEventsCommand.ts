@@ -48,12 +48,18 @@ export class NormalizeRawEventsCommand extends Command {
 
           this.params.test.setNormalizedEvents(normEvents);
         } catch (error) {
-          ExceptionHelper.show(
+          const handled = await ExceptionHelper.showToolBackendUnavailableError(
             error,
-            this.params.config.getMessage(
-              'View.IntegrationTests.Message.DefaultErrorEventsNormalization'
-            )
+            this.params.config
           );
+          if (!handled) {
+            ExceptionHelper.show(
+              error,
+              this.params.config.getMessage(
+                'View.IntegrationTests.Message.DefaultErrorEventsNormalization'
+              )
+            );
+          }
           return;
         }
 

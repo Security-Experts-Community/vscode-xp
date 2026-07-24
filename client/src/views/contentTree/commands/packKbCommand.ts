@@ -7,7 +7,6 @@ import * as vscode from 'vscode';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { KbHelper } from '../../../helpers/kbHelper';
-import { ProcessHelper } from '../../../helpers/processHelper';
 import { Configuration } from '../../../models/configuration';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
@@ -40,7 +39,7 @@ export class PackKbCommand extends ViewCommand {
 
     // Проверка наличия утилиты сборки kb-файлов.
     const knowledgeBasePackagerCli = this.config.getKbPackFullPath();
-    if (!fs.existsSync(knowledgeBasePackagerCli)) {
+    if (!this.config.shouldUseDockerToolRunner() && !fs.existsSync(knowledgeBasePackagerCli)) {
       DialogHelper.showError(
         `Путь к утилите сборки kb-файла задан не верно. Проверьте корректность [пути к KBT](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]) или загрузите актуальную версию [отсюда](https://github.com/vxcontrol/xp-kbt/releases), распакуйте и задайте путь к директории [в настройках](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"])`
       );
@@ -130,7 +129,7 @@ export class PackKbCommand extends ViewCommand {
           // Типовая команда выглядит так:
           // dotnet kbpack.dll pack -s "c:\tmp\pack" -o "c:\tmp\pack\Esc.kb"
           Log.info('TmpPackageDirectoryPath: ', tmpPackageDirectoryPath);
-          const output = await ProcessHelper.execute(
+          const output = await this.config.getToolRunner().runTool(
             'dotnet',
             [
               knowledgeBasePackagerCli,

@@ -33,6 +33,67 @@ Expansion options:
 You can easily get a ready-made development environment for XP if you use the [VSCode XP Workspace](https://github.com/Security-Experts-Community/vscode-xp-workspace) project. Everything in it is collected in a single Docker container, and editing occurs through the web version of VSCode.
 Details in the project repository.
 
+### macOS quick start
+
+Minimum steps to get rule builds and tests working on macOS (via Docker):
+
+1. Install and start **Docker Desktop**.
+2. Open your knowledgebase folder in VS Code (its root is the directory that contains `packages`).
+3. Install the eXtraction and Processing extension.
+4. The extension offers to configure the container backend — click **Configure**. If you dismissed the prompt, run the `XP: Configure macOS Container Backend` command from the Command Palette.
+5. Go through the wizard: select the knowledgebase folder, let it check Docker, then pick an already running container with XP tools or create a new one. If `xp-kbt` is not found in the container, choose `Download latest xp-kbt` (or a specific version, or enter a path manually).
+6. Done: build and test operations run through the container. Detailed progress is shown in the `eXtraction and Processing` output channel.
+
+See the sections below for how it works and which settings are available.
+
+### macOS Hybrid Mode
+
+On macOS, the extension runs locally in normal VS Code: UI, tree views, editors, language features, webviews, commands and knowledgebase file access stay on the host filesystem. Only operations that require `xp-kbt`, `siemj`, `normalizer-cli` or build tools are executed inside a Docker container.
+
+The backend can be any Docker container that has XP tools installed. The container must bind mount the same knowledgebase directory that is opened in local VS Code, for example:
+
+- host: `/Users/alice/Work/knowledgebase`
+- container: `/workspaces/knowledgebase`
+
+When the extension starts in local macOS VS Code, it offers to configure the container backend. The wizard selects the local knowledgebase path, checks Docker, selects a running container or creates a new tools container, detects the container mount path, detects or asks for the KBT path, and saves settings. If xp-kbt is not found in the selected container, the wizard can download the latest `vxcontrol/xp-kbt` release, let you choose one of the recent releases, or use a manually entered KBT path. A new container is created from `mcr.microsoft.com/dotnet/sdk:8.0`, bind mounts the selected knowledgebase at `/workspaces/knowledgebase`, and then continues through the same KBT installation step.
+
+If the automatic notification was dismissed or you want to rerun setup later, use the `XP: Configure macOS Container Backend` command from the Command Palette.
+
+**How the extension installs xp-kbt into the container.** If you allow the automatic download, the wizard fetches `xp-kbt` right inside the container: it pulls the relevant GitHub release (`curl -fL <github-release-asset> | tar/unzip`), and if `curl`, `tar`, or `unzip` are missing, installs them via `apt-get`/`apk`. Before you agree, it's worth knowing that this means:
+
+- you trust the [`vxcontrol/xp-kbt`](https://github.com/vxcontrol/xp-kbt/releases) repository and the TLS connection to GitHub;
+- the container needs network access and root privileges;
+- the downloaded archive is not verified against a checksum yet.
+
+If that doesn't fit your security requirements, install `xp-kbt` into the container yourself beforehand and just point `xpConfig.docker.kbtBaseDirectory` at it. The automatic download is then skipped.
+
+Temporary extension artifacts are stored in `tmp/xp-output` inside the local knowledgebase by default. Inside the container, the matching path is `xpConfig.docker.outputDirectoryPath`, which defaults to `/workspaces/knowledgebase/tmp/xp-output`.
+
+Relevant settings:
+
+- `xpConfig.toolExecutionMode`: `auto`, `local`, or `docker`
+- `xpConfig.docker.containerName`
+- `xpConfig.docker.workspaceHostPath`
+- `xpConfig.docker.workspaceContainerPath`
+- `xpConfig.docker.kbtBaseDirectory`
+- `xpConfig.docker.outputDirectoryPath`
+- `xpConfig.lspServerExecutablePath`
+- `xpConfig.formatterExecutablePath`
+- `xpConfig.macos.showContainerSetupPrompt`
+
+While the container is being created and KBT is being installed, the extension writes detailed progress to the `eXtraction and Processing` output channel. The setup notification includes a direct action to open that output.
+
+On local macOS, the legacy in-extension LSP is disabled. If you want definition lookup, hover, diagnostics and other language-server features, set `xpConfig.lspServerExecutablePath` to a native macOS `evt-xp-language-server` binary. Formatting can also use a native macOS binary via `xpConfig.formatterExecutablePath`. If that formatter path is empty, formatting falls back to Docker in Docker tool mode.
+
+Troubleshooting:
+
+- Docker not installed: install and start Docker Desktop.
+- Container not running: start a container with XP tools, choose an already running container in the wizard, or rerun the setup wizard and choose to create a new container.
+- Path mapping failed: check that `workspaceHostPath` points to the local knowledgebase and `workspaceContainerPath` matches the bind mount in the container.
+- Tool not found in container: run the setup wizard again and choose `Download latest xp-kbt`, `Choose xp-kbt version`, or check `xpConfig.docker.kbtBaseDirectory`.
+- Native LSP starts but reports schema warnings: run a build flow that generates the table schema, for example a normalization or correlation test/build that includes schema generation, and then restart or reload the extension if needed.
+- Native LSP is not required on macOS: if you do not have a native `evt-xp-language-server`, leave `xpConfig.lspServerExecutablePath` empty. Docker-backed build/test operations will continue to work without LSP features.
+
 ## Event normalization
 
 To write correlation rules, in general, you will need event normalization formulas. In our [open expertise repository](https://github.com/Security-Experts-Community/open-xp-rules) you can find basic normalization formulas. In the future there will be other types of rules in the XP language created by the community.

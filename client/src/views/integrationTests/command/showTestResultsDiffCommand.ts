@@ -10,9 +10,8 @@ import { RegExpHelper } from '../../../helpers/regExpHelper';
 import { TestHelper } from '../../../helpers/testHelper';
 import { XpException } from '../../../models/xpException';
 import { Log } from '../../../extension';
-import { FileSystemException } from '../../../models/fileSystemException';
 import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
-import { GetSIEMJVersion, SIEMJVersion } from '../../..//models/siemj/siemjManager';
+import { IntegrationTest } from '../../../models/tests/integrationTest';
 
 export class ShowTestResultsDiffCommand extends Command {
   constructor(private params: IntegrationTestParams) {
@@ -83,12 +82,7 @@ export class ShowTestResultsDiffCommand extends Command {
 
     // Получаем фактическое событие.
 
-    var actualEventsFilePath = TestHelper.getEnrichedCorrEventFilePath(
-      this.params.config,
-      this.params.tmpDirPath,
-      ruleName,
-      this.params.testNumber
-    );
+    const actualEventsFilePath = this.getActualEventsFilePath(currTest, ruleName);
 
     if (!actualEventsFilePath) {
       throw new XpException(
@@ -96,15 +90,8 @@ export class ShowTestResultsDiffCommand extends Command {
       );
     }
 
-    if (!fs.existsSync(actualEventsFilePath)) {
-      throw new FileSystemException(
-        `Файл результатов тестов ${actualEventsFilePath} не найден`,
-        actualEventsFilePath
-      );
-    }
-
     // Событие может прилетать не одно
-    const actualEventsString = await FileSystemHelper.readContentFile(actualEventsFilePath);
+    const actualEventsString = await this.params.config.readTextFile(actualEventsFilePath);
 
     const actualEvents = TestHelper.extractEventsFromResultString(
       this.params.config,
@@ -165,5 +152,23 @@ export class ShowTestResultsDiffCommand extends Command {
       `Фактическое и ожидаемое события теста №${this.params.testNumber}`
     );
     return true;
+  }
+
+  private getActualEventsFilePath(test: IntegrationTest, ruleName: string): string | undefined {
+    const resultFiles = test.getResultFiles();
+    if (resultFiles?.actualEventsFilePath) {
+      return resultFiles.actualEventsFilePath;
+    }
+
+    if (resultFiles?.detailedReportFilePath) {
+      return resultFiles.detailedReportFilePath;
+    }
+
+    return TestHelper.getEnrichedCorrEventFilePath(
+      this.params.config,
+      this.params.tmpDirPath,
+      ruleName,
+      this.params.testNumber
+    );
   }
 }

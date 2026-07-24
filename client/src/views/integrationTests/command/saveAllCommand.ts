@@ -76,12 +76,16 @@ export class SaveAllCommand extends Command {
     const newTests = plainTests.map((plainTest, index) => {
       const number = index + 1;
       const newTest = IntegrationTest.create(number);
+      const oldTest = oldTests?.[index];
 
       // Сырые события.
       let rawEvents = plainTest?.rawEvents;
 
       // Из textarea новые строки только \n, поэтому надо их поправить под систему.
       rawEvents = rawEvents.replace(/(?<!\\)\n/gm, os.EOL);
+      if (oldTest && this.areTextContentsEqual(rawEvents, oldTest.getRawEvents())) {
+        rawEvents = oldTest.getRawEvents();
+      }
       newTest.setRawEvents(rawEvents);
 
       // Код теста.
@@ -108,22 +112,51 @@ export class SaveAllCommand extends Command {
         );
       }
 
+      if (oldTest && this.areTestCodesSemanticallyEqual(compressedCode, oldTest.getTestCode())) {
+        compressedCode = oldTest.getTestCode();
+      }
       newTest.setTestCode(compressedCode);
 
       // Нормализованные события.
       const normEvents = plainTest?.normEvents;
       if (normEvents) {
-        newTest.setNormalizedEvents(TestHelper.compressTestCode(normEvents));
+        let compressedNormEvents = TestHelper.compressTestCode(normEvents);
+        if (
+          oldTest &&
+          this.areTestCodesSemanticallyEqual(compressedNormEvents, oldTest.getNormalizedEvents())
+        ) {
+          compressedNormEvents = oldTest.getNormalizedEvents();
+        }
+        newTest.setNormalizedEvents(compressedNormEvents);
       }
 
       // Переносим статус из тестов до сохранения если такие же сырые события и код теста.
-      if (oldTests?.[index]) {
-        IntegrationTest.updateTestStatus(oldTests[index], newTest);
+      if (oldTest) {
+        IntegrationTest.updateTestStatus(oldTest, newTest);
       }
 
       return newTest;
     });
 
     return newTests;
+  }
+
+  private areTextContentsEqual(left?: string, right?: string): boolean {
+    return this.normalizeLineEndings(left) === this.normalizeLineEndings(right);
+  }
+
+  private areTestCodesSemanticallyEqual(left?: string, right?: string): boolean {
+    if (!left || !right) {
+      return left === right;
+    }
+
+    return (
+      this.normalizeLineEndings(TestHelper.compressTestCode(left)) ===
+      this.normalizeLineEndings(TestHelper.compressTestCode(right))
+    );
+  }
+
+  private normalizeLineEndings(value?: string): string {
+    return (value ?? '').replace(/\r\n/g, '\n');
   }
 }

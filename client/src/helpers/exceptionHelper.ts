@@ -4,8 +4,25 @@ import { XpException } from '../models/xpException';
 import { Log } from '../extension';
 import { Configuration } from '../models/configuration';
 import { StringHelper } from './stringHelper';
+import { CommonCommands } from '../models/command/commonCommands';
+import { MacOSContainerSetup } from '../tools/macosContainerSetup';
 
 export class ExceptionHelper {
+  private static readonly TOOL_BACKEND_UNAVAILABLE_MESSAGES = [
+    'Docker is not installed or is not available in PATH',
+    'Container not running.',
+    'is not running. Start a container with XP tools, then retry.',
+    'Path mapping failed.',
+    'Tool not found in container'
+  ];
+
+  // Сообщения, для которых имеет смысл предложить поднять/создать контейнер (в отличие от
+  // «Path mapping failed» или «Tool not found», где контейнер уже запущен).
+  private static readonly CONTAINER_UNAVAILABLE_MESSAGES = [
+    'Container not running.',
+    'is not running. Start a container with XP tools, then retry.'
+  ];
+
   public static async show(error: Error, defaultMessage?: string): Promise<void> {
     const errorType = error.constructor.name;
     const configuration = Configuration.get();
@@ -24,7 +41,7 @@ export class ExceptionHelper {
       case 'OperationCanceledException': {
         const typedError = error as XpException;
 
-        Log.info(null, typedError);
+        ExceptionHelper.writeInfo(outputChannel, typedError.message ?? '');
         vscode.window.showInformationMessage(typedError.message);
         break;
       }
@@ -48,11 +65,66 @@ export class ExceptionHelper {
         vscode.window.showErrorMessage(userMessage);
 
         // Пишем stack в output.
-        Log.error(resultDefaultMessage);
-        Log.error(error.message, error);
+        ExceptionHelper.writeError(outputChannel, resultDefaultMessage);
+        ExceptionHelper.writeError(outputChannel, error.message, error);
         outputChannel.show();
       }
     }
+  }
+
+  public static async showToolBackendUnavailableError(
+    error: unknown,
+    configuration = Configuration.get()
+  ): Promise<boolean> {
+    if (!(error instanceof XpException) || !this.isToolBackendUnavailableError(error)) {
+      return false;
+    }
+
+    const outputChannel = configuration.getOutputChannel();
+    this.recursiveWriteXpExceptionToOutput(error, outputChannel);
+
+    // Специальный сценарий: контейнер с XP-инструментами не запущен. Предлагаем поднять
+    // существующий контейнер или создать новый вместо обобщённого сообщения об ошибке.
+    if (
+      this.isContainerUnavailableError(error) &&
+      (await MacOSContainerSetup.offerContainerRecovery(configuration))
+    ) {
+      return true;
+    }
+
+    const outputAction = 'Show Output';
+    const configureAction = 'Configure';
+    const actions = configuration.isLocalMacOS()
+      ? [outputAction, configureAction]
+      : [outputAction];
+
+    const selection = await vscode.window.showErrorMessage(error.message, ...actions);
+
+    if (selection === outputAction) {
+      await vscode.commands.executeCommand(CommonCommands.SHOW_OUTPUT_CHANNEL_COMMAND);
+    } else if (selection === configureAction) {
+      await vscode.commands.executeCommand(
+        CommonCommands.CONFIGURE_MACOS_CONTAINER_BACKEND_COMMAND
+      );
+    }
+
+    return true;
+  }
+
+  public static isToolBackendUnavailableError(error: unknown): error is XpException {
+    if (!(error instanceof XpException)) {
+      return false;
+    }
+
+    return this.TOOL_BACKEND_UNAVAILABLE_MESSAGES.some((part) => error.message.includes(part));
+  }
+
+  private static isContainerUnavailableError(error: unknown): error is XpException {
+    if (!(error instanceof XpException)) {
+      return false;
+    }
+
+    return this.CONTAINER_UNAVAILABLE_MESSAGES.some((part) => error.message.includes(part));
   }
 
   private static recursiveWriteXpExceptionToOutput(
@@ -62,12 +134,52 @@ export class ExceptionHelper {
     // Есть вложенные исключения.
     if (error instanceof XpException && error.getInnerException()) {
       // Пишем текущие исключение.
-      Log.error(error.message, error);
+      ExceptionHelper.writeError(outputChannel, error.message, error);
 
       // Пишем вложенное.
       ExceptionHelper.recursiveWriteXpExceptionToOutput(error.getInnerException(), outputChannel);
     } else {
-      Log.error(error.message, error);
+      ExceptionHelper.writeError(outputChannel, error.message, error);
     }
+  }
+
+  private static writeInfo(outputChannel: vscode.OutputChannel, message: string): void {
+    if (Log) {
+      Log.info(message);
+      return;
+    }
+
+    outputChannel.appendLine(`${ExceptionHelper.timestamp()} [Info] ${message}`);
+  }
+
+  private static writeError(
+    outputChannel: vscode.OutputChannel,
+    message: string,
+    error?: Error | unknown
+  ): void {
+    if (Log) {
+      if (error) {
+        Log.error(message, error);
+      } else {
+        Log.error(message);
+      }
+      return;
+    }
+
+    outputChannel.appendLine(`${ExceptionHelper.timestamp()} [Error] ${message ?? ''}`);
+    if (error) {
+      outputChannel.appendLine(String((error as Error)?.stack ?? error));
+    }
+  }
+
+  private static timestamp(): string {
+    const date = new Date();
+    const yyyy = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `[${day}.${month}.${yyyy} ${hours}:${minutes}:${seconds}]`;
   }
 }

@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { ProcessHelper } from '../../helpers/processHelper';
 import { TestHelper } from '../../helpers/testHelper';
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { Configuration } from '../configuration';
@@ -65,16 +64,17 @@ export class CorrelationUnitTestsRunner implements UnitTestRunner {
     const ruleFilePath = test.getRuleFullPath();
 
     // const ecaTestParam = `C:\\Tools\\0.22.774\\any\\any\\win\\ecatest.exe`;
-    const ecaTestParam = this.config.getEcatestFullPath();
     const sdkDirPath = this.config.getSiemSdkDirectoryPath();
     const taxonomyFilePath = this.config.getTaxonomyFullPath();
     const testFilepath = test.getTestExpectationPath();
     const fptDefaults = this.config.getCorrelationDefaultsFilePath(rootFolder);
     const schemaFilePath = this.config.getSchemaFullPath(rootFolder);
-    const ruleFiltersDirPath = this.config.getRulesDirFilters();
+    const ruleFiltersDirPath = this.config.getRulesDirFiltersByContentRoot(
+      rule.getContentRootPath(this.config)
+    );
 
-    const output = await ProcessHelper.execute(
-      ecaTestParam,
+    const output = await this.config.getToolRunner().runTool(
+      this.config.getEcatestFullPath(),
       [
         '--sdk',
         sdkDirPath,

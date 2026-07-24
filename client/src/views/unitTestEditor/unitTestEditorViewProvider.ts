@@ -27,6 +27,7 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
     'ModularTestEditorView.onTestSelectionChange';
 
   private rule: RuleBaseItem;
+  private toolBackendErrorShown = false;
 
   public constructor(private readonly config: Configuration) {
     super();
@@ -317,13 +318,15 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
   private async runTest(testOrTestNumber: number | BaseUnitTest) {
     let test;
     let testNumber;
+    const isDirectInvocation = !(testOrTestNumber instanceof BaseUnitTest);
 
-    if (testOrTestNumber instanceof BaseUnitTest) {
+    if (!isDirectInvocation) {
       test = testOrTestNumber;
       testNumber = test.getNumber();
     } else {
       test = this.rule.getUnitTestByNumber(testOrTestNumber);
       testNumber = testOrTestNumber;
+      this.toolBackendErrorShown = false;
     }
 
     if (!test) {
@@ -368,7 +371,17 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
             actualData: outputData
           });
 
-          ExceptionHelper.show(error, 'Unexpected error while executing the modular test');
+          // Тест «роняем» сразу: статус выставлен, вебвью обновлено. Интерактивное сообщение
+          // об ошибке (в т.ч. диалог с предложением поднять/создать контейнер) показываем ВНЕ
+          // прогресса — иначе уведомление «Test is running» висит, пока пользователь не закроет
+          // диалог, создавая ложное впечатление, что тест ещё выполняется.
+          const isBackendError = ExceptionHelper.isToolBackendUnavailableError(error);
+          if (!(isBackendError && this.toolBackendErrorShown)) {
+            if (isBackendError) {
+              this.toolBackendErrorShown = true;
+            }
+            void this.reportTestRunError(error);
+          }
         } finally {
           this._updateTestInWebview({
             testNumber,
@@ -379,8 +392,16 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
     );
   }
 
+  private async reportTestRunError(error: unknown): Promise<void> {
+    const handled = await ExceptionHelper.showToolBackendUnavailableError(error, this.config);
+    if (!handled) {
+      ExceptionHelper.show(error as Error, 'Unexpected error while executing the modular test');
+    }
+  }
+
   private async runAllTests() {
     const tests = this.rule.getUnitTests();
+    this.toolBackendErrorShown = false;
 
     return vscode.window.withProgress(
       {

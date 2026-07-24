@@ -6,7 +6,6 @@ import { Configuration } from '../models/configuration';
 import { Normalization } from '../models/content/normalization';
 import { NormalizationUnitTest } from '../models/tests/normalizationUnitTest';
 // import { RuleFileDiagnostics } from '../views/integrationTests/ruleFileDiagnostics';
-import { ProcessHelper } from '../helpers/processHelper';
 import { DialogHelper } from '../helpers/dialogHelper';
 import { ExceptionHelper } from '../helpers/exceptionHelper';
 import { FileSystemHelper } from '../helpers/fileSystemHelper';
@@ -53,7 +52,6 @@ export class SDKUtilitiesWrappers {
      */
 
     // Формируем параметры запуска утилиты
-    const normalizeExePath = this.config.getNormalizer();
     const sdkPath = this.config.getSiemSdkDirectoryPath();
     const rootPath = rule.getContentRootPath(this.config);
     const rootFolder = path.basename(rootPath);
@@ -64,7 +62,6 @@ export class SDKUtilitiesWrappers {
     const formulaPath = rule.getFilePath();
 
     const rawEventPath = unitTest.getTestInputDataPath();
-    process.env.PTSIEM_SDK_ROOT = this.config.getSiemSdkDirectoryPath();
 
     // Запускаем утилиту с параметрами
     let normalizerParams = [
@@ -87,8 +84,9 @@ export class SDKUtilitiesWrappers {
 
     normalizerParams.push('-e');
 
-    const executeResult = await ProcessHelper.execute(normalizeExePath, normalizerParams, {
-      outputChannel: this.config.getOutputChannel()
+    const executeResult = await this.config.getToolRunner().runNormalizer(normalizerParams, {
+      outputChannel: this.config.getOutputChannel(),
+      env: { PTSIEM_SDK_ROOT: sdkPath }
     });
 
     if (!executeResult.output) {

@@ -3,6 +3,8 @@
 	
 	"xp.commonCommands.showOutputChannel": "Показать выходные данные",
 
+	"xp.commonCommands.configureMacOSContainerBackend": "Настроить контейнерный backend для macOS",
+
 	"xp.commonCommands.showExtensionSettings" : "Параметры расширения",
 
 	"xp.views.knowledgebaseTree.title": "Дерево объектов",
@@ -44,8 +46,10 @@
 
 	"xp.xpConfig.kbtBaseDirectoryDescription": "Путь к папке c [Knowledge Base Toolkit](https://github.com/vxcontrol/xp-kbt/releases)",
 	"xp.xpConfig.outputDirectoryPathDescription": "Путь к папке, в которой сохраняются временные объекты. Эта папка очищается автоматически при каждом запуске расширения",
+	"xp.xpConfig.lspModeDescription": "Какой XP language server использовать на Linux и Windows. На локальной macOS эта настройка игнорируется: укажите xpConfig.lspServerExecutablePath для нативного LSP-бинарника, а если путь не задан, LSP не будет запущен.",
 	"xp.xpConfig.correlatorTimeoutDescription": "Макс. время корреляции в секундах. Если оно будет превышено, корреляция будет прервана",
-	"xp.xpConfig.lspServerExecutablePathDescription": "Путь до исполняемого файла LSP сервера",
+	"xp.xpConfig.lspServerExecutablePathDescription": "Путь до исполняемого файла LSP сервера. На локальной macOS здесь должен быть путь до нативного evt-xp-language-server, если нужны LSP-возможности.",
+	"xp.xpConfig.formatterExecutablePathDescription": "Необязательный путь до исполняемого файла форматтера. На локальной macOS здесь можно указать нативный evt-xp-formatter; если путь пустой, в Docker-режиме будет использоваться форматтер из контейнера.",
 
 	"xp.xpConfig.originDescription": "Информация о поставщике. Используется при экспорте объектов в KB-файл",
 	"xp.xpConfig.origin.contentPrefixDescription": "Префикс поставщика объектов. Должен совпадать с ObjectId. По умолчанию, пользовательским правилам соответствует префикс LOC, системным — PT. Если не указать префикс, у создаваемых правил не будет ObjectId",
@@ -56,4 +60,3 @@
 	"xp.xpConfig.logLevelDescription": "Уровень журналирования",
 	"xp.xpConfig.defaultAuthor": "Имя автора по умолчанию"
 }
-

@@ -9,8 +9,8 @@ import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { TestHelper } from '../../../helpers/testHelper';
 import { XpException } from '../../../models/xpException';
 import { Log } from '../../../extension';
-import { FileSystemException } from '../../../models/fileSystemException';
 import { VsCodeApiHelper } from '../../../helpers/vsCodeApiHelper';
+import { IntegrationTest } from '../../../models/tests/integrationTest';
 
 export class ShowActualEventCommand extends Command {
   constructor(private params: IntegrationTestParams) {
@@ -41,27 +41,15 @@ export class ShowActualEventCommand extends Command {
     }
 
     // Получаем путь к файлу с фактическим (корреляционным) событием.
-    var actualEventsFilePath = TestHelper.getEnrichedCorrEventFilePath(
-      this.params.config,
-      this.params.tmpDirPath,
-      ruleName,
-      this.params.testNumber
-    );
+    const actualEventsFilePath = this.getActualEventsFilePath(this.params.test, ruleName);
     if (!actualEventsFilePath) {
       throw new XpException(
         `Результаты интеграционного теста №${this.params.testNumber} правила ${ruleName} не найдены`
       );
     }
 
-    if (!fs.existsSync(actualEventsFilePath)) {
-      throw new FileSystemException(
-        `Файл результатов тестов ${actualEventsFilePath} не найден`,
-        actualEventsFilePath
-      );
-    }
-
     // Событие может прилетать не одно
-    const actualEventsString = await FileSystemHelper.readContentFile(actualEventsFilePath);
+    const actualEventsString = await this.params.config.readTextFile(actualEventsFilePath);
     if (!actualEventsString) {
       throw new XpException(
         `Фактическое событий интеграционного теста №${this.params.testNumber} правила ${ruleName} пусто`
@@ -91,5 +79,23 @@ export class ShowActualEventCommand extends Command {
 
     VsCodeApiHelper.open(vscode.Uri.file(actualEventTestFilePath));
     return true;
+  }
+
+  private getActualEventsFilePath(test: IntegrationTest, ruleName: string): string | undefined {
+    const resultFiles = test.getResultFiles();
+    if (resultFiles?.actualEventsFilePath) {
+      return resultFiles.actualEventsFilePath;
+    }
+
+    if (resultFiles?.detailedReportFilePath) {
+      return resultFiles.detailedReportFilePath;
+    }
+
+    return TestHelper.getEnrichedCorrEventFilePath(
+      this.params.config,
+      this.params.tmpDirPath,
+      ruleName,
+      this.params.testNumber
+    );
   }
 }

@@ -274,10 +274,10 @@ export class IntegrationTestEditorViewProvider {
           let tlState = '';
 
           try {
-            if (it.getStatus() === TestStatus.Failed) {
-              let correlateEventsFileContent = await FileSystemHelper.readContentFile(
-                it.getResultFiles().detailedReportFilePath
-              );
+            const detailedReportFilePath = it.getResultFiles()?.detailedReportFilePath;
+            if (it.getStatus() === TestStatus.Failed && detailedReportFilePath) {
+              let correlateEventsFileContent =
+                await this.config.readTextFile(detailedReportFilePath);
 
               const tlRegex =
                 /Contents of the table lists \(EnrichmentRule, CorrelationRule, Registry from test conditions\):\s+({.*})/s;
@@ -296,26 +296,21 @@ export class IntegrationTestEditorViewProvider {
                 events += normState + '\n';
               }
               events = events.trim();
-              if (correlateEventsFileContent.includes('Missing:')) {
-                const missingRegex = /(Missing:.*)Event conditions:/s;
-                const diffMatch = correlateEventsFileContent.match(missingRegex);
-                if (diffMatch && diffMatch.length === 2) {
-                  diff = diffMatch[1];
-                }
-              }
-              if (correlateEventsFileContent.includes('Different:')) {
-                const diffRegex =
-                  /Different:\s+((:?\s+[\w.]+: ".*?" => ".*?"\s|\s+[\w.]+: \d+ => \d+\s)+)/s;
-                const diffMatch = correlateEventsFileContent.match(diffRegex);
-                if (diffMatch && diffMatch.length === 3) {
-                  diff = diffMatch[1];
-                }
-              }
+              const missingSection = this.extractDetailedReportSection(
+                correlateEventsFileContent,
+                'Missing:'
+              );
+              const differentSection = this.extractDetailedReportSection(
+                correlateEventsFileContent,
+                'Different:'
+              );
+              diff = differentSection || missingSection;
             }
           } catch (e) {}
 
           // TODO: extend logic for Enrichment rules tests
           const actualEventFound = await this.searchForActualEvent(it);
+          const hasFailureDetails = Boolean(diff || events || tlState);
           plain['IntegrationTests'].push({
             TestNumber: it.getNumber(),
             RawEvents: rawEvents,
@@ -328,7 +323,9 @@ export class IntegrationTestEditorViewProvider {
             NormState: events,
             TLState: tlState,
             IsFailed: it.getStatus() === TestStatus.Failed,
-            CanGetExpectedEvent: this.canGetExpectedEvent(it, actualEventFound)
+            CanGetExpectedEvent: this.canGetExpectedEvent(it, actualEventFound || hasFailureDetails),
+            CanShowActualEvent: actualEventFound,
+            CanCompareResults: it.getStatus() === TestStatus.Failed && (actualEventFound || hasFailureDetails)
           });
         }
       }
@@ -347,38 +344,51 @@ export class IntegrationTestEditorViewProvider {
 
   private async searchForActualEvent(it: IntegrationTest): Promise<boolean> {
     const ruleName = this.rule.getName();
-    if (!fs.existsSync(this.testsTmpFilesPath)) {
-      return false;
+
+    const resultFiles = it.getResultFiles();
+    let actualEventsFilePath = resultFiles?.actualEventsFilePath;
+    if (!actualEventsFilePath) {
+      actualEventsFilePath = resultFiles?.detailedReportFilePath;
     }
+
     try {
-      // Получаем фактическое событие.
-      var actualEventsFilePath = TestHelper.getEnrichedCorrEventFilePath(
-        this.config,
-        this.testsTmpFilesPath,
-        ruleName,
-        it.getNumber()
-      );
+      if (!actualEventsFilePath) {
+        if (!fs.existsSync(this.testsTmpFilesPath)) {
+          return false;
+        }
+
+        actualEventsFilePath = TestHelper.getEnrichedCorrEventFilePath(
+          this.config,
+          this.testsTmpFilesPath,
+          ruleName,
+          it.getNumber()
+        );
+      }
     } catch (e) {
       return false;
     }
 
-    if (!actualEventsFilePath || !fs.existsSync(actualEventsFilePath)) {
+    if (!actualEventsFilePath) {
       return false;
     }
 
-    const actualEventsString = await FileSystemHelper.readContentFile(actualEventsFilePath);
-    if (!actualEventsString) {
-      return false;
-    }
-
-    const siemjVersion = GetSIEMJVersion(this.config);
-    if (siemjVersion == SIEMJVersion.Second) {
-      if (!actualEventsString.match(/\[FromCorrelator\]/)) {
+    try {
+      const actualEventsString = await this.config.readTextFile(actualEventsFilePath);
+      if (!actualEventsString) {
         return false;
       }
-      return true;
+
+      const actualEvents = TestHelper.extractEventsFromResultString(
+        this.config,
+        actualEventsString,
+        ruleName,
+        it.getNumber()
+      );
+
+      return actualEvents.length > 0;
+    } catch (e) {
+      return false;
     }
-    return true;
   }
 
   /**
@@ -401,6 +411,20 @@ export class IntegrationTestEditorViewProvider {
     if (it.getNormalizedEvents()) {
       return true;
     }
+  }
+
+  private extractDetailedReportSection(reportContent: string, sectionHeader: string): string {
+    const escapedHeader = sectionHeader.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const sectionRegex = new RegExp(
+      `${escapedHeader}\\s*([\\s\\S]*?)(?:Event conditions:|Contents of the table lists \\(|\\[FromCorrelator\\]|$)`,
+      's'
+    );
+    const match = reportContent.match(sectionRegex);
+    if (!match || match.length < 2) {
+      return '';
+    }
+
+    return match[1].trim();
   }
 
   private testStatusToUiStyle(it: IntegrationTest): string {
@@ -652,10 +676,16 @@ export class IntegrationTestEditorViewProvider {
             await this.updateView(this.getSelectedTestNumber(message));
           }
         } catch (error) {
-          ExceptionHelper.show(
+          const handled = await ExceptionHelper.showToolBackendUnavailableError(
             error,
-            this.config.getMessage('View.IntegrationTests.Message.FailedToExecutionTests')
+            this.config
           );
+          if (!handled) {
+            ExceptionHelper.show(
+              error,
+              this.config.getMessage('View.IntegrationTests.Message.FailedToExecutionTests')
+            );
+          }
         } finally {
           IntegrationTestEditorViewProvider.SAVING_IN_PROGRESS = false;
         }

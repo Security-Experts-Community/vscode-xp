@@ -1,4 +1,3 @@
-import { ProcessHelper } from '../../helpers/processHelper';
 import { Log } from '../../extension';
 import { XpException } from '../xpException';
 import { BaseUnitTest } from './baseUnitTest';
@@ -43,7 +42,7 @@ export class NormalizationUnitTestsRunnerViaEvtTests extends NormalizationUnitTe
       params = params.concat(['-x', this.config.getAppendixFullPath()]);
     }
 
-    const executeResult = await ProcessHelper.execute(evtTestsPath, params, {
+    const executeResult = await this.config.getToolRunner().runTool(evtTestsPath, params, {
       encoding: 'utf-8',
       outputChannel: this.config.getOutputChannel()
     });

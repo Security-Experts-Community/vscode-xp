@@ -21,7 +21,9 @@
 !content_templates/**
 !mitre_attack/data/parsed/**
 
+!client/out/
 !client/out/**/*.js
+!server/out/
 !server/out/**/*.js
 !out/**/*.js
 
@@ -30,10 +32,11 @@
 !client/templates/shared/**
 !client/templates/styles/**
 
+!client/webview/out/
 !client/webview/out/**
 !client/webview/node_modules/monaco-editor/min/vs/**
-!client/webview/node_modules/@vscode/codicons/dist
+!client/webview/node_modules/@vscode/codicons/dist/**
 
-!client/node_modules/prettier/package.json
-!client/node_modules/prettier/*.{js,cjs,mjs}
-!client/node_modules/prettier/plugins/yaml.mjs
+!node_modules/
+!node_modules/prettier/
+!node_modules/prettier/**

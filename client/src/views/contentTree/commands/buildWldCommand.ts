@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { ProcessHelper } from '../../../helpers/processHelper';
 import { SiemjConfigHelper } from '../../../models/siemj/siemjConfigHelper';
 import { SiemJOutputParser } from '../../../models/siemj/siemJOutputParser';
 import { Configuration } from '../../../models/configuration';
@@ -66,13 +65,12 @@ export class BuildWldCommand extends ViewCommand {
 
           // Типовая команда выглядит так:
           // .\ptsiem-sdk\release-26.0\26.0.11839\vc150\x86_64\win\cli/rcc.exe --lang w --taxonomy=.\taxonomy\release-26.0\26.0.215\any\any\any/taxonomy.json --schema=.\gui_output/schema.json -o c:\tmp\whitelisting_graph.json .\knowledgebase\packages
-          const rccCli = this.config.getRccCli();
           const taxonomyPath = this.config.getTaxonomyFullPath();
           const schemaPath = this.config.getSchemaFullPath(rootFolder);
           const whitelistingPath = this.config.getWhitelistingPath(rootFolder);
           const rootPath = siemjConfContentEntity['rootPath'];
-          const executionResult = await ProcessHelper.execute(
-            rccCli,
+          const executionResult = await this.config.getToolRunner().runTool(
+            this.config.getRccCli(),
             [
               // --lang w
               '--lang',

@@ -4,7 +4,7 @@ import * as os from 'os';
 import * as vscode from 'vscode';
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { ExecutionResult, ProcessHelper } from '../../helpers/processHelper';
+import { ExecutionResult } from '../../helpers/processHelper';
 import { Configuration } from '../configuration';
 import { XpException } from '../xpException';
 import { RuleBaseItem } from '../content/ruleBaseItem';
@@ -24,8 +24,9 @@ export enum SIEMJVersion {
   Second
 }
 
-export function GetRawSIEMJVersion(config: Configuration): string {
-  return ProcessHelper.readProcessArgsOutputSync(config.getSiemjPath(), ['-v'], 'utf8').trim();
+/** Возвращает нормализованную версию SIEMJ в виде строки ('1' или '2'). */
+export function GetNormalizedSIEMJVersion(config: Configuration): string {
+  return config.getCurrentSIEMJVersion();
 }
 
 export function GetSIEMJVersion(config: Configuration): SIEMJVersion {
@@ -81,6 +82,8 @@ export class SiemjManager {
     if (!fs.existsSync(schemaFilePath)) {
       throw new XpException('Ошибка компиляции схемы БД. Результирующий файл не создан');
     }
+
+    await this.config.updateLSPSchemaTaxonomyPath(schemaFilePath);
 
     return schemaFilePath;
   }
@@ -223,11 +226,9 @@ export class SiemjManager {
 
     const siemjConfigPath = this.config.getTmpSiemjConfigPath(contentRootFolder);
     await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
-    const siemjExePath = this.config.getSiemjPath();
-
     // Типовая команда выглядит так:
     // "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-    const result = await ProcessHelper.execute(siemjExePath, ['-c', siemjConfigPath, 'main'], {
+    const result = await this.config.getToolRunner().runSiemj(['-c', siemjConfigPath, 'main'], {
       encoding: this.config.getSiemjOutputEncoding(),
       outputChannel: this.config.getOutputChannel(),
       cancellationToken: this.token
@@ -262,11 +263,9 @@ export class SiemjManager {
 
     const siemjConfigPath = this.config.getTmpSiemjConfigPath(contentRootFolder);
     await SiemjConfigHelper.saveSiemjConfig(siemjConfContent, siemjConfigPath);
-    const siemjExePath = this.config.getSiemjPath();
-
     // Типовая команда выглядит так:
     // "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main");
-    const result = await ProcessHelper.execute(siemjExePath, ['-c', siemjConfigPath, 'main'], {
+    const result = await this.config.getToolRunner().runSiemj(['-c', siemjConfigPath, 'main'], {
       encoding: this.config.getSiemjOutputEncoding(),
       outputChannel: this.config.getOutputChannel(),
       cancellationToken: this.token
@@ -323,7 +322,7 @@ export class SiemjManager {
 
       case SIEMJVersion.Second:
         for (const [, resultFiles] of testResultFiles) {
-          let correlateEventsFileContent = await FileSystemHelper.readContentFile(
+          let correlateEventsFileContent = await this.config.readTextFile(
             resultFiles.actualEventsFilePath
           );
           correlateEventsFileContent = correlateEventsFileContent.trimEnd();

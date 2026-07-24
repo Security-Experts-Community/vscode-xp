@@ -7,7 +7,6 @@ import * as vscode from 'vscode';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
 import { KbHelper } from '../../../helpers/kbHelper';
-import { ProcessHelper } from '../../../helpers/processHelper';
 import { Configuration } from '../../../models/configuration';
 import { ExceptionHelper } from '../../../helpers/exceptionHelper';
 import { ContentTreeBaseItem } from '../../../models/content/contentTreeBaseItem';
@@ -52,7 +51,7 @@ export class PackSIEMAllPackagesAction {
 
     // Проверка наличия утилиты сборки kb-файлов.
     const knowledgeBasePackagerCli = this.config.getKbPackFullPath();
-    if (!fs.existsSync(knowledgeBasePackagerCli)) {
+    if (!this.config.shouldUseDockerToolRunner() && !fs.existsSync(knowledgeBasePackagerCli)) {
       DialogHelper.showError(
         'Путь к утилите сборки пакетов экспертизы задан не верно. Измените его [в настройках расширения](command:workbench.action.openSettings?["xpConfig.kbtBaseDirectory"]) и повторите попытку'
       );
@@ -104,11 +103,25 @@ export class PackSIEMAllPackagesAction {
           emitter.fire(
             `\n\nXP:: Промежуточный статус: Запущена команда архивации файлов, это может занимать длительное время!\n\n`
           );
-          const output = await ProcessHelper.executeWithArgsWithRealtimeEmmiterOutput(
-            'dotnet',
-            [knowledgeBasePackagerCli, 'pack', '-s', tmpSubDirectoryPath, '-o', unpackKbFilePath],
-            emitter
+          emitter.fire(
+            `\n\nXP :: Run command: dotnet ${[
+              knowledgeBasePackagerCli,
+              'pack',
+              '-s',
+              tmpSubDirectoryPath,
+              '-o',
+              unpackKbFilePath
+            ].join(' ')}\n`
           );
+          const result = await this.config
+            .getToolRunner()
+            .runTool(
+              'dotnet',
+              [knowledgeBasePackagerCli, 'pack', '-s', tmpSubDirectoryPath, '-o', unpackKbFilePath],
+              { encoding: 'utf-8' }
+            );
+          const output = result.output;
+          emitter.fire(output);
           emitter.fire(`\n\nXP:: Промежуточный статус: Команда выполнена!\n\n`);
           if (output.includes('Knowledge base package creation completed successfully')) {
             DialogHelper.showInfo(`Пакет '${packageName}' успешно собран.`);

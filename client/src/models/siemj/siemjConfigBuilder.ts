@@ -7,7 +7,7 @@ import { Log } from '../../extension';
 import { XpException } from '../xpException';
 import { EventMimeType } from '../../helpers/testHelper';
 import { SiemJOutputParser } from './siemJOutputParser';
-import { GetRawSIEMJVersion, SIEMJVersion } from './siemjManager';
+import { GetNormalizedSIEMJVersion, SIEMJVersion } from './siemjManager';
 
 export class LocalizationsBuildingOptions {
   rulesSrcPath?: string;
@@ -139,7 +139,7 @@ out=${output}`;
       rulesSrcPath = this.contentRootPath;
     }
 
-    const rulesFilters = this.config.getRulesDirFilters();
+    const rulesFilters = this.config.getRulesDirFiltersByContentRoot(this.contentRootPath);
     const table_list_schema = path.join('${output_folder}', this.config.getSchemaFileName());
     const output = path.join('${output_folder}', this.config.getCorrelationsGraphFileName());
     const cfgraphBuildingSection = `
@@ -167,7 +167,7 @@ out=${output}`;
       }
     }
 
-    const rulesFilters = this.config.getRulesDirFilters();
+    const rulesFilters = this.config.getRulesDirFiltersByContentRoot(this.contentRootPath);
     const table_list_schema = path.join('${output_folder}', this.config.getSchemaFileName());
     const output = path.join('${output_folder}', this.config.getEnrichmentsGraphFileName());
 
@@ -353,7 +353,7 @@ out=${enOutput}`;
 type=SCENARIO
 scenario=${this.scenarios.join(' ')}
 `;
-    Log.info(`Current SIEMJ version: ${GetRawSIEMJVersion(this.config)}`);
+    Log.info(`Current SIEMJ version: ${GetNormalizedSIEMJVersion(this.config)}`);
     Log.info(Configuration.SIEMJ_CONFIG_FILENAME);
     Log.info(resultConfig);
     return resultConfig;
@@ -600,10 +600,10 @@ out=${output}
     );
     const test_pipeline_config = `{
   "graphs": {
-    "normalization": ${JSON.stringify(formulas)},
-    "correlation": ${JSON.stringify(corrules)},
-    "aggregation": ${JSON.stringify(argrules)},
-    "enrichment": ${JSON.stringify(enrules)}
+    "normalization": ${JSON.stringify(this.config.mapPathForExecution(formulas))},
+    "correlation": ${JSON.stringify(this.config.mapPathForExecution(corrules))},
+    "aggregation": ${JSON.stringify(this.config.mapPathForExecution(argrules))},
+    "enrichment": ${JSON.stringify(this.config.mapPathForExecution(enrules))}
   },
   "fields": {
     "exclude-non-taxonomy-fields": true,
@@ -619,12 +619,12 @@ out=${output}
       "aggregation_name"
     ]
   },
-  "root": ${JSON.stringify(testsRuleFullPath)},
-  "rules-filters": ${JSON.stringify(this.config.getRulesDirFilters())},
-  "fpta-defaults": ${JSON.stringify(table_list_defaults)},
-  "taxonomy": ${JSON.stringify(this.config.getTaxonomyFullPath())},
-  "schema": ${JSON.stringify(table_list_schema)},
-  "appendix": ${JSON.stringify(this.config.getAppendixFullPath())}
+  "root": ${JSON.stringify(this.config.mapPathForExecution(testsRuleFullPath))},
+  "rules-filters": ${JSON.stringify(this.config.mapPathForExecution(this.config.getRulesDirFiltersByContentRoot(this.contentRootPath)))},
+  "fpta-defaults": ${JSON.stringify(this.config.mapPathForExecution(table_list_defaults))},
+  "taxonomy": ${JSON.stringify(this.config.mapPathForExecution(this.config.getTaxonomyFullPath()))},
+  "schema": ${JSON.stringify(this.config.mapPathForExecution(table_list_schema))},
+  "appendix": ${JSON.stringify(this.config.mapPathForExecution(this.config.getAppendixFullPath()))}
 } 
     `;
 

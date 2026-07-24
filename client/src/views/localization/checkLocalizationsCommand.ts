@@ -144,6 +144,7 @@ export class CheckLocalizationCommand extends ViewCommand {
       },
       async (progress, token) => {
         let userResponse: string;
+        let testRuleFiles: Map<string, IResultTestFiles> = new Map();
 
         if (fs.existsSync(this.params.tmpDirPath)) {
           const subDirItems = await fs.promises.readdir(this.params.tmpDirPath, {
@@ -193,13 +194,23 @@ export class CheckLocalizationCommand extends ViewCommand {
           const testRunner = new IntegrationTestRunner(this.params.config, configBuilder);
           const siemjResult = await testRunner.runOnce(this.params.rule, options);
 
-          var testRuleFiles = RegExpHelper.getEnrichedCorrTestEventsFileNameNew(
+          testRuleFiles = RegExpHelper.getEnrichedCorrTestEventsFileNameNew(
             siemjResult.rawOutput
           );
 
           if (!siemjResult.testsStatus) {
             throw new XpException(
               'Не все интеграционные тесты прошли. Для получения тестовых локализации необходимо чтобы успешно проходили все интеграционные тесты'
+            );
+          }
+        } else {
+          testRuleFiles = RegExpHelper.getEnrichedCorrTestEventsFileNameFromDirectory(
+            this.params.tmpDirPath
+          );
+
+          if (testRuleFiles.size === 0) {
+            throw new XpException(
+              'Не удалось найти результаты предыдущего запуска интеграционных тестов. Повторите запуск интеграционных тестов и после этого снова проверьте локализации.'
             );
           }
         }

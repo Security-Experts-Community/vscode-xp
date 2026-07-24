@@ -2,7 +2,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
-import { ProcessHelper } from '../../../helpers/processHelper';
 import { SiemjConfigHelper } from '../../../models/siemj/siemjConfigHelper';
 import { SiemJOutputParser } from '../../../models/siemj/siemJOutputParser';
 import { Configuration } from '../../../models/configuration';
@@ -68,9 +67,7 @@ export class BuildLocalizationsCommand extends ViewCommand {
 
           // Типовая команда выглядит так:
           // "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
-          const siemjExePath = this.config.getSiemjPath();
-          const siemJOutput = await ProcessHelper.execute(
-            siemjExePath,
+          const siemJOutput = await this.config.getToolRunner().runSiemj(
             ['-c', siemjConfigPath, 'main'],
             {
               encoding: this.config.getSiemjOutputEncoding(),

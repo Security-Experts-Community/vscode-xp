@@ -6,8 +6,9 @@ import { Configuration } from '../../models/configuration';
 
 suite('Configuration', () => {
   test('Наличие ecatest', () => {
-    const fullPath = Configuration.get().getEcatestFullPath();
-    assert.ok(fs.existsSync(fullPath));
+    const config = Configuration.get();
+    const fullPath = config.getEcatestFullPath();
+    assert.ok(config.shouldUseDockerToolRunner() ? fullPath.includes('/ecatest') : fs.existsSync(fullPath));
   });
 
   test('Наличие таксономии', async () => {
@@ -16,8 +17,9 @@ suite('Configuration', () => {
   });
 
   test('Наличие siemj', async () => {
-    const fullPath = Configuration.get().getSiemjPath();
-    assert.ok(fs.existsSync(fullPath));
+    const config = Configuration.get();
+    const fullPath = config.getSiemjPath();
+    assert.ok(config.shouldUseDockerToolRunner() ? fullPath.includes('/siemj') : fs.existsSync(fullPath));
   });
 
   test('Создание временной директории', async () => {
