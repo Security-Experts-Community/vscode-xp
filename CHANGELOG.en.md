@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.21.5 (Pre-Release)
+
+- Added hybrid macOS support: local VS Code with Docker-backed XP tools, a wizard for configuring the container backend and automatic xp-kbt installation
+
 ## 3.21.4 (Pre-Release)
 
 - Merged PR for adding new journal names to the metainfo editor drop-down list (special thanks @paran0id34)

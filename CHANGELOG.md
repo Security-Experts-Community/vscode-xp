@@ -1,5 +1,9 @@
 # Change Log
 
+## 3.21.5 (Pre-Release)
+
+- Добавлена гибридная поддержка macOS: локальный VS Code с XP tools в Docker-контейнере, wizard настройки контейнерного backend и автоматической установки xp-kbt
+
 ## 3.21.4 (Pre-Release)
 
 - Влит PR по добавлению новых имен журналов в выпадающий список редактора metainfo (special thanks @paran0id34)
