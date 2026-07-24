@@ -117,16 +117,14 @@ export async function activate(context: ExtensionContext): Promise<void> {
     // await ToolsManager.init(config);
 
     if (!config.shouldUseDockerToolRunner()) {
-      // Ensure automatic KBT selection happens early for local tool execution.
+      // Обращение к геттеру имеет побочный эффект — авто-выбор версии KBT.
       try {
-        // This will trigger auto-selection if needed
-        const kbtBaseDirectory = config.getKbtBaseDirectoryOld();
+        config.getKbtBaseDirectoryOld();
       } catch (error) {
         Log.warn(`Error during KBT auto-selection: ${error.message}`);
       }
     }
 
-    // Automatically set configuration options if not already set
     try {
       config.autoSetKbtVersionsDirectory();
       config.autoSetKbtBaseDirectory();

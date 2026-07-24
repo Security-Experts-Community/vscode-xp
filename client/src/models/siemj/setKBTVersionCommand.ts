@@ -71,9 +71,6 @@ export class SetKBTVersionCommand {
       }
     }
 
-    // Store the old version for comparison
-    const oldKbtVersion = config.getKbtVersion();
-
     config.setKBTVersion(kbtVersion);
     Log.info(`Current KBT version: ${kbtVersion}`);
 
@@ -82,7 +79,6 @@ export class SetKBTVersionCommand {
     if (kbtVersionsDirectory) {
       const newKbtBaseDirectory = join(kbtVersionsDirectory, kbtVersion);
       try {
-        // Only update if the directory exists
         if (fs.existsSync(newKbtBaseDirectory)) {
           const configuration = config.getWorkspaceConfiguration();
           configuration.update('kbtBaseDirectory', newKbtBaseDirectory, true, false);
@@ -95,11 +91,7 @@ export class SetKBTVersionCommand {
 
     // Update lspServerExecutablePath to point to the new version
     try {
-      // Use the resolved LSP path helper so an explicit setting or a discovered KBT path stay aligned.
-      // This ensures consistency with the rest of the codebase
       const lspServerPath = config.getResolvedLSPServerExecutablePath();
-
-      // Check if the path is valid and update the configuration
       const configuration = config.getWorkspaceConfiguration();
       if (lspServerPath && fs.existsSync(lspServerPath)) {
         configuration.update('lspServerExecutablePath', lspServerPath, true, false);
