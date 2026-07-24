@@ -1294,6 +1294,23 @@ export class Configuration {
         return undefined;
       }
 
+      // На macOS/Linux скачанный бинарь часто приходит без бита исполнения (или под
+      // карантином Gatekeeper). Без этой проверки путь считается валидным, spawn падает
+      // с EACCES уже внутри LSP-клиента, и пользователь видит невнятное
+      // «Cannot call write after a stream was destroyed». Проверяем исполнимость заранее.
+      if (process.platform !== 'win32') {
+        try {
+          fs.accessSync(configuredPath, fs.constants.X_OK);
+        } catch {
+          Log.warn(
+            `Configured LSP server executable is not runnable: '${configuredPath}'. ` +
+              `Make it executable (chmod +x '${configuredPath}') and, on macOS, clear the ` +
+              `quarantine attribute (xattr -dr com.apple.quarantine '${path.dirname(configuredPath)}').`
+          );
+          return undefined;
+        }
+      }
+
       return configuredPath;
     }
 

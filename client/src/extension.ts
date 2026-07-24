@@ -365,7 +365,7 @@ async function configureLSPClient(
         };
 
         const externalClient = new XpLanguageClient(
-          command,
+          lspServerExecutablePath,
           'XP Language Server',
           serverOptions,
           clientOptions
@@ -517,6 +517,34 @@ function createNativeMacLspServerOptions(
       if (text) {
         config.getOutputChannel().appendLine(text);
       }
+    });
+
+    // Без этих обработчиков ранний крах сервера (нет +x, карантин Gatekeeper, отсутствующие
+    // зависимости) виден пользователю только как невнятное «Cannot call write after a stream
+    // was destroyed» из LSP-клиента. Логируем реальную причину в output-канал.
+    child.on('error', (error) => {
+      Log.error(
+        `Native XPLang language server failed to start ('${lspServerExecutablePath}').`,
+        error
+      );
+    });
+
+    child.on('exit', (code, signal) => {
+      if (code === 0) {
+        return;
+      }
+
+      const reason = signal
+        ? `signal ${signal}${
+            signal === 'SIGKILL'
+              ? " (likely blocked by macOS Gatekeeper — clear the file's com.apple.quarantine attribute)"
+              : ''
+          }`
+        : `exit code ${code}`;
+
+      Log.error(
+        `Native XPLang language server '${lspServerExecutablePath}' terminated with ${reason}.`
+      );
     });
 
     const reader = child.stdout;

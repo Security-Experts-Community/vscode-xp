@@ -5,6 +5,7 @@ import { Log } from '../extension';
 import { Configuration } from '../models/configuration';
 import { StringHelper } from './stringHelper';
 import { CommonCommands } from '../models/command/commonCommands';
+import { MacOSContainerSetup } from '../tools/macosContainerSetup';
 
 export class ExceptionHelper {
   private static readonly TOOL_BACKEND_UNAVAILABLE_MESSAGES = [
@@ -13,6 +14,13 @@ export class ExceptionHelper {
     'is not running. Start a container with XP tools, then retry.',
     'Path mapping failed.',
     'Tool not found in container'
+  ];
+
+  // Сообщения, для которых имеет смысл предложить поднять/создать контейнер (в отличие от
+  // «Path mapping failed» или «Tool not found», где контейнер уже запущен).
+  private static readonly CONTAINER_UNAVAILABLE_MESSAGES = [
+    'Container not running.',
+    'is not running. Start a container with XP tools, then retry.'
   ];
 
   public static async show(error: Error, defaultMessage?: string): Promise<void> {
@@ -75,6 +83,15 @@ export class ExceptionHelper {
     const outputChannel = configuration.getOutputChannel();
     this.recursiveWriteXpExceptionToOutput(error, outputChannel);
 
+    // Специальный сценарий: контейнер с XP-инструментами не запущен. Предлагаем поднять
+    // существующий контейнер или создать новый вместо обобщённого сообщения об ошибке.
+    if (
+      this.isContainerUnavailableError(error) &&
+      (await MacOSContainerSetup.offerContainerRecovery(configuration))
+    ) {
+      return true;
+    }
+
     const outputAction = 'Show Output';
     const configureAction = 'Configure';
     const actions = configuration.isLocalMacOS()
@@ -100,6 +117,14 @@ export class ExceptionHelper {
     }
 
     return this.TOOL_BACKEND_UNAVAILABLE_MESSAGES.some((part) => error.message.includes(part));
+  }
+
+  private static isContainerUnavailableError(error: unknown): error is XpException {
+    if (!(error instanceof XpException)) {
+      return false;
+    }
+
+    return this.CONTAINER_UNAVAILABLE_MESSAGES.some((part) => error.message.includes(part));
   }
 
   private static recursiveWriteXpExceptionToOutput(

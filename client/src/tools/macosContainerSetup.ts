@@ -127,6 +127,154 @@ export class MacOSContainerSetup {
     return undefined;
   }
 
+  /**
+   * Recovery-сценарий для ситуации, когда XP-инструменты не отработали из-за отсутствия
+   * запущенного контейнера. В зависимости от состояния предлагаем пользователю поднять уже
+   * существующий контейнер либо создать/настроить новый. Возвращает true, если сценарий
+   * обработан (пользователю показан интерактивный диалог) и общий обработчик ошибок больше
+   * ничего показывать не должен.
+   */
+  public static async offerContainerRecovery(config: Configuration): Promise<boolean> {
+    if (!config.isLocalMacOS()) {
+      return false;
+    }
+
+    // Без Docker поднимать/создавать нечего — пусть общий обработчик покажет исходную ошибку
+    // (например, «Docker is not installed …»).
+    if (!(await this.isDockerAvailable())) {
+      return false;
+    }
+
+    const containerName = config
+      .getWorkspaceConfiguration()
+      .get<string>('docker.containerName');
+
+    // Контейнер не выбран в настройках — предлагаем настроить бэкенд с нуля.
+    if (!containerName) {
+      return this.promptConfigure(config, 'No XP tools container is configured.');
+    }
+
+    // Уже запущен — значит проблема в чём-то другом, отдаём общему обработчику.
+    if (await this.isContainerRunning(containerName)) {
+      return false;
+    }
+
+    // Контейнер существует, но остановлен — предлагаем поднять его.
+    if (await this.containerExists(containerName)) {
+      return this.promptStartContainer(config, containerName);
+    }
+
+    // Контейнер из настроек больше не существует — предлагаем создать новый.
+    return this.promptConfigure(
+      config,
+      `XP tools container '${containerName}' does not exist.`
+    );
+  }
+
+  private static async promptStartContainer(
+    config: Configuration,
+    containerName: string
+  ): Promise<boolean> {
+    const startAction = 'Start container';
+    const outputAction = 'Show Output';
+
+    const selection = await vscode.window.showErrorMessage(
+      `XP tools container '${containerName}' is not running. Start it and re-run the test?`,
+      startAction,
+      outputAction
+    );
+
+    if (selection === outputAction) {
+      config.getOutputChannel().show();
+      return true;
+    }
+
+    if (selection !== startAction) {
+      // Пользователь закрыл диалог — считаем, что уже сообщили ему о проблеме.
+      return true;
+    }
+
+    const started = await this.startContainer(containerName, config.getOutputChannel());
+    if (started) {
+      vscode.window.showInformationMessage(
+        `XP tools container '${containerName}' is running now. Re-run the test.`
+      );
+    } else {
+      this.showOutputLinkedNotification(
+        `Failed to start XP tools container '${containerName}'. See the extension output for details.`,
+        config.getOutputChannel()
+      );
+    }
+
+    return true;
+  }
+
+  private static async promptConfigure(
+    config: Configuration,
+    reason: string
+  ): Promise<boolean> {
+    const configureAction = 'Create container';
+    const outputAction = 'Show Output';
+
+    const selection = await vscode.window.showErrorMessage(
+      `${reason} Configure an XP tools container now?`,
+      configureAction,
+      outputAction
+    );
+
+    if (selection === configureAction) {
+      try {
+        await this.configure(config);
+      } catch (error) {
+        vscode.window.showErrorMessage(error.message);
+      }
+    } else if (selection === outputAction) {
+      config.getOutputChannel().show();
+    }
+
+    return true;
+  }
+
+  private static async containerExists(containerName: string): Promise<boolean> {
+    // `docker inspect` завершается с кодом 0 для любого существующего контейнера — как
+    // запущенного, так и остановленного, — поэтому годится для проверки существования.
+    const result = await ProcessHelper.execute(
+      'docker',
+      ['inspect', '-f', '{{.State.Status}}', containerName],
+      { encoding: 'utf-8' }
+    );
+
+    return result.exitCode === 0;
+  }
+
+  private static async startContainer(
+    containerName: string,
+    outputChannel: vscode.OutputChannel
+  ): Promise<boolean> {
+    return vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        cancellable: false,
+        title: `Starting XP tools container '${containerName}'`
+      },
+      async () => {
+        const result = await ProcessHelper.execute('docker', ['start', containerName], {
+          encoding: 'utf-8',
+          outputChannel
+        });
+
+        if (result.exitCode !== 0) {
+          Log.error(
+            `Failed to start XP tools container '${containerName}': ${result.output}`
+          );
+          return false;
+        }
+
+        return this.isContainerRunning(containerName);
+      }
+    );
+  }
+
   public static async configure(config: Configuration): Promise<void> {
     const knowledgebaseFolder = await vscode.window.showOpenDialog({
       canSelectFolders: true,
@@ -161,7 +309,16 @@ export class MacOSContainerSetup {
       return;
     }
 
-    let kbtBaseDirectory = await this.detectKbtBaseDirectory(containerName);
+    // Явно заданный в настройках путь имеет приоритет над хардкод-кандидатами: пользователь
+    // мог установить KBT в нестандартный каталог и прописать его сам.
+    const configuredKbtBaseDirectory = config
+      .getWorkspaceConfiguration()
+      .get<string>('docker.kbtBaseDirectory');
+
+    let kbtBaseDirectory = await this.detectKbtBaseDirectory(
+      containerName,
+      configuredKbtBaseDirectory
+    );
 
     if (!kbtBaseDirectory) {
       kbtBaseDirectory = await this.resolveMissingKbt(containerName, config.getOutputChannel());
@@ -464,9 +621,18 @@ export class MacOSContainerSetup {
   }
 
   private static async detectKbtBaseDirectory(
-    containerName: string
+    containerName: string,
+    preferredBaseDirectory?: string
   ): Promise<string | undefined> {
-    for (const candidate of this.KBT_PATH_CANDIDATES) {
+    // Сначала проверяем явно заданный путь (если он есть и ещё не в списке кандидатов),
+    // затем — известные стандартные места установки xp-kbt.
+    const trimmedPreferred = preferredBaseDirectory?.replace(/\/+$/, '');
+    const candidates =
+      trimmedPreferred && !this.KBT_PATH_CANDIDATES.includes(trimmedPreferred)
+        ? [trimmedPreferred, ...this.KBT_PATH_CANDIDATES]
+        : this.KBT_PATH_CANDIDATES;
+
+    for (const candidate of candidates) {
       const result = await ProcessHelper.execute(
         'docker',
         [
