@@ -33,11 +33,24 @@ Expansion options:
 You can easily get a ready-made development environment for XP if you use the [VSCode XP Workspace](https://github.com/Security-Experts-Community/vscode-xp-workspace) project. Everything in it is collected in a single Docker container, and editing occurs through the web version of VSCode.
 Details in the project repository.
 
+### macOS quick start
+
+Minimum steps to get rule builds and tests working on macOS (via Docker):
+
+1. Install and start **Docker Desktop**.
+2. Open your knowledgebase folder in VS Code (its root is the directory that contains `packages`).
+3. Install the eXtraction and Processing extension.
+4. The extension offers to configure the container backend — click **Configure**. If you dismissed the prompt, run the `XP: Configure macOS Container Backend` command from the Command Palette.
+5. Go through the wizard: select the knowledgebase folder, let it check Docker, then pick an already running container with XP tools or create a new one. If `xp-kbt` is not found in the container, choose `Download latest xp-kbt` (or a specific version, or enter a path manually).
+6. Done: build and test operations run through the container. Detailed progress is shown in the `eXtraction and Processing` output channel.
+
+See the sections below for how it works and which settings are available.
+
 ### macOS Hybrid Mode
 
 On macOS, the extension runs locally in normal VS Code: UI, tree views, editors, language features, webviews, commands and knowledgebase file access stay on the host filesystem. Only operations that require `xp-kbt`, `siemj`, `normalizer-cli` or build tools are executed inside a Docker container.
 
-The backend can be any Docker container that has XP tools installed. [vscode-xp-workspace](https://github.com/g4n8g/vscode-xp-workspace) is a ready-made preset, but it is not required. The container must bind mount the same knowledgebase directory that is opened in local VS Code, for example:
+The backend can be any Docker container that has XP tools installed. The container must bind mount the same knowledgebase directory that is opened in local VS Code, for example:
 
 - host: `/Users/alice/Work/knowledgebase`
 - container: `/workspaces/knowledgebase`
@@ -46,7 +59,13 @@ When the extension starts in local macOS VS Code, it offers to configure the con
 
 If the automatic notification was dismissed or you want to rerun setup later, use the `XP: Configure macOS Container Backend` command from the Command Palette.
 
-**Installing xp-kbt inside the container.** When the wizard downloads `xp-kbt`, it runs `curl -fL <github-release-asset> | tar/unzip` inside the container and, if `curl`/`tar`/`unzip` are missing, may install them via `apt-get`/`apk`. This trusts the [`vxcontrol/xp-kbt`](https://github.com/vxcontrol/xp-kbt/releases) repository and the TLS connection to GitHub, and requires network access and root inside the container. The archive is not currently verified against a checksum. If this does not fit your security policy, install `xp-kbt` into the container yourself beforehand and point `xpConfig.docker.kbtBaseDirectory` at it instead of using the automatic download.
+**How the extension installs xp-kbt into the container.** If you allow the automatic download, the wizard fetches `xp-kbt` right inside the container: it pulls the relevant GitHub release (`curl -fL <github-release-asset> | tar/unzip`), and if `curl`, `tar`, or `unzip` are missing, installs them via `apt-get`/`apk`. Before you agree, it's worth knowing that this means:
+
+- you trust the [`vxcontrol/xp-kbt`](https://github.com/vxcontrol/xp-kbt/releases) repository and the TLS connection to GitHub;
+- the container needs network access and root privileges;
+- the downloaded archive is not verified against a checksum yet.
+
+If that doesn't fit your security requirements, install `xp-kbt` into the container yourself beforehand and just point `xpConfig.docker.kbtBaseDirectory` at it. The automatic download is then skipped.
 
 Temporary extension artifacts are stored in `tmp/xp-output` inside the local knowledgebase by default. Inside the container, the matching path is `xpConfig.docker.outputDirectoryPath`, which defaults to `/workspaces/knowledgebase/tmp/xp-output`.
 
