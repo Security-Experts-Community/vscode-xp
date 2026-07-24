@@ -24,6 +24,7 @@ import {
   ToolRunnerFactory
 } from '../tools/toolRunner';
 import { DEFAULT_CONTAINER_KBT_BASE_DIRECTORY } from '../tools/kbtToolPaths';
+import { ProcessHelper } from '../helpers/processHelper';
 
 export type EncodingType = 'windows-1251' | 'utf-8' | 'utf-16';
 
@@ -196,6 +197,98 @@ export class Configuration {
 
   private shouldUseNativeMacLspPaths(): boolean {
     return this.isLocalMacOS() && !!this.getResolvedLSPServerExecutablePath();
+  }
+
+  /**
+   * Гибридный режим macOS: нативный XPLang LSP-сервер + Docker-бэкенд с инструментами XP.
+   * Выгружаем из запущенного контейнера на хост taxonomy из KBT.
+   */
+  public isMacOsNativeLspWithDockerBackend(): boolean {
+    return (
+      this.isLocalMacOS() &&
+      !!this.getResolvedLSPServerExecutablePath() &&
+      this.shouldUseDockerToolRunner()
+    );
+  }
+
+  /**
+   * Хостовый staging-каталог, куда выгружается taxonomy из контейнера для нативного LSP.
+   */
+  public getContainerLspInputsDirectory(): string {
+    return path.join(this.getBaseOutputDirectoryPath(), 'lsp-inputs');
+  }
+
+  /**
+   * Копирует каталог таксономии (`taxonomy.json` + `i18n/`) из запущенного контейнера на хост
+   * и возвращает хостовые пути, пригодные для нативного LSP-сервера. Возвращает `undefined`,
+   * если контейнер не настроен/недоступен или копирование не удалось — в этом случае вызывающий
+   * код откатывается на обычную логику вычисления путей.
+   */
+  public async stageTaxonomyFromContainer(): Promise<
+    { taxonomyPath: string; taxonomyI18nPath: string } | undefined
+  > {
+    const containerName = this.getWorkspaceConfiguration().get<string>('docker.containerName');
+    if (!containerName) {
+      Log.warn('Cannot stage KBT taxonomy from container: docker.containerName is not configured.');
+      return undefined;
+    }
+
+    const containerTaxonomyDir = this.getDockerKbtToolPath(
+      path.posix.join(
+        'knowledgebase',
+        Configuration.CONTRACTS_DIR_NAME,
+        Configuration.TAXONOMY_DIR_NAME
+      )
+    );
+
+    const hostTaxonomyDir = path.join(
+      this.getContainerLspInputsDirectory(),
+      Configuration.TAXONOMY_DIR_NAME
+    );
+
+    try {
+      // `docker cp <container>:<dir> <dest>` создаёт <dest> как копию исходного каталога только
+      // если <dest> ещё не существует; иначе копирует внутрь (получается вложенный taxonomy/).
+      // Поэтому каждый раз пересоздаём целевой каталог с нуля и заодно получаем свежую taxonomy.
+      await fs.promises.rm(hostTaxonomyDir, { recursive: true, force: true });
+      await fs.promises.mkdir(path.dirname(hostTaxonomyDir), { recursive: true });
+
+      const result = await ProcessHelper.execute(
+        'docker',
+        ['cp', `${containerName}:${containerTaxonomyDir}`, hostTaxonomyDir],
+        { encoding: 'utf-8', outputChannel: this.getOutputChannel() }
+      );
+
+      if (result.exitCode !== 0) {
+        Log.warn(
+          `Failed to copy KBT taxonomy from container '${containerName}' ` +
+            `('${containerTaxonomyDir}'): ${result.output}`
+        );
+        return undefined;
+      }
+    } catch (error) {
+      Log.warn(`Failed to stage KBT taxonomy from container '${containerName}': ${error.message}`);
+      return undefined;
+    }
+
+    const taxonomyPath = path.join(hostTaxonomyDir, 'taxonomy.json');
+    const taxonomyI18nPath = path.join(hostTaxonomyDir, 'i18n');
+
+    if (!fs.existsSync(taxonomyPath)) {
+      Log.warn(
+        `KBT taxonomy was copied from container '${containerName}', but '${taxonomyPath}' is missing.`
+      );
+      return undefined;
+    }
+
+    await this.updateKbtLspSetting('taxonomy_path', taxonomyPath);
+    await this.updateKbtLspSetting('taxonomy_i18n_path', taxonomyI18nPath);
+
+    Log.info(
+      `Staged KBT taxonomy from container '${containerName}' to host path '${hostTaxonomyDir}'.`
+    );
+
+    return { taxonomyPath, taxonomyI18nPath };
   }
 
   private getNativeMacKbtBaseDirectory(): string {

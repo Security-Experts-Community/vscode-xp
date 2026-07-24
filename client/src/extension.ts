@@ -469,20 +469,38 @@ async function buildKbtLspInitializationOptions(config: Configuration): Promise<
     locale: vscode.env.language
   };
 
+  const shouldUseHostPathsForLsp =
+    config.isLocalMacOS() && !!config.getResolvedLSPServerExecutablePath();
+  const mapLspPath = (value: string) =>
+    shouldUseHostPathsForLsp ? value : config.mapPathForExecution(value);
+
+  // Taxonomy и schema резолвятся независимо: отсутствие KBT-таксономии не должно мешать
+  // построению schema (и наоборот), поэтому каждый шаг обёрнут в собственный try.
   try {
-    const shouldUseHostPathsForLsp = config.isLocalMacOS() && !!config.getResolvedLSPServerExecutablePath();
-    const mapLspPath = (value: string) =>
-      shouldUseHostPathsForLsp ? value : config.mapPathForExecution(value);
+    // Гибридный режим macOS (нативный LSP + Docker-бэкенд): KBT живёт в контейнере, а
+    // нативному серверу нужны хостовые пути — выгружаем taxonomy из контейнера на хост.
+    const stagedTaxonomy = config.isMacOsNativeLspWithDockerBackend()
+      ? await config.stageTaxonomyFromContainer()
+      : undefined;
 
-    const taxonomyPath = config.craftLSPTaxonomyPath();
-    const taxonomyI18nPath = config.craftLSPi18nTaxonomyPath();
+    if (stagedTaxonomy) {
+      initializationOptions.taxonomy_path = stagedTaxonomy.taxonomyPath;
+      initializationOptions.taxonomy_i18n_path = stagedTaxonomy.taxonomyI18nPath;
+    } else {
+      const taxonomyPath = config.craftLSPTaxonomyPath();
+      const taxonomyI18nPath = config.craftLSPi18nTaxonomyPath();
 
-    await config.updateLSPTaxonomyPath();
-    await config.updateLSPi18nTaxonomyPath();
+      await config.updateLSPTaxonomyPath();
+      await config.updateLSPi18nTaxonomyPath();
 
-    initializationOptions.taxonomy_path = mapLspPath(taxonomyPath);
-    initializationOptions.taxonomy_i18n_path = mapLspPath(taxonomyI18nPath);
+      initializationOptions.taxonomy_path = mapLspPath(taxonomyPath);
+      initializationOptions.taxonomy_i18n_path = mapLspPath(taxonomyI18nPath);
+    }
+  } catch (error) {
+    Log.warn(`Failed to prepare KBT LSP taxonomy paths: ${error.message}`);
+  }
 
+  try {
     const schemaPath = await config.ensureLspSchemaPath();
     if (schemaPath) {
       initializationOptions.schema_path = mapLspPath(schemaPath);
@@ -491,13 +509,13 @@ async function buildKbtLspInitializationOptions(config: Configuration): Promise<
         'KBT LSP schema is not available yet. Starting without schema_path; build schema to enable schema-based diagnostics and completions.'
       );
     }
-
-    Log.info(
-      `KBT LSP initialization options: taxonomy_path='${initializationOptions.taxonomy_path}', taxonomy_i18n_path='${initializationOptions.taxonomy_i18n_path}', schema_path='${initializationOptions.schema_path ?? ''}'`
-    );
   } catch (error) {
-    Log.warn(`Failed to prepare KBT LSP initialization options: ${error.message}`);
+    Log.warn(`Failed to prepare KBT LSP schema path: ${error.message}`);
   }
+
+  Log.info(
+    `KBT LSP initialization options: taxonomy_path='${initializationOptions.taxonomy_path ?? ''}', taxonomy_i18n_path='${initializationOptions.taxonomy_i18n_path ?? ''}', schema_path='${initializationOptions.schema_path ?? ''}'`
+  );
 
   return initializationOptions;
 }
