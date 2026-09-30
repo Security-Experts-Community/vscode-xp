@@ -1,6 +1,8 @@
 import * as jsYaml from 'js-yaml';
 import * as os from 'os';
 
+import { JsHelper } from './jsHelper';
+
 type Formatter = (text: string) => Promise<string>;
 
 export class YamlHelper {
@@ -17,10 +19,11 @@ export class YamlHelper {
   /**
    * Сериализует в строку локализацию. Отличие в принудительном обрамлении в строку и дублировании одинарных кавычек.
    * @param object объект для сериализации в строку
+   * @param currentYaml текущее содержимое файла, отступы которого надо сохранить
    * @returns
    */
-  public static localizationsStringify(object: any): Promise<string> {
-    const localizationDumpOptions = { ...this.dumpOptions };
+  public static localizationsStringify(object: any, currentYaml?: string): Promise<string> {
+    const localizationDumpOptions = this.getDumpOptionsByExample(currentYaml);
     localizationDumpOptions.forceQuotes = true;
 
     return this.formatter(this.dumpToText(object, localizationDumpOptions));
@@ -30,13 +33,39 @@ export class YamlHelper {
     return this.formatter(this.dumpToText(object, this.dumpOptions));
   }
 
-  public static stringify(object: any, styles?: any): Promise<string> {
-    const dumpOptions = { ...this.dumpOptions };
+  public static stringify(object: any, styles?: any, currentYaml?: string): Promise<string> {
+    const dumpOptions = this.getDumpOptionsByExample(currentYaml);
     if (styles !== undefined) {
       dumpOptions.styles = styles;
     }
 
     return this.formatter(this.dumpToText(object, dumpOptions));
+  }
+
+  /**
+   * Сравнивает yaml-документы по содержимому без учета форматирования и порядка ключей.
+   * @param firstYaml первый документ
+   * @param secondYaml второй документ
+   * @param ignore удаляет из разобранного документа поля, которые не нужно сравнивать
+   * @returns совпадает ли содержимое документов
+   */
+  public static isSameContent(
+    firstYaml: string,
+    secondYaml: string,
+    ignore?: (object: any) => void
+  ): boolean {
+    let first: any;
+    let second: any;
+    try {
+      first = this.parse(firstYaml);
+      second = this.parse(secondYaml);
+    } catch {
+      return false;
+    }
+
+    ignore?.(first);
+    ignore?.(second);
+    return JsHelper.isEqualIgnoringEmptyValues(first, second);
   }
 
   public static stringifyTable(object: any): string {
@@ -57,6 +86,42 @@ export class YamlHelper {
 
   public static parse(str: string): any {
     return jsYaml.load(str, this.loadOptions);
+  }
+
+  /**
+   * Подбирает параметры сериализации под отступы текущего файла, чтобы при сохранении не переформатировать его.
+   */
+  private static getDumpOptionsByExample(currentYaml?: string): jsYaml.DumpOptions {
+    const indent = currentYaml ? this.detectIndent(currentYaml) : undefined;
+    if (!indent || indent === this.dumpOptions.indent) {
+      return { ...this.dumpOptions };
+    }
+
+    return { ...this.dumpOptions, indent, noArrayIndent: false };
+  }
+
+  /**
+   * Определяет отступ вложенного блока по первому ключу, значение которого задано со следующей строки.
+   */
+  private static detectIndent(yaml: string): number | undefined {
+    const lines = yaml
+      .split(/\r?\n/)
+      .filter((line) => line.trim() !== '' && !line.trimStart().startsWith('#'));
+
+    for (let index = 1; index < lines.length; index++) {
+      const parentLine = lines[index - 1];
+      if (!parentLine.trimEnd().endsWith(':')) {
+        continue;
+      }
+
+      const parentIndent = parentLine.search(/\S/);
+      const childIndent = lines[index].search(/\S/);
+      if (childIndent > parentIndent) {
+        return childIndent - parentIndent;
+      }
+    }
+
+    return undefined;
   }
 
   private static dumpToText(object: any, dumpOptions: jsYaml.DumpOptions): string {

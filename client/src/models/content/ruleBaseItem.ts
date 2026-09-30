@@ -417,8 +417,22 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
       localizationYamlObject['WhitelistingDescriptions'] = whitelistingDescriptions;
     }
 
-    // Сохраняем в файл
-    const localizationYamlContent = await YamlHelper.localizationsStringify(localizationYamlObject);
+    const currentYamlContent = fs.existsSync(localizationFullPath)
+      ? await FileSystemHelper.readContentFile(localizationFullPath)
+      : undefined;
+    const localizationYamlContent = await YamlHelper.localizationsStringify(
+      localizationYamlObject,
+      currentYamlContent
+    );
+
+    // Если локализация не менялась, не перезаписываем файл, чтобы не изменить его форматирование.
+    if (
+      currentYamlContent &&
+      YamlHelper.isSameContent(currentYamlContent, localizationYamlContent)
+    ) {
+      return;
+    }
+
     await FileSystemHelper.writeContentFileIfChanged(localizationFullPath, localizationYamlContent);
   }
 

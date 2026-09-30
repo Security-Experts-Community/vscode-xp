@@ -94,4 +94,56 @@ export class JsHelper {
 
     return structuredClone(sortedObject);
   }
+
+  /**
+   * Сравнивает значения по содержимому без учета порядка ключей объектов. Пустые значения (null, пустые
+   * строки, массивы и объекты) приравниваются к отсутствующему ключу.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public static isEqualIgnoringEmptyValues(first: any, second: any): boolean {
+    const firstIsEmpty = JsHelper.isEmptyValue(first);
+    const secondIsEmpty = JsHelper.isEmptyValue(second);
+    if (firstIsEmpty || secondIsEmpty) {
+      return firstIsEmpty && secondIsEmpty;
+    }
+
+    if (first instanceof Date || second instanceof Date) {
+      return (
+        first instanceof Date && second instanceof Date && first.getTime() === second.getTime()
+      );
+    }
+
+    if (Array.isArray(first) || Array.isArray(second)) {
+      return (
+        Array.isArray(first) &&
+        Array.isArray(second) &&
+        first.length === second.length &&
+        first.every((item, index) => JsHelper.isEqualIgnoringEmptyValues(item, second[index]))
+      );
+    }
+
+    if (typeof first === 'object' && typeof second === 'object') {
+      const keys = new Set([...Object.keys(first), ...Object.keys(second)]);
+      return [...keys].every((key) => JsHelper.isEqualIgnoringEmptyValues(first[key], second[key]));
+    }
+
+    return first === second;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private static isEmptyValue(value: any): boolean {
+    if (value === undefined || value === null || value === '') {
+      return true;
+    }
+
+    if (Array.isArray(value)) {
+      return value.length === 0;
+    }
+
+    if (typeof value === 'object' && !(value instanceof Date)) {
+      return Object.keys(value).length === 0;
+    }
+
+    return false;
+  }
 }

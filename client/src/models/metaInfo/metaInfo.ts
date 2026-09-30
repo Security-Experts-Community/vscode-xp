@@ -375,7 +375,11 @@ export class MetaInfo {
     this.EventDescriptions = [];
   }
 
-  public async toString(): Promise<string> {
+  /**
+   * Сериализует метаинформацию в yaml.
+   * @param currentYaml текущее содержимое файла, отступы которого надо сохранить
+   */
+  public async toString(currentYaml?: string): Promise<string> {
     this.setUpdatedDate(new Date());
 
     // Если дата создания не задана, то будет текущая.
@@ -491,7 +495,7 @@ export class MetaInfo {
       }
     }
 
-    let yamlContent = await YamlHelper.stringify(metaInfoObject);
+    let yamlContent = await YamlHelper.stringify(metaInfoObject, undefined, currentYaml);
     yamlContent = this.correctEventIds(yamlContent);
     return yamlContent;
   }
@@ -504,8 +508,12 @@ export class MetaInfo {
       metaInfoFullPath = path.join(this.getDirectoryPath(), MetaInfo.METAINFO_FILENAME);
     }
 
+    const currentYamlFileContent = fs.existsSync(metaInfoFullPath)
+      ? await FileSystemHelper.readContentFile(metaInfoFullPath)
+      : undefined;
+
     // Combine yaml file content
-    const yamlContent = await this.toString();
+    const yamlContent = await this.toString(currentYamlFileContent);
     const yamlComments = this.getComments();
     let yamlFileContent: string;
     if (yamlComments) {
@@ -518,7 +526,21 @@ export class MetaInfo {
       yamlFileContent = yamlContent;
     }
 
+    // Дата обновления меняется при каждой сериализации, поэтому без других изменений
+    // не перезаписываем файл, чтобы не изменить его форматирование.
+    if (
+      currentYamlFileContent &&
+      YamlHelper.isSameContent(currentYamlFileContent, yamlFileContent, MetaInfo.removeUpdatedDate)
+    ) {
+      return;
+    }
+
     await FileSystemHelper.writeContentFileIfChanged(metaInfoFullPath, yamlFileContent);
+  }
+
+  private static removeUpdatedDate(metaInfoObject: any): void {
+    delete metaInfoObject?.Updated;
+    delete metaInfoObject?.ExpertContext?.Updated;
   }
 
   public correctEventIds(metaInfoContent: string): string {
