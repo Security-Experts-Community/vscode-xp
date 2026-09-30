@@ -736,6 +736,12 @@
           "description": "%xp.xpConfig.correlatorTimeoutDescription%",
           "default": 250
         },
+        "xpConfig.integrationTests.buildCache": {
+          "scope": "window",
+          "type": "boolean",
+          "description": "%xp.xpConfig.integrationTests.buildCacheDescription%",
+          "default": true
+        },
         "xpConfig.origin": {
           "type": "object",
           "order": 2,

@@ -59,6 +59,7 @@
 	"xp.xpConfig.docker.outputDirectoryPathDescription": "Container path corresponding to xpConfig.outputDirectoryPath.",
 	"xp.xpConfig.macos.showContainerSetupPromptDescription": "Show the macOS container backend setup prompt on extension activation.",
 	"xp.xpConfig.correlatorTimeoutDescription": "Max correlation time in seconds. If the time is exceeded, the correlation will be canceled.",
+	"xp.xpConfig.integrationTests.buildCacheDescription": "Rebuild graphs and table lists before running integration tests only if the files of the corresponding content type have changed.",
 	"xp.xpConfig.lspServerExecutablePathDescription": "Path of the LSP server executable. On local macOS this must point to a native evt-xp-language-server binary if you want LSP features.",
 	"xp.xpConfig.formatterExecutablePathDescription": "Optional path of the formatter executable. On local macOS this can point to a native evt-xp-formatter binary; if empty, Docker formatting will be used in Docker tool mode.",
 

@@ -51,9 +51,7 @@ export class CorrGraphRunner {
 
     // Без удаления базы возникали странные ошибки filler-а, но это не точно.
     const ftpaDbPath = this.config.getFptaDbFilePath(rootFolder);
-    if (fs.existsSync(ftpaDbPath)) {
-      await fs.promises.unlink(ftpaDbPath);
-    }
+    await fs.promises.rm(ftpaDbPath, { recursive: true, force: true });
 
     // Удаляем коррелированные события, если такие были.
     const corrEventFilePath = this.config.getCorrelatedEventsFilePath(rootFolder);

@@ -20,15 +20,20 @@ export class SiemjConfigHelper {
   /**
    * Очищаем артефакты запуска siemj. Необходимо для невозможности получения неактуальных данных из них.
    */
-  public static async clearArtifacts(config: Configuration): Promise<void> {
+  public static async clearArtifacts(
+    config: Configuration,
+    options?: { keepTablesDb?: boolean }
+  ): Promise<void> {
     const roots = config.getContentRoots();
 
     for (const root of roots) {
       const outputDirName = path.basename(root);
 
-      const ftpdDbFilePath = config.getFptaDbFilePath(outputDirName);
-      if (fs.existsSync(ftpdDbFilePath)) {
-        await fs.promises.unlink(ftpdDbFilePath);
+      // БД табличных списков может переиспользоваться из кеша сборки.
+      if (!options?.keepTablesDb) {
+        const ftpdDbFilePath = config.getFptaDbFilePath(outputDirName);
+        // Новые версии siemj создают БД как директорию.
+        await fs.promises.rm(ftpdDbFilePath, { recursive: true, force: true });
       }
 
       const normEventsFilePath = config.getNormalizedEventsFilePath(outputDirName);

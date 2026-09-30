@@ -50,6 +50,7 @@
 	"xp.xpConfig.outputDirectoryPathDescription": "Путь к папке, в которой сохраняются временные объекты. Эта папка очищается автоматически при каждом запуске расширения",
 	"xp.xpConfig.lspModeDescription": "Какой XP language server использовать на Linux и Windows. На локальной macOS эта настройка игнорируется: укажите xpConfig.lspServerExecutablePath для нативного LSP-бинарника, а если путь не задан, LSP не будет запущен.",
 	"xp.xpConfig.correlatorTimeoutDescription": "Макс. время корреляции в секундах. Если оно будет превышено, корреляция будет прервана",
+	"xp.xpConfig.integrationTests.buildCacheDescription": "Пересобирать графы и табличные списки перед запуском интеграционных тестов, только если изменились файлы соответствующего типа контента.",
 	"xp.xpConfig.lspServerExecutablePathDescription": "Путь до исполняемого файла LSP сервера. На локальной macOS здесь должен быть путь до нативного evt-xp-language-server, если нужны LSP-возможности.",
 	"xp.xpConfig.formatterExecutablePathDescription": "Необязательный путь до исполняемого файла форматтера. На локальной macOS здесь можно указать нативный evt-xp-formatter; если путь пустой, в Docker-режиме будет использоваться форматтер из контейнера.",
 

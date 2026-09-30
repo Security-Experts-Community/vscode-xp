@@ -12,9 +12,10 @@ import { AbstractSiemjConfBuilder } from '../siemj/siemjConfigBuilder';
 import { XpException } from '../xpException';
 import { SiemjManager } from '../siemj/siemjManager';
 import { OperationCanceledException } from '../operationCanceledException';
-import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
 import { RegExpHelper } from '../../helpers/regExpHelper';
+import { BuildArtifactsCache, BuildArtifactType } from '../siemj/buildArtifactsCache';
+import { Log } from '../../extension';
 
 export enum CompilationType {
   DontCompile = 'DontCompile',
@@ -59,7 +60,7 @@ export class IntegrationTestRunner {
     // Проверяем наличие нужных утилит.
     this.config.getSiemkbTestsPath();
 
-    await SiemjConfigHelper.clearArtifacts(this.config);
+    await SiemjConfigHelper.clearArtifacts(this.config, { keepTablesDb: true });
 
     const contentRoot = this.config.getContentRoots()[0];
     const rootFolder = path.basename(contentRoot);
@@ -71,44 +72,20 @@ export class IntegrationTestRunner {
     const siemjManager = new SiemjManager(this.config, this.options.cancellationToken);
     this.configBuilder = siemjManager.getConfigBuilder(contentRoot);
 
-    const gitApi = await VsCodeApiHelper.getGitExtension();
-    if (!gitApi) {
-      // Нет git-а - пересобираем все нормализации.
-      this.configBuilder.addNormalizationsGraphBuilding(true);
-    } else {
-      // Есть хоть одна измененная нормализация, пересобираем все.
-      if (VsCodeApiHelper.isWorkDirectoryUsingGit(gitApi, contentRoot)) {
-        const changePaths = VsCodeApiHelper.gitWorkingTreeChanges(gitApi, contentRoot);
-        const isNormalizationsChanged = changePaths.some((cp) => cp.endsWith('.xp'));
-        if (isNormalizationsChanged) {
-          this.configBuilder.addNormalizationsGraphBuilding(true);
-        } else {
-          this.configBuilder.addNormalizationsGraphBuilding(false);
-        }
-      } else {
-        this.configBuilder.addNormalizationsGraphBuilding(true);
-      }
-    }
-
-    this.configBuilder.addAggregationGraphBuilding();
-    this.configBuilder.addTablesSchemaBuilding();
-    this.configBuilder.addTablesDbBuilding();
-    this.configBuilder.addEnrichmentsGraphBuilding();
-
     // Параметры сборки графа корреляций в зависимости от опций.
+    let correlationsSrc: string[] | undefined;
     switch (options.correlationCompilation) {
       case CompilationType.CurrentPackage: {
         // Надо собрать весь пакет, но у нас могут быть внешние зависимости.
         // Исключаем точечные зависимости из пакета, оставляя внешние.
-        const correlationPaths = options.dependentCorrelations.filter(
+        correlationsSrc = options.dependentCorrelations.filter(
           (depCorrPath) => !depCorrPath.startsWith(options.currPackagePath)
         );
-        correlationPaths.push(options.currPackagePath);
-        this.configBuilder.addCorrelationsGraphBuilding(true, correlationPaths);
+        correlationsSrc.push(options.currPackagePath);
         break;
       }
       case CompilationType.AllPackages: {
-        this.configBuilder.addCorrelationsGraphBuilding(true);
+        correlationsSrc = [contentRoot];
         break;
       }
       case CompilationType.Auto: {
@@ -117,7 +94,7 @@ export class IntegrationTestRunner {
           throw new XpException('Опции запуска интеграционных тестов неконсистентны');
         }
 
-        this.configBuilder.addCorrelationsGraphBuilding(true, options.dependentCorrelations);
+        correlationsSrc = options.dependentCorrelations;
         break;
       }
       case CompilationType.DontCompile: {
@@ -129,6 +106,14 @@ export class IntegrationTestRunner {
       default: {
         throw new XpException('Опции запуска интеграционных тестов неконсистентны');
       }
+    }
+
+    const buildCache = await this.addArtifactsBuilding(contentRoot, correlationsSrc);
+    if (!buildCache.hasArtifactsToBuild()) {
+      Log.info('All graphs and table lists are up to date, building is skipped');
+      const upToDateResult = new SiemjExecutionResult();
+      upToDateResult.testsStatus = true;
+      return upToDateResult;
     }
 
     const siemjConfContent = this.configBuilder.build();
@@ -143,6 +128,7 @@ export class IntegrationTestRunner {
     const outputParser = this.configBuilder.getOutputParser();
 
     const siemjResult = await outputParser.parse(siemjExecutionResult.output);
+    await buildCache.commit(siemjResult);
     return siemjResult;
   }
 
@@ -267,7 +253,7 @@ export class IntegrationTestRunner {
       );
     }
 
-    await SiemjConfigHelper.clearArtifacts(this.config);
+    await SiemjConfigHelper.clearArtifacts(this.config, { keepTablesDb: true });
 
     const rootPath = rule.getContentRootPath(this.config);
     const rootFolder = path.basename(rootPath);
@@ -276,42 +262,19 @@ export class IntegrationTestRunner {
       await fs.promises.mkdir(outputDirPath, { recursive: true });
     }
 
-    const gitApi = await VsCodeApiHelper.getGitExtension();
-    if (!gitApi) {
-      // Нет git-а - пересобираем все нормализации.
-      this.configBuilder.addNormalizationsGraphBuilding(true);
-    } else {
-      // Есть хоть одна измененная нормализация, пересобираем все.
-      if (VsCodeApiHelper.isWorkDirectoryUsingGit(gitApi, rootPath)) {
-        const changePaths = VsCodeApiHelper.gitWorkingTreeChanges(gitApi, rootPath);
-        const isNormalizationsChanged = changePaths.some((cp) => cp.endsWith('.xp'));
-        if (isNormalizationsChanged) {
-          this.configBuilder.addNormalizationsGraphBuilding(true);
-        } else {
-          this.configBuilder.addNormalizationsGraphBuilding(false);
-        }
-      } else {
-        this.configBuilder.addNormalizationsGraphBuilding(true);
-      }
-    }
-
-    this.configBuilder.addAggregationGraphBuilding();
-    this.configBuilder.addTablesSchemaBuilding();
-    this.configBuilder.addTablesDbBuilding();
-    this.configBuilder.addEnrichmentsGraphBuilding();
-
     // Параметры сборки графа корреляций в зависимости от опций.
+    let correlationsSrc: string[] | undefined;
     switch (options.correlationCompilation) {
       case CompilationType.CurrentRule: {
-        this.configBuilder.addCorrelationsGraphBuilding(true, rule.getDirectoryPath());
+        correlationsSrc = [rule.getDirectoryPath()];
         break;
       }
       case CompilationType.CurrentPackage: {
-        this.configBuilder.addCorrelationsGraphBuilding(true, rule.getPackagePath(this.config));
+        correlationsSrc = [rule.getPackagePath(this.config)];
         break;
       }
       case CompilationType.AllPackages: {
-        this.configBuilder.addCorrelationsGraphBuilding(true);
+        correlationsSrc = [rootPath];
         break;
       }
       case CompilationType.Auto: {
@@ -320,7 +283,7 @@ export class IntegrationTestRunner {
           throw new XpException('Опции запуска интеграционных тестов неконсистентны');
         }
 
-        this.configBuilder.addCorrelationsGraphBuilding(true, options.dependentCorrelations);
+        correlationsSrc = options.dependentCorrelations;
         break;
       }
       case CompilationType.DontCompile: {
@@ -333,6 +296,8 @@ export class IntegrationTestRunner {
         throw new XpException('Опции запуска интеграционных тестов неконсистентны');
       }
     }
+
+    const buildCache = await this.addArtifactsBuilding(rootPath, correlationsSrc);
 
     // Получаем путь к директории с результатами теста.
     this.configBuilder.addTestsRun(rule.getDirectoryPath(), options.tmpFilesPath);
@@ -354,6 +319,7 @@ export class IntegrationTestRunner {
 
     const outputParser = this.configBuilder.getOutputParser();
     const siemjResult = await outputParser.parse(siemjExecutionResult.output);
+    await buildCache.commit(siemjResult);
     var testRuleFiles = RegExpHelper.getEnrichedCorrTestEventsFileNameNew(siemjResult.rawOutput);
     executedTests.forEach((test) =>
       test.setResultFiles(testRuleFiles.get(test.getNumber().toString()))
@@ -387,5 +353,39 @@ export class IntegrationTestRunner {
     }
 
     return siemjResult;
+  }
+
+  /**
+   * Добавляет в конфиг siemj сборку только тех графов и табличных списков,
+   * исходные файлы которых изменились с момента предыдущей сборки.
+   * @param correlationsSrc пути для сборки графа корреляций, undefined — граф корреляций не собирается.
+   */
+  private async addArtifactsBuilding(
+    rootPath: string,
+    correlationsSrc?: string[]
+  ): Promise<BuildArtifactsCache> {
+    const buildCache = await BuildArtifactsCache.create(this.config, rootPath, correlationsSrc);
+    await buildCache.removeStaleArtifacts();
+
+    if (buildCache.needsBuild(BuildArtifactType.Normalizations)) {
+      this.configBuilder.addNormalizationsGraphBuilding(true);
+    }
+    if (buildCache.needsBuild(BuildArtifactType.Aggregations)) {
+      this.configBuilder.addAggregationGraphBuilding();
+    }
+    if (buildCache.needsBuild(BuildArtifactType.TablesSchema)) {
+      this.configBuilder.addTablesSchemaBuilding();
+    }
+    if (buildCache.needsBuild(BuildArtifactType.TablesDb)) {
+      this.configBuilder.addTablesDbBuilding();
+    }
+    if (buildCache.needsBuild(BuildArtifactType.Enrichments)) {
+      this.configBuilder.addEnrichmentsGraphBuilding();
+    }
+    if (correlationsSrc && buildCache.needsBuild(BuildArtifactType.Correlations)) {
+      this.configBuilder.addCorrelationsGraphBuilding(true, correlationsSrc);
+    }
+
+    return buildCache;
   }
 }
