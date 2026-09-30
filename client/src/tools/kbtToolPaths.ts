@@ -38,7 +38,29 @@ const KBT_TOOL_LAYOUT: Record<string, KbtToolLayout> = {
   }
 };
 
+/** Сегменты пути до каталога CLI-утилит SDK относительно базовой директории KBT. */
+const KBT_SDK_CLI_SEGMENTS = ['xp-sdk', 'cli'];
+
 export type KbtToolName = keyof typeof KBT_TOOL_LAYOUT;
+
+/** Каталог CLI-утилит SDK на хосте. */
+export function getLocalSdkCliDirectory(kbtBaseDirectory: string): string {
+  return path.join(kbtBaseDirectory, ...KBT_SDK_CLI_SEGMENTS);
+}
+
+/**
+ * Некоторые поставки xp-kbt приезжают с CLI-бинарями внутри `xp-sdk/cli`, у которых не
+ * выставлен бит исполнения (например, `frontend-cli`, который siemj дёргает на шаге
+ * локализации). Из-за этого тесты локализации падают с `Permission denied`, хотя siemj
+ * и остальные утилиты запускаются. Команда проставляет +x тем файлам каталога CLI,
+ * у которых его нет.
+ */
+export function getNormalizeToolPermissionsShellCommand(kbtBaseDirectory: string): string {
+  const cliDirectory = path.posix.join(kbtBaseDirectory, ...KBT_SDK_CLI_SEGMENTS);
+  const quotedCliDirectory = `'${cliDirectory.replace(/'/g, `'\\''`)}'`;
+
+  return `if [ -d ${quotedCliDirectory} ]; then find ${quotedCliDirectory} -maxdepth 1 -type f ! -perm -111 -exec chmod a+x {} +; fi`;
+}
 
 /** Относительный путь до утилиты внутри контейнера (POSIX). */
 export function getContainerToolRelativePath(tool: KbtToolName): string {

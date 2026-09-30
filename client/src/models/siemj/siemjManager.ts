@@ -488,6 +488,17 @@ export class SiemjManager {
   }
 
   private processOutput(siemjOutput: string): void {
+    // Если siemj не смог запустить утилиту (нет прав на исполнение, нет файла), кода возврата
+    // подпроцесса в выводе нет. Без этой проверки шаг молча пропускался бы, а вызывающий код
+    // делал выводы по отсутствующему результату.
+    const launchError = this.LAUNCH_ERROR_REGEXP.exec(siemjOutput);
+    if (launchError) {
+      this.config.getOutputChannel().show();
+      throw new XpException(
+        `Ошибка запуска утилиты KBT: ${launchError[1]}. [Смотри Output](command:xp.commonCommands.showOutputChannel)`
+      );
+    }
+
     if (siemjOutput.includes(this.ERROR_SUBSTRING)) {
       this.config.getOutputChannel().show();
       throw new XpException(
@@ -505,4 +516,7 @@ export class SiemjManager {
   public ALL_CORR_EVENTS_FILENAME = 'all_corr_events.json';
 
   public ERROR_SUBSTRING = 'SUBPROCESS EXIT CODE: 1';
+
+  // SIEMJ :: [Errno 13] Permission denied: '/home/coder/xp-kbt/xp-sdk/cli/frontend-cli'
+  private LAUNCH_ERROR_REGEXP = /^SIEMJ :: (\[Errno \d+\][^\r\n]*)/m;
 }

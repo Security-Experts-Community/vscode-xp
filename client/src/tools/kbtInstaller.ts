@@ -3,7 +3,10 @@ import * as vscode from 'vscode';
 
 import { ProcessHelper } from '../helpers/processHelper';
 import { Log } from '../extension';
-import { DEFAULT_CONTAINER_KBT_BASE_DIRECTORY } from './kbtToolPaths';
+import {
+  DEFAULT_CONTAINER_KBT_BASE_DIRECTORY,
+  getNormalizeToolPermissionsShellCommand
+} from './kbtToolPaths';
 
 interface GitHubReleaseAsset {
   name: string;
@@ -82,7 +85,7 @@ export class KbtInstaller {
           this.echoCommand('XP :: Removing temporary archive'),
           `rm -f ${quotedArchivePath}`,
           this.echoCommand('XP :: Normalizing tool permissions'),
-          this.getNormalizeToolPermissionsCommand(targetDirectory),
+          getNormalizeToolPermissionsShellCommand(targetDirectory),
           this.echoCommand('XP :: Verifying KBT tools'),
           `test -x ${this.shellQuote(
             `${targetDirectory}/extra-tools/siemj/siemj`
@@ -163,19 +166,6 @@ export class KbtInstaller {
     }
 
     return `tar -xzf ${quotedArchivePath} -C ${quotedTargetDirectory} --strip-components=1`;
-  }
-
-  /**
-   * Некоторые релизы xp-kbt приезжают с CLI-бинарями внутри `xp-sdk/cli`, у которых не
-   * выставлен бит исполнения (например, `frontend-cli`, который siemj дёргает на шаге
-   * локализации). Из-за этого тесты локализации падают с `Permission denied`, хотя siemj
-   * и остальные утилиты запускаются. Чтобы не зависеть от того, аккуратно ли упакован
-   * архив, после распаковки принудительно проставляем +x всем файлам в каталоге CLI.
-   */
-  private static getNormalizeToolPermissionsCommand(targetDirectory: string): string {
-    const quotedCliDirectory = this.shellQuote(`${targetDirectory}/xp-sdk/cli`);
-
-    return `if [ -d ${quotedCliDirectory} ]; then find ${quotedCliDirectory} -maxdepth 1 -type f -exec chmod a+x {} +; fi`;
   }
 
   private static pickLinuxAsset(release: GitHubRelease): GitHubReleaseAsset | undefined {

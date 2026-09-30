@@ -8,10 +8,13 @@ import {
   ProcessHelper
 } from '../helpers/processHelper';
 import { XpException } from '../models/xpException';
+import { Log } from '../extension';
 import {
   DEFAULT_CONTAINER_KBT_BASE_DIRECTORY,
   getContainerToolRelativePath,
-  getLocalToolRelativePath
+  getLocalSdkCliDirectory,
+  getLocalToolRelativePath,
+  getNormalizeToolPermissionsShellCommand
 } from './kbtToolPaths';
 import { PathMapper, PathMapping } from './pathMapper';
 
@@ -47,6 +50,8 @@ export interface DockerToolRunnerOptions {
 }
 
 export class LocalToolRunner implements ToolRunner {
+  private static readonly permissionsNormalizedFor = new Set<string>();
+
   constructor(private readonly kbtBaseDirectory?: string) {}
 
   public runTool(
@@ -81,7 +86,44 @@ export class LocalToolRunner implements ToolRunner {
       );
     }
 
+    this.ensureSdkCliToolsExecutable();
     return fullPath;
+  }
+
+  /**
+   * siemj сам запускает утилиты из `xp-sdk/cli`, и если у какой-то из них нет бита исполнения,
+   * шаг падает с `Permission denied`. Проверяем права один раз за сессию на каждую поставку KBT.
+   */
+  private ensureSdkCliToolsExecutable(): void {
+    if (
+      process.platform === 'win32' ||
+      LocalToolRunner.permissionsNormalizedFor.has(this.kbtBaseDirectory)
+    ) {
+      return;
+    }
+    LocalToolRunner.permissionsNormalizedFor.add(this.kbtBaseDirectory);
+
+    const cliDirectory = getLocalSdkCliDirectory(this.kbtBaseDirectory);
+    if (!fs.existsSync(cliDirectory)) {
+      return;
+    }
+
+    try {
+      for (const entry of fs.readdirSync(cliDirectory, { withFileTypes: true })) {
+        if (!entry.isFile()) {
+          continue;
+        }
+
+        const filePath = path.join(cliDirectory, entry.name);
+        const mode = fs.statSync(filePath).mode;
+        if ((mode & 0o111) !== 0o111) {
+          fs.chmodSync(filePath, mode | 0o111);
+          Log.info(`Made XP tool executable: '${filePath}'`);
+        }
+      }
+    } catch (error) {
+      Log.warn(`Failed to make XP tools in '${cliDirectory}' executable: ${error.message}`);
+    }
   }
 }
 
@@ -89,6 +131,7 @@ export class DockerToolRunner implements ToolRunner {
   private static dockerAvailable = false;
   private static readonly containerRunningCheckedAt = new Map<string, number>();
   private static readonly CONTAINER_CHECK_TTL_MS = 10_000;
+  private static readonly permissionsNormalizedFor = new Set<string>();
 
   private readonly pathMapper: PathMapper;
 
@@ -108,6 +151,7 @@ export class DockerToolRunner implements ToolRunner {
     await this.ensureDockerAvailable();
     const containerName = await this.getContainerName();
     await this.ensureContainerRunning(containerName);
+    await this.ensureSdkCliToolsExecutable(containerName);
 
     const mappingValidation = this.pathMapper.validateMapping();
     if (!mappingValidation.isValid) {
@@ -238,6 +282,32 @@ export class DockerToolRunner implements ToolRunner {
     }
 
     DockerToolRunner.containerRunningCheckedAt.set(containerName, Date.now());
+  }
+
+  /**
+   * siemj сам запускает утилиты из `xp-sdk/cli`, и если у какой-то из них нет бита исполнения,
+   * шаг падает с `Permission denied`. Мастер установки нормализует права, но KBT может попасть
+   * в контейнер и в обход него, поэтому проверяем права один раз за сессию на каждую поставку.
+   */
+  private async ensureSdkCliToolsExecutable(containerName: string): Promise<void> {
+    const kbtBaseDirectory = this.options.kbtBaseDirectory || DEFAULT_CONTAINER_KBT_BASE_DIRECTORY;
+    const cacheKey = `${containerName}:${kbtBaseDirectory}`;
+    if (DockerToolRunner.permissionsNormalizedFor.has(cacheKey)) {
+      return;
+    }
+    DockerToolRunner.permissionsNormalizedFor.add(cacheKey);
+
+    const result = await ProcessHelper.execute(
+      'docker',
+      ['exec', containerName, 'sh', '-c', getNormalizeToolPermissionsShellCommand(kbtBaseDirectory)],
+      { encoding: 'utf-8' }
+    );
+
+    if (result.exitCode !== 0) {
+      Log.warn(
+        `Failed to make XP tools in '${containerName}:${kbtBaseDirectory}' executable: ${result.output.trim()}`
+      );
+    }
   }
 
   private async getContainerName(): Promise<string> {

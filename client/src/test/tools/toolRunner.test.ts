@@ -1,6 +1,7 @@
 import * as assert from 'assert';
 
 import { DockerToolRunner, ToolRunnerFactory } from '../../tools/toolRunner';
+import { getNormalizeToolPermissionsShellCommand } from '../../tools/kbtToolPaths';
 
 suite('ToolRunnerFactory', () => {
   test('uses explicit local mode', () => {
@@ -9,6 +10,23 @@ suite('ToolRunnerFactory', () => {
 
   test('uses explicit docker mode', () => {
     assert.strictEqual(ToolRunnerFactory.resolveMode('docker'), 'docker');
+  });
+});
+
+suite('getNormalizeToolPermissionsShellCommand', () => {
+  test('adds the execute bit only to SDK CLI files that lack it', () => {
+    assert.strictEqual(
+      getNormalizeToolPermissionsShellCommand('/home/coder/xp-kbt'),
+      "if [ -d '/home/coder/xp-kbt/xp-sdk/cli' ]; then find '/home/coder/xp-kbt/xp-sdk/cli' -maxdepth 1 -type f ! -perm -111 -exec chmod a+x {} +; fi"
+    );
+  });
+
+  test('quotes the KBT directory for the shell', () => {
+    assert.ok(
+      getNormalizeToolPermissionsShellCommand("/opt/it's kbt").includes(
+        "'/opt/it'\\''s kbt/xp-sdk/cli'"
+      )
+    );
   });
 });
 
