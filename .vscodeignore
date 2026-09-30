@@ -21,9 +21,7 @@
 !content_templates/**
 !mitre_attack/data/parsed/**
 
-!client/out/
 !client/out/**/*.js
-!server/out/
 !server/out/**/*.js
 !out/**/*.js
 
@@ -32,11 +30,6 @@
 !client/templates/shared/**
 !client/templates/styles/**
 
-!client/webview/out/
 !client/webview/out/**
 !client/webview/node_modules/monaco-editor/min/vs/**
 !client/webview/node_modules/@vscode/codicons/dist/**
-
-!node_modules/
-!node_modules/prettier/
-!node_modules/prettier/**
