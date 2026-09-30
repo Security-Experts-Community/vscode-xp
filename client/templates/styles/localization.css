@@ -37,26 +37,32 @@ hr {
 }
 
 .loc-example {
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
+	display: grid;
+	/* Ширина столбца со счетчиком событий определяется самым длинным числом в нем. */
+	grid-template-columns: max-content minmax(0, 1fr) minmax(0, 1fr);
+	row-gap: 20px;
 }
 
 .loc-example__row {
-	width: 100%;
-	display: flex;
+	display: contents;
 }
 
 .loc-example__row__p {
-	width: 50%;
+	/* Текст локализации показывается как есть, подряд идущие пробелы не объединяются. */
+	white-space: pre-wrap;
 	word-break: break-all;
 	border-left: 1px solid var(--gray);
 	padding: 0 10px;
 }
 
 .loc-example__row__h3 {
-	width: 50%;
 	margin-bottom: 0 !important;
+}
+
+.loc-example__row__count {
+	margin-bottom: 0 !important;
+	padding-right: 10px;
+	text-align: right;
 }
 
 label {
@@ -66,6 +72,17 @@ label {
 .criteria {
 	border-left: none;
 	font-weight: bold;
+}
+
+/* Место, в котором проверка локализации обнаружила проблему. */
+.loc-problem {
+	background-color: var(--vscode-inputValidation-errorBackground, rgba(201, 76, 76, 0.4));
+	color: inherit;
+}
+
+/* Рядом с пустым значением поля нет пробелов: место отмечается чертой, которая не занимает ширину. */
+.loc-problem:empty {
+	box-shadow: 0 0 0 1px var(--vscode-inputValidation-errorBorder, var(--red));
 }
 
 textarea {

@@ -4,7 +4,7 @@ import * as path from 'path';
 
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
-import { Localization } from '../../models/content/localization';
+import { Localization, LocalizationExample } from '../../models/content/localization';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
 import { Configuration } from '../../models/configuration';
 import { StringHelper } from '../../helpers/stringHelper';
@@ -180,7 +180,11 @@ export class LocalizationEditorViewProvider {
       EnDescription: enDescription,
       Localizations: plainLocalizations,
       ExtensionBaseUri: extensionBaseUri,
-      LocalizationExamples: locExamples,
+      LocalizationExamples: locExamples.map((example) => this.getExampleViewModel(example)),
+      LocalizationExamplesEventsCount: locExamples.reduce(
+        (eventsCount, example) => eventsCount + example.eventsCount,
+        0
+      ),
       IsLocalizableRule: ContentHelper.isLocalizableRule(this.rule),
       IsTestedLocalizationsRule: TestHelper.isTestedLocalizationsRule(this.rule),
       DefaultLocalizationCriteria: await ContentHelper.getDefaultLocalizationCriteria(this.rule),
@@ -191,6 +195,7 @@ export class LocalizationEditorViewProvider {
         LocalizationCriteria: this.config.getMessage('View.Localization.LocalizationCriteria'),
         Criteria: this.config.getMessage('View.Localization.Criteria'),
         LocalizationExamples: this.config.getMessage('View.Localization.LocalizationExamples'),
+        EventsCount: this.config.getMessage('View.Localization.EventsCount'),
         Save: this.config.getMessage('Save')
       }
     };
@@ -201,6 +206,39 @@ export class LocalizationEditorViewProvider {
     const htmlContent = formatter.format(templatePlainObject);
 
     this.view.webview.html = htmlContent;
+  }
+
+  /**
+   * Готовит пример локализации к отображению: текст делится на части, проблемные части подсвечиваются.
+   * Сам текст локализации при этом не меняется.
+   */
+  private getExampleViewModel(example: LocalizationExample) {
+    const localizations = this.rule.getLocalizations();
+    const isDefaultLocalization = TestHelper.isDefaultLocalization(example.ruText);
+
+    const getTextParts = (templates: string[], text: string) => {
+      if (isDefaultLocalization) {
+        return [{ text, isProblem: true }];
+      }
+
+      return TestHelper.splitLocalizationTextByEmptyFields(
+        templates,
+        text,
+        example.emptyFields
+      ).map((textPart) => ({ text: textPart.text, isProblem: textPart.isEmptyField }));
+    };
+
+    return {
+      eventsCount: example.eventsCount,
+      ruTextParts: getTextParts(
+        localizations.map((l) => l.getRuLocalizationText()),
+        example.ruText
+      ),
+      enTextParts: getTextParts(
+        localizations.map((l) => l.getEnLocalizationText()),
+        example.enText
+      )
+    };
   }
 
   async receiveMessageFromWebView(message: any): Promise<void> {

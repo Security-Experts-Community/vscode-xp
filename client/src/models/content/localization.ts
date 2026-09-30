@@ -16,6 +16,16 @@ export class LocalizationExample {
   public ruText: string;
   public enText: string;
   public correlationName: string;
+
+  /**
+   * Число событий с такой локализацией. Одинаковые локализации объединяются в один пример.
+   */
+  public eventsCount = 1;
+
+  /**
+   * Поля таксономии из шаблона локализации, у которых в событии нет значения.
+   */
+  public emptyFields: string[] = [];
 }
 
 export class Localization {

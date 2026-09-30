@@ -21,6 +21,7 @@ import { Normalization } from '../../models/content/normalization';
 import { TestStatus } from '../../models/tests/testStatus';
 import { BaseUnitTest } from '../../models/tests/baseUnitTest';
 import { IResultTestFiles, RegExpHelper } from '../../helpers/regExpHelper';
+import { TaxonomyHelper } from '../../helpers/taxonomyHelper';
 
 /**
  * Команда выполняющая сборку всех графов: нормализации, агрегации, обогащения и корреляции.
@@ -54,6 +55,21 @@ export class CheckLocalizationCommand extends ViewCommand {
       const localizations = this.params.message.localizations;
       await this.provider.saveLocalization(localizations, false);
 
+      // Проверяем до запуска тестов, так как по критерию с такой ошибкой локализация не сработает.
+      const taxonomyErrors = await this.getCriteriaTaxonomyErrors();
+      if (taxonomyErrors.length !== 0) {
+        DialogHelper.showError(
+          `Критерии локализации не соответствуют таксономии: ${taxonomyErrors.join('; ')}. Исправьте критерии и повторите`
+        );
+
+        this.params.rule.setStatus(
+          ContentItemStatus.Unverified,
+          'Локализация не прошла проверку: критерии локализации не соответствуют таксономии'
+        );
+        await ContentTreeProvider.refresh(this.params.rule);
+        return;
+      }
+
       let locExamples: LocalizationExample[] = [];
       if (this.params.rule instanceof Correlation) {
         locExamples = await this.getLocalizationExamplesForCorrelation();
@@ -76,13 +92,51 @@ export class CheckLocalizationCommand extends ViewCommand {
         const isDefaultLocalization = locExamples.some((le) =>
           TestHelper.isDefaultLocalization(le.ruText)
         );
+        const notTriggeredLocalizations = TestHelper.getNotTriggeredLocalizations(
+          this.params.rule.getLocalizations(),
+          locExamples
+        );
+        const examplesWithEmptyFields = locExamples.filter((le) => le.emptyFields.length !== 0);
+
         if (isDefaultLocalization) {
           DialogHelper.showError(
             'Обнаружена локализация по умолчанию. Исправьте/добавьте нужные критерии локализаций и повторите'
           );
+        }
+
+        if (notTriggeredLocalizations.length !== 0) {
+          const notTriggeredCriteria = notTriggeredLocalizations
+            .map((l) => `${l.getLocalizationId()} (${l.getCriteria()})`)
+            .join(', ');
+          DialogHelper.showError(
+            `На тестовых событиях не сработали критерии локализации: ${notTriggeredCriteria}. Исправьте критерии или добавьте тесты, в которых они срабатывают, и повторите`
+          );
+        }
+
+        if (examplesWithEmptyFields.length !== 0) {
+          const emptyFields = examplesWithEmptyFields
+            .map((le) => le.emptyFields.join(', '))
+            .join('; ');
+          DialogHelper.showError(
+            `В локализациях обнаружены поля без значений: ${emptyFields}. Добавьте в критерии локализации проверку этих полей на null или исправьте тесты и повторите`
+          );
+        }
+
+        const reasons: string[] = [];
+        if (isDefaultLocalization) {
+          reasons.push('обнаружен пример локализации по умолчанию');
+        }
+        if (notTriggeredLocalizations.length !== 0) {
+          reasons.push('сработали не все критерии локализации');
+        }
+        if (examplesWithEmptyFields.length !== 0) {
+          reasons.push('в локализациях есть поля без значений');
+        }
+
+        if (reasons.length !== 0) {
           this.params.rule.setStatus(
             ContentItemStatus.Unverified,
-            'Локализация не прошла проверку, обнаружен пример локализации по умолчанию'
+            `Локализация не прошла проверку: ${reasons.join(', ')}`
           );
         } else {
           this.params.rule.setStatus(
@@ -134,6 +188,18 @@ export class CheckLocalizationCommand extends ViewCommand {
         `Ошибка использования полей таксономии в локализации №${localizationNumber + 1}, не все закрывающиеся фигурные скобки имеют соответствующие открывающиеся`
       );
     }
+  }
+
+  private async getCriteriaTaxonomyErrors(): Promise<string[]> {
+    const taxonomy = await TaxonomyHelper.getTaxonomySignaturesPlain(this.params.config);
+
+    return this.params.rule
+      .getLocalizations()
+      .flatMap((localization, index) =>
+        TaxonomyHelper.validateLocalizationCriteria(localization.getCriteria(), taxonomy).map(
+          (error) => `№${index + 1}: ${error}`
+        )
+      );
   }
 
   private async getLocalizationExamplesForCorrelation(): Promise<LocalizationExample[]> {

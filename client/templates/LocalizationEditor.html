@@ -32,17 +32,17 @@
 			<hr />
 			<div id="loc-results" class="loc-example">
 				<div class="loc-example__row">
+					<h3 class="loc-example__row__count" title="{{Locale.EventsCount}}: {{LocalizationExamplesEventsCount}}">{{LocalizationExamplesEventsCount}}</h3>
 					<h3 class="loc-example__row__h3">RU:</h3>
 					<h3 class="loc-example__row__h3">EN:</h3>
 				</div>
 				{{#LocalizationExamples}}
 				<div class="loc-example__row">
-					<p class="loc-example__row__p">
-						{{ruText}}
+					<p class="loc-example__row__count" title="{{Locale.EventsCount}}: {{eventsCount}}">
+						{{eventsCount}}
 					</p>
-					<p class="loc-example__row__p">
-						{{enText}}
-					</p>
+					<p class="loc-example__row__p">{{#ruTextParts}}{{#isProblem}}<mark class="loc-problem">{{text}}</mark>{{/isProblem}}{{^isProblem}}{{text}}{{/isProblem}}{{/ruTextParts}}</p>
+					<p class="loc-example__row__p">{{#enTextParts}}{{#isProblem}}<mark class="loc-problem">{{text}}</mark>{{/isProblem}}{{^isProblem}}{{text}}{{/isProblem}}{{/enTextParts}}</p>
 				</div>
 				{{/LocalizationExamples}}
 			

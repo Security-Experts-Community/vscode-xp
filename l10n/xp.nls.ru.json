@@ -201,6 +201,7 @@
     "View.Localization.Description": "Описание правила",
     "View.Localization.CheckLocalizations": "Проверить локализацию",
     "View.Localization.LocalizationExamples": "Результат проверки",
+    "View.Localization.EventsCount": "Событий",
     "View.Localization.LocalizationCriteria": "Условия для локализации",
     "View.Localization.Criteria": "Условие",
 

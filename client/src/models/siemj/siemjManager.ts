@@ -13,7 +13,7 @@ import { FileSystemException } from '../fileSystemException';
 import { AbstractSiemjConfBuilder, SiemjConfBuilder } from './siemjConfigBuilder';
 import { Siemj2ConfBuilder } from './siemjConfigBuilder';
 import { DialogHelper } from '../../helpers/dialogHelper';
-import { LocalizationExample } from '../content/localization';
+import { Localization, LocalizationExample } from '../content/localization';
 import { TestHelper } from '../../helpers/testHelper';
 import { IResultTestFiles, RegExpHelper } from '../../helpers/regExpHelper';
 import { OperationCanceledException } from '../operationCanceledException';
@@ -390,7 +390,10 @@ export class SiemjManager {
     this.processOutput(siemjOutput.output);
 
     // Могут сработать другие корреляции или сабрули, мы их фильтруем.
-    let locExamples = await this.readCurrentLocalizationExample(contentRootFolder);
+    let locExamples = await this.readCurrentLocalizationExample(
+      contentRootFolder,
+      rule.getLocalizations()
+    );
     if (rule instanceof Correlation) {
       locExamples = locExamples.filter((le) => le.correlationName == rule.getName());
     }
@@ -399,7 +402,8 @@ export class SiemjManager {
   }
 
   private async readCurrentLocalizationExample(
-    contentRootFolder: string
+    contentRootFolder: string,
+    localizations: Localization[]
   ): Promise<LocalizationExample[]> {
     // Читаем события с русской локализацией.
     const ruLocalizationFilePath = this.config.getRuRuleLocalizationFilePath(contentRootFolder);
@@ -450,11 +454,28 @@ export class SiemjManager {
         const currEnEventObject = JSON.parse(currEnEventString);
         currLocExample.enText = currEnEventObject?.text;
 
-        // Проверяем наличие дубликатов.
-        const duplicate = locExamples.find(
-          (le) => le.ruText === currLocExample.ruText && le.enText === currLocExample.enText
+        // Утилита локализации возвращает событие целиком, поэтому пустые значения ищем в его полях.
+        currLocExample.emptyFields = TestHelper.getEmptyLocalizationFields(
+          localizations,
+          currRuEventObject,
+          currLocExample.ruText,
+          currLocExample.enText
         );
-        if (!duplicate && currLocExample.ruText && currLocExample.enText) {
+
+        // Проверяем наличие дубликатов. Локализация по умолчанию у событий разных правил может совпадать,
+        // поэтому учитываем имя корреляции, иначе пример тестируемого правила будет отброшен при фильтрации.
+        const duplicate = locExamples.find(
+          (le) =>
+            le.correlationName === currLocExample.correlationName &&
+            le.ruText === currLocExample.ruText &&
+            le.enText === currLocExample.enText
+        );
+        if (duplicate) {
+          duplicate.eventsCount++;
+          duplicate.emptyFields = Array.from(
+            new Set([...duplicate.emptyFields, ...currLocExample.emptyFields])
+          );
+        } else if (currLocExample.ruText && currLocExample.enText) {
           locExamples.push(currLocExample);
         }
       }

@@ -201,6 +201,7 @@
     "View.Localization.Description": "Rule Description",
     "View.Localization.CheckLocalizations": "Check Localization",
     "View.Localization.LocalizationExamples": "Check Result",
+    "View.Localization.EventsCount": "Events",
     "View.Localization.LocalizationCriteria": "Localization Criteria",
     "View.Localization.Criteria": "Criteria",
 

@@ -16,6 +16,7 @@ import { Normalization } from '../models/content/normalization';
 import { Configuration } from '../models/configuration';
 import { GetSIEMJVersion, SIEMJVersion } from '../models/siemj/siemjManager';
 import { parseSiemj2Events } from './siemj2EventsParser';
+import { Localization, LocalizationExample } from '../models/content/localization';
 
 export type EventMimeType =
   | 'application/x-pt-eventlog'
@@ -25,6 +26,16 @@ export type EventMimeType =
   | 'text/xml';
 
 export const EVENT_PRIORITY_FIELDS = ['subject', 'action', 'object', 'status'];
+
+export interface LocalizationTextPart {
+  text: string;
+
+  /**
+   * Место в локализации, в которое подставлено пустое значение поля таксономии. Текст такой части
+   * состоит из пробелов вокруг этого места, а если их нет, то пуст.
+   */
+  isEmptyField: boolean;
+}
 
 export class TestHelper {
   /**
@@ -660,6 +671,194 @@ export class TestHelper {
     // account start process success на узле wks01.testlab.esc
     const defaultLocRegExp = /^[a-z_0-9]+ [a-z_0-9]+ [a-z_0-9]+ [a-z_0-9]+ (на узле|on host) \S+$/g;
     return defaultLocRegExp.test(localization);
+  }
+
+  /**
+   * Возвращает правила локализации, ни одно из которых не сработало на примерах локализаций.
+   * Сработавшее правило определяется по совпадению примера с шаблоном локализации, в котором
+   * вместо полей таксономии может быть подставлено любое значение.
+   * @param localizations правила локализации
+   * @param examples примеры локализаций, полученные на тестовых событиях
+   * @returns несработавшие правила локализации
+   */
+  public static getNotTriggeredLocalizations(
+    localizations: Localization[],
+    examples: LocalizationExample[]
+  ): Localization[] {
+    return localizations.filter((localization) => {
+      const ruTemplate = TestHelper.localizationTemplateToRegExp(
+        localization.getRuLocalizationText()
+      );
+      const enTemplate = TestHelper.localizationTemplateToRegExp(
+        localization.getEnLocalizationText()
+      );
+
+      return !examples.some(
+        (example) =>
+          (ruTemplate && ruTemplate.test(example.ruText)) ||
+          (enTemplate && enTemplate.test(example.enText))
+      );
+    });
+  }
+
+  /**
+   * Возвращает поля таксономии из шаблонов сработавшего правила локализации, у которых в событии
+   * нет значения. По тексту локализации пустое значение надежно не определить, поэтому проверяются
+   * поля самого события, а по тексту определяется только сработавший шаблон.
+   * @param localizations правила локализации
+   * @param event событие, для которого получена локализация
+   * @param ruText локализация события на русском
+   * @param enText локализация события на английском
+   * @returns поля шаблона без значения в событии
+   */
+  public static getEmptyLocalizationFields(
+    localizations: Localization[],
+    event: Record<string, unknown>,
+    ruText: string,
+    enText: string
+  ): string[] {
+    const triggeredTemplates = [
+      TestHelper.findTriggeredTemplate(
+        localizations.map((l) => l.getRuLocalizationText()),
+        ruText
+      ),
+      TestHelper.findTriggeredTemplate(
+        localizations.map((l) => l.getEnLocalizationText()),
+        enText
+      )
+    ];
+
+    const emptyFields = triggeredTemplates
+      .flatMap((template) => template?.match(/\{[^{}]*\}/g) ?? [])
+      .map((placeholder) => placeholder.slice(1, -1).trim())
+      .filter((field) => {
+        const value = event?.[field];
+        return value === undefined || value === null || String(value).trim() === '';
+      });
+
+    return Array.from(new Set(emptyFields));
+  }
+
+  /**
+   * Под текст могут подходить несколько шаблонов, например состоящий из одного поля таксономии
+   * подходит под любой текст, поэтому сработавшим считается шаблон с наибольшим объемом текста вне полей.
+   */
+  private static findTriggeredTemplate(templates: string[], text: string): string | undefined {
+    const textLength = (template: string) => template.replace(/\{[^{}]*\}/g, '').length;
+
+    return templates
+      .filter((template) => TestHelper.localizationTemplateToRegExp(template)?.test(text ?? ''))
+      .sort((a, b) => textLength(b) - textLength(a))[0];
+  }
+
+  /**
+   * Делит текст локализации на части так, чтобы место каждого пустого значения вместе с пробелами
+   * вокруг него оказалось отдельной частью. Так место пустого значения можно показать пользователю,
+   * не меняя текст локализации: объединение текста всех частей дает исходный текст.
+   * @param templates шаблоны правил локализации
+   * @param text локализация события
+   * @param emptyFields поля шаблона без значения в событии
+   * @returns части текста локализации
+   */
+  public static splitLocalizationTextByEmptyFields(
+    templates: string[],
+    text: string,
+    emptyFields: string[]
+  ): LocalizationTextPart[] {
+    const wholeText = [{ text, isEmptyField: false }];
+    const template = TestHelper.findTriggeredTemplate(templates, text);
+    if (!template || emptyFields.length === 0) {
+      return wholeText;
+    }
+
+    // На нечетных местах поля таксономии, на четных текст между ними. Каждая часть шаблона попадает
+    // в отдельную группу, поэтому по группам восстанавливается положение полей в тексте.
+    const templateParts = template.trim().split(/(\{[^{}]*\})/);
+    const isEmptyField = (templatePart: string, index: number) =>
+      index % 2 === 1 && emptyFields.includes(templatePart.slice(1, -1).trim());
+
+    const pattern = templateParts
+      .map((templatePart, index) => {
+        if (index % 2 === 0) {
+          return `(${TestHelper.escapeRegExp(templatePart)})`;
+        }
+        return isEmptyField(templatePart, index) ? '()' : '([\\s\\S]*?)';
+      })
+      .join('');
+
+    const match = new RegExp(`^${pattern}$`).exec(text);
+    if (!match) {
+      return wholeText;
+    }
+
+    const textParts: LocalizationTextPart[] = [];
+    templateParts.forEach((templatePart, index) => {
+      if (isEmptyField(templatePart, index)) {
+        textParts.push({ text: '', isEmptyField: true });
+        return;
+      }
+
+      const lastTextPart = textParts[textParts.length - 1];
+      if (lastTextPart && !lastTextPart.isEmptyField) {
+        lastTextPart.text += match[index + 1];
+      } else {
+        textParts.push({ text: match[index + 1], isEmptyField: false });
+      }
+    });
+
+    // Пробелы вокруг пустого значения относим к нему, подряд идущие пустые значения объединяем.
+    textParts.forEach((textPart, index) => {
+      if (!textPart.isEmptyField) {
+        return;
+      }
+
+      const previousTextPart = textParts[index - 1];
+      if (previousTextPart && !previousTextPart.isEmptyField) {
+        const spaces = /\s*$/.exec(previousTextPart.text)[0];
+        previousTextPart.text = previousTextPart.text.slice(
+          0,
+          previousTextPart.text.length - spaces.length
+        );
+        textPart.text = spaces + textPart.text;
+      }
+
+      const nextTextPart = textParts[index + 1];
+      if (nextTextPart && !nextTextPart.isEmptyField) {
+        const spaces = /^\s*/.exec(nextTextPart.text)[0];
+        nextTextPart.text = nextTextPart.text.slice(spaces.length);
+        textPart.text += spaces;
+      }
+    });
+
+    return textParts
+      .filter((textPart) => textPart.text || textPart.isEmptyField)
+      .reduce((mergedTextParts: LocalizationTextPart[], textPart) => {
+        const lastTextPart = mergedTextParts[mergedTextParts.length - 1];
+        if (lastTextPart?.isEmptyField && textPart.isEmptyField) {
+          lastTextPart.text += textPart.text;
+        } else {
+          mergedTextParts.push(textPart);
+        }
+        return mergedTextParts;
+      }, []);
+  }
+
+  private static localizationTemplateToRegExp(template: string): RegExp | undefined {
+    if (!template) {
+      return undefined;
+    }
+
+    const pattern = template
+      .trim()
+      .split(/\{[^{}]*\}/)
+      .map((textPart) => TestHelper.escapeRegExp(textPart))
+      .join('[\\s\\S]*?');
+
+    return new RegExp(`^${pattern}$`);
+  }
+
+  private static escapeRegExp(text: string): string {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   public static formatTestCodeAndEvents(testCode: string, priorityFields: string[] = []): string {
