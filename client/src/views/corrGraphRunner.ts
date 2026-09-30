@@ -8,6 +8,7 @@ import { XpException } from '../models/xpException';
 import { Log } from '../extension';
 import { DialogHelper } from '../helpers/dialogHelper';
 import { SiemjManager } from '../models/siemj/siemjManager';
+import { SiemjConfigHelper } from '../models/siemj/siemjConfigHelper';
 
 export class CorrGraphRunnerOptions {
   config: Configuration;
@@ -92,7 +93,8 @@ export class CorrGraphRunner {
     await this.options.config.getToolRunner().runSiemj(['-c', siemjConfigPath, 'main'], {
       encoding: this.options.config.getSiemjOutputEncoding(),
       outputChannel: this.options.config.getOutputChannel(),
-      cancellationToken: this.options.cancellationToken
+      cancellationToken: this.options.cancellationToken,
+      cwd: SiemjConfigHelper.getWorkingDirectoryPath(siemjConfigPath)
     });
 
     const corrEventsFilePath = this.options.config.getCorrelatedEventsFilePath(rootFolder);

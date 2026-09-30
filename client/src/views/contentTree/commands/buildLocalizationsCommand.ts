@@ -67,14 +67,14 @@ export class BuildLocalizationsCommand extends ViewCommand {
 
           // Типовая команда выглядит так:
           // "C:\\PTSIEMSDK_GUI.4.0.0.738\\tools\\siemj.exe" -c C:\\PTSIEMSDK_GUI.4.0.0.738\\temp\\siemj.conf main
-          const siemJOutput = await this.config.getToolRunner().runSiemj(
-            ['-c', siemjConfigPath, 'main'],
-            {
+          const siemJOutput = await this.config
+            .getToolRunner()
+            .runSiemj(['-c', siemjConfigPath, 'main'], {
               encoding: this.config.getSiemjOutputEncoding(),
               outputChannel: this.config.getOutputChannel(),
-              cancellationToken: cancellationToken
-            }
-          );
+              cancellationToken: cancellationToken,
+              cwd: SiemjConfigHelper.getWorkingDirectoryPath(siemjConfigPath)
+            });
 
           // Добавляем новые строки, чтобы разделить разные запуски утилиты
           this.config.getOutputChannel().append('\n\n');

@@ -67,28 +67,37 @@ export class CorrelationUnitTestsRunnerViaEvtTests implements UnitTestRunner {
       rule.getContentRootPath(this.config)
     );
 
-    const output = await this.config.getToolRunner().runTool(
-      this.config.getEvtTestsFullPath(),
-      [
-        'run',
-        'correlate',
-        ruleFilePath,
-        '-c',
-        testFilepath,
-        '-t',
-        taxonomyFilePath,
-        '--schema',
-        schemaFilePath,
-        '-f',
-        fptDefaults,
-        '-r',
-        ruleFiltersDirPath
-      ],
-      {
-        encoding: 'utf-8',
-        outputChannel: this.config.getOutputChannel()
-      }
-    );
+    // Утилиты KBT пишут служебные файлы (например, кеш Hyperscan) относительно рабочей директории,
+    // поэтому запускаем их из временной директории, а не из директории базы знаний.
+    const workingDirPath = this.config.getRandTmpSubDirectoryPath(rootFolder);
+    await fs.promises.mkdir(workingDirPath, { recursive: true });
+
+    const output = await this.config
+      .getToolRunner()
+      .runTool(
+        this.config.getEvtTestsFullPath(),
+        [
+          'run',
+          'correlate',
+          ruleFilePath,
+          '-c',
+          testFilepath,
+          '-t',
+          taxonomyFilePath,
+          '--schema',
+          schemaFilePath,
+          '-f',
+          fptDefaults,
+          '-r',
+          ruleFiltersDirPath
+        ],
+        {
+          encoding: 'utf-8',
+          outputChannel: this.config.getOutputChannel(),
+          cwd: workingDirPath
+        }
+      )
+      .finally(() => fs.promises.rm(workingDirPath, { recursive: true, force: true }));
 
     if (!output.output) {
       DialogHelper.showError(

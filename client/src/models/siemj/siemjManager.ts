@@ -231,7 +231,8 @@ export class SiemjManager {
     const result = await this.config.getToolRunner().runSiemj(['-c', siemjConfigPath, 'main'], {
       encoding: this.config.getSiemjOutputEncoding(),
       outputChannel: this.config.getOutputChannel(),
-      cancellationToken: this.token
+      cancellationToken: this.token,
+      cwd: SiemjConfigHelper.getWorkingDirectoryPath(siemjConfigPath)
     });
 
     if (result.isInterrupted) {
@@ -268,7 +269,8 @@ export class SiemjManager {
     const result = await this.config.getToolRunner().runSiemj(['-c', siemjConfigPath, 'main'], {
       encoding: this.config.getSiemjOutputEncoding(),
       outputChannel: this.config.getOutputChannel(),
-      cancellationToken: this.token
+      cancellationToken: this.token,
+      cwd: SiemjConfigHelper.getWorkingDirectoryPath(siemjConfigPath)
     });
     return result;
   }

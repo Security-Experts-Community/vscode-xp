@@ -18,6 +18,15 @@ export class SiemjConfigHelper {
   }
 
   /**
+   * Возвращает рабочую директорию для запуска siemj. Утилиты KBT пишут служебные файлы
+   * (например, enricher-cli — кеш Hyperscan в `enricher/`) относительно рабочей директории,
+   * поэтому запускаем их из временной директории конфига, а не из директории базы знаний.
+   */
+  public static getWorkingDirectoryPath(siemjConfigPath: string): string {
+    return path.dirname(siemjConfigPath);
+  }
+
+  /**
    * Очищаем артефакты запуска siemj. Необходимо для невозможности получения неактуальных данных из них.
    */
   public static async clearArtifacts(
