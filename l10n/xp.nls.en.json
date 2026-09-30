@@ -29,6 +29,13 @@
     "Error.KbtDirectoryPathIsNotSet": "The XP Knowledge Base Toolkit (KBT path is not specified. Download the [current version](https://github.com/vxcontrol/xp-kbt/releases), unpack the archive, and specify the path of the root folder in the [setting](command:workbench.action.openSettings?['xpConfig.kbtBaseDirectory']).",
     "Error.KbtDirectoryPathIsNoExist": "XP Knowledge Base Toolkit (KBT was not found in the folder {0}. Download the [current version](https://github.com/vxcontrol/xp-kbt/releases), unpack the archive, and specify the path of the root folder in the [setting](command:workbench.action.openSettings?['xpConfig.kbtBaseDirectory']).",
 
+    "Message.KbtSettingsChanged": "The KBT paths have changed. Reload the window to apply the new paths to the language server and the utilities",
+    "Message.KbtSettingsChanged.Reload": "Reload Window",
+
+    "Command.ResetKbtSettings.Confirmation": "The KBT path settings (xpConfig.kbtBaseDirectory, xpConfig.kbtVersionsDirectory, xpConfig.lspServerExecutablePath, xpConfig.formatterExecutablePath) will be cleared in all scopes and the KBT version will be selected anew. The VSCode window will then be reloaded",
+    "Command.ResetKbtSettings.Confirmation.MacOS": "The xpConfig.kbtVersionsDirectory setting will be cleared in all scopes and the KBT version will be selected anew. The paths to the native language server and formatter (xpConfig.kbtBaseDirectory, xpConfig.lspServerExecutablePath, xpConfig.formatterExecutablePath) are kept: on macOS they are the only way to enable them. The VSCode window will then be reloaded",
+    "Command.ResetKbtSettings.Confirm": "Reset",
+
     "Error.OutputDirectoryPathIsNotSet": "The temporary object folder path is not specified. Specify the path in the [setting](command:workbench.action.openSettings?['xpConfig.outputDirectoryPath']).",
     "Error.IncorrectOutputDirectoryPath": "Could not create the folder at {0}. Specify the correct path in the [setting](command:workbench.action.openSettings?['xpConfig.outputDirectoryPath']).",
 

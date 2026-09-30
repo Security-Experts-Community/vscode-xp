@@ -58,6 +58,31 @@ export class ProcessHelper {
   }
 
   /**
+   * Синхронно выполняет команду с параметрами без интерпретации оболочкой, поэтому пробелы в пути
+   * до исполняемого файла безопасны.
+   * @param command путь к исполняемому файлу
+   * @param args список параметров
+   * @param encoding кодировка вывода команды
+   * @returns объединённый вывод stdout и stderr
+   */
+  public static executeSync(
+    command: string,
+    args: string[],
+    encoding: BufferEncoding = 'utf8'
+  ): string {
+    const childProcess = child_process.spawnSync(command, args, {
+      stdio: 'pipe',
+      encoding
+    });
+
+    if (childProcess.error) {
+      throw childProcess.error;
+    }
+
+    return `${childProcess.stdout ?? ''}${childProcess.stderr ?? ''}`;
+  }
+
+  /**
    * Выполняет команду с параметрами асинхронно
    * @param command команда/путь к исполняемому файлу для выполнения
    * @param params параметры команды

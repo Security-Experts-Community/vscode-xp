@@ -116,18 +116,9 @@ export async function activate(context: ExtensionContext): Promise<void> {
     await UserSettingsManager.init(config);
     // await ToolsManager.init(config);
 
-    if (!config.shouldUseDockerToolRunner()) {
-      // Обращение к геттеру имеет побочный эффект — авто-выбор версии KBT.
-      try {
-        config.getKbtBaseDirectoryOld();
-      } catch (error) {
-        Log.warn(`Error during KBT auto-selection: ${error.message}`);
-      }
-    }
+    await config.autoSelectKbtVersionIfNeeded();
 
     try {
-      config.autoSetKbtVersionsDirectory();
-      config.autoSetKbtBaseDirectory();
       config.autoSetLspServerExecutablePath();
     } catch (error) {
       Log.warn(`Error during automatic configuration setting: ${error.message}`);
@@ -174,7 +165,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
       ? undefined
       : config.getKbtVersionsDirectory();
     if (kbtVersionsDirectory && !config.shouldUseDockerToolRunner()) {
-      await SetKBTVersionCommand.init(config);
+      try {
+        await SetKBTVersionCommand.init(config);
+      } catch (error) {
+        Log.warn(`Failed to initialize the KBT version selection: ${error.message}`);
+      }
     } else {
       try {
         await config.setSIEMJVersion();
@@ -189,6 +184,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     InitKBRootCommand.init(config);
     RetroCorrelationViewController.init(config);
     CommonCommands.init(config);
+    subscribeToKbtSettingsChanges(context, config);
     siemCustomPackingTaskProvider = vscode.tasks.registerTaskProvider(
       XPPackingTaskProvider.Type,
       new XPPackingTaskProvider(config)
@@ -304,22 +300,26 @@ async function configureLSPClient(
           clientOptions
         );
 
-        return externalClient
-          .start()
-          .then(() => {
-            notifyAboutStartedLspServer(config, externalClient, 'KBT XPLang LSP server');
+        try {
+          await externalClient.start();
+          notifyAboutStartedLspServer(config, externalClient, 'KBT XPLang LSP server');
 
-            return {
-              client: externalClient,
-              usesKbtFormatter: true
-            };
-          })
-          .catch((error) => {
-            vscode.window.showErrorMessage(
-              'Failed to start XPLang Language Server: ' + error.message
-            );
-            throw error;
-          });
+          return {
+            client: externalClient,
+            usesKbtFormatter: true
+          };
+        } catch (error) {
+          vscode.window.showErrorMessage(
+            'Failed to start XPLang Language Server: ' + error.message
+          );
+          Log.error('Failed to start KBT XPLang LSP server.', error);
+          await stopFailedLspClient(externalClient);
+        }
+
+        return {
+          client: undefined,
+          usesKbtFormatter: false
+        };
       }
 
       Log.info(
@@ -342,12 +342,14 @@ async function configureLSPClient(
 
       if (lspServerExecutablePath) {
         Log.info(config.getMessage('LSPServer.ServerExecutableFoundAt', lspServerExecutablePath));
+        // Без transport клиент общается с процессом по его stdin/stdout напрямую. Указывать
+        // TransportKind.stdio нельзя: клиент добавит в командную строку аргумент --stdio, а
+        // evt-xp-language-server его не понимает и завершается с кодом 1.
         const serverOptions = config.isLocalMacOS()
           ? createNativeMacLspServerOptions(config, lspServerExecutablePath)
           : {
               command: lspServerExecutablePath,
               args: [],
-              transport: TransportKind.stdio,
               options: {
                 cwd: __dirname
               }
@@ -369,22 +371,26 @@ async function configureLSPClient(
           clientOptions
         );
 
-        return externalClient
-          .start()
-          .then(() => {
-            notifyAboutStartedLspServer(config, externalClient, 'KBT XPLang LSP server');
+        try {
+          await externalClient.start();
+          notifyAboutStartedLspServer(config, externalClient, 'KBT XPLang LSP server');
 
-            return {
-              client: externalClient,
-              usesKbtFormatter: true
-            };
-          })
-          .catch((error) => {
-            vscode.window.showErrorMessage(
-              'Failed to start XPLang Language Server: ' + error.message
-            );
-            throw error;
-          });
+          return {
+            client: externalClient,
+            usesKbtFormatter: true
+          };
+        } catch (error) {
+          // Падение KBT LSP не должно ронять активацию расширения целиком: без него остаётся
+          // рабочим весь остальной функционал, а подсветка и автодополнение берутся из legacy LSP.
+          vscode.window.showErrorMessage(
+            'Failed to start XPLang Language Server: ' + error.message
+          );
+          Log.error(
+            'Failed to start KBT XPLang LSP server. Falling back to the legacy one.',
+            error
+          );
+          await stopFailedLspClient(externalClient);
+        }
       }
     }
   } catch (e) {
@@ -446,7 +452,12 @@ async function configureLSPClient(
   };
 
   // Создаем клиент, запускаем его и сервер.
-  const legacyClient = new LanguageClient('languageServer', 'Language Server', serverOptions, clientOptions);
+  const legacyClient = new LanguageClient(
+    'languageServer',
+    'Language Server',
+    serverOptions,
+    clientOptions
+  );
   try {
     await legacyClient.start();
     notifyAboutStartedLspServer(config, legacyClient, 'Legacy XPLang LSP server');
@@ -462,7 +473,9 @@ async function configureLSPClient(
   };
 }
 
-async function buildKbtLspInitializationOptions(config: Configuration): Promise<Record<string, string>> {
+async function buildKbtLspInitializationOptions(
+  config: Configuration
+): Promise<Record<string, string>> {
   const initializationOptions: Record<string, string> = {
     locale: vscode.env.language
   };
@@ -575,6 +588,54 @@ function createNativeMacLspServerOptions(
       writer
     };
   };
+}
+
+/**
+ * Пути к KBT читаются при активации и расходятся по LSP-клиенту, статус-бару и кешу версии,
+ * поэтому применить их смену на лету нельзя. Сбрасываем производные значения, чтобы новые пути
+ * не смешивались со старыми, и предлагаем перезагрузить окно.
+ */
+function subscribeToKbtSettingsChanges(context: ExtensionContext, config: Configuration): void {
+  const watchedSettings = [
+    'xpConfig.kbtBaseDirectory',
+    'xpConfig.kbtVersionsDirectory',
+    'xpConfig.lspServerExecutablePath',
+    'xpConfig.formatterExecutablePath'
+  ];
+
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration(async (event) => {
+      if (!watchedSettings.some((setting) => event.affectsConfiguration(setting))) {
+        return;
+      }
+
+      Log.info('KBT path settings have changed, resetting the cached KBT version');
+      await config.resetKbtCaches();
+      await config.autoSelectKbtVersionIfNeeded();
+
+      const reloadAction = config.getMessage('Message.KbtSettingsChanged.Reload');
+      const selectedAction = await vscode.window.showInformationMessage(
+        config.getMessage('Message.KbtSettingsChanged'),
+        reloadAction
+      );
+
+      if (selectedAction === reloadAction) {
+        await vscode.commands.executeCommand('workbench.action.reloadWindow');
+      }
+    })
+  );
+}
+
+/**
+ * Останавливает не запустившийся клиент, чтобы он не пытался перезапускать упавший процесс сервера.
+ * Клиент в состоянии startFailed бросает исключение на stop(), поэтому ошибку просто логируем.
+ */
+async function stopFailedLspClient(failedClient: LanguageClient): Promise<void> {
+  try {
+    await failedClient.stop();
+  } catch (error) {
+    Log.debug(`Failed to stop the crashed XPLang LSP client: ${error.message}`);
+  }
 }
 
 function notifyAboutStartedLspServer(

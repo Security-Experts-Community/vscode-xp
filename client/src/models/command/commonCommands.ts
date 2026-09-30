@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import { ConfigureMacOSContainerBackendCommand } from './configureMacOSContainerBackendCommand';
 import { Configuration } from '../configuration';
+import { ResetKbtSettingsCommand } from './resetKbtSettingsCommand';
 import { ShowExtensionOutputChannelCommand } from './showExtensionOutputChannelCommand';
 import { ShowExtensionSettingsCommand } from './showExtensionSettingsCommand';
 
@@ -30,8 +31,16 @@ export class CommonCommands {
         }
       )
     );
+
+    config.getContext().subscriptions.push(
+      vscode.commands.registerCommand(CommonCommands.RESET_KBT_SETTINGS_COMMAND, async () => {
+        const command = new ResetKbtSettingsCommand(config);
+        await command.execute();
+      })
+    );
   }
 
+  public static RESET_KBT_SETTINGS_COMMAND = 'xp.commonCommands.resetKbtSettings';
   public static SHOW_OUTPUT_CHANNEL_COMMAND = 'xp.commonCommands.showOutputChannel';
   public static SHOW_EXTENSION_SETTINGS_COMMAND = 'xp.commonCommands.showExtensionSettings';
   public static CONFIGURE_MACOS_CONTAINER_BACKEND_COMMAND =

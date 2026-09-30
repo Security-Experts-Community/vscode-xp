@@ -442,6 +442,11 @@
         "category": "%xp.commonCommandCategory%"
       },
       {
+        "command": "xp.commonCommands.resetKbtSettings",
+        "title": "%xp.commonCommands.resetKbtSettings%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
         "command": "xp.retroCorrelationShow",
         "title": "%xp.views.knowledgebaseTree.showRetroCorrelationCommand%",
         "category": "%xp.commonCommandCategory%"

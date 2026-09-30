@@ -7,6 +7,8 @@
 
 	"xp.commonCommands.showExtensionSettings" : "Extension Settings",
 
+	"xp.commonCommands.resetKbtSettings": "Reset KBT Path Settings",
+
 	"xp.views.knowledgebaseTree.title": "Object Tree",
 	"xp.views.knowledgebaseTree.refreshContentTreeCommand": "Refresh",
 	"xp.views.knowledgebaseTree.openKnowledgebaseCommand": "Open Knowledge Base",

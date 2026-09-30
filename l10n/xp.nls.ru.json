@@ -29,6 +29,13 @@
     "Error.KbtDirectoryPathIsNotSet": "Путь к XP Knowledge Base Toolkit (KBT) не задан. Скачайте [актуальную версию](https://github.com/vxcontrol/xp-kbt/releases), распакуйте архив и укажите путь к корневой папке [в параметре](command:workbench.action.openSettings?['xpConfig.kbtBaseDirectory'])",
     "Error.KbtDirectoryPathIsNoExist": "XP Knowledge Base Toolkit (KBT) не найден в папке {0}. Скачайте [актуальную версию](https://github.com/vxcontrol/xp-kbt/releases), распакуйте архив и укажите путь к корневой папке [в параметре](command:workbench.action.openSettings?['xpConfig.kbtBaseDirectory'])",
 
+    "Message.KbtSettingsChanged": "Пути к KBT изменились. Чтобы новые пути применились к языковому серверу и утилитам, перезагрузите окно",
+    "Message.KbtSettingsChanged.Reload": "Перезагрузить окно",
+
+    "Command.ResetKbtSettings.Confirmation": "Настройки путей к KBT (xpConfig.kbtBaseDirectory, xpConfig.kbtVersionsDirectory, xpConfig.lspServerExecutablePath, xpConfig.formatterExecutablePath) будут очищены во всех областях, а версия KBT выбрана заново. После этого окно VSCode будет перезагружено",
+    "Command.ResetKbtSettings.Confirmation.MacOS": "Настройка xpConfig.kbtVersionsDirectory будет очищена во всех областях, а версия KBT выбрана заново. Пути к нативным языковому серверу и форматтеру (xpConfig.kbtBaseDirectory, xpConfig.lspServerExecutablePath, xpConfig.formatterExecutablePath) сохранятся: на macOS только через них эти утилиты и подключаются. После этого окно VSCode будет перезагружено",
+    "Command.ResetKbtSettings.Confirm": "Сбросить",
+
     "Error.OutputDirectoryPathIsNotSet": "Не задан путь к папке для временных объектов. Укажите путь [в параметре](command:workbench.action.openSettings?['xpConfig.outputDirectoryPath'])",
     "Error.IncorrectOutputDirectoryPath": "Не удалось создать папку в {0}. Укажите корректный путь [в параметре](command:workbench.action.openSettings?['xpConfig.outputDirectoryPath'])",
 
