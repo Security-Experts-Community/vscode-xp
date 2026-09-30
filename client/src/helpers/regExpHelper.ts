@@ -36,9 +36,9 @@ export class RegExpHelper {
   public static getEnrichedCorrTestEventsFileNameV2(ruleName: string, testNumber?: number): RegExp {
     let regExpTemplate: string;
     if (testNumber) {
-      regExpTemplate = `.*test_conds_${testNumber}_result.txt`;
+      regExpTemplate = `.*test_conds_${testNumber}_(events|result)\\.txt`;
     } else {
-      regExpTemplate = `.*test_conds_(\d+)_result.txt`;
+      regExpTemplate = `.*test_conds_\\d+_(events|result)\\.txt`;
     }
 
     return RegExp(regExpTemplate, 'i');

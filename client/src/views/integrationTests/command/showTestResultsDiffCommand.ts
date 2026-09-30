@@ -44,10 +44,12 @@ export class ShowTestResultsDiffCommand extends Command {
     const testIndex = this.params.testNumber - 1;
     const currTest = tests[testIndex];
 
+    // Условие теста задает, какое именно событие проверяется, поэтому по нему же отбираем фактические.
+    const testCondition = RegExpHelper.getSingleExpectEvent(currTest.getTestCode());
+
     let expectedEvent = '';
     if (!TestHelper.isNegativeTest(currTest.getTestCode())) {
-      const testCode = currTest.getTestCode();
-      expectedEvent = RegExpHelper.getSingleExpectEvent(testCode);
+      expectedEvent = testCondition;
       if (!expectedEvent) {
         // TODO: внутренняя ошибка?
         DialogHelper.showError(
@@ -62,7 +64,11 @@ export class ShowTestResultsDiffCommand extends Command {
 
     let expectedKeys: string[] = [];
     try {
-      const expectedEventObject = JSON.parse(expectedEvent);
+      // Список сработавших правил обогащения не сравниваем, поэтому убираем его из обоих событий.
+      const expectedEventObject = TestHelper.removeKeys(JSON.parse(expectedEvent), [
+        TestHelper.APPLIED_ENRICHMENT_RULES_FIELD
+      ]);
+      expectedEvent = JSON.stringify(expectedEventObject);
       expectedKeys = Object.keys(expectedEventObject);
     } catch (error) {
       throw new XpException(
@@ -106,10 +112,16 @@ export class ShowTestResultsDiffCommand extends Command {
       );
     }
 
-    // TODO: check if suitable for new logic
-    // Отбираем ожидаемое событие по имени правила
-    // const actualFilteredEvents = TestHelper.filterCorrelationEvents(actualEvents, ruleName);
-    let actualFilteredEvents = actualEvents;
+    // В результаты теста попадают события всех этапов конвейера, показываем только проверяемый этап.
+    // Если таких событий нет, показываем все, что отработало.
+    let actualFilteredEvents = TestHelper.filterEventsByExpectedStage(
+      actualEvents,
+      testCondition,
+      ruleName
+    );
+    if (actualFilteredEvents.length === 0) {
+      actualFilteredEvents = actualEvents;
+    }
 
     // Если мы не получили сработки нашей корреляции, тогда покажем те события, который отработали.
     let formattedActualEvent = '';
@@ -130,9 +142,9 @@ export class ShowTestResultsDiffCommand extends Command {
     }
 
     // Помимо форматирование их требуется почистить от технических полей.
-    const testEvents = TestHelper.cleanJsonlEventFromTechnicalFields(actualFilteredEvents).join(
-      os.EOL
-    );
+    const testEvents = TestHelper.cleanJsonlEventFromTechnicalFields(actualFilteredEvents)
+      .map((e) => TestHelper.removeFieldsFromJsonl(e, TestHelper.APPLIED_ENRICHMENT_RULES_FIELD))
+      .join(os.EOL);
     formattedActualEvent = TestHelper.formatTestCodeAndEvents(testEvents);
 
     // Записываем очищенное фактическое значение файл для последующего сравнения

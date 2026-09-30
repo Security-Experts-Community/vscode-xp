@@ -15,6 +15,7 @@ import { JsHelper } from './jsHelper';
 import { Normalization } from '../models/content/normalization';
 import { Configuration } from '../models/configuration';
 import { GetSIEMJVersion, SIEMJVersion } from '../models/siemj/siemjManager';
+import { parseSiemj2Events } from './siemj2EventsParser';
 
 export type EventMimeType =
   | 'application/x-pt-eventlog'
@@ -35,8 +36,14 @@ export class TestHelper {
     return rule instanceof Correlation || rule instanceof Normalization;
   }
 
+  /**
+   * Проверяет, ожидает ли тест отсутствие события. Помимо `expect not {}` событие не ожидается
+   * и в случае `expect 0 {}`.
+   * @param testCode код теста
+   * @returns ожидает ли тест отсутствие события
+   */
   public static isNegativeTest(testCode: string): boolean {
-    return /expect\s+not\s+/gm.test(testCode);
+    return /expect\s*(not|0)\s*{/gm.test(testCode);
   }
 
   public static removeKeys(object: any, removedKeys: string[]): any {
@@ -77,6 +84,136 @@ export class TestHelper {
     }
 
     return filteredJsons;
+  }
+
+  /**
+   * Отбирает события того этапа конвейера, который проверяет тест. В файл с результатами теста
+   * попадают события всех этапов, при этом correlation_name в условии теста однозначно задает
+   * проверяемое корреляционное событие. Если в условии его нет, то приоритет у событий после
+   * коррелятора, среди которых в свою очередь приоритет у событий тестируемого правила,
+   * а при отсутствии корреляционных событий проверяются нормализованные и обогащенные.
+   * @param jsons фактические события теста
+   * @param expectedEvent условие теста из секции expect
+   * @param ruleName имя тестируемого правила
+   * @returns события этапа, проверяемого тестом
+   */
+  public static filterEventsByExpectedStage(
+    jsons: string[],
+    expectedEvent: string,
+    ruleName?: string
+  ): string[] {
+    const expectedObject = TestHelper.parseExpectedEvent(expectedEvent);
+    if (!expectedObject) {
+      return jsons;
+    }
+
+    const events = TestHelper.parseEvents(jsons);
+    const afterCorrelator = events.filter((event) => event.object['correlation_name']);
+    const beforeCorrelator = events.filter((event) => !event.object['correlation_name']);
+
+    const expectedCorrelationName = expectedObject['correlation_name'];
+    if (expectedCorrelationName) {
+      const correlationEvents = afterCorrelator.filter(
+        (event) => event.object['correlation_name'] === expectedCorrelationName
+      );
+
+      // Проверяемая корреляция не сработала, тест не проходит, поэтому ничего не отбрасываем.
+      return correlationEvents.length !== 0 ? correlationEvents.map((event) => event.json) : jsons;
+    }
+
+    // Помимо тестируемого правила сработать могли и другие, например вспомогательные (subrule),
+    // поэтому среди корреляционных событий отбираем события тестируемого правила.
+    const ruleEvents = ruleName
+      ? afterCorrelator.filter((event) => event.object['correlation_name'] === ruleName)
+      : [];
+    if (ruleEvents.length !== 0) {
+      return ruleEvents.map((event) => event.json);
+    }
+
+    if (afterCorrelator.length !== 0) {
+      return afterCorrelator.map((event) => event.json);
+    }
+
+    // Условие теста пустое: результатом работы конвейера является последнее обогащенное событие.
+    if (Object.keys(expectedObject).length === 0 && beforeCorrelator.length !== 0) {
+      return [beforeCorrelator[beforeCorrelator.length - 1].json];
+    }
+
+    return beforeCorrelator.length !== 0 ? beforeCorrelator.map((event) => event.json) : jsons;
+  }
+
+  /**
+   * Проверяет, что все события получены после коррелятора. Такие события отличаются друг от друга
+   * только числом сработок правила, поэтому любое из них может быть ожидаемым.
+   * @param jsons фактические события теста
+   * @returns все ли события являются корреляционными
+   */
+  public static isCorrelationEvents(jsons: string[]): boolean {
+    const events = TestHelper.parseEvents(jsons);
+    return events.length !== 0 && events.every((event) => event.object['correlation_name']);
+  }
+
+  /**
+   * Отбирает из событий те, которые сильнее прочих соответствуют условию теста. Требуется,
+   * когда тест проверяет одно событие, а фактических событий одного этапа получено несколько.
+   * @param jsons фактические события теста
+   * @param expectedEvent условие теста из секции expect
+   * @returns наиболее подходящие условию теста события
+   */
+  public static selectEventsClosestToExpected(jsons: string[], expectedEvent: string): string[] {
+    const expectedObject = TestHelper.parseExpectedEvent(expectedEvent);
+    if (!expectedObject) {
+      return jsons;
+    }
+
+    const expectedEntries = Object.entries(expectedObject);
+    if (expectedEntries.length === 0) {
+      return jsons;
+    }
+
+    const scoredEvents = TestHelper.parseEvents(jsons).map((event) => {
+      const matchedFieldsCount = expectedEntries.filter(
+        ([key, value]) => JSON.stringify(event.object[key]) === JSON.stringify(value)
+      ).length;
+      return { json: event.json, matchedFieldsCount };
+    });
+
+    // Ни одно поле условия не совпало: фактические события отличаются от ожидаемого и тест не проходит,
+    // выбрать одно из событий по условию нельзя, поэтому ничего не отбрасываем.
+    const maxMatchedFieldsCount = Math.max(...scoredEvents.map((e) => e.matchedFieldsCount));
+    if (maxMatchedFieldsCount === 0) {
+      return jsons;
+    }
+
+    return scoredEvents
+      .filter((e) => e.matchedFieldsCount === maxMatchedFieldsCount)
+      .map((e) => e.json);
+  }
+
+  private static parseExpectedEvent(expectedEvent: string): Record<string, unknown> | undefined {
+    if (!expectedEvent) {
+      return undefined;
+    }
+
+    try {
+      return JSON.parse(expectedEvent);
+    } catch (error) {
+      Log.warn('Ошибка разбора ожидаемого события из кода теста', error);
+      return undefined;
+    }
+  }
+
+  private static parseEvents(jsons: string[]): { json: string; object: any }[] {
+    const events: { json: string; object: any }[] = [];
+    for (const eventJson of jsons) {
+      try {
+        events.push({ json: eventJson.trim(), object: JSON.parse(eventJson) });
+      } catch (error) {
+        Log.warn('Ошибка фильтрации событий', error);
+      }
+    }
+
+    return events;
   }
 
   /**
@@ -184,7 +321,9 @@ export class TestHelper {
         'labels',
 
         'subevents',
-        'subevents.time'
+        'subevents.time',
+
+        TestHelper.APPLIED_ENRICHMENT_RULES_FIELD
       ]);
       object = JsHelper.sortObjectKeys(object);
       return JsHelper.formatJsonObject(object);
@@ -218,14 +357,34 @@ export class TestHelper {
       }
     });
 
-    if (resultEvents.length === 1) {
-      return resultEvents[0];
+    const actualEventsFilePath = TestHelper.preferActualEventsFile(resultEvents);
+    if (actualEventsFilePath) {
+      return actualEventsFilePath;
     }
 
     if (resultEvents.length > 1) {
       throw new XpException(
         'Найдено больше одного файла обогащенного нормализованного события, перезапустите VSCode и попробуйте еще раз'
       );
+    }
+
+    return undefined;
+  }
+
+  /**
+   * Выбирает единственный файл с результатами теста. Новые утилиты KBT сохраняют рядом файл фактических
+   * событий и подробный отчет, файл событий приоритетнее.
+   * @param resultFilePaths файлы, подходящие под шаблон имени результатов теста
+   * @returns путь к файлу с результатами или undefined, если однозначно выбрать файл не удалось
+   */
+  private static preferActualEventsFile(resultFilePaths: string[]): string | undefined {
+    if (resultFilePaths.length === 1) {
+      return resultFilePaths[0];
+    }
+
+    const actualEventsFilePaths = resultFilePaths.filter((fp) => /_events\.txt$/i.test(fp));
+    if (actualEventsFilePaths.length === 1) {
+      return actualEventsFilePaths[0];
     }
 
     return undefined;
@@ -255,8 +414,9 @@ export class TestHelper {
       }
     });
 
-    if (resultEvents.length === 1) {
-      return resultEvents[0];
+    const actualEventsFilePath = TestHelper.preferActualEventsFile(resultEvents);
+    if (actualEventsFilePath) {
+      return actualEventsFilePath;
     }
 
     if (resultEvents.length > 1) {
@@ -276,34 +436,16 @@ export class TestHelper {
   ): string[] {
     const siemjVersion = GetSIEMJVersion(config);
     if (siemjVersion == SIEMJVersion.Second) {
-      if (!actualEventsString.match(/\[FromCorrelator\]/)) {
+      const events = parseSiemj2Events(actualEventsString);
+      if (events.length === 0) {
         throw new XpException(
           `Фактическое событие интеграционного теста №${testNumber} правила ${ruleName} пусто`
         );
       }
-      const eventsPart = actualEventsString.split('[FromCorrelator]')[1];
-      const lines = eventsPart.split(os.EOL).filter((l) => l.startsWith('[FromEnricher]'));
 
-      if (lines.length != 1) {
-        throw new XpException(
-          `Неожиданная структура файла с результатами запуска теста ${testNumber} правила ${ruleName}`
-        );
-      }
-
-      const evt = lines[0].replace('[FromEnricher]', '').trim();
-      const jsonObject = JSON.parse(evt);
-      return [JSON.stringify(jsonObject)];
-
-      // const normStateRegex = /\[FromCorrelator\].*\[FromEnricher\]\s+({.*})\n/gs;
-      // const normStateMatch = [...actualEventsString.matchAll(normStateRegex)];
-
-      // //TODO: check if more than one correlation event
-      // if (normStateMatch && normStateMatch.length === 1) {
-      //   const jsonObject = JSON.parse(normStateMatch[0][1]);
-      //   return [JSON.stringify(jsonObject)];
-      // }
+      return events;
     } else {
-      return actualEventsString.split(os.EOL).filter((l) => l);
+      return actualEventsString.split(/\r?\n/).filter((l) => l);
     }
   }
 
@@ -760,6 +902,8 @@ export class TestHelper {
       .replace(/\\b/g, '\\b')
       .replace(/\\f/g, '\\f');
   }
+
+  public static APPLIED_ENRICHMENT_RULES_FIELD = '_applied_enrichment_rules';
 
   private static CORRELATION_NAME_COMPARE_REGEX = /correlation_name\s*==\s*"(\w+)"/gm;
   private static LOWER_CORRELATION_NAME_COMPARE_REGEX =

@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import { Command, IntegrationTestParams } from '../../../models/command/command';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { FileSystemHelper } from '../../../helpers/fileSystemHelper';
+import { RegExpHelper } from '../../../helpers/regExpHelper';
 import { TestHelper } from '../../../helpers/testHelper';
 import { XpException } from '../../../models/xpException';
 import { Log } from '../../../extension';
@@ -62,8 +63,16 @@ export class ShowActualEventCommand extends Command {
       this.params.test.getNumber()
     );
 
+    // В результаты теста попадают события всех этапов конвейера, показываем только проверяемый этап.
+    // Если таких событий нет, показываем все, что отработало.
+    const testCondition = RegExpHelper.getSingleExpectEvent(this.params.test.getTestCode());
+    let stageEvents = TestHelper.filterEventsByExpectedStage(actualEvents, testCondition, ruleName);
+    if (stageEvents.length === 0) {
+      stageEvents = actualEvents;
+    }
+
     // Очищаем события от технических полей и форматируем для вывода.
-    const actualFilteredEvents = TestHelper.cleanJsonlEventFromTechnicalFields(actualEvents).join(
+    const actualFilteredEvents = TestHelper.cleanJsonlEventFromTechnicalFields(stageEvents).join(
       os.EOL
     );
     const formattedActualEvent = TestHelper.formatTestCodeAndEvents(actualFilteredEvents);

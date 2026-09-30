@@ -17,6 +17,14 @@ import { JsHelper } from '../../../helpers/jsHelper';
 import { Correlation } from '../../../models/content/correlation';
 import { Enrichment } from '../../../models/content/enrichment';
 
+/**
+ * Ожидаемое событие и число его сработок для секции expect.
+ */
+interface ExpectedEvent {
+  event: string;
+  eventsCount: number;
+}
+
 // TODO: вынести под общий интерфейс провайдеров
 export class GetExpectedEventCommand {
   constructor(private params: IntegrationTestParams) {}
@@ -26,10 +34,11 @@ export class GetExpectedEventCommand {
     testNumber: number
   ): Promise<boolean> {
     const testWithNewTestCode = await this.generateTestCode();
-
-    if (testWithNewTestCode) {
-      await viewProvider.updateTestCode(this.params.test.getTestCode(), testNumber);
+    if (!testWithNewTestCode) {
+      return false;
     }
+
+    await viewProvider.updateTestCode(this.params.test.getTestCode(), testNumber);
 
     DialogHelper.showInfo(
       this.params.config.getMessage(
@@ -43,19 +52,23 @@ export class GetExpectedEventCommand {
     // Если правило содержит сабрули, то мы сейчас не сможем просто получить ожидаемое событие.
     const ruleCode = await this.params.rule.getRuleCode();
 
-    let newExpectedEvent: string;
+    let expectedEvent: ExpectedEvent;
     if (
       TestHelper.isRuleCodeContainsSubrules(ruleCode) ||
       !this.params.test.getNormalizedEvents()
     ) {
-      newExpectedEvent = await this.getExpectedEventForIntegrationTestResult();
+      expectedEvent = await this.getExpectedEventForIntegrationTestResult();
     } else {
-      newExpectedEvent = await this.getExpectedEventFromEcatest();
+      expectedEvent = { event: await this.getExpectedEventFromEcatest(), eventsCount: 1 };
+    }
+
+    if (!expectedEvent?.event) {
+      return;
     }
 
     // Очищаем код от технических полей, форматируем и заменяем код теста на новый с сохранением комментариев.
-    newExpectedEvent = TestHelper.cleanSortFormatExpectedEventTestCode(newExpectedEvent);
-    const newTestCode = `expect 1 ${newExpectedEvent}`;
+    const newExpectedEvent = TestHelper.cleanSortFormatExpectedEventTestCode(expectedEvent.event);
+    const newTestCode = `expect ${expectedEvent.eventsCount} ${newExpectedEvent}`;
     const currentTestCode = this.params.test.getTestCode();
     const resultTestCode = currentTestCode.replace(
       RegExpHelper.getExpectSectionRegExp(),
@@ -181,9 +194,9 @@ export class GetExpectedEventCommand {
 
   /**
    * Получает ожидаемое событие из результатов успешного интеграционного теста. Работает с любыми правилами в том числе с использованием subrules. Необходимо успешное завершение теста.
-   * @returns ожидаемое событие
+   * @returns ожидаемое событие и число его сработок
    */
-  private async getExpectedEventForIntegrationTestResult(): Promise<string> {
+  private async getExpectedEventForIntegrationTestResult(): Promise<ExpectedEvent> {
     const rule = this.params.rule;
     const ruleName = rule.getName();
 
@@ -202,7 +215,7 @@ export class GetExpectedEventCommand {
       );
     }
 
-    const actualEventsFilePath = await this.getActualEventsFilePath();
+    const actualEventsFilePath = this.getActualEventsFilePath();
     if (!actualEventsFilePath) {
       if (isSubrule) {
         throw new XpException(
@@ -236,6 +249,9 @@ export class GetExpectedEventCommand {
       this.params.test.getNumber()
     );
 
+    // Условие теста задает, какое именно событие проверяется, поэтому по нему же отбираем фактическое.
+    const testCondition = RegExpHelper.getSingleExpectEvent(this.params.test.getTestCode());
+
     let expectedFilteredEvents: string[];
     if (rule instanceof Correlation) {
       // Отбираем ожидаемое событие по имени правила, так как сюда могут попасть сабрули.
@@ -243,8 +259,13 @@ export class GetExpectedEventCommand {
     }
 
     if (rule instanceof Enrichment) {
-      // Отбираем ожидаемое событие по имени правила, так как сюда могут попасть сабрули.
-      expectedFilteredEvents = actualEvents;
+      // Правило обогащения работает либо с корреляционными, либо с нормализованными событиями,
+      // а в результатах теста есть события всех этапов конвейера.
+      expectedFilteredEvents = TestHelper.filterEventsByExpectedStage(
+        actualEvents,
+        testCondition,
+        ruleName
+      );
     }
 
     if (!expectedFilteredEvents) {
@@ -257,63 +278,72 @@ export class GetExpectedEventCommand {
       );
     }
 
-    if (expectedFilteredEvents.length != 1) {
-      throw new XpException(
-        `Предполагается одно ожидаемое событие, но было получено ${expectedFilteredEvents.length}`
+    // Событий одного этапа может быть несколько, тогда берем наиболее близкое к условию теста.
+    if (expectedFilteredEvents.length > 1) {
+      expectedFilteredEvents = TestHelper.selectEventsClosestToExpected(
+        expectedFilteredEvents,
+        testCondition
       );
     }
 
-    return expectedFilteredEvents[0];
+    if (expectedFilteredEvents.length === 1) {
+      return { event: expectedFilteredEvents[0], eventsCount: 1 };
+    }
+
+    // Правило сработало несколько раз: события равнозначны для условия теста, поэтому берем любое,
+    // а число сработок переносим в expect.
+    if (TestHelper.isCorrelationEvents(expectedFilteredEvents)) {
+      return { event: expectedFilteredEvents[0], eventsCount: expectedFilteredEvents.length };
+    }
+
+    throw new XpException(
+      `Предполагается одно ожидаемое событие, но было получено ${expectedFilteredEvents.length}. Уточните условие теста в секции expect, чтобы однозначно определить проверяемое событие, и повторите`
+    );
   }
 
-  private async getActualEventsFilePath(): Promise<string> {
+  private getActualEventsFilePath(): string | undefined {
     const rule = this.params.rule;
-    const ruleName = this.params.rule.getName();
+    const ruleName = rule.getName();
 
-    if (rule instanceof Correlation) {
-      return TestHelper.getEnrichedCorrEventFilePath(
-        this.params.config,
-        this.params.tmpDirPath,
-        ruleName,
-        this.params.test.getNumber()
-      );
+    if (!(rule instanceof Correlation) && !(rule instanceof Enrichment)) {
+      throw new XpException(`Правило ${ruleName} не поддерживает получение ожидаемого события`);
     }
 
-    if (rule instanceof Enrichment) {
-      // Проверяем сначала нормализованное обогащенное событие
-      const enrichedNormFilePath = TestHelper.getEnrichedNormEventFilePath(
-        this.params.config,
-        this.params.tmpDirPath,
-        ruleName,
-        this.params.test.getNumber()
-      );
+    // Пути, полученные из вывода siemj при прогоне тестов, приоритетнее поиска по файловой системе.
+    // При запуске утилит в Docker siemj печатает пути внутри контейнера, которых на хосте нет,
+    // поэтому такие пути пропускаем и ищем файл в директории с результатами на хосте.
+    const resultFiles = this.params.test.getResultFiles();
+    const reportedFilePath = [
+      resultFiles?.actualEventsFilePath,
+      resultFiles?.detailedReportFilePath
+    ].find((filePath) => filePath && fs.existsSync(filePath));
+    if (reportedFilePath) {
+      return reportedFilePath;
+    }
 
-      // В любом случае должно быть нормализованное обогащенное событие.
-      if (!fs.existsSync(enrichedNormFilePath)) {
-        throw new XpException(`Результирующее обогащенное нормализованное событие не найдено`);
-      }
+    // Может быть обогащено нормализованное событие, либо корреляция
+    const enrichedCorrFilePath = TestHelper.getEnrichedCorrEventFilePath(
+      this.params.config,
+      this.params.tmpDirPath,
+      ruleName,
+      this.params.test.getNumber()
+    );
 
-      // Может быть обогащено нормализованное событие, либо корреляция
-      const enrichedCorrFilePath = TestHelper.getEnrichedCorrEventFilePath(
-        this.params.config,
-        this.params.tmpDirPath,
-        ruleName,
-        this.params.test.getNumber()
-      );
-
-      if (!enrichedCorrFilePath) {
-        return enrichedNormFilePath;
-      }
-
-      // Если обогащенное корреляции нет, тогда будет обогащенное нормализованное событие.
-      if (!fs.existsSync(enrichedCorrFilePath)) {
-        return enrichedNormFilePath;
-      }
-
+    if (enrichedCorrFilePath) {
       return enrichedCorrFilePath;
     }
 
-    throw new XpException(`Правило ${ruleName} не поддерживает получение ожидаемого события`);
+    // Если обогащенной корреляции нет, тогда будет обогащенное нормализованное событие.
+    if (rule instanceof Enrichment) {
+      return TestHelper.getEnrichedNormEventFilePath(
+        this.params.config,
+        this.params.tmpDirPath,
+        ruleName,
+        this.params.test.getNumber()
+      );
+    }
+
+    return undefined;
   }
 
   public static EXPECT_EVENT_FILENAME = 'expected_event_test.sc';

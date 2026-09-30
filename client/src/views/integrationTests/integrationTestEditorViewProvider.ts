@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as os from 'os';
 
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { MustacheFormatter } from '../mustacheFormatter';
@@ -27,6 +26,7 @@ import { SaveAllCommand } from './command/saveAllCommand';
 import { Aggregation } from '../../models/content/aggregation';
 import { ShowActualEventCommand } from './command/showActualEventCommand';
 import { GetSIEMJVersion, SIEMJVersion } from '../../models/siemj/siemjManager';
+import { parseSiemj2EventsBeforeCorrelation } from '../../helpers/siemj2EventsParser';
 import { transpileModule } from 'typescript';
 import { match } from 'assert';
 
@@ -286,13 +286,12 @@ export class IntegrationTestEditorViewProvider {
                 tlState = tlMatch[1];
               }
 
-              const eventsPart = correlateEventsFileContent.split('[FromCorrelator]')[0];
-              const lines = eventsPart.split(os.EOL).filter((l) => l.startsWith('[FromEnricher]'));
+              const normalizedEvents = parseSiemj2EventsBeforeCorrelation(
+                correlateEventsFileContent
+              );
 
-              for (const l of lines) {
-                const evt = l.replace('[FromEnricher]', '').trim();
-                const jsonObject = JSON.parse(evt);
-                const normState = JSON.stringify(jsonObject, null, 2);
+              for (const normalizedEvent of normalizedEvents) {
+                const normState = JSON.stringify(JSON.parse(normalizedEvent), null, 2);
                 events += normState + '\n';
               }
               events = events.trim();
