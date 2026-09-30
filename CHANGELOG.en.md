@@ -1,5 +1,35 @@
 # Change Log
 
+## 3.21.6 (Pre-Release)
+
+- Fixed an issue where the extension ignored the `xpConfig.kbtBaseDirectory` setting and looked for KBT in the extension `globalStorage` directory
+- Fixed an issue where a manually set KBT path was replaced with a derived one when the extension started
+- The extension no longer writes the paths it derives from the KBT version (`kbtVersionsDirectory`, `lspServerExecutablePath`) to the settings
+- When the KBT versions directory changes, the extension checks that the remembered KBT version exists in the new directory
+- After the KBT paths are changed in the settings, the extension resets its cache and offers to reload the window
+- Added the **Reset KBT Path Settings** command to remove the paths written by previous versions of the extension
+- The SIEMJ version is detected from the utility output instead of the KBT contents
+- If the KBT language server fails to start, the extension keeps working
+- Fixed parsing of the integration test results produced by the new KBT utilities: the actual events file and the detailed report, multiline events, different line endings, and multiple rule firings are supported
+- The actual events view and the diff with the expected event show the events of the pipeline stage that the test checks
+- The expected event is selected according to the test condition, and the number of rule firings is written to the `expect` section
+- When the expected event is replaced, the `_applied_enrichment_rules` field is not written to the `expect` section and is not shown in the diff with the actual event
+- Fixed the lookup of the test result file: the file is matched by the whole test number, and the actual events file takes precedence over the detailed report
+- Tests written as `expect 0 {...}` are recognized as negative
+- Before running integration tests, the extension rebuilds only the graphs and table lists whose files have changed; build caching is controlled by the `xpConfig.integrationTests.buildCache` setting
+- Fixed deleting the table list database, which newer SIEMJ versions create as a directory
+- Fixed table list column name validation: a dot is allowed in the name, as the error message states
+- The localization check results show how many events received the same localization
+- When checking localizations, the extension reports the localization criteria that did not match any test event
+- Fixed an issue where the localization check did not detect the default localization if an event of another rule had the same localization
+- When checking localizations, the extension validates the localization criteria against the taxonomy: the criteria fields exist in the taxonomy, numeric fields are compared with numbers, and other fields are compared with strings
+- When checking localizations, the extension reports the template fields that have no value in the event and highlights the place of the empty value in the check results
+- The localization check results highlight the default localization and show the spaces in the localization text unchanged
+- Fixed the `Permission denied` error during the localization check: the extension adds the execute permission to the utilities in the `xp-sdk/cli` directory that lack it
+- If SIEMJ fails to start a KBT utility, the extension shows a launch error
+- When saving localizations, the extension does not overwrite the localization and metadata files of a rule if their content has not changed, and keeps the indent size in the changed files
+- Fixed an issue where the `enricher` directory appeared in the knowledge base directory after tests were run in Docker: the extension runs the KBT utilities from a temporary directory
+
 ## 3.21.5 (Pre-Release)
 
 - Added hybrid macOS support: local VS Code with Docker-backed XP tools, a wizard for configuring the container backend and automatic xp-kbt installation
