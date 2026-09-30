@@ -95,7 +95,7 @@ export const validation = {
     this.registerError(
       'columns',
       `name/invalid/${columnId}`,
-      /^[a-z][a-z0-9_]*$/gi.test(columnName),
+      /^[a-z][a-z0-9_.]*$/gi.test(columnName),
       translations.IncorrectColumnName
     );
   },
