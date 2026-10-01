@@ -73,10 +73,8 @@ export class ContentFolder extends ContentTreeBaseItem {
         this.iconPath = new vscode.ThemeIcon('root-folder');
         break;
       default:
-        this.iconPath = {
-          light: path.join(this.getResourcesPath(), 'light', 'folder.svg'),
-          dark: path.join(this.getResourcesPath(), 'dark', 'folder.svg')
-        };
+        // Иконку папки берем из темы иконок, как в стандартном проводнике.
+        this.iconPath = vscode.ThemeIcon.Folder;
     }
 
     this.collapsibleState = hasNestedElements

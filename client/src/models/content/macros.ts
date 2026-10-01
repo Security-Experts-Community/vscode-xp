@@ -193,6 +193,9 @@ export class Macros extends RuleBaseItem {
     // Args: {},
     // Tags: []
   };
-  iconPath = new vscode.ThemeIcon('filter');
+  protected getTypeIcon(): vscode.ThemeIcon {
+    return new vscode.ThemeIcon('filter', new vscode.ThemeColor('symbolIcon.functionForeground'));
+  }
+
   contextValue = 'Macros';
 }

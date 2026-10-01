@@ -45,7 +45,11 @@ export class RenameTreeItemCommand extends ViewCommand {
       placeHolder: this.config.getMessage('NameOfNewRule'),
       prompt: this.config.getMessage('NameOfNewRule'),
       validateInput: (ruleName) => {
-        return NameValidator.validate(ruleName, this.config, this.selectedItem.getDirectoryPath());
+        // Регистр имени можно менять, остальные совпадения с соседними директориями запрещены.
+        if (ruleName.trim().toLocaleLowerCase() === oldRuleName.toLocaleLowerCase()) {
+          return;
+        }
+        return NameValidator.validate(ruleName, this.config, this.selectedItem.getParentPath());
       }
     });
 

@@ -29,7 +29,14 @@ export enum ContentItemStatus {
 export abstract class RuleBaseItem extends ContentTreeBaseItem {
   constructor(name: string, parentDirectoryPath?: string) {
     super(name, parentDirectoryPath);
-    this.iconPath = new vscode.ThemeIcon('file');
+    this.iconPath = this.getTypeIcon();
+  }
+
+  /**
+   * Иконка типа объекта, которая показывается в дереве, пока для правила не запускались тесты.
+   */
+  protected getTypeIcon(): vscode.ThemeIcon {
+    return new vscode.ThemeIcon('file');
   }
 
   public abstract convertUnitTestFromObject(object: any): BaseUnitTest;
@@ -597,8 +604,6 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 
   public setStatus(status: ContentItemStatus, tooltip?: string): void {
     this._status = status;
-    const config = Configuration.get();
-    const extensionResources = path.join(config.getExtensionPath(), 'resources');
 
     if (tooltip) {
       this.tooltip = tooltip;
@@ -609,19 +614,17 @@ export abstract class RuleBaseItem extends ContentTreeBaseItem {
 
     switch (this._status) {
       case ContentItemStatus.Default: {
-        this.iconPath = vscode.ThemeIcon.File;
+        this.iconPath = this.getTypeIcon();
         return;
       }
 
       case ContentItemStatus.Verified: {
-        const iconPath = path.join(extensionResources, 'test-passed.svg');
-        this.iconPath = { light: iconPath, dark: iconPath };
+        this.iconPath = new vscode.ThemeIcon('pass', new vscode.ThemeColor('testing.iconPassed'));
         return;
       }
 
       case ContentItemStatus.Unverified: {
-        const iconPath = path.join(extensionResources, 'test-failed.svg');
-        this.iconPath = { light: iconPath, dark: iconPath };
+        this.iconPath = new vscode.ThemeIcon('error', new vscode.ThemeColor('testing.iconFailed'));
         return;
       }
       default: {

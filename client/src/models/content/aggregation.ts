@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
+import * as vscode from 'vscode';
 
 import { RuleBaseItem } from './ruleBaseItem';
 import { ContentTreeProvider } from '../../views/contentTree/contentTreeProvider';
@@ -170,7 +171,7 @@ export class Aggregation extends RuleBaseItem {
     });
 
     const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
-    await aggregation.setRuleCode(ruleCode);
+    aggregation.setRuleCode(ruleCode, false);
 
     // Парсим описания на разных языках.
     const ruDescription = await Localization.parseRuDescription(directoryPath);
@@ -250,6 +251,10 @@ export class Aggregation extends RuleBaseItem {
     });
 
     return aggregation;
+  }
+
+  protected getTypeIcon(): vscode.ThemeIcon {
+    return new vscode.ThemeIcon('symbol-array', new vscode.ThemeColor('symbolIcon.arrayForeground'));
   }
 
   contextValue = 'Aggregation';

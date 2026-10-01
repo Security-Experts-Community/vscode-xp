@@ -225,7 +225,10 @@ export class Table extends RuleBaseItem {
 
   private _type: TableListType;
 
-  iconPath = new vscode.ThemeIcon('symbol-number');
+  protected getTypeIcon(): vscode.ThemeIcon {
+    return new vscode.ThemeIcon('table', new vscode.ThemeColor('symbolIcon.classForeground'));
+  }
+
   contextValue = 'Table';
 
   public static DEFAULT_TABLELIST_FILENAME = 'table.tl';

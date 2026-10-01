@@ -109,7 +109,7 @@ export class Correlation extends RuleBaseItem {
     }
 
     const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
-    await correlation.setRuleCode(ruleCode);
+    correlation.setRuleCode(ruleCode, false);
 
     // Если из кода удалось извлечь имя правила, то именно оно будет использоваться в дереве объектов
     if (ruleCode) {
@@ -158,7 +158,7 @@ export class Correlation extends RuleBaseItem {
     // Дублируем правило без цикличных зависимостей
     const copy: Correlation = JSON.parse(
       JSON.stringify(this, (key, value) => {
-        const filterList = ['_rule', 'command'];
+        const filterList = ['_rule', 'command', 'id', 'resourceUri', 'iconPath'];
         return filterList.indexOf(key) === -1 ? value : undefined;
       })
     );
@@ -409,6 +409,10 @@ export class Correlation extends RuleBaseItem {
       );
       loc.setLocalizationId(newLocalizationId);
     });
+  }
+
+  protected getTypeIcon(): vscode.ThemeIcon {
+    return new vscode.ThemeIcon('symbol-event', new vscode.ThemeColor('symbolIcon.eventForeground'));
   }
 
   contextValue = 'Correlation';

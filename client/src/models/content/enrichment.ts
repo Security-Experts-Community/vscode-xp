@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
+import * as vscode from 'vscode';
 
 import { RuleBaseItem } from './ruleBaseItem';
 import { MetaInfo } from '../metaInfo/metaInfo';
@@ -219,6 +220,10 @@ export class Enrichment extends RuleBaseItem {
     });
 
     return enrichment;
+  }
+
+  protected getTypeIcon(): vscode.ThemeIcon {
+    return new vscode.ThemeIcon('symbol-property', new vscode.ThemeColor('symbolIcon.propertyForeground'));
   }
 
   contextValue = 'Enrichment';

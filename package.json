@@ -265,99 +265,182 @@
       ],
       "view/item/context": [
         {
-          "command": "xp.contentTree.verifyFolder",
-          "when": "view == KnowledgebaseTree && (viewItem == Normalization || viewItem == Correlation || viewItem == Enrichment || viewItem == AnotherFolder || viewItem == PackageFolder)",
-          "group": "verify@1"
-        },
-        {
-          "command": "KnowledgebaseTree.unpackKbPackage",
-          "when": "view == KnowledgebaseTree && viewItem == ContentRoot",
-          "group": "ContentRoot@2"
-        },
-        {
-          "command": "KnowledgebaseTree.buildKbPackage",
-          "when": "view == KnowledgebaseTree && viewItem == PackageFolder",
-          "group": "PackageFolder@1"
+          "command": "xp.contentTree.openToSideCommand",
+          "when": "view == KnowledgebaseTree && (viewItem == Correlation || viewItem == Normalization || viewItem == Enrichment || viewItem == Aggregation || viewItem == Macros)",
+          "group": "navigation@1"
         },
         {
           "submenu": "xpConfig.create",
           "when": "view == KnowledgebaseTree && (viewItem == AnotherFolder ||viewItem == PackageFolder || viewItem == ContentRoot)",
-          "group": "create"
+          "group": "1_create"
         },
         {
           "command": "IntegrationTestEditorView.showEditor",
           "when": "view == KnowledgebaseTree && viewItem == Correlation",
-          "group": "Correlation@1"
+          "group": "2_editors@1"
         },
         {
           "command": "ModularTestEditorView.showEditor",
           "when": "view == KnowledgebaseTree && viewItem == Correlation",
-          "group": "Correlation@2"
+          "group": "2_editors@2"
         },
         {
           "command": "MetaInfoView.showMetaInfoEditor",
           "when": "view == KnowledgebaseTree && viewItem == Correlation",
-          "group": "Correlation@3"
+          "group": "2_editors@3"
         },
         {
           "command": "LocalizationView.showLocalizationEditor",
           "when": "view == KnowledgebaseTree && viewItem == Correlation",
-          "group": "Correlation@4"
+          "group": "2_editors@4"
         },
         {
           "command": "IntegrationTestEditorView.showEditor",
           "when": "view == KnowledgebaseTree && viewItem == Aggregation",
-          "group": "Aggregation@1"
+          "group": "2_editors@1"
         },
         {
           "command": "LocalizationView.showLocalizationEditor",
           "when": "view == KnowledgebaseTree && viewItem == Aggregation",
-          "group": "Aggregation@3"
+          "group": "2_editors@3"
         },
         {
           "command": "ModularTestEditorView.showEditor",
           "when": "view == KnowledgebaseTree && viewItem == Normalization",
-          "group": "Normalization@1"
+          "group": "2_editors@1"
         },
         {
           "command": "LocalizationView.showLocalizationEditor",
           "when": "view == KnowledgebaseTree && viewItem == Normalization",
-          "group": "Normalization@2"
+          "group": "2_editors@2"
         },
         {
           "command": "IntegrationTestEditorView.showEditor",
           "when": "view == KnowledgebaseTree && viewItem == Enrichment",
-          "group": "Enrichment@1"
+          "group": "2_editors@1"
         },
         {
           "command": "ModularTestEditorView.showEditor",
           "when": "view == KnowledgebaseTree && viewItem == Enrichment",
-          "group": "Enrichment@2"
+          "group": "2_editors@2"
         },
         {
           "command": "MetaInfoView.showMetaInfoEditor",
           "when": "view == KnowledgebaseTree && viewItem == Enrichment",
-          "group": "Enrichment@3"
-        },
-        {
-          "command": "xp.contentTree.renameItemCommand",
-          "when": "view == KnowledgebaseTree && (viewItem == Correlation || viewItem == Normalization || viewItem == Enrichment || viewItem == PackageFolder || viewItem == AuxiliaryFolder || viewItem == ContentRoot || viewItem == AnotherFolder)",
-          "group": "ZCommonItems@2"
-        },
-        {
-          "command": "xp.contentTree.duplicateItemCommand",
-          "when": "view == KnowledgebaseTree && viewItem == Correlation",
-          "group": "ZCommonItems@3"
-        },
-        {
-          "command": "xp.contentTree.deleteItemCommand",
-          "when": "view == KnowledgebaseTree && viewItem != KbRoot",
-          "group": "ZCommonItems@4"
+          "group": "2_editors@3"
         },
         {
           "command": "LocalizationView.showLocalizationEditor",
           "when": "view == KnowledgebaseTree && viewItem == Table",
-          "group": "Common@2"
+          "group": "2_editors@2"
+        },
+        {
+          "command": "xp.contentTree.verifyFolder",
+          "when": "view == KnowledgebaseTree && (viewItem == Normalization || viewItem == Correlation || viewItem == Enrichment || viewItem == AnotherFolder || viewItem == PackageFolder)",
+          "group": "3_build@1"
+        },
+        {
+          "command": "KnowledgebaseTree.buildKbPackage",
+          "when": "view == KnowledgebaseTree && viewItem == PackageFolder",
+          "group": "3_build@2"
+        },
+        {
+          "command": "KnowledgebaseTree.unpackKbPackage",
+          "when": "view == KnowledgebaseTree && viewItem == ContentRoot",
+          "group": "3_build@3"
+        },
+        {
+          "command": "xp.contentTree.revealInOSCommand",
+          "when": "view == KnowledgebaseTree",
+          "group": "4_reveal@1"
+        },
+        {
+          "command": "xp.contentTree.revealInExplorerCommand",
+          "when": "view == KnowledgebaseTree",
+          "group": "4_reveal@2"
+        },
+        {
+          "command": "xp.contentTree.openInTerminalCommand",
+          "when": "view == KnowledgebaseTree",
+          "group": "4_reveal@3"
+        },
+        {
+          "command": "xp.contentTree.cutItemCommand",
+          "when": "view == KnowledgebaseTree && viewItem != KbRoot && viewItem != ContentRoot",
+          "group": "5_cutcopypaste@1"
+        },
+        {
+          "command": "xp.contentTree.copyItemCommand",
+          "when": "view == KnowledgebaseTree && viewItem != KbRoot && viewItem != ContentRoot",
+          "group": "5_cutcopypaste@2"
+        },
+        {
+          "command": "xp.contentTree.pasteItemCommand",
+          "when": "view == KnowledgebaseTree && xp.contentTree.hasClipboard && viewItem != KbRoot",
+          "group": "5_cutcopypaste@3"
+        },
+        {
+          "command": "xp.contentTree.copyPathCommand",
+          "when": "view == KnowledgebaseTree",
+          "group": "6_copypath@1"
+        },
+        {
+          "command": "xp.contentTree.copyRelativePathCommand",
+          "when": "view == KnowledgebaseTree",
+          "group": "6_copypath@2"
+        },
+        {
+          "command": "xp.contentTree.renameItemCommand",
+          "when": "view == KnowledgebaseTree && (viewItem == Correlation || viewItem == Normalization || viewItem == Enrichment || viewItem == PackageFolder || viewItem == AuxiliaryFolder || viewItem == ContentRoot || viewItem == AnotherFolder)",
+          "group": "7_modification@1"
+        },
+        {
+          "command": "xp.contentTree.duplicateItemCommand",
+          "when": "view == KnowledgebaseTree && viewItem == Correlation",
+          "group": "7_modification@2"
+        },
+        {
+          "command": "xp.contentTree.deleteItemCommand",
+          "when": "view == KnowledgebaseTree && viewItem != KbRoot",
+          "group": "7_modification@3"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "xp.contentTree.openToSideCommand",
+          "when": "false"
+        },
+        {
+          "command": "xp.contentTree.revealInOSCommand",
+          "when": "false"
+        },
+        {
+          "command": "xp.contentTree.revealInExplorerCommand",
+          "when": "false"
+        },
+        {
+          "command": "xp.contentTree.openInTerminalCommand",
+          "when": "false"
+        },
+        {
+          "command": "xp.contentTree.cutItemCommand",
+          "when": "false"
+        },
+        {
+          "command": "xp.contentTree.copyItemCommand",
+          "when": "false"
+        },
+        {
+          "command": "xp.contentTree.pasteItemCommand",
+          "when": "false"
+        },
+        {
+          "command": "xp.contentTree.copyPathCommand",
+          "when": "false"
+        },
+        {
+          "command": "xp.contentTree.copyRelativePathCommand",
+          "when": "false"
         }
       ],
       "xpConfig.create": [
@@ -423,6 +506,61 @@
         "id": "xpConfig.create",
         "label": "%xp.views.knowledgebaseTree.createSubmenu%",
         "group": "create"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "xp.contentTree.copyItemCommand",
+        "key": "ctrl+c",
+        "mac": "cmd+c",
+        "when": "focusedView == KnowledgebaseTree && !inputFocus"
+      },
+      {
+        "command": "xp.contentTree.cutItemCommand",
+        "key": "ctrl+x",
+        "mac": "cmd+x",
+        "when": "focusedView == KnowledgebaseTree && !inputFocus"
+      },
+      {
+        "command": "xp.contentTree.pasteItemCommand",
+        "key": "ctrl+v",
+        "mac": "cmd+v",
+        "when": "focusedView == KnowledgebaseTree && !inputFocus && xp.contentTree.hasClipboard"
+      },
+      {
+        "command": "xp.contentTree.renameItemCommand",
+        "key": "f2",
+        "when": "focusedView == KnowledgebaseTree && !inputFocus"
+      },
+      {
+        "command": "xp.contentTree.deleteItemCommand",
+        "key": "delete",
+        "mac": "cmd+backspace",
+        "when": "focusedView == KnowledgebaseTree && !inputFocus"
+      },
+      {
+        "command": "xp.contentTree.copyPathCommand",
+        "key": "shift+alt+c",
+        "mac": "alt+cmd+c",
+        "when": "focusedView == KnowledgebaseTree && !inputFocus"
+      },
+      {
+        "command": "xp.contentTree.copyRelativePathCommand",
+        "key": "ctrl+k ctrl+shift+c",
+        "mac": "alt+shift+cmd+c",
+        "when": "focusedView == KnowledgebaseTree && !inputFocus"
+      },
+      {
+        "command": "xp.contentTree.revealInOSCommand",
+        "key": "shift+alt+r",
+        "mac": "alt+cmd+r",
+        "when": "focusedView == KnowledgebaseTree && !inputFocus"
+      },
+      {
+        "command": "xp.contentTree.openToSideCommand",
+        "key": "ctrl+enter",
+        "mac": "cmd+enter",
+        "when": "focusedView == KnowledgebaseTree && !inputFocus"
       }
     ],
     "commands": [
@@ -606,6 +744,51 @@
       {
         "command": "IntegrationTestEditorView.onTestSelectionChange",
         "title": "Show integration tests",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
+        "command": "xp.contentTree.openToSideCommand",
+        "title": "%xp.views.knowledgebaseTree.openToSideCommand%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
+        "command": "xp.contentTree.revealInOSCommand",
+        "title": "%xp.views.knowledgebaseTree.revealInOSCommand%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
+        "command": "xp.contentTree.revealInExplorerCommand",
+        "title": "%xp.views.knowledgebaseTree.revealInExplorerCommand%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
+        "command": "xp.contentTree.openInTerminalCommand",
+        "title": "%xp.views.knowledgebaseTree.openInTerminalCommand%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
+        "command": "xp.contentTree.cutItemCommand",
+        "title": "%xp.views.knowledgebaseTree.cutCommand%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
+        "command": "xp.contentTree.copyItemCommand",
+        "title": "%xp.views.knowledgebaseTree.copyCommand%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
+        "command": "xp.contentTree.pasteItemCommand",
+        "title": "%xp.views.knowledgebaseTree.pasteCommand%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
+        "command": "xp.contentTree.copyPathCommand",
+        "title": "%xp.views.knowledgebaseTree.copyPathCommand%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
+        "command": "xp.contentTree.copyRelativePathCommand",
+        "title": "%xp.views.knowledgebaseTree.copyRelativePathCommand%",
         "category": "%xp.commonCommandCategory%"
       },
       {

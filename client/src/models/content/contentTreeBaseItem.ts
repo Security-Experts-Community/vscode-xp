@@ -132,13 +132,6 @@ export abstract class ContentTreeBaseItem extends vscode.TreeItem {
     this.label = newLabel;
   }
 
-  public setHighlightsLabel(newLabel: string): void {
-    this.label = {
-      label: newLabel,
-      highlights: [[0, newLabel.length]]
-    };
-  }
-
   public setParentPath(parentPath: string): void {
     this._parentPath = parentPath;
   }

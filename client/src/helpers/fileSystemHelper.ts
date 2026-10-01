@@ -107,6 +107,14 @@ export class FileSystemHelper {
   }
 
   /**
+   * Проверяет, что путь совпадает с родительским путем или находится внутри него.
+   */
+  public static isSubPath(childPath: string, parentPath: string): boolean {
+    const relative = path.relative(parentPath, childPath);
+    return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
+  }
+
+  /**
    * Определяет вхождение имени директории в путь.
    * @param fullPath путь
    * @param directoryName имя директории

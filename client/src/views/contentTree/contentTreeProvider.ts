@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
@@ -12,15 +13,12 @@ import { Normalization } from '../../models/content/normalization';
 import { Aggregation } from '../../models/content/aggregation';
 import { Macros } from '../../models/content/macros';
 import { RuleBaseItem } from '../../models/content/ruleBaseItem';
-import { VsCodeApiHelper } from '../../helpers/vsCodeApiHelper';
-import { API } from '../../@types/vscode.git';
 import { Configuration } from '../../models/configuration';
 import { OpenKnowledgebaseCommand } from './commands/openKnowledgebaseCommand';
 // import { UnitTestsListViewProvider } from '../unitTestEditor/unitTestsListViewProvider';
 import { CreateRuleViewProvider } from '../createRule/createRuleViewProvider';
 import { CreateSubFolderCommand } from './commands/createSubFolderCommand';
 import { RenameTreeItemCommand } from './commands/renameTreeItemCommand';
-import { DeleteContentItemCommand } from './commands/deleteContentItemCommand';
 import { CreatePackageCommand } from './commands/createPackageCommand';
 import { SiemJOutputParser } from '../../models/siemj/siemJOutputParser';
 import { BuildAllGraphsAndTableListsCommand } from './commands/buildAllGraphsAndTableListsCommand';
@@ -42,46 +40,42 @@ import { CommandHelper } from '../../helpers/commandHelper';
 import { SortHelper } from '../../helpers/sortHelper';
 import { Log } from '../../extension';
 import { GetSIEMJVersion } from '../../models/siemj/siemjManager';
+import { ContentTreeFileOperations } from './contentTreeFileOperations';
+import { ContentTreeDragAndDropController } from './contentTreeDragAndDropController';
 
 export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeBaseItem> {
   static async init(config: Configuration, knowledgebaseDirectoryPath: string): Promise<void> {
     const context = config.getContext();
-    const gitApi = await VsCodeApiHelper.getGitExtension();
 
-    const contentTreeProvider = new ContentTreeProvider(knowledgebaseDirectoryPath, gitApi, config);
+    const contentTreeProvider = new ContentTreeProvider(knowledgebaseDirectoryPath, config);
+    const onItemsChanged = (paths: string[]) => {
+      contentTreeProvider.invalidate(paths);
+      contentTreeProvider.refresh();
+    };
 
     const contentTree = vscode.window.createTreeView(ContentTreeProvider.KnowledgebaseTreeId, {
       treeDataProvider: contentTreeProvider,
-      showCollapseAll: true
+      showCollapseAll: true,
+      canSelectMany: true,
+      dragAndDropController: new ContentTreeDragAndDropController(config, onItemsChanged)
     });
+    context.subscriptions.push(contentTree);
 
-    // Запрос на обновление вьюшки если добавляются или удаляются правила.
-    const testFilesWatcher = vscode.workspace.createFileSystemWatcher('**/*.{co,en,xp,agr,tl,flt}');
-    config.getContext().subscriptions.push(testFilesWatcher);
+    // Отслеживание изменений в базе знаний для обновления дерева и сброса кеша правил.
+    contentTreeProvider.watchKnowledgebase(context);
 
-    const contentTreeAutoUpdateCallback = async () => {
-      contentTreeProvider.refresh();
-      Log.info(
-        `The object tree was updated after the creation or deletion of the rule file was detected`
-      );
-    };
-    testFilesWatcher.onDidCreate(contentTreeAutoUpdateCallback);
-    testFilesWatcher.onDidDelete(contentTreeAutoUpdateCallback);
-
-    // Удаление выходных файлов (прежде всего нормализаций) при их обновлении,
-    // чтобы при запуске тестов и прочего граф пересобрался.
+    // Удаление графа нормализаций при изменении формул, чтобы при запуске тестов и прочего граф пересобрался.
+    // Остальные артефакты от формул не зависят, поэтому их не трогаем.
     const normalizationFilesWatcher = vscode.workspace.createFileSystemWatcher('**/*.xp');
     config.getContext().subscriptions.push(normalizationFilesWatcher);
 
     const normalizationGraphInvalidatorCallback = async () => {
       for (const contentRoot of config.getContentRoots()) {
         const rootFolder = path.basename(contentRoot);
-        const outputDirectoryPath = config.getOutputDirectoryPath(rootFolder);
-        if (fs.existsSync(outputDirectoryPath)) {
-          await FileSystemHelper.deleteAllSubDirectoriesAndFiles(outputDirectoryPath);
-        }
+        const normGraphFilePath = config.getNormalizationsGraphFilePath(rootFolder);
+        await fs.promises.rm(normGraphFilePath, { force: true });
         Log.info(
-          `The output directory ${outputDirectoryPath} was cleared after detecting a change in the formula code`
+          `The normalization graph ${normGraphFilePath} was deleted after detecting a change in the formula code`
         );
       }
     };
@@ -89,8 +83,10 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
     normalizationFilesWatcher.onDidDelete(normalizationGraphInvalidatorCallback);
     normalizationFilesWatcher.onDidChange(normalizationGraphInvalidatorCallback);
 
-    // Ручное или автоматическое обновление дерева контента
+    // Ручное или автоматическое обновление дерева контента.
+    // Явное обновление перечитывает все правила с диска, даже если изменения не попали в отслеживание файлов.
     vscode.commands.registerCommand(ContentTreeProvider.refreshTreeCommand, async () => {
+      contentTreeProvider.itemsCache.clear();
       contentTreeProvider.refresh();
     });
 
@@ -140,10 +136,9 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
 
           // Открываем код правила
           if (ruleFilePath) {
-            const elementUri = vscode.Uri.file(ruleFilePath);
-            const contentDocument = await vscode.workspace.openTextDocument(elementUri);
-            await vscode.window.showTextDocument(contentDocument, vscode.ViewColumn.One);
-            // await vscode.commands.executeCommand(UnitTestsListViewProvider.refreshCommand);
+            await vscode.window.showTextDocument(vscode.Uri.file(ruleFilePath), {
+              viewColumn: vscode.ViewColumn.One
+            });
           }
         } catch (error) {
           ExceptionHelper.show(error, `Ошибка во время обработки файла ${item.getFilePath()}`);
@@ -190,13 +185,39 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
       )
     );
 
+    // При вызове сочетанием клавиш элемент не передается, тогда берем выделенные в дереве.
+    const getTargets = (
+      item?: ContentTreeBaseItem,
+      items?: ContentTreeBaseItem[]
+    ): ContentTreeBaseItem[] => {
+      if (items?.length) {
+        return items;
+      }
+      if (item) {
+        return [item];
+      }
+      return [...contentTree.selection];
+    };
+
     // Переименование правила.
     context.subscriptions.push(
       vscode.commands.registerCommand(
         ContentTreeProvider.renameItemCommand,
-        async (item: RuleBaseItem) => {
-          const command = new RenameTreeItemCommand(config, item);
-          command.execute();
+        async (item?: RuleBaseItem) => {
+          const target = item ?? (contentTree.selection[0] as RuleBaseItem);
+          if (!target) {
+            return;
+          }
+
+          if (!ContentTreeProvider.RENAMABLE_ITEM_TYPES.includes(target.contextValue)) {
+            DialogHelper.showInfo(
+              config.getMessage('View.ObjectTree.Message.RenameIsNotSupported', target.getName())
+            );
+            return;
+          }
+
+          const command = new RenameTreeItemCommand(config, target);
+          await command.execute();
         },
         this
       )
@@ -214,15 +235,142 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
       )
     );
 
-    // Удаление сущности.
+    // Удаление сущностей.
     context.subscriptions.push(
       vscode.commands.registerCommand(
         ContentTreeProvider.deleteItemCommand,
-        async (item: RuleBaseItem) => {
-          const command = new DeleteContentItemCommand(config, item);
-          command.execute();
-        },
-        this
+        async (item?: ContentTreeBaseItem, items?: ContentTreeBaseItem[]) => {
+          try {
+            const deletedPaths = await ContentTreeFileOperations.delete(
+              config,
+              getTargets(item, items)
+            );
+            if (deletedPaths.length) {
+              onItemsChanged(deletedPaths);
+            }
+          } catch (error) {
+            ExceptionHelper.show(error, config.getMessage('View.ObjectTree.Message.DeleteFailed'));
+          }
+        }
+      )
+    );
+
+    // Буфер обмена дерева: копирование и вырезание с последующей вставкой.
+    let clipboard: { items: ContentTreeBaseItem[]; cut: boolean } | undefined;
+    const setClipboard = async (items: ContentTreeBaseItem[], cut: boolean) => {
+      const movableItems = items.filter(ContentTreeFileOperations.isMovable);
+      clipboard = movableItems.length ? { items: movableItems, cut } : undefined;
+      await vscode.commands.executeCommand(
+        'setContext',
+        ContentTreeProvider.hasClipboardContextKey,
+        !!clipboard
+      );
+    };
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(
+        ContentTreeProvider.copyItemCommand,
+        (item?: ContentTreeBaseItem, items?: ContentTreeBaseItem[]) =>
+          setClipboard(getTargets(item, items), false)
+      ),
+      vscode.commands.registerCommand(
+        ContentTreeProvider.cutItemCommand,
+        (item?: ContentTreeBaseItem, items?: ContentTreeBaseItem[]) =>
+          setClipboard(getTargets(item, items), true)
+      ),
+      vscode.commands.registerCommand(
+        ContentTreeProvider.pasteItemCommand,
+        async (item?: ContentTreeBaseItem) => {
+          const target = item ?? contentTree.selection[0];
+          if (!clipboard || !target) {
+            return;
+          }
+
+          const targetDirPath = ContentTreeFileOperations.getTargetDirectoryPath(target);
+          try {
+            if (clipboard.cut) {
+              const movedPaths = await ContentTreeFileOperations.move(
+                config,
+                clipboard.items,
+                targetDirPath
+              );
+              await setClipboard([], false);
+              onItemsChanged([...movedPaths, targetDirPath]);
+            } else {
+              const createdPaths = await ContentTreeFileOperations.copy(
+                config,
+                clipboard.items,
+                targetDirPath
+              );
+              onItemsChanged([...createdPaths, targetDirPath]);
+            }
+          } catch (error) {
+            ExceptionHelper.show(error, config.getMessage('View.ObjectTree.Message.PasteFailed'));
+          }
+        }
+      )
+    );
+
+    // Пути, открытие в системе и терминале, как в стандартном проводнике.
+    context.subscriptions.push(
+      vscode.commands.registerCommand(
+        ContentTreeProvider.copyPathCommand,
+        (item?: ContentTreeBaseItem, items?: ContentTreeBaseItem[]) => {
+          const paths = getTargets(item, items).map((i) => i.getDirectoryPath());
+          return vscode.env.clipboard.writeText(paths.join(os.EOL));
+        }
+      ),
+      vscode.commands.registerCommand(
+        ContentTreeProvider.copyRelativePathCommand,
+        (item?: ContentTreeBaseItem, items?: ContentTreeBaseItem[]) => {
+          const paths = getTargets(item, items).map((i) =>
+            vscode.workspace.asRelativePath(i.getDirectoryPath(), false)
+          );
+          return vscode.env.clipboard.writeText(paths.join(os.EOL));
+        }
+      ),
+      vscode.commands.registerCommand(
+        ContentTreeProvider.revealInOSCommand,
+        (item?: ContentTreeBaseItem) => {
+          const target = item ?? contentTree.selection[0];
+          if (target) {
+            return vscode.commands.executeCommand(
+              'revealFileInOS',
+              vscode.Uri.file(target.getDirectoryPath())
+            );
+          }
+        }
+      ),
+      vscode.commands.registerCommand(
+        ContentTreeProvider.revealInExplorerCommand,
+        (item?: ContentTreeBaseItem) => {
+          const target = item ?? contentTree.selection[0];
+          if (target) {
+            const targetPath = target.getFilePath() ?? target.getDirectoryPath();
+            return vscode.commands.executeCommand('revealInExplorer', vscode.Uri.file(targetPath));
+          }
+        }
+      ),
+      vscode.commands.registerCommand(
+        ContentTreeProvider.openInTerminalCommand,
+        (item?: ContentTreeBaseItem) => {
+          const target = item ?? contentTree.selection[0];
+          if (target) {
+            const dirPath = target.isFolder() ? target.getDirectoryPath() : target.getParentPath();
+            return vscode.window.createTerminal({ cwd: dirPath }).show();
+          }
+        }
+      ),
+      vscode.commands.registerCommand(
+        ContentTreeProvider.openToSideCommand,
+        (item?: ContentTreeBaseItem) => {
+          const filePath = (item ?? contentTree.selection[0])?.getFilePath();
+          if (filePath && fs.existsSync(filePath)) {
+            return vscode.window.showTextDocument(vscode.Uri.file(filePath), {
+              viewColumn: vscode.ViewColumn.Beside
+            });
+          }
+        }
       )
     );
 
@@ -318,91 +466,78 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
     // Если дерева не видно, тогда сохраняем редактор в переменную.
     context.subscriptions.push(
       vscode.window.onDidChangeActiveTextEditor(async (te: vscode.TextEditor) => {
-        if (contentTree.visible && te) {
-          return ContentTreeProvider.showRuleTreeItem(contentTree, te.document.fileName);
+        if (!te) {
+          return;
         }
 
-        // Почему-то проскакивает undefined.
-        if (te) {
-          ContentTreeProvider.selectedFilePath = te.document.fileName;
+        if (contentTree.visible) {
+          return contentTreeProvider.revealRuleTreeItem(contentTree, te.document.fileName);
         }
+
+        ContentTreeProvider.selectedFilePath = te.document.fileName;
       })
     );
 
     // Дерево снова видно, значит на основе сохраненного выше редактора показываем нужный узел в дереве контента.
     context.subscriptions.push(
       contentTree.onDidChangeVisibility(async (e: vscode.TreeViewVisibilityChangeEvent) => {
-        if (e.visible) {
-          // Если ранее уже был выбран файл.
-          if (ContentTreeProvider.selectedFilePath) {
-            return ContentTreeProvider.showRuleTreeItem(
-              contentTree,
-              ContentTreeProvider.selectedFilePath
-            );
-          }
-
-          // Если файл раньше выбран не был, но был открыт при запуске vsCode.
-          if (vscode.window.activeTextEditor && vscode.window.activeTextEditor.document) {
-            const activeDocumentPath = vscode.window.activeTextEditor.document.fileName;
-            return ContentTreeProvider.showRuleTreeItem(contentTree, activeDocumentPath);
-          }
+        if (!e.visible) {
+          return;
         }
+
+        // Если ранее уже был выбран файл или файл был открыт при запуске vsCode.
+        const filePath =
+          ContentTreeProvider.selectedFilePath ??
+          vscode.window.activeTextEditor?.document?.fileName;
+        return contentTreeProvider.revealRuleTreeItem(contentTree, filePath);
       })
     );
-
-    context.subscriptions.push(
-      contentTree.onDidChangeSelection(
-        async (e: vscode.TreeViewSelectionChangeEvent<ContentTreeBaseItem>) => {
-          if (e.selection && e.selection.length == 1) {
-            const selectedItem = e.selection[0];
-            // Вызываем команду отображения выбранного элемента дерева.
-            // Для правил это открытие файла, для табличного списка - редактора его структуры.
-            const selectedItemCommand = selectedItem?.command?.command;
-            if (selectedItemCommand) {
-              vscode.commands.executeCommand(selectedItemCommand, selectedItem);
-            }
-          }
-        }
-      )
-    );
-    //
   }
 
   public static selectedFilePath: string;
 
-  private static async showRuleTreeItem(
+  /**
+   * Выделяет в дереве правило, к которому относится файл, не перемещая фокус из редактора.
+   */
+  private async revealRuleTreeItem(
     kbTree: vscode.TreeView<ContentTreeBaseItem>,
     filePath: string
   ): Promise<void> {
-    if (!filePath) {
+    if (!filePath || !this.knowledgebaseDirectoryPath) {
       return;
     }
 
     const ruleDirectoryPath = FileSystemHelper.ruleFilePathToDirectory(filePath);
-    if (!ruleDirectoryPath) {
+    if (
+      !ruleDirectoryPath ||
+      !FileSystemHelper.isSubPath(ruleDirectoryPath, this.knowledgebaseDirectoryPath) ||
+      !fs.existsSync(ruleDirectoryPath)
+    ) {
       return;
     }
 
-    const rule = await ContentTreeProvider.createContentElement(ruleDirectoryPath);
-    // Директории не выделяем в дереве контента
-    if (rule.isFolder()) {
+    // Правило уже выделено.
+    if (kbTree.selection.some((i) => i.getDirectoryPath() === ruleDirectoryPath)) {
       return;
     }
 
-    return kbTree.reveal(rule, {
-      focus: true,
-      expand: false,
-      select: true
-    });
+    try {
+      const rule = await this.getItem(ruleDirectoryPath);
+      // Директории не выделяем в дереве контента
+      if (rule.isFolder()) {
+        return;
+      }
+
+      await kbTree.reveal(rule, { focus: false, expand: false, select: true });
+    } catch (error) {
+      Log.debug(`Failed to reveal ${ruleDirectoryPath} in the object tree`, error);
+    }
   }
 
   constructor(
     private knowledgebaseDirectoryPath: string | undefined,
-    _gitAPI: API,
     private _config: Configuration
-  ) {
-    this._gitAPI = _gitAPI;
-  }
+  ) {}
 
   refresh(item?: ContentTreeBaseItem): void {
     if (item) {
@@ -412,101 +547,170 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
     }
   }
 
-  getTreeItem(element: ContentTreeBaseItem | RuleBaseItem): vscode.TreeItem {
+  getTreeItem(element: ContentTreeBaseItem): vscode.TreeItem {
+    // Идентификатор сохраняет раскрытые узлы и выделение при обновлении дерева,
+    // а путь позволяет теме иконок и git-у оформлять элементы как в стандартном проводнике.
+    const directoryPath = element.getDirectoryPath();
+    element.id = directoryPath;
+    element.resourceUri = vscode.Uri.file(directoryPath);
     return element;
   }
 
-  async getChildren(element?: ContentTreeBaseItem | RuleBaseItem): Promise<ContentTreeBaseItem[]> {
+  async getChildren(element?: ContentTreeBaseItem): Promise<ContentTreeBaseItem[]> {
     if (!this.knowledgebaseDirectoryPath) {
-      return Promise.resolve([]);
+      return [];
     }
 
     if (!element) {
-      // Проверка наличия workspace.
-      if (!this.knowledgebaseDirectoryPath) {
-        return Promise.resolve([]);
-      }
-
       const subDirectories = FileSystemHelper.readSubDirectoryNames(
         this.knowledgebaseDirectoryPath
       );
       this.initializeRootIfNeeded(subDirectories);
-
-      // В случае штатной директории пакетов будет возможности создавать и собирать пакеты.
-      const dirName = path.basename(this.knowledgebaseDirectoryPath);
-      if (this.isContentRoot(dirName)) {
-        const packagesFolder = await ContentFolder.create(
-          this.knowledgebaseDirectoryPath,
-          ContentFolderType.ContentRoot
-        );
-        return [packagesFolder];
-      }
-
-      const packagesFolder = await ContentFolder.create(
-        this.knowledgebaseDirectoryPath,
-        ContentFolderType.KbRoot
-      );
-      return [packagesFolder];
+      return [await this.getItem(this.knowledgebaseDirectoryPath)];
     }
 
     // Получаем список поддиректорий.
     const subFolderPath = element.getDirectoryPath();
-    const childrenItems: ContentTreeBaseItem[] = [];
-
     const subDirectories = FileSystemHelper.readSubDirectoryNames(subFolderPath);
-    this.notifyIfContentTypeIsSelectedIncorrectly(subDirectories);
-
-    for (const dirName of subDirectories) {
-      // .git, .vscode и т.д.
-      // _meta штатная директория в каждом пакете
-      if (
-        dirName.startsWith('.') ||
-        dirName.toLocaleLowerCase() === ContentFolder.PACKAGE_METAINFO_DIRNAME
-      )
-        continue;
-
-      // В случае штатной директории пакетов будет возможности создавать и собирать пакеты.
-      // packages может встречаться не в корне открытого контента.
-      if (this.isContentRoot(dirName)) {
-        const packagesDirPath = path.join(subFolderPath, dirName);
-        const packagesFolder = await ContentFolder.create(
-          packagesDirPath,
-          ContentFolderType.ContentRoot
-        );
-        childrenItems.push(packagesFolder);
-        continue;
-      }
-
-      // Если ошибка в текущем элементе, продолжаем парсить остальные
-      const directoryPath = path.join(subFolderPath, dirName);
-      try {
-        const contentItem = await ContentTreeProvider.createContentElement(
-          directoryPath,
-          this.knowledgebaseDirectoryPath
-        );
-        // TODO: переделать через File Watcher
-        // if(contentItem instanceof RuleBaseItem) {
-        // 	if(await LocalizationEditorViewProvider.provider.updateRule(contentItem)) {
-        // 		DialogHelper.showInfo(`Правило ${contentItem.getName()} было обновлено в редакторе локализаций`);
-        // 	}
-        // }
-
-        childrenItems.push(contentItem);
-      } catch (error) {
-        ExceptionHelper.show(error, `Ошибка разбора содержимого директории ${directoryPath}`);
-      }
+    if (subFolderPath === this.knowledgebaseDirectoryPath) {
+      this.notifyIfContentTypeIsSelectedIncorrectly(subDirectories);
     }
+
+    // .git, .vscode и т.д.
+    // _meta штатная директория в каждом пакете
+    const contentDirectories = subDirectories.filter(
+      (dirName) =>
+        !dirName.startsWith('.') &&
+        dirName.toLocaleLowerCase() !== ContentFolder.PACKAGE_METAINFO_DIRNAME
+    );
+
+    // Правила разбираются параллельно, ошибка в одном правиле не мешает показать остальные.
+    const childrenItems = (
+      await Promise.all(
+        contentDirectories.map(async (dirName) => {
+          const directoryPath = path.join(subFolderPath, dirName);
+          try {
+            return await this.getItem(directoryPath);
+          } catch (error) {
+            ExceptionHelper.show(error, `Ошибка разбора содержимого директории ${directoryPath}`);
+            return undefined;
+          }
+        })
+      )
+    ).filter((item) => item);
 
     // Сначала директории, потом файлы
     childrenItems.sort(SortHelper.contentItemComparer);
     element.setChildren(childrenItems);
+    return childrenItems;
+  }
 
-    // Подсвечиваем правила, у которых есть хотя бы один измененный файл.
-    if (this._gitAPI) {
-      this.highlightsLabelForNewOrEditRules(childrenItems);
+  /**
+   * Возвращает элемент дерева для директории. Разобранные элементы кешируются до изменения их файлов,
+   * поэтому повторное раскрытие и обновление дерева не перечитывают все правила с диска.
+   */
+  private getItem(directoryPath: string): Promise<ContentTreeBaseItem> {
+    const cachedItem = this.itemsCache.get(directoryPath);
+    if (cachedItem) {
+      return cachedItem;
     }
 
-    return childrenItems;
+    const item = this.createItem(directoryPath);
+    this.itemsCache.set(directoryPath, item);
+    item.catch(() => {
+      if (this.itemsCache.get(directoryPath) === item) {
+        this.itemsCache.delete(directoryPath);
+      }
+    });
+    return item;
+  }
+
+  private async createItem(directoryPath: string): Promise<ContentTreeBaseItem> {
+    // В случае штатной директории пакетов будет возможности создавать и собирать пакеты.
+    // packages может встречаться не в корне открытого контента.
+    const dirName = path.basename(directoryPath);
+    if (this.isContentRoot(dirName)) {
+      return ContentFolder.create(directoryPath, ContentFolderType.ContentRoot);
+    }
+
+    if (directoryPath === this.knowledgebaseDirectoryPath) {
+      return ContentFolder.create(directoryPath, ContentFolderType.KbRoot);
+    }
+
+    return ContentTreeProvider.createContentElement(directoryPath);
+  }
+
+  /**
+   * Сбрасывает кеш элементов, затронутых изменением путей: самих путей, их родителей и вложенных элементов.
+   */
+  public invalidate(changedPaths: string[]): void {
+    if (changedPaths.length === 0) {
+      return;
+    }
+
+    const affectedPaths = new Set<string>();
+    for (const changedPath of changedPaths) {
+      for (let p = changedPath; ; p = path.dirname(p)) {
+        affectedPaths.add(p);
+        if (p === this.knowledgebaseDirectoryPath || p === path.dirname(p)) {
+          break;
+        }
+      }
+    }
+
+    const changedPathsSet = new Set(changedPaths);
+    for (const cachedPath of [...this.itemsCache.keys()]) {
+      if (affectedPaths.has(cachedPath)) {
+        this.itemsCache.delete(cachedPath);
+        continue;
+      }
+
+      for (let p = path.dirname(cachedPath); p !== path.dirname(p); p = path.dirname(p)) {
+        if (changedPathsSet.has(p)) {
+          this.itemsCache.delete(cachedPath);
+          break;
+        }
+      }
+    }
+  }
+
+  private watchKnowledgebase(context: vscode.ExtensionContext): void {
+    if (!this.knowledgebaseDirectoryPath) {
+      return;
+    }
+
+    const watcher = vscode.workspace.createFileSystemWatcher(
+      new vscode.RelativePattern(vscode.Uri.file(this.knowledgebaseDirectoryPath), '**/*')
+    );
+    context.subscriptions.push(watcher);
+
+    // Изменение содержимого файлов только сбрасывает кеш, а появление и удаление файлов меняет структуру дерева.
+    watcher.onDidCreate((uri) => this.onKnowledgebaseChanged(uri, true));
+    watcher.onDidDelete((uri) => this.onKnowledgebaseChanged(uri, true));
+    watcher.onDidChange((uri) => this.onKnowledgebaseChanged(uri, false));
+  }
+
+  private onKnowledgebaseChanged(uri: vscode.Uri, structureChanged: boolean): void {
+    const relativePath = path.relative(this.knowledgebaseDirectoryPath, uri.fsPath);
+    if (relativePath.split(path.sep).some((entry) => entry.startsWith('.'))) {
+      return;
+    }
+
+    this.pendingChangedPaths.add(uri.fsPath);
+    this.pendingStructureChange ||= structureChanged;
+
+    // Изменения приходят пачками (переключение веток, сохранение правила), обрабатываем их разом.
+    clearTimeout(this.pendingChangesTimer);
+    this.pendingChangesTimer = setTimeout(() => {
+      this.invalidate([...this.pendingChangedPaths]);
+      this.pendingChangedPaths.clear();
+
+      if (this.pendingStructureChange) {
+        this.pendingStructureChange = false;
+        this.refresh();
+        Log.debug('The object tree was updated after files were created or deleted');
+      }
+    }, ContentTreeProvider.CHANGES_DEBOUNCE_MS);
   }
 
   private isContentRoot(dirName: string) {
@@ -575,68 +779,24 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
     }
   }
 
-  private highlightsLabelForNewOrEditRules(items: ContentTreeBaseItem[]): void {
-    const kbUri = vscode.Uri.file(this.knowledgebaseDirectoryPath);
-    if (!this._gitAPI) {
-      return;
+  public async getParent(element: ContentTreeBaseItem): Promise<ContentTreeBaseItem> {
+    const directoryPath = element.getDirectoryPath();
+    if (!this.knowledgebaseDirectoryPath || directoryPath === this.knowledgebaseDirectoryPath) {
+      return undefined;
     }
 
-    const repo = this._gitAPI.getRepository(kbUri);
-
-    // База знаний не под git-ом.
-    if (!repo) {
-      return;
+    const parentPath = path.dirname(directoryPath);
+    if (!FileSystemHelper.isSubPath(parentPath, this.knowledgebaseDirectoryPath)) {
+      return undefined;
     }
 
-    const changePaths = repo.state.workingTreeChanges.map((c) => {
-      return c.uri.fsPath.toLocaleLowerCase();
-    });
-
-    for (const item of items) {
-      // В конце добавлен правильный слеш, дабы не отрабатывало на следующий случай
-      // Изменилась директория \esc_profile, а выделяется \esc
-      const directoryPath = item.getDirectoryPath().toLocaleLowerCase() + path.sep;
-
-      if (changePaths.some((cp) => cp.startsWith(directoryPath) && !cp.endsWith('.yaml'))) {
-        item.setHighlightsLabel(item.getName());
-      }
-    }
-  }
-
-  public async getParent(element: RuleBaseItem): Promise<ContentTreeBaseItem> {
-    // Дошли до корня контента, заканчиваем обход.
-    const contentRoot = ContentFolderType[ContentFolderType.ContentRoot];
-    if (element.contextValue === contentRoot) {
-      return null;
-    }
-
-    const dirFullPath = element.getDirectoryPath();
-    const directoryName = path.basename(dirFullPath);
-    const parentPath = path.dirname(dirFullPath);
-    const parentDirName = path.basename(parentPath);
-
-    // Дошли до уровня пакета.
-    if (
-      directoryName === ContentTreeProvider.PACKAGES_DIRNAME ||
-      directoryName === ContentTreeProvider.MACRO_DIRNAME ||
-      parentDirName === ''
-    ) {
-      return ContentFolder.create(parentPath, ContentFolderType.ContentRoot);
-    }
-
-    if (dirFullPath === this.knowledgebaseDirectoryPath) {
-      return ContentFolder.create(parentPath, ContentFolderType.KbRoot);
-    }
-
-    const parentFolder = ContentFolder.create(parentPath, ContentFolderType.AnotherFolder);
-    return Promise.resolve(parentFolder);
+    return this.getItem(parentPath);
   }
 
   public static async createContentElement(
-    elementDirectoryPath: string,
-    knowledgebaseDirectoryPath?: string
+    elementDirectoryPath: string
   ): Promise<RuleBaseItem | ContentFolder | Table | Aggregation | Macros> {
-    // Маппинг типов файлов на функции создания экземпляра
+    // Маппинг типов файлов на функции создания экземпляра в порядке приоритета.
     const entityCreators = {
       '.co': Correlation.parseFromDirectory,
       '.en': Enrichment.parseFromDirectory,
@@ -646,14 +806,12 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
       '.flt': Macros.parseFromDirectory
     };
 
-    // Перебираем все интересующие нас расширения и проверяем есть ли в текущем списке файлы с таким расширением
+    // Если в директории есть файл с одним из расширений, то создаем из него нужный объект
+    const files = await fs.promises.readdir(elementDirectoryPath);
     for (const extension in entityCreators) {
-      const createEntityFunction = entityCreators[extension];
-      // Если в списке файлов есть файл с текущим расширением, то создаем из него нужный объект
-      const files = await fs.promises.readdir(elementDirectoryPath);
       const entityFile = files.find((filename) => filename.endsWith(extension));
       if (entityFile) {
-        return createEntityFunction(elementDirectoryPath, entityFile);
+        return entityCreators[extension](elementDirectoryPath, entityFile);
       }
     }
 
@@ -698,7 +856,21 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
     return vscode.commands.executeCommand(ContentTreeProvider.onRuleClickCommand, item);
   }
 
-  private _gitAPI: API;
+  private itemsCache = new Map<string, Promise<ContentTreeBaseItem>>();
+  private pendingChangedPaths = new Set<string>();
+  private pendingStructureChange = false;
+  private pendingChangesTimer: NodeJS.Timeout;
+  private static readonly CHANGES_DEBOUNCE_MS = 200;
+
+  private static readonly RENAMABLE_ITEM_TYPES: string[] = [
+    'Correlation',
+    'Normalization',
+    'Enrichment',
+    ContentFolderType.PackageFolder,
+    ContentFolderType.AuxiliaryFolder,
+    ContentFolderType.ContentRoot,
+    ContentFolderType.AnotherFolder
+  ];
 
   public static readonly PACKAGES_DIRNAME = 'packages';
   public static readonly ROOT_USERS_CONTENT_UNPACKED_DIRNAME = 'objects';
@@ -725,6 +897,17 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
   public static readonly deleteItemCommand = 'xp.contentTree.deleteItemCommand';
   public static readonly duplicateTreeItemCommand = 'xp.contentTree.duplicateItemCommand';
   public static readonly renameItemCommand = 'xp.contentTree.renameItemCommand';
+  public static readonly copyItemCommand = 'xp.contentTree.copyItemCommand';
+  public static readonly cutItemCommand = 'xp.contentTree.cutItemCommand';
+  public static readonly pasteItemCommand = 'xp.contentTree.pasteItemCommand';
+  public static readonly copyPathCommand = 'xp.contentTree.copyPathCommand';
+  public static readonly copyRelativePathCommand = 'xp.contentTree.copyRelativePathCommand';
+  public static readonly revealInOSCommand = 'xp.contentTree.revealInOSCommand';
+  public static readonly revealInExplorerCommand = 'xp.contentTree.revealInExplorerCommand';
+  public static readonly openInTerminalCommand = 'xp.contentTree.openInTerminalCommand';
+  public static readonly openToSideCommand = 'xp.contentTree.openToSideCommand';
+
+  public static readonly hasClipboardContextKey = 'xp.contentTree.hasClipboard';
 
   private static selectedItem: RuleBaseItem | Table | Macros;
 

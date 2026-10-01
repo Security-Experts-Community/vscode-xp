@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as fs from 'fs';
+import * as vscode from 'vscode';
 
 import { RuleBaseItem } from './ruleBaseItem';
 import { MetaInfo } from '../metaInfo/metaInfo';
@@ -237,7 +238,7 @@ export class Normalization extends RuleBaseItem {
 
     const ruleFilePath = normalization.getRuleFilePath();
     const ruleCode = await FileSystemHelper.readContentFile(ruleFilePath);
-    await normalization.setRuleCode(ruleCode);
+    normalization.setRuleCode(ruleCode, false);
 
     // Парсим описания на разных языках.
     const ruDescription = await Localization.parseRuDescription(directoryPath);
@@ -271,6 +272,10 @@ export class Normalization extends RuleBaseItem {
     });
 
     return normalization;
+  }
+
+  protected getTypeIcon(): vscode.ThemeIcon {
+    return new vscode.ThemeIcon('symbol-structure', new vscode.ThemeColor('symbolIcon.structForeground'));
   }
 
   contextValue = 'Normalization';
