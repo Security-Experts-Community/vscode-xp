@@ -74,15 +74,21 @@ label {
 	font-weight: bold;
 }
 
-/* Место, в котором проверка локализации обнаружила проблему. */
+/*
+ * Место, в котором проверка локализации обнаружила проблему.
+ * Цвет ошибки редактора яркий в обеих темах, в отличие от фона ошибки валидации, который на темной теме сливается с фоном.
+ */
 .loc-problem {
-	background-color: var(--vscode-inputValidation-errorBackground, rgba(201, 76, 76, 0.4));
+	--loc-problem-color: var(--vscode-editorError-foreground, var(--red));
+	background-color: color-mix(in srgb, var(--loc-problem-color) 45%, transparent);
+	box-shadow: 0 0 0 1px var(--loc-problem-color);
+	border-radius: 2px;
 	color: inherit;
 }
 
 /* Рядом с пустым значением поля нет пробелов: место отмечается чертой, которая не занимает ширину. */
 .loc-problem:empty {
-	box-shadow: 0 0 0 1px var(--vscode-inputValidation-errorBorder, var(--red));
+	box-shadow: 0 0 0 1.5px var(--loc-problem-color);
 }
 
 textarea {
