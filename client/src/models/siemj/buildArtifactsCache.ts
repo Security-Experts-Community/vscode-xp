@@ -60,6 +60,15 @@ export class BuildArtifactsCache {
 
   private static readonly SKIPPED_DIRS = new Set(['node_modules']);
 
+  // Граф корреляций собирается из правил, которые нужны для тестов выбранного правила,
+  // поэтому при переключении между правилами отпечаток меняется. Чтобы не пересобирать граф
+  // при возврате к уже собранному набору правил, предыдущие графы хранятся по отпечатку исходных файлов.
+  private static readonly VARIANTS_DIR_NAME = 'xp_build_cache';
+  private static readonly VARIANT_TYPES = new Set([BuildArtifactType.Correlations]);
+  private static readonly MAX_VARIANTS = 10;
+  // Графы всех пакетов большие и собираются редко, их не храним.
+  private static readonly MAX_VARIANT_SIZE = 50 * 1024 * 1024;
+
   private manifest: CacheManifest;
   private inputs = new Map<BuildArtifactType, string>();
   private staleTypes = new Set<BuildArtifactType>();
@@ -159,7 +168,9 @@ export class BuildArtifactsCache {
 
       const entry = this.manifest.entries[type];
       if (!entry || entry.inputs !== inputs) {
-        this.staleTypes.add(type);
+        if (!(await this.switchVariant(type, entry, inputs))) {
+          this.staleTypes.add(type);
+        }
         continue;
       }
 
@@ -295,6 +306,85 @@ export class BuildArtifactsCache {
       [...snapshot.correlations].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
     );
     return snapshot;
+  }
+
+  /**
+   * Сохраняет текущий артефакт как вариант и восстанавливает ранее собранный вариант для новых исходных файлов.
+   * @returns true, если артефакт для новых исходных файлов восстановлен и собирать его не нужно.
+   */
+  private async switchVariant(
+    type: BuildArtifactType,
+    currentEntry: CacheEntry | undefined,
+    inputs: string
+  ): Promise<boolean> {
+    if (!BuildArtifactsCache.VARIANT_TYPES.has(type)) {
+      return false;
+    }
+
+    const [artifactPath] = this.getArtifactPaths(type);
+    try {
+      if (currentEntry && (await this.getArtifactFingerprint(type)) === currentEntry.artifact) {
+        await this.storeVariant(type, artifactPath, currentEntry.inputs);
+      }
+
+      const variantPath = this.getVariantPath(type, inputs);
+      if (!fs.existsSync(variantPath)) {
+        return false;
+      }
+
+      await fs.promises.copyFile(variantPath, artifactPath);
+      const now = new Date();
+      await fs.promises.utimes(variantPath, now, now);
+      this.manifest.entries[type] = { inputs, artifact: await this.getArtifactFingerprint(type) };
+      Log.info(`Build cache: artifact '${type}' was restored from the previous build`);
+      return true;
+    } catch (error) {
+      Log.warn(`Build cache: failed to switch artifact '${type}'`, error);
+      return false;
+    }
+  }
+
+  private async storeVariant(
+    type: BuildArtifactType,
+    artifactPath: string,
+    inputs: string
+  ): Promise<void> {
+    const variantPath = this.getVariantPath(type, inputs);
+    if (fs.existsSync(variantPath)) {
+      return;
+    }
+
+    const stat = await fs.promises.stat(artifactPath);
+    if (!stat.isFile() || stat.size > BuildArtifactsCache.MAX_VARIANT_SIZE) {
+      return;
+    }
+
+    const variantsDirPath = path.dirname(variantPath);
+    await fs.promises.mkdir(variantsDirPath, { recursive: true });
+    await fs.promises.copyFile(artifactPath, variantPath);
+
+    // Удаляем давно не использованные варианты.
+    const variants = await Promise.all(
+      (await fs.promises.readdir(variantsDirPath)).map(async (name) => {
+        const variantFilePath = path.join(variantsDirPath, name);
+        return { path: variantFilePath, mtime: (await fs.promises.stat(variantFilePath)).mtimeMs };
+      })
+    );
+    variants.sort((l, r) => r.mtime - l.mtime);
+    for (const outdated of variants.slice(BuildArtifactsCache.MAX_VARIANTS)) {
+      await fs.promises.rm(outdated.path, { force: true });
+    }
+  }
+
+  private getVariantPath(type: BuildArtifactType, inputs: string): string {
+    const [artifactPath] = this.getArtifactPaths(type);
+    const rootFolder = path.basename(this.contentRootPath);
+    return path.join(
+      this.config.getOutputDirectoryPath(rootFolder),
+      BuildArtifactsCache.VARIANTS_DIR_NAME,
+      type,
+      inputs + path.extname(artifactPath)
+    );
   }
 
   private getArtifactPaths(type: BuildArtifactType): string[] {
