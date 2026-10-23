@@ -1,21 +1,16 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
-import { PromisePool } from '@supercharge/promise-pool';
 
 import { Configuration } from '../../models/configuration';
 import { BaseWebViewController, WebViewMessage } from '../baseWebViewController';
 import { DialogHelper } from '../../helpers/dialogHelper';
 import { WebViewCommand } from '../webViewCommands';
 import { FileSystemHelper } from '../../helpers/fileSystemHelper';
-import { ExecutionResult, ProcessHelper } from '../../helpers/processHelper';
-import { Log } from '../../extension';
+import { ExceptionHelper } from '../../helpers/exceptionHelper';
 import moment from 'moment';
 
-import { OsType } from '../../models/locator/pathLocator';
 import { DateHelper } from '../../helpers/dateHelper';
-import { ToolsManager } from '../../models/content/toolsManager';
+import { EvtxConverter } from '../../models/content/evtxConverter';
 
 export class AppendEventMessage implements WebViewMessage {
   cmdName: string;
@@ -70,23 +65,13 @@ export class AppendEventsCommand extends WebViewCommand<AppendEventMessage> {
       return;
     }
 
-    const osType = Configuration.get().getOsType();
-    if (osType !== OsType.Windows && osType !== OsType.Linux) {
-      DialogHelper.showWarning(
-        `Данная функциональность поддерживается только на платформах Windows и Linux`
-      );
+    const evtxConverter = new EvtxConverter(Configuration.get());
+    try {
+      await evtxConverter.ensureAvailable();
+    } catch (error) {
+      ExceptionHelper.show(error, 'Не удалось подготовить конвертацию EVTX-файлов');
       return;
     }
-
-    const evtxToJsonToolFullPath = Configuration.get().getEvtxToJsonToolFullPath();
-    if (!fs.existsSync(evtxToJsonToolFullPath)) {
-      DialogHelper.showError(
-        `Утилита для конвертации EVTX-файлов в json не найдена по пути '${evtxToJsonToolFullPath}'`
-      );
-      return;
-    }
-
-    await ToolsManager.init(Configuration.get());
 
     const tmpDirPath = this.message.getTmpDir;
     const jsonFiles = FileSystemHelper.readFilesNameFilter(tmpDirPath, /.+?\.json$/g);
@@ -123,7 +108,7 @@ export class AppendEventsCommand extends WebViewCommand<AppendEventMessage> {
           for (const openEventsDirectoryPath of openEventsDirectoryPaths) {
             const evtxFilePathsFromCurrDir = FileSystemHelper.getRecursiveFilesSync(
               openEventsDirectoryPath
-            ).filter((fp) => fp.toLocaleLowerCase().endsWith('.evtx'));
+            ).filter((fp) => EvtxConverter.isEvtxFile(fp));
 
             evtxFilePaths.push(...evtxFilePathsFromCurrDir);
           }
@@ -133,30 +118,11 @@ export class AppendEventsCommand extends WebViewCommand<AppendEventMessage> {
           });
         }
 
-        const cpuCores = os.cpus().length;
-        Log.info(
-          `Запущен пул обработки событий из EVTX-файлов на ${cpuCores} параллельных задач для ${evtxFilePaths.length} файлов`
-        );
-
-        const { results, errors } = await PromisePool.withConcurrency(cpuCores)
-          .for(evtxFilePaths)
-          .process(async (evtxFilePath, index, pool) => {
-            // progress.report({increment: index});
-            const executionResult = await AppendEventsCommand.processSingleEvtx(
-              evtxFilePath,
-              tmpDirPath,
-              cancellationToken
-            );
-            return executionResult;
-          });
-
-        if (results.some((r) => r.isInterrupted)) {
-          DialogHelper.showInfo(`Операция была прервана пользователем`);
+        try {
+          await evtxConverter.convert(evtxFilePaths, tmpDirPath, cancellationToken);
+        } catch (error) {
+          ExceptionHelper.show(error, 'Не удалось сконвертировать EVTX-файлы');
           return;
-        }
-
-        if (results.some((r) => r.exitCode !== 0)) {
-          Log.warn(`Выполнение хотя бы одной команды завершилось с кодом ошибки, отличным от 0`);
         }
 
         const end = moment();
@@ -165,34 +131,6 @@ export class AppendEventsCommand extends WebViewCommand<AppendEventMessage> {
         );
       }
     );
-  }
-
-  private static async processSingleEvtx(
-    evtxFilePath: string,
-    getTmpDir: string,
-    cancellationToken: vscode.CancellationToken
-  ): Promise<ExecutionResult> {
-    const jsonFileName = path.basename(evtxFilePath) + '.json';
-    const currJsonFilePath = path.join(getTmpDir, jsonFileName);
-
-    const evtxToJsonToolFullPath = Configuration.get().getEvtxToJsonToolFullPath();
-
-    Log.info(`Начата обработка файла ${evtxFilePath}`);
-    const start = moment();
-
-    const processResult = await ProcessHelper.execute(
-      evtxToJsonToolFullPath,
-      ['-e', evtxFilePath, '-j', currJsonFilePath],
-      {
-        cancellationToken: cancellationToken
-      }
-    );
-
-    const end = moment();
-    Log.info(
-      `Завершена обработка файла ${evtxFilePath} за ${DateHelper.formatDuration(start, end)}`
-    );
-    return processResult;
   }
 
   public static REMOVE = 'Удалить';

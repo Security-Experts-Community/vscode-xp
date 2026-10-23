@@ -955,6 +955,11 @@ export class Configuration {
   }
 
   public getEvtxToJsonToolFullPath(): string {
+    // В Docker-режиме конвертер запускается в Linux-контейнере с инструментами XP.
+    if (this.shouldUseDockerToolRunner()) {
+      return path.join(this.getExtensionPath(), 'tools', 'linux_gnu', 'evtx_converter');
+    }
+
     let appPath = '';
     switch (this.getOsType()) {
       case OsType.Windows:
