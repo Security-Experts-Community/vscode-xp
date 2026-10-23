@@ -327,27 +327,18 @@ export class Correlation extends RuleBaseItem {
   public async rename(newRuleName: string): Promise<void> {
     // Старые значения.
     const oldRuleName = this.getName();
-
-    // Переименовываем директорию с правилом
-    const parentDirectoryPath = this.getParentPath();
-    if (parentDirectoryPath && fs.existsSync(parentDirectoryPath)) {
-      // Переименовываем в коде правила.
-      const ruleCode = await this.getRuleCode();
-
-      // Модифицируем код, если он есть
-      if (ruleCode) {
-        const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode(
-          newRuleName,
-          ruleCode
-        );
-        await this.setRuleCode(newRuleCode, false);
-      }
-    }
+    const ruleCode = await this.getRuleCode();
 
     // В метаинформации.
     const metainfo = this.getMetaInfo();
     this.setName(newRuleName);
     metainfo.setName(newRuleName);
+
+    // Переименовываем в коде правила. Код записывается на диск, только если директория с новым именем уже есть.
+    if (ruleCode) {
+      const newRuleCode = ContentHelper.replaceAllCorrelationNameWithinCode(newRuleName, ruleCode);
+      await this.setRuleCode(newRuleCode);
+    }
 
     // Замена в критериях.
     this.getMetaInfo()
@@ -362,7 +353,7 @@ export class Correlation extends RuleBaseItem {
         ed.setCriteria(newCriteria);
 
         const localizationId = ed.getLocalizationId();
-        const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(
+        const newLocalizationId = ContentHelper.replaceRuleNameWithinIdentifier(
           oldRuleName,
           newRuleName,
           localizationId
@@ -402,7 +393,7 @@ export class Correlation extends RuleBaseItem {
     // Замена в правилах локализации
     this.getLocalizations().forEach((loc) => {
       const localizationId = loc.getLocalizationId();
-      const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(
+      const newLocalizationId = ContentHelper.replaceRuleNameWithinIdentifier(
         oldRuleName,
         newRuleName,
         localizationId

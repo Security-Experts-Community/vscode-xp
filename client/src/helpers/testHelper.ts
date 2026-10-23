@@ -780,7 +780,7 @@ export class TestHelper {
     const pattern = templateParts
       .map((templatePart, index) => {
         if (index % 2 === 0) {
-          return `(${TestHelper.escapeRegExp(templatePart)})`;
+          return `(${StringHelper.escapeRegExp(templatePart)})`;
         }
         return isEmptyField(templatePart, index) ? '()' : '([\\s\\S]*?)';
       })
@@ -851,14 +851,10 @@ export class TestHelper {
     const pattern = template
       .trim()
       .split(/\{[^{}]*\}/)
-      .map((textPart) => TestHelper.escapeRegExp(textPart))
+      .map((textPart) => StringHelper.escapeRegExp(textPart))
       .join('[\\s\\S]*?');
 
     return new RegExp(`^${pattern}$`);
-  }
-
-  private static escapeRegExp(text: string): string {
-    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   public static formatTestCodeAndEvents(testCode: string, priorityFields: string[] = []): string {

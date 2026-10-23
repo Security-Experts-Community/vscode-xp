@@ -49,6 +49,10 @@ export class StringHelper {
     return str.replace(/(?:\r\n|\r|\n)/g, '');
   }
 
+  public static escapeRegExp(text: string): string {
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
   public static escapeSpecialChars(str: string): string {
     return str
       .replace(/(?<!\\)\n/gm, '\\n')

@@ -76,7 +76,7 @@ export class Aggregation extends RuleBaseItem {
         ed.setCriteria(newCriteria);
 
         const localizationId = ed.getLocalizationId();
-        const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(
+        const newLocalizationId = ContentHelper.replaceRuleNameWithinIdentifier(
           oldRuleName,
           newRuleName,
           localizationId
@@ -116,7 +116,7 @@ export class Aggregation extends RuleBaseItem {
     // Замена в правилах локализации
     this.getLocalizations().forEach((loc) => {
       const localizationId = loc.getLocalizationId();
-      const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(
+      const newLocalizationId = ContentHelper.replaceRuleNameWithinIdentifier(
         oldRuleName,
         newRuleName,
         localizationId

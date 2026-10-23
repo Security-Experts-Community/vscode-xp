@@ -1,8 +1,8 @@
-import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
 import { ContentTreeProvider } from '../contentTreeProvider';
+import { ContentTreeFileOperations } from '../contentTreeFileOperations';
 import { RuleBaseItem } from '../../../models/content/ruleBaseItem';
 import { DialogHelper } from '../../../helpers/dialogHelper';
 import { Configuration } from '../../../models/configuration';
@@ -58,22 +58,12 @@ export class RenameTreeItemCommand extends ViewCommand {
     }
 
     try {
-      // Получаем директорию для исходного правила, дабы удалить ее после переименования.
-      const oldRuleDirectoryPath = this.selectedItem.getDirectoryPath();
-
       const newRuleName = userInput.trim();
-      await this.selectedItem.rename(newRuleName);
-      await this.selectedItem.save();
-
-      // Если мы меняем не имя правила, а его регистр, то удалять правило не надо.
-      // Иначе в Windows мы удалим новое правило.
-      const oldRuleNameLowerCase = oldRuleName.toLocaleLowerCase();
-      if (newRuleName.toLocaleLowerCase() !== oldRuleNameLowerCase) {
-        // Удаляем старое правило и сохраняем новое.
-        // TODO: лишняя логика, это должно происходить при сохранении Item-а.
-        if (fs.existsSync(oldRuleDirectoryPath)) {
-          await fs.promises.rmdir(oldRuleDirectoryPath, { recursive: true });
-        }
+      if (this.selectedItem.isFolder()) {
+        await this.selectedItem.rename(newRuleName);
+        await this.selectedItem.save();
+      } else {
+        await this.renameRule(newRuleName);
       }
 
       // Обновить дерево и открыть корреляцию.
@@ -86,5 +76,27 @@ export class RenameTreeItemCommand extends ViewCommand {
       DialogHelper.showError('Не удалось переименовать объект', error);
       return;
     }
+  }
+
+  /**
+   * Переносит директорию правила целиком, чтобы сохранить файлы, о которых модель правила не знает,
+   * и открытые редакторы, после чего заменяет имя внутри файлов правила.
+   */
+  private async renameRule(newRuleName: string): Promise<void> {
+    const oldRuleDirectoryPath = this.selectedItem.getDirectoryPath();
+    const newRuleDirectoryPath = path.join(this.selectedItem.getParentPath(), newRuleName);
+
+    // Читаем код правила, пока он лежит по старому пути: после переноса rename() возьмет его из памяти.
+    await this.selectedItem.getRuleCode();
+
+    await ContentTreeFileOperations.renamePath(oldRuleDirectoryPath, newRuleDirectoryPath);
+    try {
+      await this.selectedItem.rename(newRuleName);
+    } catch (error) {
+      await ContentTreeFileOperations.renamePath(newRuleDirectoryPath, oldRuleDirectoryPath);
+      throw error;
+    }
+
+    await this.selectedItem.save();
   }
 }

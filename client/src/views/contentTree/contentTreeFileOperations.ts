@@ -74,16 +74,23 @@ export class ContentTreeFileOperations {
     }
 
     for (const [srcPath, dstPath] of moves) {
-      // Через WorkspaceEdit, чтобы открытые редакторы, в том числе с несохраненными изменениями,
-      // переехали вместе с файлами.
-      const edit = new vscode.WorkspaceEdit();
-      edit.renameFile(vscode.Uri.file(srcPath), vscode.Uri.file(dstPath));
-      if (!(await vscode.workspace.applyEdit(edit))) {
-        await vscode.workspace.fs.rename(vscode.Uri.file(srcPath), vscode.Uri.file(dstPath));
-      }
+      await ContentTreeFileOperations.renamePath(srcPath, dstPath);
     }
 
     return moves.flat();
+  }
+
+  /**
+   * Переименовывает файл или директорию, в том числе с изменением только регистра имени.
+   */
+  public static async renamePath(srcPath: string, dstPath: string): Promise<void> {
+    // Через WorkspaceEdit, чтобы открытые редакторы, в том числе с несохраненными изменениями,
+    // переехали вместе с файлами.
+    const edit = new vscode.WorkspaceEdit();
+    edit.renameFile(vscode.Uri.file(srcPath), vscode.Uri.file(dstPath));
+    if (!(await vscode.workspace.applyEdit(edit))) {
+      await vscode.workspace.fs.rename(vscode.Uri.file(srcPath), vscode.Uri.file(dstPath));
+    }
   }
 
   /**

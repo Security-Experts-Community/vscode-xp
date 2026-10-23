@@ -99,7 +99,33 @@ export class Normalization extends RuleBaseItem {
 
   public async rename(newName: string): Promise<void> {
     const oldRuleName = this.getName();
+    const ruleCode = await this.getRuleCode();
     this.setName(newName);
+
+    // id события строится из имени формулы с префиксом (PT_Rule), поэтому сначала переименовываем
+    // все id из формулы, а затем заменяем их целиком в формуле, критериях и ожиданиях модульных тестов.
+    const renamedIds = Normalization.renameEventIds(oldRuleName, newName, ruleCode);
+    const replaceIds = (text: string): string => {
+      for (const [oldId, newId] of renamedIds) {
+        text = ContentHelper.replaceRuleNameLiteralsWithinCode(oldId, newId, text);
+      }
+      return text;
+    };
+
+    // Код записывается на диск, только если директория с новым именем уже есть.
+    if (ruleCode) {
+      await this.setRuleCode(replaceIds(ruleCode));
+    }
+
+    // ContentAutoName формулы совпадает с ее id, поэтому меняем его так же, как id.
+    const metainfo = this.getMetaInfo();
+    const contentAutoName = metainfo.getName();
+    if (contentAutoName) {
+      metainfo.setName(
+        renamedIds.get(contentAutoName) ??
+          ContentHelper.replaceRuleNameWithinIdentifier(oldRuleName, newName, contentAutoName)
+      );
+    }
 
     // Замена в критериях.
     this.getMetaInfo()
@@ -111,10 +137,10 @@ export class Normalization extends RuleBaseItem {
           newName,
           criteria
         );
-        ed.setCriteria(newCriteria);
+        ed.setCriteria(replaceIds(newCriteria));
 
         const localizationId = ed.getLocalizationId();
-        const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(
+        const newLocalizationId = ContentHelper.replaceRuleNameWithinIdentifier(
           oldRuleName,
           newName,
           localizationId
@@ -129,7 +155,7 @@ export class Normalization extends RuleBaseItem {
         newName,
         testExpectation
       );
-      unitTest.setTestExpectation(newTestExpectation);
+      unitTest.setTestExpectation(replaceIds(newTestExpectation));
       const testInputData = unitTest.getTestInputData();
       const newTestInputData = ContentHelper.replaceAllRuleNamesWithinString(
         oldRuleName,
@@ -142,13 +168,31 @@ export class Normalization extends RuleBaseItem {
     // Замена в правилах локализации
     this.getLocalizations().forEach((loc) => {
       const localizationId = loc.getLocalizationId();
-      const newLocalizationId = ContentHelper.replaceAllRuleNamesWithinString(
+      const newLocalizationId = ContentHelper.replaceRuleNameWithinIdentifier(
         oldRuleName,
         newName,
         localizationId
       );
       loc.setLocalizationId(newLocalizationId);
     });
+  }
+
+  /**
+   * Возвращает соответствие старых и новых значений id = "..." из кода формулы, в которых встречается имя формулы.
+   */
+  private static renameEventIds(
+    oldRuleName: string,
+    newRuleName: string,
+    ruleCode: string
+  ): Map<string, string> {
+    const renamedIds = new Map<string, string>();
+    for (const [, id] of (ruleCode ?? '').matchAll(/^\s*id\s*=\s*"([^"]+)"/gm)) {
+      const newId = ContentHelper.replaceRuleNameWithinIdentifier(oldRuleName, newRuleName, id);
+      if (newId !== id) {
+        renamedIds.set(id, newId);
+      }
+    }
+    return renamedIds;
   }
 
   public async save(parentFullPath: string): Promise<void> {

@@ -90,27 +90,18 @@ export class Enrichment extends RuleBaseItem {
   public async rename(newRuleName: string): Promise<void> {
     // Старые значения.
     const oldRuleName = this.getName();
-
-    // Переименовываем директорию с правилом
-    const parentDirectoryPath = this.getParentPath();
-
-    let newRuleDirectoryPath: string;
-    if (parentDirectoryPath && fs.existsSync(parentDirectoryPath)) {
-      newRuleDirectoryPath = path.join(parentDirectoryPath, newRuleName);
-
-      // Переименовываем в коде правила.
-      const ruleCode = await this.getRuleCode();
-
-      // Модифицируем код, если он есть
-      if (ruleCode) {
-        const newRuleCode = ContentHelper.replaceAllEnrichmentNameWithinCode(newRuleName, ruleCode);
-        await this.setRuleCode(newRuleCode);
-      }
-    }
+    const ruleCode = await this.getRuleCode();
 
     // В метаинформации.
+    this.setName(newRuleName);
     const metainfo = this.getMetaInfo();
     metainfo.setName(newRuleName);
+
+    // Переименовываем в коде правила. Код записывается на диск, только если директория с новым именем уже есть.
+    if (ruleCode) {
+      const newRuleCode = ContentHelper.replaceAllEnrichmentNameWithinCode(newRuleName, ruleCode);
+      await this.setRuleCode(newRuleCode);
+    }
 
     // Замена в тестах.
     this.getIntegrationTests().forEach((integrationTest) => {
@@ -132,9 +123,6 @@ export class Enrichment extends RuleBaseItem {
       );
       unitTest.setTestExpectation(newTestCode);
     });
-
-    // Имя правила.
-    this.setName(newRuleName);
   }
 
   private constructor(name: string, parentDirectoryPath?: string) {

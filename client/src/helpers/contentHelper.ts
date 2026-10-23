@@ -16,6 +16,7 @@ import { Macros } from '../models/content/macros';
 import { Aggregation } from '../models/content/aggregation';
 import { Log } from '../extension';
 import { FileSystemException } from '../models/fileSystemException';
+import { StringHelper } from './stringHelper';
 
 export class ContentHelper {
   /**
@@ -143,6 +144,10 @@ export class ContentHelper {
     return getFileList(startPath);
   }
 
+  /**
+   * Заменяет имя правила, только если оно стоит целым словом: рядом нет букв, цифр и '_'.
+   * Так при переименовании Logon не изменится значение Logon_Type.
+   */
   public static replaceAllRuleNamesWithinString(
     oldRuleName: string,
     newRuleName: string,
@@ -151,8 +156,44 @@ export class ContentHelper {
     if (!ruleCode) {
       return '';
     }
-    ruleCode = ruleCode.replace(new RegExp(oldRuleName, 'gm'), `${newRuleName}`);
-    return ruleCode;
+    const oldNameRegExp = new RegExp(
+      `(?<![A-Za-z0-9_])${StringHelper.escapeRegExp(oldRuleName)}(?![A-Za-z0-9_])`,
+      'g'
+    );
+    return ruleCode.replace(oldNameRegExp, () => newRuleName);
+  }
+
+  /**
+   * Заменяет имя правила в идентификаторе, который строится из имени правила с префиксом и суффиксом
+   * через '_': LocalizationId (corrname_Rule_1) или id нормализации (PT_Rule). Здесь '_' считается разделителем.
+   */
+  public static replaceRuleNameWithinIdentifier(
+    oldRuleName: string,
+    newRuleName: string,
+    identifier: string
+  ): string {
+    if (!identifier) {
+      return '';
+    }
+    const oldNameRegExp = new RegExp(
+      `(?<![A-Za-z0-9])${StringHelper.escapeRegExp(oldRuleName)}(?![A-Za-z0-9])`,
+      'g'
+    );
+    return identifier.replace(oldNameRegExp, () => newRuleName);
+  }
+
+  /**
+   * Заменяет строковые литералы "oldRuleName" в коде правила, например id = "Rule" или вайтлистинг.
+   */
+  public static replaceRuleNameLiteralsWithinCode(
+    oldRuleName: string,
+    newRuleName: string,
+    ruleCode: string
+  ): string {
+    if (!ruleCode) {
+      return '';
+    }
+    return ruleCode.split(`"${oldRuleName}"`).join(`"${newRuleName}"`);
   }
 
   public static getTemplateNames(config: Configuration, contentDirectory: string): string[] {
@@ -322,7 +363,8 @@ export class ContentHelper {
       return '';
     }
 
-    const parseRuleNameReg = /rule\s+(\S+?)\s*:/gm;
+    // Только объявление в начале строки, чтобы не задеть комментарии вида "# rule note: ...".
+    const parseRuleNameReg = /^(\s*)rule\s+(\S+?)\s*:/m;
     const ruleNameParseResult = parseRuleNameReg.exec(ruleCode);
 
     // Если правило пустое, тогда нечего переименовывать.
@@ -330,19 +372,16 @@ export class ContentHelper {
       return ruleCode;
     }
 
-    if (ruleNameParseResult.length != 2) {
-      throw new Error('Не удалось разобрать файл правила корреляции');
-    }
-
-    const ruleName = ruleNameParseResult[1];
+    const ruleName = ruleNameParseResult[2];
     // Заменяем во всяких вайтлистингах.
-    ruleCode = ruleCode.replace(new RegExp(`"${ruleName}"`, 'gm'), `"${newRuleName}"`);
-    ruleCode = ruleCode.replace(parseRuleNameReg, `rule ${newRuleName}:`);
+    ruleCode = ContentHelper.replaceRuleNameLiteralsWithinCode(ruleName, newRuleName, ruleCode);
+    ruleCode = ruleCode.replace(parseRuleNameReg, (_, indent) => `${indent}rule ${newRuleName}:`);
     return ruleCode;
   }
 
   public static replaceAllEnrichmentNameWithinCode(newRuleName: string, ruleCode: string): string {
-    const parseRuleNameReg = /enrichment\s+(\S+)/gm;
+    // Только объявление в начале строки, чтобы не задеть комментарии вида "# enrichment for ...".
+    const parseRuleNameReg = /^(\s*)enrichment\s+(\S+)/m;
     const ruleNameParseResult = parseRuleNameReg.exec(ruleCode);
 
     // Если правило пустое, тогда нечего переименовывать.
@@ -350,14 +389,13 @@ export class ContentHelper {
       return ruleCode;
     }
 
-    if (ruleNameParseResult.length != 2) {
-      throw new Error('Не удалось разобрать файл правила обогащения');
-    }
-
-    const ruleName = ruleNameParseResult[1];
+    const ruleName = ruleNameParseResult[2];
     // Заменяем во всяких вайтлистингах.
-    ruleCode = ruleCode.replace(new RegExp(`"${ruleName}"`, 'gm'), `"${newRuleName}"`);
-    ruleCode = ruleCode.replace(parseRuleNameReg, `enrichment ${newRuleName}`);
+    ruleCode = ContentHelper.replaceRuleNameLiteralsWithinCode(ruleName, newRuleName, ruleCode);
+    ruleCode = ruleCode.replace(
+      parseRuleNameReg,
+      (_, indent) => `${indent}enrichment ${newRuleName}`
+    );
     return ruleCode;
   }
 
