@@ -32,6 +32,7 @@ import { ContentCheckingCommand } from './commands/contentCheckingCommand';
 import { BuildLocalizationsCommand } from './commands/buildLocalizationsCommand';
 import { BuildWldCommand } from './commands/buildWldCommand';
 import { BuildNormalizationsCommand } from './commands/buildNormalizationsCommand';
+import { NormalizeEventsFromFilesCommand } from './commands/normalizeEventsFromFilesCommand';
 import { DuplicateTreeItemCommand } from './commands/duplicateTreeItemCommand';
 import { CreateMacroCommand } from './commands/createMacrosCommand';
 import { PackKbCommand } from './commands/packKbCommand';
@@ -421,6 +422,20 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
         const command = new BuildNormalizationsCommand(config, parser);
         await CommandHelper.singleExecutionCommand(command);
       })
+    );
+
+    context.subscriptions.push(
+      vscode.commands.registerCommand(
+        ContentTreeProvider.normalizeEventsFromFilesCommand,
+        async () => {
+          const parser = new SiemJOutputParser(config, GetSIEMJVersion(config));
+          const command = new NormalizeEventsFromFilesCommand(config, parser);
+          await CommandHelper.singleExecutionCommand(
+            command,
+            config.getMessage('View.NormalizeEventsFromFiles.Title')
+          );
+        }
+      )
     );
 
     context.subscriptions.push(
@@ -884,6 +899,8 @@ export class ContentTreeProvider implements vscode.TreeDataProvider<ContentTreeB
   public static readonly buildAllCommand = 'xp.contentTree.buildAll';
   public static readonly buildLocalizationsCommand = 'xp.contentTree.buildLocalizations';
   public static readonly buildNormalizationsCommand = 'xp.contentTree.buildNormalizations';
+  public static readonly normalizeEventsFromFilesCommand =
+    'xp.contentTree.normalizeEventsFromFiles';
   public static readonly buildWldCommand = 'xp.contentTree.buildWld';
   public static readonly buildKbPackageCommand = 'KnowledgebaseTree.buildKbPackage';
 

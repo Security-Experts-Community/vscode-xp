@@ -253,6 +253,11 @@
           "group": "dots_a@4"
         },
         {
+          "command": "xp.contentTree.normalizeEventsFromFiles",
+          "when": "view == KnowledgebaseTree",
+          "group": "dots_a@5"
+        },
+        {
           "command": "xp.commonCommands.showOutputChannel",
           "when": "view == KnowledgebaseTree",
           "group": "dots_b@5"
@@ -671,6 +676,11 @@
       {
         "command": "xp.contentTree.buildNormalizations",
         "title": "%xp.views.knowledgebaseTree.buildAllNormalizationsCommand%",
+        "category": "%xp.commonCommandCategory%"
+      },
+      {
+        "command": "xp.contentTree.normalizeEventsFromFiles",
+        "title": "%xp.views.knowledgebaseTree.normalizeEventsFromFilesCommand%",
         "category": "%xp.commonCommandCategory%"
       },
       {

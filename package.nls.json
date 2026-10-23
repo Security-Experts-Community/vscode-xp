@@ -49,6 +49,7 @@
 	"xp.views.knowledgebaseTree.buildAllWldsCommand": "Compile All WLD Files",
 	
 	"xp.views.knowledgebaseTree.showRetroCorrelationCommand": "Correlate Events from Files",
+	"xp.views.knowledgebaseTree.normalizeEventsFromFilesCommand": "Normalize Events from Files",
 
 	"xp.views.knowledgebaseTree.importKbFileCommand": "Import from KB File",
 	"xp.views.knowledgebaseTree.exportKbFileCommand": "Export to KB File",
