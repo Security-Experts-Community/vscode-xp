@@ -15,11 +15,6 @@ import { Enrichment } from '../../models/content/enrichment';
 import { Aggregation } from '../../models/content/aggregation';
 import { TestStatus } from '../../models/tests/testStatus';
 
-enum CloseUnitTestsAnswer {
-  Yes = 1,
-  No
-}
-
 export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
   public static readonly viewId = 'ModularTestEditorView';
   public static readonly showEditorCommand = 'ModularTestEditorView.showEditor';
@@ -66,36 +61,15 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
   public async showEditor(
     rule: Correlation | Enrichment | Normalization | Aggregation
   ): Promise<void> {
-    if (this.rule !== rule) {
-      if (this.getView()) {
-        const getTranslation: (s: string) => string = this.config.getMessage.bind(this.config);
-        const translations = {
-          CloseWarning: getTranslation('View.UnitTests.CloseWarning'),
-          Yes: getTranslation('Yes'),
-          No: getTranslation('No')
-        };
-        const answer = await vscode.window
-          .showInformationMessage(translations.CloseWarning, translations.Yes, translations.No)
-          .then((answer) => {
-            switch (answer) {
-              case translations.Yes:
-                return CloseUnitTestsAnswer.Yes;
-              case translations.No:
-                return CloseUnitTestsAnswer.No;
-            }
-          });
-
-        switch (answer) {
-          case CloseUnitTestsAnswer.Yes:
-            this.rule = null;
-            this.getView().dispose();
-            break;
-          case CloseUnitTestsAnswer.No:
-            return;
-        }
+    const currentView = this.getView();
+    if (currentView) {
+      if (this.rule === rule) {
+        currentView.reveal();
+        return;
       }
-    } else {
-      return;
+
+      this.rule = null;
+      currentView.dispose();
     }
 
     if (
@@ -135,6 +109,11 @@ export class UnitTestContentEditorViewProvider extends WebViewProviderBase {
     };
 
     panel.webview.onDidReceiveMessage(this.receiveMessageFromWebView, this);
+    panel.onDidDispose(() => {
+      if (this.getView() === panel) {
+        this.setView(undefined);
+      }
+    });
     this.setView(panel);
     await this.updateView();
   }
