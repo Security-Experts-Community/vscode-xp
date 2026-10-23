@@ -171,18 +171,16 @@ export class Enveloper {
       }
       finally {}
 
-      // '2012-11-04T14:51:06.157Z'
-      if (raw_system_time != "") {
-        var date = raw_system_time;
-      } else {
-        var date = new Date().toISOString();
-      }
+      // Приводим к ISO с миллисекундами: '2012-11-04T14:51:06.157Z'.
+      // Если SystemTime нет или его не удалось разобрать, берём текущее время.
+      const systemTime = new Date(raw_system_time);
+      const date = isNaN(systemTime.getTime()) ? new Date() : systemTime;
       const uuidSeed = index + 1;
 
       const envelopedRawEvents = {
         body: rawEvent,
         recv_ipv4: '127.0.0.1',
-        recv_time: date.toString(),
+        recv_time: date.toISOString(),
         task_id: '00000000-0000-0000-0000-000000000000',
         tag: 'vscode_xp',
         mime: mimeType,
