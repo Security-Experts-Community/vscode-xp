@@ -1,5 +1,27 @@
 # Change Log
 
+## 3.21.7 (Pre-Release)
+
+- Added the **Normalize Events from Files** command: it compiles the normalization formulas and normalizes the events from the selected files. EVTX files are converted automatically, and for the other files the extension asks for the event format. The raw, not normalized, and normalized events are opened in the editor and saved in the output directory
+- The **Correlate Events from Files** command works on macOS: the EVTX converter runs in the Docker container with the XP tools
+- EVTX files with the same name from different directories no longer overwrite each other during conversion, and conversion errors are shown in a notification
+- The `recv_time` field of the envelope is written in the ISO 8601 format with milliseconds. If an event has no `SystemTime` or it cannot be parsed, the current time is written
+- The **Object Tree** view loads faster: the extension caches the parsed items and updates them when the knowledge base files change. The **Refresh** button rereads all rules from the disk
+- The extension no longer writes the rule code to the file when reading a rule from the disk
+- When a normalization formula changes, the extension deletes only the normalization graph and keeps the correlation graph and the build cache
+- When you switch editor tabs, the rule is selected in the **Object Tree** view without moving the focus
+- Added explorer operations to the **Object Tree** view: cut, copy, and paste, moving by drag and drop, multiple selection, copying the path, revealing in the file manager, explorer, and terminal, opening to the side, and keyboard shortcuts for these commands, renaming, and deleting
+- Deleting asks for confirmation and moves the objects to the trash. A copy of a rule gets a new name, and a copy of a correlation gets a new ObjectId
+- The **Object Tree** items look like the VS Code explorer items: icons by object type, folder icons from the icon theme, test status, and git change and error highlighting
+- When you switch between rules, the extension no longer rebuilds the correlation graph for tests: up to 10 recent graphs of up to 50 MB are kept in the `xp_build_cache` directory of the output directory
+- Fixed an issue where renaming a rule replaced its name inside other words: for example, renaming the `Logon` rule changed the `Logon_Type` value
+- When a normalization formula is renamed, the extension updates the `id` values in the formula, `ContentAutoName` in the metadata, the localization criteria, and the expected events of unit tests
+- Renaming a correlation or an enrichment no longer changes the comments in the rule code
+- When a rule is renamed, its directory is moved as a whole: the files that the extension does not process are kept, and the open editors stay open
+- Unit tests of another rule open without confirmation
+- Fixed an issue where a closed unit test editor could not be reopened for the same rule
+- Empty value highlighting in the localization check results is visible in the dark theme
+
 ## 3.21.6 (Pre-Release)
 
 - Fixed an issue where the extension ignored the `xpConfig.kbtBaseDirectory` setting and looked for KBT in the extension `globalStorage` directory
